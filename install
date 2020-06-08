@@ -1,10 +1,10 @@
-#!/bin/sh -x
+#!/bin/sh
 cd "$(dirname "$0")"
 if realpath "$0"|grep -q "^$HOME";then
 	for n in dot-*;do
 		if [ -f "$n" ];then
 			echo Hard linking "${n//dot-/}"
-			ln "$n" "$HOME/${n//dot-/.}"
+			ln -f "$n" "$HOME/${n//dot-/.}"
 		else
 			echo Soft linking "${n//dot-/}"
 			ln -s  "$(realpath "$n")" "$HOME/${n//dot-/.}"

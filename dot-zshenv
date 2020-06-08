@@ -1,4 +1,4 @@
 #!/bin/zsh
-if [ -f "$HOME/.bash_aliases" ];then
-	emulate sh -c 'source '$HOME'/.bash_aliases'
+if [ -f "$HOME/.aliases" ];then
+	emulate sh -c 'source '$HOME'/.aliases'
 fi
