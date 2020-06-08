@@ -7,4 +7,4 @@ setopt extended_glob
 	for n in ~/.zsh/functions/^*.zwc;do
 		zcompare "$n"
 	done
-} &
+} &!
