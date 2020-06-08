@@ -169,7 +169,7 @@ zcompaliases()
 }
 start_zcompile()
 {
-	  	zcompile "$HOME/.cache/zsh/compdump"
+	  	zcompare "$HOME/.cache/zsh/compdump"
 	  	export ZCOMPILED=true
 }
 compinit
