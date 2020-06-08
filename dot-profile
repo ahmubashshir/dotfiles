@@ -1,0 +1,49 @@
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+appendpath()
+{
+	for n in "$@";do
+		case ":$PATH:" in
+			*:"$n":*)
+		        	;;
+		        *)
+				if [ -d "$n" ];then
+					${high:-false} && PATH="$n${PATH:+:$PATH}" || PATH="${PATH:+$PATH:}$n"
+				fi
+			;;
+		esac
+	done
+}
+if [ -f "$HOME/.bash_aliases" ];then
+	. "$HOME/.bash_aliases"
+fi
+
+if [ -f "$HOME/.bashrc" ] && [ -n "$BASH_VERSION" ]; then
+	. "$HOME/.bashrc"
+fi
+# set PATH so it includes user's private bins if they exists
+
+high=true appendpath "$HOME/bin"
+high=true appendpath "$HOME/.go/bin"
+high=true appendpath "$HOME/.local/bin"
+PROXY=socks4://37.57.3.244:1080
+# set PATH so it includes user's private bin if it exists
+[ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
+export LESS=-Xr
+unset high
+export MANGOHUD=1
+export ENABLE_VKBASALT=1
+export mesa_glthread=true
+export WINEDEBUG=-all
+export WINEESYNC=1
+export LNDIR="/mnt/Books/Light Novels"
+export TERMINAL="xfce4-terminal"

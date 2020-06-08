@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+
+## Uncomment to disable git info
+#POWERLINE_GIT=0
+
+__powerline() {
+    # Colorscheme
+    readonly RESET='\[\033[m\]'
+    readonly COLOR_CWD='\[\033[0;34m\]' # blue
+    readonly COLOR_GIT='\[\033[0;36m\]' # cyan
+    readonly COLOR_SUCCESS='\[\033[31m\]' # green
+    readonly COLOR_FAILURE='\[\033[95m\]' # red
+    readonly RED="\[\033[31m\]"
+    readonly GREEN="\[\033[32m\]"
+    readonly BOLD="\[\033[1m\]"
+    readonly YELLOW="\[\033[33m\]"
+
+    readonly SYMBOL_GIT_BRANCH='⑂'
+    readonly SYMBOL_GIT_MODIFIED='*'
+    readonly SYMBOL_GIT_PUSH='↑'
+    readonly SYMBOL_GIT_PULL='↓'
+
+    if [[ -z "$PS_SYMBOL" ]]; then
+      case "$(uname)" in
+          Darwin)   PS_SYMBOL='';;
+          Linux)    PS_SYMBOL='>>';;
+          *)        PS_SYMBOL='%';;
+      esac
+    fi
+	free_percent()
+	{
+		res=$(free |grep Mem|cut -d: -f2|tr -s '[:blank:]'|sed 's/^ //g'|sed 's/ $//g')
+		freed=$(echo $res|cut -d' ' -f3)
+		cached=$(echo $res|cut -d' ' -f5)
+		avail=$((freed+cached))
+		total=$(echo $res|cut -d' ' -f1)
+		echo "scale=2;($avail/$total)*100"|bc|sed -e 's/0*$//'|sed -e 's/\.$//'|tr -d [[:space:]]
+	}
+	function nonzero_return() {
+		RETVAL=$?
+		[ $RETVAL -ne 0 ] && echo -e "\e[31m-($RETVAL)"
+	}
+	function parse_git_dirty() {
+		status=`git status 2>&1 | tee`
+		dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+		untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+		newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+		renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+		deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+		bits=''
+		if [ "${renamed}" == "0" ]; then
+			bits="r${bits}"
+		fi
+		if [ "${newfile}" == "0" ]; then
+			bits="+${bits}"
+		fi
+		if [ "${untracked}" == "0" ]; then
+			bits="?${bits}"
+		fi
+		if [ "${deleted}" == "0" ]; then
+			bits="-${bits}"
+		fi
+		if [ ! "${bits}" == "" ]; then
+			echo "${bits}"
+		else
+			echo ""
+		fi
+	}
+    __git_info() {
+        [[ $POWERLINE_GIT = 0 ]] && return # disabled
+        hash git 2>/dev/null || return # git not found
+        local git_eng="env LANG=C git"   # force git output in English to make our work easier
+
+        # get current branch name
+        local ref=$($git_eng symbolic-ref --short HEAD 2>/dev/null)
+
+        if [[ -n "$ref" ]]; then
+            # prepend branch symbol
+            ref="$ref $SYMBOL_GIT_BRANCH"
+        else
+            # get tag name or short unique hash
+            ref=$($git_eng describe --tags --always 2>/dev/null)
+        fi
+
+        [[ -n "$ref" ]] || return  # not a git repo
+
+        local marks
+
+        # scan first two lines of output from `git status`
+        while IFS= read -r line; do
+            if [[ $line =~ ^## ]]; then # header line
+                [[ $line =~ ahead\ ([0-9]+) ]] && marks+="${BASH_REMATCH[1]}$SYMBOL_GIT_PUSH"
+                [[ $line =~ behind\ ([0-9]+) ]] && marks+="${BASH_REMATCH[1]}$SYMBOL_GIT_PULL"
+            else # branch is modified if output contains more lines after the header line
+                marks="$SYMBOL_GIT_MODIFIED$marks`parse_git_dirty`"
+                break
+            fi
+        done < <($git_eng status --porcelain --branch 2>/dev/null)  # note the space between the two <
+
+        # print the git branch segment without a trailing newline
+        echo -n "-[$ref$marks]"
+    }
+
+    ps1() {
+        # Check the exit code of the previous command and display different
+        # colors in the prompt accordingly.
+        if [ $? -eq 0 ]; then
+            local symbol="$COLOR_SUCCESS$PS_SYMBOL$RESET"
+        else
+            local symbol="$COLOR_FAILURE$PS_SYMBOL$RESET"
+        fi
+
+        local cwd="$COLOR_CWD\W$RESET"
+        # Bash by default expands the content of PS1 unless promptvars is disabled.
+        # We must use another layer of reference to prevent expanding any user
+        # provided strings, which would cause security issues.
+        # POC: https://github.com/njhartwell/pw3nage
+        # Related fix in git-bash: https://github.com/git/git/blob/9d77b0405ce6b471cb5ce3a904368fc25e55643d/contrib/completion/git-prompt.sh#L324
+        if shopt -q promptvars; then
+            __powerline_git_info="$(__git_info)"
+            local git="$COLOR_GIT\${__powerline_git_info}$RESET"
+        else
+            # promptvars is disabled. Avoid creating unnecessary env var.
+            local git="$COLOR_GIT$(__git_info)$RESET"
+        fi
+        PS1="$RED┌───=[$RESET$GREEN$BOLD\u$RED::$RESET$YELLOW$BOLD\h$RESET$RED]$RESET\`nonzero_return\`$RED$git$RED-[$RESET${RED}\$(/usr/bin/tty | /bin/sed -e 's:/dev/::'|sed 's/\//:/')$RED]\n├────[$RESET${YELLOW}jobs:$RESET\j$RED]-[${YELLOW}Ram:$RESET\$(free_percent)%$RED]-[$RESET$cwd$RED]\n$RED└─$symbol$RESET "
+    }
+
+    PROMPT_COMMAND="ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+}
+
+__powerline
+unset __powerline
