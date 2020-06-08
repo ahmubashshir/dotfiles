@@ -1,0 +1,183 @@
+#!/bin/zsh
+# Lazy load section
+autoload -Uz compinit
+autoload -Uz add-zsh-hook
+autoload -Uz bashcompinit
+autoload -Uz bashcompsys
+#end
+add-zsh-hook chpwd 00_check_vfs
+plugins=($plugins zsh-completions)
+source /usr/share/gitstatus/gitstatus.plugin.zsh
+cmdignore=+(man info gcc g++ shit)
+#HISTCONTROL
+setopt autocd incappendhistory extendedhistory
+setopt histfcntllock histnostore histreduceblanks sharehistory
+setopt histexpiredupsfirst histignoredups histignorealldups
+setopt histignorespace histfindnodups histsavenodups
+# Use emacs keybindings even if our EDITOR is set to vi
+bindkey -e
+
+# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
+HISTSIZE=1000
+SAVEHIST=3000
+HISTDUP=erase
+[ -z $(get_termemu|grep 'geany') ] && HISTFILE=~/.zsh_history
+fpath=(~/.zsh/functions "${fpath[@]}" )
+#source ~/.zsh/notifyosd
+#cmdignore+=(nano xed gedit vlc)
+setopt extended_glob prompt_subst
+setopt +o nomatch
+# Use modern completion system
+zstyle :compinstall filename '/home/mubashshir/.zshrc'
+zstyle ':completion:*' auto-description 'specify: %d'
+zstyle ':completion:*' completer _list _expand _complete _ignored _match _correct _approximate _prefix
+zstyle ':completion:*' completions set
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' expand prefix suffix
+zstyle ':completion:*' file-sort name
+zstyle ':completion:*' format 'Completing %d'
+zstyle ':completion:*' glob set
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' ignore-parents parent pwd
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
+zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
+zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' max-errors 1
+zstyle ':completion:*' menu select=0
+zstyle ':completion:*' preserve-prefix '//[^/]##/'
+zstyle ':completion:*' prompt 'Correct'
+zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' substitute set
+zstyle ':completion:*' use-compctl false
+zstyle ':completion:*' verbose true
+# The following lines were added by compinstall
+if [ -f $HOME/.zinputrc ];then
+	. $HOME/.zinputrc
+fi
+#modules
+{
+	zmodload -ab zsh/datetime strftime
+	zmodload zsh/mathfunc
+	zmodload -ab zsh/pcre pcre_compile pcre_study pcre_match
+	zmodload -ab zsh/sched sched
+	zmodload -ab zsh/system syserror sysopen sysread sysseek syswrite zsystem
+	zmodload zsh/zprof
+	zmodload zsh/zpty
+}
+#customize
+00_check_vfs()
+{
+	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ___gnome_vfs=true || unset ___gnome_vfs
+}
+[ -e ~/.zsh/git_super_status ] && source /home/mubashshir/.zsh/git_super_status
+# Set up the prompt
+# [ -e /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# make less more friendly for non-text input files, see lesspipe(1)
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+	xterm|xterm-color|*-256color) color_prompt=yes;;
+esac
+# enable color support of ls and also add handy aliases
+alias ls='ls --color=auto'
+alias dir='dir --color=auto'
+alias vdir='vdir --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias userctl='systemctl --user'
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+if hash hub 2>/dev/null;then
+	alias git=hub
+fi
+# Add an "alert" alias for long running commands.	Use like so:
+#	 sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.zsh_aliases, instead of adding them here directly.
+export GPG_TTY=$(tty)
+if [ -e ./.env_setup ];then
+	source .env_setup
+fi
+chpwd()
+{
+	00_check_vfs
+	unset ____vfs ____cwd
+	if ${___gnome_vfs:-false};then
+		____vfs=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
+		____cwd=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
+	else
+		[[ $PWD == $HOME ]]&&____cwd='~'||____cwd=$(basename $PWD)
+	fi
+	export ____vfs ____cwd
+}
+chpwd
+precmd()
+{
+	RETVAL=$?
+	unset ____gs
+	[[ $RETVAL -ne 0 ]] &&	sym="%F{magenta}>>" || sym=">>"
+	[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
+	if ! ${___gnome_vfs:-false} && ( [ -d ./.git ] || /usr/bin/git rev-parse --git-dir &> /dev/null);then
+		____gs=$(git_super_status)
+	fi
+	printf "\033];%s\07" "$USER [$____cwd]" &!
+	if ${ZCOMPILED:-false};then
+		compinit -C
+		unset ZCOMPILED
+	fi
+	PROMPT="%F{red}┌───=[%F{green}%n%F{red}::%F{yellow}%B%m%F{red}%b]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}$____cwd%F{red}]$____vfs$____gs"$'\n'"└─$sym%F{lightgreen} "
+	RPROMPT="$ret"
+}
+rprompt_async()
+{
+	true
+}
+reload()
+{
+	source ~/.zshrc
+	source ~/.zshenv
+	rm $HOME/.cache/zsh/compdump
+	compinit
+	bashcompinit
+}
+zcompaliases()
+{
+	compdef https=http
+	compdef userctl=systemctl
+	compdef yt-dl=youtube-dl
+	compdef yt-mp3=youtube-dl
+	compdef commit=git
+	compdef clone=git
+	compdef push=git
+	compdef tag=git
+	compdef add=yay
+	compdef del=yay
+	compdef upd=yay
+
+}
+start_zcompile()
+{
+	  	zcompile "$HOME/.cache/zsh/compdump"
+	  	export ZCOMPILED=true
+}
+compinit
+start_zcompile&!
+zcompaliases
+
+bashcompinit
+bashcompsys

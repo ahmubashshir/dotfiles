@@ -1,0 +1,226 @@
+#!/bin/bash
+if [ -f ~/bin/libbash ];then
+	source ~/bin/libbash
+fi
+if [ -x /usr/bin/thefuck ];then
+	eval "$(thefuck --alias)"
+	alias shit='fuck'
+fi
+if [[ $- == *i* ]] && [ -x /usr/bin/ufetch ] && getterm|grep -vq 'gedit\|tmux';then
+	ufetch >&2
+fi
+#aliases
+exec 3>/dev/null
+if hash apt &>/dev/null;then
+	alias apt-i="apt install"
+	alias আপ্ত='apt'
+	alias apt-r="apt remove"
+	alias apt-ri="apt reinstall"
+	alias apt-fu="apt full-upgrade"
+	alias apt-du="apt dist-upgrade"
+	alias apt-uu="apt upgrade"
+	alias apt-u="apt update"
+fi
+alias fixhist="sed -i '/[[:print:]]/!d' ~/.$0_history"
+alias cls="rm -f ~/.bash_history"
+alias err="echo -e \"$1\" &> /dev/stderr"
+alias j2me="java -cp /mnt/Software/Java/SE/microemulator-2.0.4/microemulator.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/microemu-jsr-75.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/cldcapi11.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/midpapi20.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/microemu-nokiaui.jar org.microemu.app.Main org.microemu.cldc.file.FileSystem org.microemu.examples.fcview-impl.FCViewMIDlet $1"
+alias gist='gist -sc --skip-empty'
+alias q="exit"
+alias c="clear"
+alias add='yay -S'
+alias del='yay -Rcsn'
+alias upd='yay -Syu'
+if [ -x /usr/bin/time ];then
+	alias time="/usr/bin/time"
+fi
+alias t=time
+alias k="kill"
+alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
+alias yt-mp3="youtube-dl --restrict-filenames --xattrs --add-metadata --audio-format best -ir 1M -R 10 -x -o '%(title)s.%(acodec)s.%(ext)s' --audio-format mp3 --embed-thumbnail --convert-subs lrc -c"
+alias sudoe="sudo -E "
+alias update-hub='cd $GOPATH/src/github.com/github/hub;git stash&&git stash drop;git pull;make;sudo -EH make install prefix=/usr;cd $OLDPWD'
+if hash tldr 2>/dev/null;then
+	alias '?'=tldr
+	alias h=tldr
+fi
+alias ..='cd ..'
+alias ...='cd ..; cd ..'
+alias ....='cd ..; cd ..; cd ..'
+alias লসুসব='lsusb'
+if hash gcp &>/dev/null;then
+	alias cp='gcp'
+fi
+alias লস='ls'
+alias গছ='gcc'
+alias panbackup='xfpanel-switch save $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias panload='xfpanel-switch load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias 'গ++'='g++'
+alias prime='env DRI_PRIME=1'
+if [ -x /usr/bin/wormhole-william ];then
+	alias send='wormhole-william send'
+	alias recv='wormhole-william recv'
+fi
+if [ -x /usr/bin/plowdown ];then
+	alias fsget='plowdown'
+fi
+alias mprime='mprime -s'
+alias sudo='sudo -H'
+alias চপ='cp'
+alias দ্য='dd'
+alias মাকির='mkdir'
+alias commit='git commit'
+alias clone='git clone'
+alias push='[[ $(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge") = "" ]] && git push --all -u || git push --all'
+alias tag='git tag -s'
+alias ফ্রি='free'
+alias আলিয়াস='alias'
+eval "$(hub alias -s)"
+#Variables
+export GOPATH=$HOME/.go
+export MANGOHUD=1
+export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
+export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
+export GPGID=56DB0538F60D951C
+export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
+export RELAY_SECRET=IX7xntnRW3CC
+export PROXY=socks4://37.57.3.244:1080
+export XDG_DATA_HOME=$HOME/.local/share
+if ! { echo $XDG_DATA_DIRS|grep -q "$XDG_DATA_HOME";};then
+	export XDG_DATA_DIRS=$XDG_DATA_HOME:$XDG_DATA_DIRS
+fi
+#functions
+pwdp()
+{
+	readlink /proc/$1/cwd||echo Permission denied >>/dev/stderr
+}
+spider()
+{
+	if echo "$@"|grep -q http;then
+		curl -ILksXGET "$@"
+	else
+		echo spider:missing url
+	fi
+}
+get_termemu() {
+	ps -h -o comm -p $(ps -h -o ppid -p $$ 2>/dev/null) 2>/dev/null
+}
+get_m3u()
+{
+	echo Building download link from playlist url 1>&2
+	echo -ne "URL\t:  " 1>&2
+	curl "$1" 2>/dev/null|grep -v ^#|sed '/^$/d'|( (head -2|cut -d\& -f1) && (tail -2|cut -d\? -f2|cut -d\& -f2-|awk 'NR==1 {print "&"$0;}'))|awk 'NR>=2 && NR<=3 {printf $0;}'|awk "{print \"$(dirname "$1"|tr -d '[:blank:]')/\"\$0;}"
+}
+wlen()
+{
+	wget --spider -O- $1 2>&1|grep Length|sed 's|Length|Size|g'
+}
+sql2db()
+{
+	name=$1
+	echo "Converting $1 to ${1%.*}.db"
+	curl -F files[]=@"$1" 'https://www.rebasedata.com/api/v1/convert?outputFormat=sqlite&errorResponse=zip' -o .tmp.zip
+	unzip .tmp.zip 2>/dev/null
+	mv "data.sqlite" "${1%.*}.db"
+	rm .tmp.zip
+}
+urldecode()
+{
+	: "${*//+/ }";
+	echo -e "${_//%/\\x}";
+}
+embed()
+{
+bash -c "set -x;echo -e \"\$(cat \"$1\")\">/dev/null" 2>&1|tail -n +2|sed 's|^+ echo -e |embeddable:\n|g'
+}
+log()
+{
+	for n in $@
+	do
+		echo -e "$(strings $n|sed 's/\[0;/\\033[0;/')"
+	done
+}
+#gdrive
+ls_drive()
+{
+	id=$1
+	echo Fetching info about $id >&2
+	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
+	return $?
+}
+get_drive()
+{
+	echo Downloading \"$2\"
+	fget "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" "$2"
+}
+rdl_drive () {
+	files=()
+	false
+	until [ "${PIPESTATUS[0]}" = "0" ];do
+		for n in $(ls_drive $1);do
+			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
+			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
+			mime=$(echo $n|cut -d\| -f3|cut -d: -f2)
+			if [[ $mime != 'application/vnd.google-apps.folder' ]]
+			then
+				get_drive $id "$name"
+				files+=('-not' '-samefile' "$name")
+			else
+				mkdir -p "$name" 2> /dev/null && (
+					cd "$name" && rdd $id && cd ..
+				) || echo "Invalid name \"$name\"" >&2
+			fi
+			echo
+		done
+		[ "${PIPESTATUS[0]}" = "0" ] || {
+			sleep 10
+			tput cuu1
+			tput el
+			false
+		}
+	done
+	if [ -n "${files[*]}" ];then
+		find -type f -not -samefile 00update "${files[@]}" -exec echo Removing '{}' \; -delete
+	fi
+
+}
+#end:gdrive
+title()
+{
+	printf "\033];%s\07" "$@"
+}
+geticon()
+{
+	if [ "$1" = "" ];then
+		echo -e "Usage:\ngeticon <url>"
+	else
+		rm -f "$name.png"
+		tmp=$(mktemp -u .favicon.XXXXXXXXXX.ico|cut -d/ -f2)
+		name=$(echo $1|cut -d/ -f3)
+		wget -q $1/favicon.ico -O "$tmp"
+		convert "$tmp" "$name.png"
+		rm $tmp
+	fi
+}
+#colors
+blck='\033[0;30'
+dgry='\033[1;30'
+lgry='\033[0;37'
+red='\033[0;31'
+lred='\033[1;31'
+grn='\033[0;32'
+lgrn='\033[1;32'
+brown='\033[0;33'
+yellow='\033[1;33'
+blu='\033[0;34'
+lblu='\033[1;34'
+prpl='\033[0;35'
+lprpl='\033[1;35'
+cyn='\033[0;36'
+lcyn='\033[1;36'
+wht='\033[1;37'
+rst='\033[0m'
+dd()
+{
+	/bin/dd status=progress "$@"
+}
