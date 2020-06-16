@@ -2,3 +2,14 @@
 if [ -f "$HOME/.aliases" ];then
 	emulate sh -c 'source '$HOME'/.aliases'
 fi
+if [ -f $HOME'/.profile' ];then
+	emulate sh -c 'source '$HOME'/.profile'
+fi
+bashcompadd()
+{
+	for n in "$@";do
+		if [ -f "/usr/share/bash-completion/completions/$n" ];then
+			source "/usr/share/bash-completion/completions/$n"
+		fi
+	done
+}

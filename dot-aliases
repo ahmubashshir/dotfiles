@@ -84,10 +84,29 @@ export MANGOHUD=1
 export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
 export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
 export GPGID=56DB0538F60D951C
+export WINEARCH=win64
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export PROXY=socks4://37.57.3.244:1080
+export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
 export XDG_DATA_HOME=$HOME/.local/share
+if tty -s;then
+	if tput setaf 0 &>/dev/null; then
+		ALL_OFF="$(tput sgr0)"
+		BOLD="$(tput bold)"
+		BLUE="${BOLD}$(tput setaf 4)"
+		GREEN="${BOLD}$(tput setaf 2)"
+		RED="${BOLD}$(tput setaf 1)"
+		YELLOW="${BOLD}$(tput setaf 3)"
+	else
+		ALL_OFF="\e[0m"
+		BOLD="\e[1m"
+		BLUE="${BOLD}\e[34m"
+		GREEN="${BOLD}\e[32m"
+		RED="${BOLD}\e[31m"
+		YELLOW="${BOLD}\e[33m"
+	fi
+fi
 if ! { echo $XDG_DATA_DIRS|grep -q "$XDG_DATA_HOME";};then
 	export XDG_DATA_DIRS=$XDG_DATA_HOME:$XDG_DATA_DIRS
 fi
@@ -142,18 +161,50 @@ log()
 		echo -e "$(strings $n|sed 's/\[0;/\\033[0;/')"
 	done
 }
+ellipsis() {
+	python3 -c "try:
+	from sys import argv
+	l=int(int(argv[1])/2)
+	if len(' '.join(argv[2:]))>l*2:
+		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
+	else:
+		print(' '.join(argv[2:]),sep='')
+except KeyboardInterrupt:
+	pass" "$@"
+}
 #gdrive
 ls_drive()
 {
-	id=$1
-	echo Fetching info about $id >&2
+	echo -e "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
 	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
 	return $?
 }
 get_drive()
 {
-	echo Downloading \"$2\"
-	fget "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" "$2"
+	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
+	local size JSON md5sums try
+	echo -e " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
+	until [ -n "$size" ];do
+		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		python -mjson.tool - &>/dev/null || continue
+		size="$(echo "$JSON"|jq -r .size)"
+	done
+	md5sums="$(echo "$JSON"|jq -r .md5Checksum) $1"
+	if echo "$md5sums"|md5sum -c --quiet &>/dev/null; then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+		sleep 2
+		return 0
+	else
+		echo
+		try=0
+		until echo "$md5sums"|md5sum -c --quiet &>/dev/null || ((try==5));do
+			tput cuu1
+			curl -sL "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s $size > "$1"
+			((try+=1))
+			sleep 5
+		done
+	fi
 }
 rdl_drive () {
 	files=()
@@ -169,7 +220,7 @@ rdl_drive () {
 				files+=('-not' '-samefile' "$name")
 			else
 				mkdir -p "$name" 2> /dev/null && (
-					cd "$name" && rdd $id && cd ..
+					cd "$name" && rdl_drive $id && cd ..
 				) || echo "Invalid name \"$name\"" >&2
 			fi
 			echo
@@ -182,7 +233,7 @@ rdl_drive () {
 		}
 	done
 	if [ -n "${files[*]}" ];then
-		find -type f -not -samefile 00update "${files[@]}" -exec echo Removing '{}' \; -delete
+		find -type f "${files[@]}" -exec echo Removing '{}' \; -delete
 	fi
 
 }
