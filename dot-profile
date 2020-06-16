@@ -37,7 +37,6 @@ PROXY=socks4://37.57.3.244:1080
 [ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
 export LESS=-Xr
 unset high
-export MANGOHUD=1
 export ENABLE_VKBASALT=1
 export mesa_glthread=true
 export WINEDEBUG=-all
