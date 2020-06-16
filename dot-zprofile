@@ -1,7 +1,4 @@
 #!/bin/zsh
-if [ -f $HOME'/.profile' ];then
-	emulate sh -c 'source '$HOME'/.profile'
-fi
 setopt extended_glob
 {
 	for n in ~/.zsh/functions/^*.zwc;do

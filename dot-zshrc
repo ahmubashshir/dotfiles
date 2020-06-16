@@ -178,3 +178,8 @@ zcompaliases
 
 bashcompinit
 bashcompsys
+
+{
+#	bashcompadd cpu-x
+	true
+}
