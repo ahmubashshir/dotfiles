@@ -1,6 +1,9 @@
 #!/bin/bash
-if [ -f ~/bin/libbash ];then
+if [ -e ~/bin/libbash ];then
 	source ~/bin/libbash
+fi
+if [ -e ~/.weeb/aliases.sh ];then
+	source ~/.weeb/aliases.sh
 fi
 if [ -x /usr/bin/thefuck ];then
 	eval "$(thefuck --alias)"
@@ -57,7 +60,10 @@ alias panbackup='xfpanel-switch save $HOME/.local/share/xfpanel-switch/Default.t
 alias panload='xfpanel-switch load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
 alias 'গ++'='g++'
 alias prime='env DRI_PRIME=1'
-if [ -x /usr/bin/wormhole-william ];then
+if [ -x /usr/bin/wormhole ];then
+	alias send='wormhole send'
+ 	alias recv='wormhole receive'
+elif [ -x /usr/bin/wormhole-william ];then
 	alias send='wormhole-william send'
 	alias recv='wormhole-william recv'
 fi
@@ -76,6 +82,7 @@ alias commit='git commit'
 alias clone='git clone'
 alias push='[[ $(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge") = "" ]] && git push --all -u || git push --all'
 alias tag='git tag -s'
+alias spider='curl -ILksXGET'
 alias ফ্রি='free'
 alias আলিয়াস='alias'
 #Variables
@@ -107,24 +114,21 @@ if tty -s;then
 		YELLOW="${BOLD}\e[33m"
 	fi
 fi
-if ! { echo $XDG_DATA_DIRS|grep -q "$XDG_DATA_HOME";};then
-	export XDG_DATA_DIRS=$XDG_DATA_HOME:$XDG_DATA_DIRS
-fi
-#functions
+# functions
 pwdp()
 {
 	readlink /proc/$1/cwd||echo Permission denied >>/dev/stderr
 }
-spider()
-{
-	if echo "$@"|grep -q http;then
-		curl -ILksXGET "$@"
-	else
-		echo spider:missing url
-	fi
-}
 get_termemu() {
 	ps -h -o comm -p $(ps -h -o ppid -p $$ 2>/dev/null) 2>/dev/null
+}
+fpio()
+{
+	if [ -f "$1" ];then
+		curl --upload-file "$1" "https://filepush.co/upload/$(basename "$1")"
+	else
+		echo no such file
+	fi
 }
 get_m3u()
 {
