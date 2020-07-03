@@ -7,7 +7,7 @@ if realpath "$0"|grep -q "^$HOME";then
 			ln -f "$n" "$HOME/${n//dot-/.}"
 		else
 			echo Soft linking "${n//dot-/}"
-			ln -s  "$(realpath "$n")" "$HOME/${n//dot-/.}"
+			ln -Tfs  "$(realpath "$n")" "$HOME/${n//dot-/.}"
 		fi
 	done
 else
