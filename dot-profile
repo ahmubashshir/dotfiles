@@ -34,7 +34,7 @@ high=true appendpath "$HOME/.go/bin"
 high=true appendpath "$HOME/.local/bin"
 PROXY=socks4://37.57.3.244:1080
 # set PATH so it includes user's private bin if it exists
-[ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
+#[ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
 export LESS=-Xr
 unset high
 export ENABLE_VKBASALT=1

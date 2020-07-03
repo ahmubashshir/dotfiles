@@ -23,7 +23,7 @@ bindkey -e
 HISTSIZE=1000
 SAVEHIST=3000
 HISTDUP=erase
-[ -z $(get_termemu|grep 'geany') ] && HISTFILE=~/.zsh_history
+[ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 fpath=(~/.zsh/functions "${fpath[@]}" )
 #source ~/.zsh/notifyosd
 #cmdignore+=(nano xed gedit vlc)
@@ -178,8 +178,7 @@ zcompaliases
 
 bashcompinit
 bashcompsys
-
 {
-#	bashcompadd cpu-x
+	bashcompadd cpu-x cum
 	true
 }
