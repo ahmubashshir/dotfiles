@@ -45,3 +45,7 @@ nbproject
 .project
 .settings
 composer.lock
+*.srctrlbm
+*.srctrldb
+*.srctrldb_tmp
+*.srctrlprj

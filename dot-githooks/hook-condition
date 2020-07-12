@@ -1,0 +1,6 @@
+#!/bin/bash -e
+awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");printf $0"\0"}' "$1" | \
+while IFS= read -r -d $'\0'
+do
+	eval "$REPLY" &>/dev/null
+done
