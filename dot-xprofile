@@ -3,6 +3,7 @@ export GTK_IM_MODULE=ibus
 export QT_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
 #ibus-daemon -drx --panel /usr/lib/ibus/ibus-ui-gtk3
+systemctl --user restart ibus.slice
 export XSECURELOCK_DATETIME_FORMAT="%A, %B %d, %Y %l:%M %P"
 export XSECURELOCK_BLANK_DPMS_STATE=off
 export XSECURELOCK_FONT="Hack:style=Regular"

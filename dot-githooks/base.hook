@@ -1,0 +1,10 @@
+#!/bin/bash -e
+shopt -s nullglob
+if [ -d "$0.d" ];then
+	for n in "$0.d"/*;do
+		if "${0%/*}/hook-condition" "$n";then
+			echo "running hook ${0##*/}:${n##*/}"
+			"$n" "$@"
+		fi
+	done
+fi
