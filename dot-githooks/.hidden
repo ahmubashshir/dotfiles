@@ -1,0 +1,13 @@
+applypatch-msg
+commit-msg
+post-applypatch
+post-checkout
+post-commit
+post-merge
+post-rewrite
+pre-applypatch
+pre-auto-gc
+pre-commit
+prepare-commit-msg
+pre-push
+pre-rebase

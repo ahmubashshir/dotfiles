@@ -132,7 +132,9 @@ precmd()
 	if ! ${___gnome_vfs:-false} && ( [ -d ./.git ] || /usr/bin/git rev-parse --git-dir &> /dev/null);then
 		____gs=$(git_super_status)
 	fi
-	printf "\033];%s\07" "$USER [$____cwd]" &!
+	if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
+		printf "\033];%s\07" "zsh($$): $USER [$____cwd]"
+	fi &!
 	if ${ZCOMPILED:-false};then
 		compinit -C
 		unset ZCOMPILED

@@ -1,0 +1,80 @@
+[include]
+	path = ~/.git-auth
+[user]
+	email = ahmubashshir@gmail.com
+	name = Mubashshir
+	signingkey = 56DB0538F60D951C
+[credential]
+	helper = /usr/lib/git-core/git-credential-libsecret
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[commit]
+	gpgsign = true
+[alias]
+	lg = log --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr %an)%Creset' --abbrev-commit --date=relative
+	tree = !tig
+	stat = !tig status
+	fsclr = !git reflog expire --expire=now --all&&git gc --prune=now
+	tlog = !tig log
+	dt = difftool
+	mt = mergetool
+	unstage = reset HEAD
+	last = log -1 HEAD
+	visual = !gitk
+	st = status
+	uncommit = reset --soft HEAD^
+	progress = diff --stat
+	forkcfg = config remote.pushDefault ahmubashshir
+	amend = commit --amend
+	pg = diff --shortstat
+	cfr = ! hub fork && git config remote.pushDefault ahmubashshir
+	rf = !git pull --all && git pull origin master && git push --all
+	up = ![ "$(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge")" = '' ] && git push -u || git push
+	cpr = !git push -q && hub pull-request
+	hist = !giggle
+	gui = !gitg -a 2>/dev/null
+	bclone = clone --single-branch --branch
+[color]
+	ui = auto
+[hub]
+	protocol = https
+
+[core]
+	excludesfile = ~/.gitignore_global
+	askPass = /usr/lib/seahorse/ssh-askpass
+	hooksPath = ~/.githooks
+[diff]
+	guitool = meld
+	tool    = imediff
+[instaweb]
+	browser = chromium-browser
+[merge]
+	guitool = meld
+	tool = imediff
+[web]
+	browser = chromium-browser
+[cola]
+	spellcheck = false
+[gpg]
+	program = gpg2
+[tag]
+	forceSignAnnotated = true
+[difftool]
+	prompt = false
+[mergetool]
+	prompt = false
+[fetch]
+	prune = true
+[url "ssh://aur@aur.archlinux.org/"]
+    insteadOf = "aur:"
+[sendemail]
+	smtpServer = smtp.gmail.com
+	smtpServerPort = 587
+	smtpEncryption = tls
+[push]
+	default = current
+[pull]
+	rebase = true
