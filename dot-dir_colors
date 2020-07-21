@@ -67,6 +67,7 @@ TERM xterm-16color
 TERM xterm-256color
 TERM xterm-88color
 TERM xterm-color
+TERM xterm-direct
 TERM xterm-debian
 
 # Below are the color init strings for the basic file types. A color init
