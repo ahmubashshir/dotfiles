@@ -3,6 +3,7 @@ zmodload zsh/datetime
 setopt PROMPT_SUBST
 PS4='+$EPOCHREALTIME %N:%i> '
 logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
+typeset -A ENV
 echo "Logging to $logfile"
 exec 3>&2 2>$logfile
 
@@ -35,7 +36,13 @@ autoload -Uz zsh-gitstatus
 autoload -Uz zsh-async
 autoload -Uz vcs_info
 ## Start
+<<<<<<< Updated upstream
 add-zsh-hook chpwd 00_check_vfs
+=======
+case "$TERM" in
+	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
+esac
+>>>>>>> Stashed changes
 zsh-async
 zsh-gitstatus
 setopt extended_glob prompt_subst
@@ -89,58 +96,45 @@ if [ -f $HOME/.zinputrc ];then
 	. $HOME/.zinputrc
 fi
 
-# Set up the prompt
-
-case "$TERM" in
-	xterm|xterm-color|*-256color) color_prompt=yes;;
-esac
 ## customize
-00_check_vfs()
-{
-	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ___gnome_vfs=true || unset ___gnome_vfs
-}
-[ -e ~/.zsh/git_super_status ] && source ~/.zsh/git_super_status
 export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
 fi
-chpwd()
-{
-	00_check_vfs
-	unset ____vfs ____cwd
-	if ${___gnome_vfs:-false};then
-		____vfs=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
-		____cwd=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
-	else
-		[[ $PWD == $HOME ]]&&____cwd='~'||____cwd=$(basename $PWD)
-	fi
-	export ____vfs ____cwd
-}
-chpwd
-if [[ $color_prompt = yes ]];then
+if [[ $ENV[color_prompt] = yes ]];then
+	chpwd()
+	{
+		unset ENV[vfs] ENV[cwd] ENV[gnome_vfs]
+		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ENV[gnome_vfs]=true
+		if ${ENV[gnome_vfs]:-false};then
+			ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
+			ENV[cwd]=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
+		else
+			[[ $PWD == $HOME ]] && ENV[cwd]='~' || ENV[cwd]=${PWD##*/}
+		fi
+		if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
+			printf "\033];%s\07" "zsh($$): $USER [${ENV[cwd]}]"
+		fi
+	}
+	chpwd
+	_git_prompt_update
 	precmd()
 	{
 		RETVAL=$?
-		unset ____gs
-		[[ $RETVAL -ne 0 ]] &&	sym="%F{magenta}>>" || sym=">>"
+		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
 		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
-		if ! ${___gnome_vfs:-false} && ( [ -d ./.git ] || /usr/bin/git rev-parse --git-dir &> /dev/null);then
-			____gs=$(git_super_status)
-		fi
-		if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
-			printf "\033];%s\07" "zsh($$): $USER [$____cwd]"
-		fi &!
+		((GITSTATUS_PROMPT_LEN)) && GITSTATUS_PROMPT="-[$GITSTATUS_PROMPT%F{red}]" || unset GITSTATUS_PROMPT
 		if ${ZCOMPILED:-false};then
 			compinit -C
 			unset ZCOMPILED
 		fi
-		PROMPT="%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}$____cwd%F{red}]$____vfs$____gs"$'\n'"└─$sym%F{lightgreen} "
+		PROMPT="%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}"$'\n'"└─$sym%F{lightgreen} "
 		RPROMPT="$ret"
 	}
 else
 	precmd()
 	{
-		PROMPT="[%m::%n $____cwd]$ "
+		PROMPT="[%m::%n ${ENV[cwd]}$ "
 	}
 fi
 reload()
