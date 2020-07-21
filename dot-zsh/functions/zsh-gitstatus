@@ -21,25 +21,24 @@ fi
 function _git_prompt_update_preexec() {
 	case "$2" in
 		git*|hub*|gh*|stg*)
-			add-zsh-hook periodic _git_prompt_update_async
-			OLDPERIOD=$PERIOD
-			PERIOD=0.3
-			_GIT_PROMPT_PREEXECD=1
+			_git_prompt_update_async "${(q)1}" &!
 		;;
 	esac
 }
 
-function _git_prompt_update()
+_git_prompt_update_async()
 {
-	((_GIT_PROMPT_PREEXECD)) &&	{
-		periodic_functions=(${periodic_functions:#_git_prompt_update_async})
-		PERIOD=$OLDPERIOD
-		unset OLDPERIOD
-		(($PERIOD)) || unset PERIOD
-	}
-	_git_prompt_update_async
+	sleep 0.1
+	local pid
+	pid=$(pgrep -fP $$ "$1" 2>/dev/null)
+	((pid>$$)) || return
+	while sleep 0.1; do
+		test -d "/proc/$pid" && continue || break
+		_git_prompt_update
+	done
 }
-function _git_prompt_update_async() {
+
+function _git_prompt_update() {
 	emulate -L zsh
 	typeset -g  GITSTATUS_PROMPT=''
 	typeset -gi GITSTATUS_PROMPT_LEN=0
