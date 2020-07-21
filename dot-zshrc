@@ -36,13 +36,9 @@ autoload -Uz zsh-gitstatus
 autoload -Uz zsh-async
 autoload -Uz vcs_info
 ## Start
-<<<<<<< Updated upstream
-add-zsh-hook chpwd 00_check_vfs
-=======
 case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
 esac
->>>>>>> Stashed changes
 zsh-async
 zsh-gitstatus
 setopt extended_glob prompt_subst
