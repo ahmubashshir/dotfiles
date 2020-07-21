@@ -5,6 +5,10 @@ if realpath "$0"|grep -q "^$HOME";then
 		if [ -f "$n" ];then
 			echo Hard linking "${n//dot-/}"
 			ln -f "$n" "$HOME/${n//dot-/.}"
+			if [[ $n =~ ^dot-z ]];then
+				echo compiling $n
+				zsh -c "zcompile \"$HOME/${n//dot-/.}\" \"$HOME/.cache/zsh/${n//dot-/.}\""
+			fi
 		else
 			echo Soft linking "${n//dot-/}"
 			ln -Tfs  "$(realpath "$n")" "$HOME/${n//dot-/.}"
