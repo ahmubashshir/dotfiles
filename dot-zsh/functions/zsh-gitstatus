@@ -5,6 +5,8 @@ gitstatus_start "gitstatus$$"
 # Allow for functions in the prompt.
 setopt PROMPT_SUBST
 autoload -U add-zsh-hook
+
+add-zsh-hook preexec _git_prompt_update_preexec
 add-zsh-hook precmd _git_prompt_update
 add-zsh-hook chpwd _git_prompt_update
 if [[ ${ENV[color_prompt]} = yes ]];then
@@ -15,6 +17,27 @@ if [[ ${ENV[color_prompt]} = yes ]];then
 	ENV[git_untracked]='%F{cyan}'   	# blue foreground
 	ENV[git_conflicted]='%F{red}'  	# red foreground
 fi
+
+function _git_prompt_update_preexec() {
+	case "$2" in
+		git*|hub*|gh*|stg*)
+			add-zsh-hook periodic _git_prompt_update_async
+			PERIOD=0.3
+			trap 'zle reset-prompt' USR2
+		;;
+	esac
+}
+function _git_prompt_update_async()
+{
+	GITSTATUS_PREV="$GITSTATUS_PROMPT"
+	_git_prompt_update
+	if [[ $GITSTATUS_PREV != $GITSTATUS_PROMPT ]];then
+		add-zsh-hook -d periodic _git_prompt_update_async
+		unset PERIOD
+		kill -USR2 $$
+		trap - USR2
+	fi
+}
 function _git_prompt_update() {
 	emulate -L zsh
 	typeset -g  GITSTATUS_PROMPT=''
@@ -90,7 +113,7 @@ function _git_prompt_update() {
 		# ?42 if have untracked files. It's really a question mark, your font isn't broken.
 		(( VCS_STATUS_NUM_UNTRACKED  )) && p+="${ENV[git_untracked]}%B?%b${VCS_STATUS_NUM_UNTRACKED}%f"
 	} || p+="✔"
-	GITSTATUS_PROMPT="${p}%f"
+	GITSTATUS_PROMPT="-[${p}%F{red}]"
 	# The length of GITSTATUS_PROMPT after removing %f and %F.
 	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
 }
