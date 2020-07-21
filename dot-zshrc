@@ -97,18 +97,21 @@ export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
 fi
-#function xterm_title_precmd () {
-#	print -Pn -- '\e]2;%n@%m %~\a'
-#	[[ "$TERM" == 'screen'* ]] && print -Pn -- '\e_\005{g}%n\005{-}@\005{m}%m\005{-} \005{B}%~\005{-}\e\\'
-#}
-#function xterm_title_preexec () {
-#	print -Pn -- '\e]2;%n@%m %~ %# ' && print -n -- "${(q)1}\a"
-#	[[ "$TERM" == 'screen'* ]] && { print -Pn -- '\e_\005{g}%n\005{-}@\005{m}%m\005{-} \005{B}%~\005{-} %# ' && print -n -- "${(q)1}\e\\"; }
-#}
-#if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
-#	add-zsh-hook -Uz precmd xterm_title_precmd
-#	add-zsh-hook -Uz preexec xterm_title_preexec
-#fi
+## set title
+function xterm_title_precmd () {
+	printf '\e]2;%s\a' "zsh@$$ [${ENV[cwd]}]"
+}
+function xterm_title_preexec () {
+	{
+		sleep 0.3
+		printf '\e]2;%s\a' "$(basename ${1%% *})@$(pgrep -fP $$ "${(q)1}") [${ENV[cwd]}]"
+	} &!
+}
+if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
+	add-zsh-hook -Uz precmd xterm_title_precmd
+	add-zsh-hook -Uz preexec xterm_title_preexec
+fi
+
 if [[ $ENV[color_prompt] = yes ]];then
 	chpwd()
 	{
@@ -119,9 +122,6 @@ if [[ $ENV[color_prompt] = yes ]];then
 			ENV[cwd]=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
 		else
 			[[ $PWD == $HOME ]] && ENV[cwd]='~' || ENV[cwd]=${PWD##*/}
-		fi
-		if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
-			printf "\033];%s\07" "zsh($$): $USER [${ENV[cwd]}]"
 		fi
 	}
 	chpwd
@@ -137,7 +137,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 		fi
 		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]\n%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen}'
+	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]\n%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
 else
 	PROMPT='[%m::%n ${ENV[cwd]}]$ '
 fi
