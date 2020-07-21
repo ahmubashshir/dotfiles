@@ -10,7 +10,6 @@ setopt XTRACE
 
 ## variables
 fpath+=(~/.zsh/functions)
-plugins+=(zsh-completions)
 cmdignore=+(man info gcc g++ shit nano xed gedit vlc)
 
 ## modules
@@ -32,11 +31,13 @@ autoload -Uz compinit
 autoload -Uz add-zsh-hook
 autoload -Uz bashcompinit
 autoload -Uz bashcompsys
-#autoload -Uz zsh-async
+autoload -Uz zsh-gitstatus
+autoload -Uz zsh-async
 autoload -Uz vcs_info
 ## Start
 add-zsh-hook chpwd 00_check_vfs
-#zsh-async
+zsh-async
+zsh-gitstatus
 setopt extended_glob prompt_subst
 setopt +o nomatch
 setopt autocd incappendhistory extendedhistory
