@@ -1,17 +1,18 @@
 #!/bin/zsh
-zmodload zsh/datetime
-setopt PROMPT_SUBST
-PS4='+$EPOCHREALTIME %N:%i> '
-logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
-typeset -A ENV
-echo "Logging to $logfile"
-exec 3>&2 2>$logfile
-
-setopt XTRACE
+if [ -f /tmp/zprof.$UID ];then
+	zmodload zsh/datetime
+	setopt PROMPT_SUBST
+	PS4='+$EPOCHREALTIME %N:%i> '
+	logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
+	echo "Logging to $logfile"
+	exec 3>&2 2>$logfile
+	setopt XTRACE
+fi
 
 ## variables
 fpath+=(~/.zsh/functions)
 cmdignore=+(man info gcc g++ shit nano xed gedit vlc)
+typeset -A ENV
 
 ## modules
 zmodload -ab zsh/datetime strftime
@@ -177,5 +178,7 @@ bashcompinit
 bashcompsys
 bashcompadd cpu-x winetricks
 
-unsetopt XTRACE
-exec 2>&3 3>&-
+if [ -f /tmp/zprof.$UID ];then
+	unsetopt XTRACE
+	exec 2>&3 3>&-
+fi
