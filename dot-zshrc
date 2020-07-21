@@ -97,6 +97,18 @@ export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
 fi
+#function xterm_title_precmd () {
+#	print -Pn -- '\e]2;%n@%m %~\a'
+#	[[ "$TERM" == 'screen'* ]] && print -Pn -- '\e_\005{g}%n\005{-}@\005{m}%m\005{-} \005{B}%~\005{-}\e\\'
+#}
+#function xterm_title_preexec () {
+#	print -Pn -- '\e]2;%n@%m %~ %# ' && print -n -- "${(q)1}\a"
+#	[[ "$TERM" == 'screen'* ]] && { print -Pn -- '\e_\005{g}%n\005{-}@\005{m}%m\005{-} \005{B}%~\005{-} %# ' && print -n -- "${(q)1}\e\\"; }
+#}
+#if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
+#	add-zsh-hook -Uz precmd xterm_title_precmd
+#	add-zsh-hook -Uz preexec xterm_title_preexec
+#fi
 if [[ $ENV[color_prompt] = yes ]];then
 	chpwd()
 	{
@@ -119,19 +131,15 @@ if [[ $ENV[color_prompt] = yes ]];then
 		RETVAL=$?
 		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
 		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
-		((GITSTATUS_PROMPT_LEN)) && GITSTATUS_PROMPT="-[$GITSTATUS_PROMPT%F{red}]" || unset GITSTATUS_PROMPT
 		if ${ZCOMPILED:-false};then
 			compinit -C
 			unset ZCOMPILED
 		fi
-		PROMPT="%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}"$'\n'"└─$sym%F{lightgreen} "
 		RPROMPT="$ret"
 	}
+	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]\n%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen}'
 else
-	precmd()
-	{
-		PROMPT="[%m::%n ${ENV[cwd]}$ "
-	}
+	PROMPT='[%m::%n ${ENV[cwd]}]$ '
 fi
 reload()
 {
