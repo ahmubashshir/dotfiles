@@ -22,23 +22,24 @@ function _git_prompt_update_preexec() {
 	case "$2" in
 		git*|hub*|gh*|stg*)
 			add-zsh-hook periodic _git_prompt_update_async
+			OLDPERIOD=$PERIOD
 			PERIOD=0.3
-			trap 'zle reset-prompt' USR2
+			_GIT_PROMPT_PREEXECD=1
 		;;
 	esac
 }
-function _git_prompt_update_async()
+
+function _git_prompt_update()
 {
-	GITSTATUS_PREV="$GITSTATUS_PROMPT"
-	_git_prompt_update
-	if [[ $GITSTATUS_PREV != $GITSTATUS_PROMPT ]];then
-		add-zsh-hook -d periodic _git_prompt_update_async
-		unset PERIOD
-		kill -USR2 $$
-		trap - USR2
-	fi
+	((_GIT_PROMPT_PREEXECD)) &&	{
+		periodic_functions=(${periodic_functions:#_git_prompt_update_async})
+		PERIOD=$OLDPERIOD
+		unset OLDPERIOD
+		(($PERIOD)) || unset PERIOD
+	}
+	_git_prompt_update_async
 }
-function _git_prompt_update() {
+function _git_prompt_update_async() {
 	emulate -L zsh
 	typeset -g  GITSTATUS_PROMPT=''
 	typeset -gi GITSTATUS_PROMPT_LEN=0
