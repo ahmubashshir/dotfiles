@@ -10,7 +10,7 @@ if [ -f /tmp/zprof.$UID ];then
 fi
 
 ## variables
-fpath+=(~/.zsh/functions)
+fpath+=(~/.zsh/functions ~/.cache/zsh/compdump.zwc ~/.cache/zsh)
 cmdignore=+(man info gcc g++ shit nano xed gedit vlc)
 typeset -A ENV
 
