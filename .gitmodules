@@ -1,3 +1,9 @@
 [submodule "dot-weeb"]
 	path = dot-weeb
 	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6
+[submodule "dot-zsh/plugins/async"]
+	path = dot-zsh/plugins/async
+	url = https://github.com/mafredri/zsh-async
+[submodule "dot-zsh/plugins/gitstatus"]
+	path = dot-zsh/plugins/gitstatus
+	url = https://github.com/romkatv/gitstatus

@@ -1,15 +1,42 @@
 #!/bin/zsh
-# Lazy load section
+zmodload zsh/datetime
+setopt PROMPT_SUBST
+PS4='+$EPOCHREALTIME %N:%i> '
+logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
+echo "Logging to $logfile"
+exec 3>&2 2>$logfile
+
+setopt XTRACE
+
+## variables
+fpath+=(~/.zsh/functions)
+plugins+=(zsh-completions)
+cmdignore=+(man info gcc g++ shit nano xed gedit vlc)
+
+## modules
+zmodload -ab zsh/datetime strftime
+zmodload -ab zsh/pcre pcre_compile pcre_study pcre_match
+zmodload -ab zsh/sched sched
+zmodload -ab zsh/system syserror sysopen sysread sysseek syswrite zsystem
+zmodload zsh/zprof
+zmodload zsh/zpty
+
+## HISTCONTROL
+# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
+HISTSIZE=1000
+SAVEHIST=3000
+HISTDUP=erase
+
+## Lazy load section
 autoload -Uz compinit
 autoload -Uz add-zsh-hook
 autoload -Uz bashcompinit
 autoload -Uz bashcompsys
-#end
+#autoload -Uz zsh-async
+autoload -Uz vcs_info
+## Start
 add-zsh-hook chpwd 00_check_vfs
-plugins=($plugins zsh-completions)
-source /usr/share/gitstatus/gitstatus.plugin.zsh
-cmdignore=+(man info gcc g++ shit)
-#HISTCONTROL
+#zsh-async
 setopt extended_glob prompt_subst
 setopt +o nomatch
 setopt autocd incappendhistory extendedhistory
@@ -19,15 +46,10 @@ setopt histignorespace histfindnodups histsavenodups
 # Use emacs keybindings even if our EDITOR is set to vi
 bindkey -e
 
-# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
-HISTSIZE=1000
-SAVEHIST=3000
-HISTDUP=erase
 [ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
-fpath=(~/.zsh/functions "${fpath[@]}" )
 #source ~/.zsh/notifyosd
-#cmdignore+=(nano xed gedit vlc)
-# Use modern completion system
+
+## Zstyle Config
 zstyle :compinstall filename '/home/mubashshir/.zshrc'
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' completer _list _expand _complete _ignored _match _correct _approximate _prefix
@@ -55,57 +77,28 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
+zstyle ':vcs_info:*'   enable  git
+zstyle ':vcs_info:*'   formats '%s;%b;%i;%c;%u;%r;%S'
+zstyle ':vcs_info:*'   actionformats '%s;%b;%i;%c;%u;%r;%S;%a'
+zstyle ':vcs_info:*'   check-for-changes true
+zstyle ':vcs_info:*'   check-for-staged-changes true
+
 # The following lines were added by compinstall
 if [ -f $HOME/.zinputrc ];then
 	. $HOME/.zinputrc
 fi
-#modules
-{
-	zmodload -ab zsh/datetime strftime
-	zmodload zsh/mathfunc
-	zmodload -ab zsh/pcre pcre_compile pcre_study pcre_match
-	zmodload -ab zsh/sched sched
-	zmodload -ab zsh/system syserror sysopen sysread sysseek syswrite zsystem
-	zmodload zsh/zprof
-	zmodload zsh/zpty
-}
-#customize
+
+# Set up the prompt
+
+case "$TERM" in
+	xterm|xterm-color|*-256color) color_prompt=yes;;
+esac
+## customize
 00_check_vfs()
 {
 	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ___gnome_vfs=true || unset ___gnome_vfs
 }
-[ -e ~/.zsh/git_super_status ] && source /home/mubashshir/.zsh/git_super_status
-# Set up the prompt
-# [ -e /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# make less more friendly for non-text input files, see lesspipe(1)
-
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-	xterm|xterm-color|*-256color) color_prompt=yes;;
-esac
-# enable color support of ls and also add handy aliases
-alias ls='ls --color=auto'
-alias dir='dir --color=auto'
-alias vdir='vdir --color=auto'
-alias grep='grep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias egrep='egrep --color=auto'
-alias userctl='systemctl --user'
-# colored GCC warnings and errors
-export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-# Add an "alert" alias for long running commands.	Use like so:
-#	 sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.zsh_aliases, instead of adding them here directly.
+[ -e ~/.zsh/git_super_status ] && source ~/.zsh/git_super_status
 export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
@@ -123,29 +116,32 @@ chpwd()
 	export ____vfs ____cwd
 }
 chpwd
-precmd()
-{
-	RETVAL=$?
-	unset ____gs
-	[[ $RETVAL -ne 0 ]] &&	sym="%F{magenta}>>" || sym=">>"
-	[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
-	if ! ${___gnome_vfs:-false} && ( [ -d ./.git ] || /usr/bin/git rev-parse --git-dir &> /dev/null);then
-		____gs=$(git_super_status)
-	fi
-	if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
-		printf "\033];%s\07" "zsh($$): $USER [$____cwd]"
-	fi &!
-	if ${ZCOMPILED:-false};then
-		compinit -C
-		unset ZCOMPILED
-	fi
-	PROMPT="%F{red}┌───=[%F{green}%n%F{red}::%F{yellow}%B%m%F{red}%b]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}$____cwd%F{red}]$____vfs$____gs"$'\n'"└─$sym%F{lightgreen} "
-	RPROMPT="$ret"
-}
-rprompt_async()
-{
-	true
-}
+if [[ $color_prompt = yes ]];then
+	precmd()
+	{
+		RETVAL=$?
+		unset ____gs
+		[[ $RETVAL -ne 0 ]] &&	sym="%F{magenta}>>" || sym=">>"
+		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
+		if ! ${___gnome_vfs:-false} && ( [ -d ./.git ] || /usr/bin/git rev-parse --git-dir &> /dev/null);then
+			____gs=$(git_super_status)
+		fi
+		if [[ ! ${GPG_TTY##*/} =~ tty[[:digit:]]+ ]];then
+			printf "\033];%s\07" "zsh($$): $USER [$____cwd]"
+		fi &!
+		if ${ZCOMPILED:-false};then
+			compinit -C
+			unset ZCOMPILED
+		fi
+		PROMPT="%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]"$'\n'"%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}$____cwd%F{red}]$____vfs$____gs"$'\n'"└─$sym%F{lightgreen} "
+		RPROMPT="$ret"
+	}
+else
+	precmd()
+	{
+		PROMPT="[%m::%n $____cwd]$ "
+	}
+fi
 reload()
 {
 	source ~/.zshrc
@@ -180,7 +176,7 @@ zcompaliases
 
 bashcompinit
 bashcompsys
-{
-	bashcompadd cpu-x cum
-	true
-}
+bashcompadd cpu-x winetricks
+
+unsetopt XTRACE
+exec 2>&3 3>&-
