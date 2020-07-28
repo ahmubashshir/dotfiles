@@ -103,6 +103,7 @@ function xterm_title_precmd () {
 	printf '\e]2;%s\a' "zsh@$$ [${ENV[cwd]}]"
 }
 function xterm_title_preexec () {
+	{ echo "$1"|grep -wq cd; } && return
 	{
 		sleep 0.001
 		local pid=( $(pgrep -nlP $$) )
@@ -141,6 +142,12 @@ if [[ $ENV[color_prompt] = yes ]];then
 	}
 	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]\n%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
 else
+	chpwd()
+	{
+		unset ENV[vfs] ENV[cwd] ENV[gnome_vfs]
+		[[ $PWD == $HOME ]] && ENV[cwd]='~' || ENV[cwd]=${PWD##*/}
+	}
+	chpwd
 	PROMPT='[%m::%n ${ENV[cwd]}]$ '
 fi
 reload()
