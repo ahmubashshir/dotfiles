@@ -104,8 +104,9 @@ function xterm_title_precmd () {
 }
 function xterm_title_preexec () {
 	{
-		sleep 0.3
-		printf '\e]2;%s\a' "$(basename ${1%% *})@$(pgrep -fP $$ "${(q)1}") [${ENV[cwd]}]"
+		sleep 0.001
+		local pid=( $(pgrep -nlP $$) )
+		((pid[1])) && printf '\e]2;%s\a' "$pid[2]@$pid[1] [${ENV[cwd]}]"
 	} &!
 }
 if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
