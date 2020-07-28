@@ -23,4 +23,5 @@ done <<<$(bash -ic 'env' 2>/dev/null)
 } &>/dev/null
 #xset +dpms
 #xset s blank
+dbus-update-activation-environment --systemd --all
 numlockx on
