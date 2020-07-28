@@ -10,3 +10,6 @@
 	shallow = true
 [submodule "*"]
 	shallow = true
+[submodule "tmux"]
+	path = tmux
+	url = https://github.com/gpakosz/.tmux.git
