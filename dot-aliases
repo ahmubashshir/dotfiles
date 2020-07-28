@@ -70,6 +70,7 @@ alias লস='ls'
 alias গছ='gcc'
 alias panbackup='xfpanel-switch save $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
 alias panload='xfpanel-switch load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias tree='tree --dirsfirst'
 alias 'গ++'='g++'
 alias prime='env DRI_PRIME=1'
 if [ -x /usr/bin/wormhole ];then
