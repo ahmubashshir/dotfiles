@@ -48,12 +48,12 @@
 	hooksPath = ~/.githooks
 [diff]
 	guitool = meld
-	tool    = imediff
+	tool    = vimdiff
 [instaweb]
 	browser = chromium-browser
 [merge]
 	guitool = meld
-	tool = imediff
+	tool = vimdiff
 [web]
 	browser = chromium-browser
 [cola]
