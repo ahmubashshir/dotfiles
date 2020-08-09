@@ -31,9 +31,8 @@ alias j2me="java -cp /mnt/Software/Java/SE/microemulator-2.0.4/microemulator.jar
 alias gist='gist -sc --skip-empty'
 alias q="exit"
 alias c="clear"
-alias add='yay -S'
+alias add='yay -S --needed'
 alias del='yay -Rcsn'
-alias upd='yay -Syu'
 if [ -x /usr/bin/time ];then
 	alias time="/usr/bin/time"
 fi

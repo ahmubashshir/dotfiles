@@ -105,7 +105,7 @@ function xterm_title_precmd () {
 function xterm_title_preexec () {
 	{ echo "$1"|grep -wq cd; } && return
 	{
-		sleep 0.001
+		sleep 0.003
 		local pid=( $(pgrep -nlP $$) )
 		((pid[1])) && printf '\e]2;%s\a' "$pid[2]@$pid[1] [${ENV[cwd]}]"
 	} &!
