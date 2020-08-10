@@ -1,0 +1,8 @@
+#!/usr/bin/awk -f
+@include "ord"
+BEGIN {
+  RS = "%.."
+}
+{
+  printf RT ? $0 chr("0x" substr(RT, 2)) : $0
+}

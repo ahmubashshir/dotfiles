@@ -1,0 +1,2 @@
+#!/bin/bash
+unbuffer /usr/bin/trackma-gtk "$@" | tee ~/trackma.log

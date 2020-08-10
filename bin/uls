@@ -1,0 +1,27 @@
+#!/bin/bash
+if echo "$@"|grep -q '\--help\|\-h';then
+	echo "Usage:"
+	echo "  ${0##*/} <file/folder>..."
+	exit
+fi
+if (($#==0));then
+	set .
+fi
+for k in "$@";do
+	if [ -e "$k" ] && [ "$k" != '.' ];then
+		echo "$k:"
+		idnt='  '
+	elif ! [ -e "$k" ];then
+		echo "$k: doesn't exist."
+		continue
+	fi
+	for n in "$k"/*;do
+		if ! gio info "$n" -a metadata::emblems|grep 'metadata::emblems:'|cut -d\[ -f2-|cut -d\] -f1|tr -d ,|grep -q checkmark;then
+			if echo "${n##*/}"|grep -q '[[:blank:]]';then
+				echo -e "$idnt'${n##*/}'"
+			else
+				echo -e "$idnt${n##*/}"
+			fi
+		fi
+	done
+done

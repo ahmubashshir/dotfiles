@@ -1,0 +1,7 @@
+#!/bin/bash
+(
+	/usr/bin/chromium --profile-directory=Default --app-id=ikpmlgdcejalmjnfbahhijemkcgljabf&
+	sleep 1
+	setwmclass $(xdotool search --sync --name "^Snapdrop$") 'Snapdrop' 'snapdrop'
+	dbus-send --session --type=method_call --dest=org.dockbar.DockbarX /org/dockbar/DockbarX org.dockbar.DockbarX.Reload
+)&

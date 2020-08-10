@@ -1,0 +1,1506 @@
+#!/bin/bash
+# shellcheck disable=SC2086
+# shellcheck disable=SC1091
+# shellcheck disable=SC1090
+# shellcheck disable=SC1003
+# shellcheck disable=SC2034
+# shellcheck disable=SC2154
+# shellcheck disable=SC2016
+# shellcheck disable=SC2015
+# shellcheck disable=SC2143
+#VERSION_INFO=05d4d7
+if [ -f ~/.config/danime.cfg ]; then
+	source ~/.config/danime.cfg
+else
+	readonly MEDIA_ROOT='/mnt/Multimedia'
+	ANIME_PATH=$MEDIA_ROOT/Anime
+	CARTOON_PATH=$MEDIA_ROOT/Animetion-Movie/Series
+	MOVIE_PATH=$MEDIA_ROOT/Movie
+	TV_SERIES_PATH=$MOVIE_PATH/Series
+	POWER_RANGERS_PATH=$MOVIE_PATH/Power\ Rangers
+	NOBREAK=true
+	NORESET=false
+	DOWNLOAD_ALL=false
+	FILE_LIST=false
+	RSOLV=3
+	FORCE=
+	SEARCHSTR=
+	TYPE=anime
+	PREFERRED_TR=${PREFERRED_TR:-dub}
+fi
+if [ -n "$AP" ]; then
+	ANIME_PATH="$AP"
+fi
+if [[ $ANIME_PATH = @* ]]; then
+	ANIME_PATH="$MEDIA_ROOT/${ANIME_PATH#@*}"
+fi
+if [[ -z $ANIME_PATH ]]; then
+	readonly ANIME_PATH="$MEDIA_ROOT/Anime"
+fi
+if [[ ! -d $ANIME_PATH ]]; then
+	mkdir -p "$ANIME_PATH" &> /dev/null || exit 1
+fi
+check_deps() {
+	check_deps_py3()
+	{
+		python3  -c "import $1" &>/dev/null||(echo "Please install 'python3-$1'." && return 1)
+	}
+	check_deps_x11()
+	{
+		if [[ -n $DISPLAY ]];then
+			type $1 &> /dev/null||(echo "Please install '$1' or make sure it is in your path." && return 1)
+		else
+			return 0
+		fi
+	}
+	check_deps_lib()
+	{
+		if echo "$1"|grep -q ':';then
+			type ${1##*:} &> /dev/null||(echo "Please install 'lib${1%%:*}' or make sure '${1##*:}' is in your path." && return 1)
+		else
+			find /lib{,64} /usr/lib{,64} /usr/local/lib{,64} -name "lib${1%%:*}*.so*" &>/dev/null||(echo "Please install 'lib${1%%:*}'." && return 1)
+		fi
+	}
+	check_deps_bin()
+	{
+		type $1 &> /dev/null||(echo "Please install '$1' or make sure it is in your path." && return 1)
+	}
+	a=0
+	for n in "$@"; do
+		if ! "check_deps_$( echo "$n"|cut -d: -f1)" "$( echo "$n"|cut -d: -f2-)"; then
+			(( a=a+1 ))
+		fi
+	done
+	return $a
+}
+check_deps bin:awk bin:bash bin:dos2unix bin:cd bin:curl bin:cut bin:dd bin:echo bin:false bin:ffmpeg bin:ffprobe bin:grep bin:head bin:jq bin:libbash bin:lsof bin:mkdir bin:mv bin:printf py3:json py3:numpy py3:requests bin:python3 bin:read bin:readonly bin:rm bin:sed bin:sha256sum bin:sleep bin:sort bin:spinner bin:stat bin:tac bin:tail bin:tput bin:tr bin:true bin:wc bin:wget x11:notify-send lib:xml2-util:xmllint bin:js-beautify bin:tee|| exit $?
+. spinner
+. libbash
+#variables
+sp=$sp18
+SPINNER_DELAY=0.07
+#main
+ANIME_PATH="${ANIME_PATH:-$MEDIA_ROOT/Anime}"
+CARTOON_PATH="${CARTOON_PATH:-$MEDIA_ROOT/Animetion-Movie/Series}"
+MOVIE_PATH="${MOVIE_PATH:-$MEDIA_ROOT/Movie}"
+POWER_RANGERS_PATH="${POWER_RANGERS_PATH:-$MOVIE_PATH/Power Rangers}"
+NOBREAK=${NOBREAK:-true}
+NORESET=${NORESET:-false}
+DOWNLOAD_ALL=${DOWNLOAD_ALL:-false}
+FILE_LIST=${FILE_LIST:-false}
+FORCE=
+SEARCHSTR=
+PREFERRED_TR=${PREFERRED_TR:-dub}
+CURL_OPTIONS=(
+	-H 'authority: ww5.dubbedanime.net'
+	-H 'pragma: no-cache'
+	-H 'cache-control: no-cache'
+	-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'
+	-H 'origin: https://ww5.dubbedanime.net'
+	-H 'sec-fetch-site: same-origin'
+	-H 'sec-fetch-mode: cors'
+	-H 'sec-fetch-dest: empty'
+	-H 'referer: https://ww5.dubbedanime.net/browse-anime'
+)
+if [ -e ~/.da-cookies.txt ];then
+	CURL_OPTIONS+=( --cookie ~/.da-cookies.txt )
+fi
+langs=(
+	'০১২৩৪৫৬৭৮৯'
+	'〇一二三四五六七八九'
+	'０１２３４５６７８９'
+)
+ellipsis() {
+	python3 -c "try:
+	from sys import argv
+	l=int(int(argv[1])/2)
+	if len(' '.join(argv[2:]))>l*2:
+		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
+	else:
+		print(' '.join(argv[2:]),sep='')
+except KeyboardInterrupt:
+	pass" "$@"
+
+}
+clear_line() {
+	tput sc
+	for ((i = 0; i <= $1; i++)); do
+		printf "\r%-${COLUMNS}s"
+	done
+	tput rc
+}
+expand_limit() {
+	${DEBUG:-false} && set -x
+	local i j n
+	if [[ $1 =~ ^[[:digit:]]+-$ ]]; then
+		n=${1%%-*}
+		for ((i = n; i <= $2; i++)); do
+			((i <= $2)) && printf "%d " "$i"
+		done
+	else
+		for n in $(echo "$1" | cut -d, -f1- --output-delimiter=' '); do
+			if [[ $n =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
+				i=${n%%-*}
+				j=${n##*-}
+				if ((j <= $2)) ;then
+					expand_limit "$i-" "$j"
+				else
+					expand_limit "$i-" "$2"
+				fi
+			elif [[ $n =~ ^[[:digit:]]+$ ]]; then
+				((n <= $2)) && printf "%d " "$n"
+			else
+				expand_limit "$n" "$2"
+			fi
+		done
+	fi | tr \  \\n | sort -nu | tr \\n \  | sed 's| $|\n|g'
+	${DEBUG:-false} && set +x
+	return 0
+}
+contract_limit()
+{
+	local k
+	read -ra k < <(echo "$@"|tr , ' ')
+	set "${k[@]}"
+	unset k
+	${DEBUG:-false} && set -x
+	local max k m n o
+	max=$1
+	k=0
+	shift
+	for ((i=2;i<=$#;i++));do
+		m=${*:i-2:1}
+		n=${*:i-1:1}
+		o=${*:i:1}
+		k=$((${o:-0}-${n:-0}))
+		if ((k>=2)) && ((n-m<2)) && ((m!=n))&&((o<max));then
+			printf -- '-%d,%d' "$n" "$o"
+		elif ((i==2));then
+			printf '%d' "$n"
+		elif (((n-m)>1))&&(((o-n)>1)) || ((m==n));then
+			printf ',%d' "$o"
+		elif ((i==$#))&&((o>=max));then
+			printf -- '-\n'
+			break
+		elif ((i==$#))&&((o<max));then
+			printf -- '-%d\n' "$o"
+			break
+		fi
+		if ((o>max));then
+			break
+		fi
+	done
+	${DEBUG:-false} && set +x
+	return 0
+}
+byte_mr() {
+	sed '
+	s/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[kK]/\1*1000/g;
+	s/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[mM]/\1*1000000/g
+	' < /dev/stdin | bc | sed 's/\..*$//'
+}
+validate_limit() {
+	${DEBUG:-false} && set -x
+	if ! [[ $1 =~ ^[[:digit:],-]+$ ]]; then
+		return 1
+	fi
+	if [[ $1 =~ ^[[:digit:]]+-$ ]]; then
+		return 0
+	else
+		local ret
+		ret=0
+		for n in $(echo "$1" | cut -d, -f1- --output-delimiter=' '); do
+			if [[ $n =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
+				i=${n%%-*}
+				j=${n#*-}
+				if ((j <= i)) ;then
+					((ret++))
+				fi
+			elif ! { [[ $n =~ ^[[:digit:]]+-$ ]]||[[ $n =~ ^[[:digit:]]+$ ]]; };then
+				((ret++))
+			fi
+		done
+		return "$ret"
+	fi
+	${DEBUG:-false} && set +x
+	return 0
+}
+num_unicode2ascii()
+{
+	sed "$(for n in "${langs[@]}";do echo "y/$n/0123456789/;";done)"
+}
+srand()
+{
+python3 -c 'import numpy as np
+from sys import argv
+def random_spaced(low, high, delta, n, size=1):
+	"""
+	Choose n random values between low and high, with minimum spacing delta.
+		If size is None, one sample is returned.
+	Set size=m (an integer) to return m samples.
+		The values in each sample returned by random_spaced are in increasing
+	order.
+	"""
+	empty_space = high - low - (n-1)*delta
+	if empty_space < 0:
+		return [low, high - delta]
+	if size is None:
+		u = np.random.rand(n)
+	else:
+		u = np.random.rand(size, n)
+		x = empty_space * np.sort(u, axis=-1)
+	return low + x + delta * np.arange(n)
+try:
+		print(*(str(int(n)) for n in random_spaced(int(argv[1]),int(argv[2]),int(argv[3]),int(argv[4]))[0]),sep=" ")
+except KeyboardInterrupt:
+	pass' "$@"
+
+}
+anime_cover() {
+	local anime_cover_img
+	anime_cover_img=$1
+	#ext=${anime_cover_img##*.}
+	if [ ! -e folder.jpg ]; then
+		{ curl -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"; } &>/dev/null
+		if { ! grep -q cover.jpg .hidden &> /dev/null ; } && [ -f cover.jpg ]; then
+			echo cover.jpg >> .hidden
+		fi
+	fi
+}
+replace_invalid() {
+	if [[ $1 == dir ]]; then
+		sed 's|<|＜|g;s|>|＞|g;s|:|꞉|g;s|\"|＂|g;s|/|⧸|g;s|\\|⧹|g;s|?|？|g;s|\||ǀ|g;s|\*|🞵|g;s|\.$|.'$'\342\200\213|g'
+	else
+		sed 's|<|＜|g;s|>|＞|g;s|:|꞉|g;s|\"|＂|g;s|/|⧸|g;s|\\|⧹|g;s|?|？|g;s|\||ǀ|g;s|\*|🞵|g;s| |-|g'
+	fi
+}
+remote_exist()
+{
+	if echo "$@" | grep -q http
+	then
+		if [[ $(curl -kLsIXGET "$@" |awk '/HTTP\// {print $2}'|tail -1) =~ 2[[:digit:]]. ]]
+		then
+			return 0
+		else
+			return 1
+		fi
+	else
+		return 2
+	fi
+
+}
+danime_help() {
+	echo "$(basename "$0") Help:"
+	echo Usage:
+	printf "  %s [options] <anime name>\n" "$(basename "$0")"
+	# FIXME: implement help functions
+	danime_help_options
+	danime_help_examples
+	danime_help_env
+}
+danime_help_options()
+{
+	echo Options:
+	sed -n '/#+option/,/#-option/{s/^[[:blank:]]*//p}' "$0"|while read -r line;do
+		if [[ $line = \#+option ]];then
+			TAB=2
+			printf '\t'
+		elif [[ $line =~ ^#IDNT: ]];then
+			TAB=$(echo "$line "|cut -d' ' -f2)
+		elif [[ $line =~ ^#short: ]]||[[ $line =~ ^#long: ]];then
+			echo "$line "|cut -d' ' -f2-|tr -d '\n\r'
+		elif [[ $line =~ ^#text: ]];then
+			for (( i=0;i<TAB;i++));do
+				printf '\t'
+			done
+			echo -e "$line"|cut -d' ' -f2-
+		elif [[ $line =~ ^#args: ]];then
+			for (( i=0;i<TAB+2;i++));do
+				printf '\t'
+			done
+			echo -n "Argument: "
+			echo -e "$line"|cut -d' ' -f2-
+		fi
+	done
+}
+danime_help_examples()
+{
+	echo Examples:
+	echo $'\t'not yet implemented.
+}
+danime_help_env()
+{
+	echo Env Variable:
+	echo $'\t'not yet implemented.
+}
+da_get_license()
+{
+	echo " Copyright $(date +%Y) Ahmad Hasan Mubashshir <ahmubashshir@gmail.com>"
+	echo
+	echo " 'danime' is free software; you can redistribute it and/or modify"
+	echo " it under the terms of the GNU General Public License as published by"
+	echo " the Free Software Foundation; either version 2 of the License, or"
+	echo " (at your option) any later version."
+	if ${1:-false};then
+		return 0
+	fi
+	echo
+	echo " 'danime' is distributed in the hope that it will be useful,"
+	echo " but WITHOUT ANY WARRANTY; without even the implied warranty of"
+	echo " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+	echo " GNU General Public License for more details."
+	echo
+	echo " You should have received a copy of the GNU General Public License"
+	echo " along with 'danime'; if not, write to the Free Software"
+	echo " Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,"
+	echo " MA 02110-1301, USA."
+}
+da_db()
+{
+	if [ -n "$AP" ];then
+		CACHE_FILE="$ANIME_PATH/.danime_db.json"
+	else
+		CACHE_FILE="$MEDIA_ROOT/.danime_db.json"
+	fi
+	local act=$1
+	shift
+	if ! { jq 'keys' "$CACHE_FILE" 2>/dev/null|grep -q '\[' ;};then
+		echo '{}' > "$CACHE_FILE"
+	fi
+	while [[ $1 =~ .*=.* ]];do
+		eval "local $1"
+		shift
+	done
+	"da_db_$act" "$@"
+}
+da_db_add()
+{
+
+	data="$(jq '. * { "'"$TYPE"'" : {"'"$id"'":{ "title":null ,"path":null,"url":null,"total":null,"saved":null}} }' "$CACHE_FILE")"
+	echo "$data" > "$CACHE_FILE"
+}
+da_db_list()
+{
+	for type in $(jq -r 'keys|@sh' "$CACHE_FILE"|tr -d \'\");do
+		for id in $(jq -r '.'"$type"'|keys|[ .[] | tonumber ] | @sh' "$CACHE_FILE");do
+			echo "$type/$id"
+		done
+	done
+}
+da_db_set()
+{
+	if da_db_has;then
+		data="$(jq '.'"$TYPE"'."'"$id"'".'"$1"'='"$2" "$CACHE_FILE")"
+		echo "$data" > "$CACHE_FILE"
+	fi
+}
+da_db_get()
+{
+	{ jq -re ".$TYPE.\"$id\".$*" "$CACHE_FILE"|| echo 0;}|tail -1
+}
+da_db_has(){
+	jq -e '.'"$TYPE"'."'"$id"'"' "$CACHE_FILE" &>/dev/null
+}
+da_db_del()
+{
+	if da_db_has;then
+		data="$(jq 'del(."'"$TYPE"'"."'"$id"'")' "$CACHE_FILE")"
+		echo "$data" > "$CACHE_FILE"
+	fi
+}
+da_api_search() {
+	python3 -c '#!/usr/bin/python3
+import requests
+import json
+from sys import argv
+import os
+from urllib.parse import quote_plus
+from http.cookiejar import MozillaCookieJar as MCJ
+cookiesFile = "'$HOME'/.da-cookies.txt"
+cj = MCJ(cookiesFile)
+if os.path.exists(cookiesFile):
+	cj.load(ignore_discard=True, ignore_expires=True)
+r = requests.Session()
+
+r.headers = {
+    "authority"			: "ww5.dubbedanime.net",
+    "pragma"			: "no-cache",
+    "cache-control"		: "no-cache",
+    "accept"			: "application/json",
+    "x-requested-with"	: "XMLHttpRequest",
+    "user-agent"		: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
+    "origin"			: "https://ww5.dubbedanime.net",
+    "sec-fetch-site"	: "same-origin",
+    "sec-fetch-mode"	: "cors",
+    "sec-fetch-dest"	: "empty",
+    "referer"			: "https://ww5.dubbedanime.net/browse-anime?search=%s"%quote_plus(" ".join(argv[1:]))
+}
+
+r.cookies = cj
+
+def refine(Str):
+	d={
+		'\''<'\'':'\''＜'\'',
+		'\''>'\'':'\''＞'\'',
+		'\'':'\'':'\''꞉'\'',
+		'\''"'\'':'\''＂'\'',
+		'\''/'\'':'\''⧸'\'',
+		'\''\\'\'':'\''⧹'\'',
+		'\''?'\'':'\''？'\'',
+		'\''|'\'':'\''⫿'\'',
+		'\''*'\'':'\''🞵'\'',
+	}
+	for n in d.keys():
+		Str=Str.replace(n,d[n])
+	return Str
+try:
+	if len(argv)>1:
+		data = {
+			"model"			:	"'${TYPE:-anime}'".title(),
+			"size"			:	200,
+			"what"			:	"query",
+			"letter"		:	"all",
+			"query[order]"	:	"date,asc",
+			"query[search]"	:	str.join(" ", argv[1:])
+		}
+		try:
+			for n in r.post("https://ww5.dubbedanime.net/ajax/paginate", data).json()['\''results'\'']:
+				print("%s/%s-%s:%s:%s"%('\'${TYPE:-anime}\''.lower(),n['\''id'\''],n['\''slug'\''],0 if not '\''total'\'' in n else n['\''total'\''],refine(n['\''title'\''])))
+		except:
+			pass
+except KeyboardInterrupt:
+	pass' "$@"
+
+}
+da_search() {
+	start_spinner "Searching for $*"
+	RES=$(da_api_search "$@")
+	if [ -z "$(echo "$RES" | tr -d '[:space:]')" ]; then
+		(exit 4)
+	fi
+	stop_spinner $?
+	if [ -z "$(echo "$RES" | tr -d '[:space:]')" ]; then
+		echo You should check your keywords.
+		return 4
+	fi
+	total_res=$(echo "$RES" | wc -l)
+	if ((total_res==1));then
+		RES_LIST='1'
+	elif [ -z "$RES_LIST" ] && ! ${DOWNLOAD_ALL:-false}; then
+		vbar
+		vbar "DubbedAnime.net Search Result" true
+		vbar
+		vbar "Select One or more to download"
+		vbar
+		echo "$RES" | cut -d: -f2- | awk -F: "{printf \"%-${#total_res}d ) %s\",NR,\$2;if (\$1) {print \" (eps:\"\$1\")\" }else{print \"\"}}"
+		read -rp$'Download: ' RES_LIST
+	elif ${DOWNLOAD_ALL:-false} && [ -z "$RES_LIST" ]; then
+		RES_LIST='1-'
+	fi
+	if [ -z "$RES_LIST" ];then
+		vbar
+		vbar "DubbedAnime.net Search Result" true
+		vbar
+		vbar "Select One or more to download"
+		vbar
+		echo "$RES" | cut -d: -f2- | awk -F: "{printf \"%-${#total_res}d ) %s\",NR,\$2;if (\$1) {print \" (eps:\"\$1\")\" }else{print \"\"}}"
+		read -rp$'Download: ' RES_LIST
+	fi
+	RES=$(echo "$RES"|cut -d: -f1,3-)
+	RES_LIST=$(expand_limit "$(echo "$RES_LIST"|num_unicode2ascii)" "$total_res")
+	for n in $RES_LIST; do
+		target=$(echo "$RES" | head -n "$n" | tail -1)
+		local base
+		base="$(set_basedir "${target%%:*}")"
+		if ! [ -d "$base" ] || ! [ -e "$base" ]; then
+			rm -rf "$base"
+			mkdir -p "$base"
+		fi
+		cd "$base" || true
+		local dir
+		dir="$(echo "$target" | cut -d: -f2- | replace_invalid dir)"
+		${SKIP_DOWNLOAD:-false} || if [ ! -d "$dir" ]; then
+			rm -f "$dir"
+			mkdir "$dir"
+		fi
+		${SKIP_DOWNLOAD:-false} || {
+			cd "$dir" || continue
+		}
+		${UPDATE_QUEUE:-false} && vbar
+		echo -e "Title: '$dir'"
+		da_get "$(echo "$target" | cut -d: -f1)" "$dir"
+		if [ "$(echo "$RES_LIST" | wc -w)" -gt 1 ] && ! $NOBREAK; then
+			read -rsp$'Press Return to download next.'
+			printf '\n'
+		fi
+	done
+}
+da_update()
+{
+	local TYPE id dir updatable n new_eps
+	NORESET=true
+	updatable=()
+	for n in $(da_db list);do
+		TYPE="$(dirname $n)"
+		id="$(basename $n)"
+		if ! [ -d "$(da_db get path)" ];then
+			da_db del
+			continue
+		fi
+		echo -n "[$n] Checking update..."
+		new_eps=$(( $(da_get_len "$n-$(da_db get url)") - $(da_db get saved) ))
+		if ((new_eps>0));then
+			updatable+=( "$n" )
+			echo -e "\r[$n] Queueing update($new_eps+)..."
+		else
+			echo
+		fi
+	done
+	for n in "${updatable[@]}";do
+		TYPE="$(dirname $n)"
+		id="$(basename $n)"
+		dir="$(da_db get path)"
+		if ! [ -d "$dir" ];then
+			mkdir -p "$dir"||continue
+		fi
+		cd "$dir"||continue
+		FILE_LIST_RANGE=$(da_db get saved|awk '{print ($0 == "null" || $0 == "0")?"1-":$0"-";}')
+		da_get "$n-$(da_db get url)" "$(basename "$dir")"
+		if [ "$(da_db get saved)" -ge "$(da_db get total)" ];then
+			da_db del;
+		fi
+		if ! $NOBREAK; then
+			read -rsp$'Press Return to download next.'
+			printf '\n'
+		fi
+	done
+}
+set_basedir() {
+	case $1 in
+		*-avatar-the-legend-of-korra-* | *-avatar-the-last-airbender-*)
+			echo "$CARTOON_PATH/Avatar"
+		;;
+		anime/*) echo "$ANIME_PATH" ;;
+		*power-rangers*) echo "$POWER_RANGERS_PATH" ;;
+		*tv-series* | *kamen-rider*) echo "$TV_SERIES_PATH" ;;
+		*movie*) echo "$MOVIE_PATH" ;;
+		cartoon/*) echo "$CARTOON_PATH" ;;
+	esac
+}
+da_get_len()
+{
+	local series TYPE id type
+	series="$1"
+	TYPE=${series%/*}
+	id=${series%%-*}
+	id=${id##*/}
+	if [ "$series" = "" ]; then
+		return 3
+	fi
+	type=$(da_db get type)
+	curl "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series" | case $type in
+		null|0)
+			xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/li/a/@href' - 2> /dev/null|wc -l
+		;;
+		subbed|dubbed)
+			xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/li[@data-'$type'="true"]/a/@href' - 2> /dev/null|wc -l
+		;;
+		*)
+			return 1
+		;;
+	esac
+}
+da_get() {
+	local series TITLE TYPE id
+	unset null_ep_count da_page da_page_json baseurl url epc ep
+	series="$1"
+	TITLE="$2"
+	TYPE=${series%/*}
+	id=${series%%-*}
+	id=${id##*/}
+	if [ "$series" = "" ]; then
+		return 3
+	fi
+	local ep_progress total_pw
+	if [ -f ".type" ];then
+		FORCE="$(<.type)"
+	fi
+	start_spinner "Fetching \"$TYPE/$id\" info"
+	da_page=$(curl "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series")
+	da_page_json=$(echo "$da_page"|grep 'var anime\|var cartoon'|cut -d= -f2-|cut -d\  -f2-|sed 's/\;$//g'|jq)
+	if [[ $TYPE == anime ]]; then
+		baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/node()' - 2> /dev/null | awk '/<li/,/li>/{printf $0;if (++o%3 == 0) print ""}' | (while read -rs xml_node; do echo -e "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href,";subbed=",//li/@data-subbed="true",";dubbed=",//li/@data-dubbed="true"," ")' -; done) | tr -s ' ' \\n | tac)
+	else
+		baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/li/node()' - 2> /dev/null | (while read -rs xml_node; do echo "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href," ")' - 2> /dev/null; done) | tr -s ' ' '\n' | grep -v '=$' | tac)
+	fi
+	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
+	if ! { da_db has && ${FILE_LIST:-false} ;} && [ -z "$FILE_LIST_RANGE" ];then
+		da_db add
+	fi
+	da_db set path "\"$PWD\""
+	da_db set url "\"$(echo "$da_page_json"|jq -r '.slug')\""
+	da_db set title "\"$TITLE\""
+	$NORESET || reset
+	${DEBUG:-false} && set -x
+	vbar "$(ellipsis $(($(tput cols) - 10)) "$TITLE")" true
+	[[ -z $baseurl ]] && echo "$(
+		tput setaf 1
+		tput dim
+	)No episode is available to download yet.$(tput sgr0)" 1>&2 && exit 1
+	if [[ $TYPE == cartoon ]]; then
+		url="$(echo "$baseurl"|cut -d= -f2-)"
+	else
+		if [[ -n ${PREFERRED_TR:-dub} ]] && [[ -z $FORCE ]]; then
+			tr="$(
+				(
+					echo "$baseurl" | grep -q "${PREFERRED_TR:-dub}bed=true" && echo ${PREFERRED_TR:-dub}
+				) || (
+					echo "$baseurl" | tr \; \\n | grep "$(echo -e 'dub\nsub' | grep -v ${PREFERRED_TR:-dub})bed=true$" | sort -u | cut -d= -f1 | cut -c1-3
+				) || (
+					echo "$baseurl" | tr \; \\n | grep '=true$' | sort -u | cut -d= -f1 | cut -c1-3
+				)
+			)bed"
+		elif [[ -n $FORCE ]]; then
+			tr=${FORCE}bed
+		elif [ "$(echo "$baseurl" | grep dubbed=true | tr -d '[:space:]')" != "" ]; then
+			tr=dubbed
+		elif [ "$(echo "$baseurl" | grep subbed=true | tr -d "[:space:]")" != "" ]; then
+			tr=$(echo "$baseurl" | tr \; \\n | grep '=true$' | sort -u | cut -d= -f1)
+		fi
+		da_db set type "\"$tr\""
+		url="$(echo "$baseurl" | grep "$tr=true" |cut -d\; -f1 | awk "{print \$0\"-english-$tr\";}")"
+		if ! (echo "$url" | grep -q "${tr}$"); then
+			echo "$(
+				tput setaf 1
+				tput dim
+			)\"$(ellipsis 38 "$TITLE")\" doesn't have any ${tr}bed episode yet.$(tput sgr0)" 1>&2
+			if ! find . -name '*.mp4' |grep -q '\.mp4$';then
+				cd ..
+				rm -rf "$OLDPWD"
+			fi
+			if da_db has;then
+				da_db del
+			fi
+			return 1
+		fi
+		url="$(echo "$url" | grep ^href | cut -d= -f2)"
+		for k in $url; do
+			if [ "$(echo "${k##*/}" | cut -d- -f1)" -gt "$(echo "$url" | grep "${k#*-}" | head -1 | xargs basename | cut -d- -f1)" ]; then
+				url="${url//$k/${k//-episode-/-extra-}}"
+			fi
+		done
+	fi
+	url="$(echo "$url" |sed 's/^\///g')"
+	${DEBUG:-false} && set -x
+	epc=$(echo "$url" | wc -l)
+	da_db set total "$(echo "$da_page_json"|jq -re .total|awk '{print ($0 == "null" || $0 == "0")?"'$((epc+1))'":$0;}')"
+	${UPDATE_QUEUE:-false} && {
+		echo "Appending to queue."
+		return 0
+	}
+	if ${FILE_LIST:-false} && [[ -z $FILE_LIST_RANGE ]]; then
+		[[ $TYPE == cartoon ]] && vbar "ID:$id Files:$epc" || vbar "ID:$id Type:${tr:-dubbed} Files:$epc"
+		read -eri "1-$epc" -p$'Episode list: '  FILE_LIST_RANGE
+		ep="$(echo "${FILE_LIST_RANGE:-1-}"| num_unicode2ascii)"
+		tput cuu 2
+	fi
+	if ${CONTINUE-false} && [[ -z $FILE_LIST_RANGE ]] && [[ -n "$(da_db get saved|awk '{print ($0 == "null" || $0 == "0")?"1-":$0"-";}')" ]]; then
+		FILE_LIST_RANGE="$(da_db get saved|awk '{print ($0 == "null" || $0 == "0")?"1-":$0"-";}')"
+	fi
+	FILE_LIST_RANGE="$(echo "$FILE_LIST_RANGE"|sed 's/^[-,[:blank:]]*//g')"
+	if [[ $FILE_LIST_RANGE =~ [[:digit:],]+-[[:digit:],]+ ]]; then
+		ep_show="range($(ellipsis "$(($(tput cols) - 50))" "$(echo "$FILE_LIST_RANGE"|tr -d \ )" ))"
+		dl_notify="Episodes in ${ep_show} are"
+	elif [[ $FILE_LIST_RANGE =~ [[:digit:],]+- ]]; then
+		ep_show="range($FILE_LIST_RANGE$(echo "$url" | wc -l))"
+		dl_notify="Episodes in ${ep_show} are"
+	elif [[ -n $FILE_LIST_RANGE ]]; then
+		ep_show="file $FILE_LIST_RANGE"
+		dl_notify="Episode ${ep_show:5} is"
+	fi
+	if [ -n "$FORCE" ];then
+		echo "$FORCE" > .type
+	fi
+	${DEBUG:-false} && set +x
+	${SKIP_DOWNLOAD:-false} || anime_cover "https://cdn.animeapi.com/images/${1%%-*}.jpg" &
+	ep=$(expand_limit "${FILE_LIST_RANGE:-1-}" "$epc")
+	if [ "$(echo $ep | tr \  \\n | wc -l)" -eq 2 ]; then
+		ep_show="file ${ep%% *} and ${ep##* } "
+		dl_notify="Episode ${ep_show}are"
+	elif [ "$(echo $ep | tr \  \\n | wc -l)" -eq 1 ]; then
+		ep_show="file $ep "
+		dl_notify="Episode ${ep_show:5}is"
+	fi
+	if [[ -n $ep ]] && [[ -n $ep_show ]]; then
+		[[ $TYPE == cartoon ]] && vbar "ID:$id Files:$epc Downloading:$ep_show" || (
+			vbar "ID:$id Type:${tr:-dubbed}"
+			vbar " Files:$epc Downloading:$ep_show "
+		)
+	else
+		[[ $TYPE == cartoon ]] && vbar "ID:$id Files:$epc" || vbar "ID:$id Files:$epc Type:${tr:-dubbed}"
+	fi
+	total_pw=$(echo "$ep"|tr \  \\n|wc -l)
+	${DEBUG:-false} && set -x
+	for k in $ep; do
+		(( ep_progress+=1 ))
+		da_get_episede "$(echo "$url" | head -n "$k" | tail -1)" "$k" "$epc" "$ep_progress" "$total_pw"
+		if ! (exit $?); then
+			echo "Failed to download $k"
+			[[ $DISPLAY != '' ]] && notify-send --urgency=normal -a DubbedAnime --expire-time=1000000 --icon=emblem-downloads --category=transfer.error "Download Failed" "Failed to download <a href=\"$(echo "$url" | head -n "$k" | tail -1)\">file $k</a>"
+			${BREAK:-true} && break
+		fi
+	done
+	if da_db has && [ "$(da_db get saved)" -ge "$(da_db get total)" ];then
+		da_db del
+	fi
+	[[ $DISPLAY != '' ]] && notify-send --urgency=normal -a DubbedAnime --expire-time=1000000 --icon=emblem-downloads --category=transfer.complete "Download Completed" "<b>$TITLE</b>\n${dl_notify} downloaded"
+}
+da_add_auth()
+{
+	while read -r ep_id;do if echo "$ep_id"|jq -r '.host'|grep -q 'trollvid\|mp4\.sh';then echo "$ep_id"|jq -Mc ". + { \"auth\" : \"$(echo "$@"|jq -r '.auth')\"}";else echo "$ep_id";fi;done
+}
+da_get_episede() {
+	tr=${1##*-}
+	if (($# == 0)); then
+		return 1
+	else
+		local IFS file_num ret progress total_pw ep_number ep_title current_ep page_url
+		current_ep=$2
+		progress=$4
+		total_pw=$5
+		local tr="$tr"
+		IFS=$'\n'
+		case ${1%%/*} in
+			episode|e) episode_type=episode;;
+			cartoon|c) episode_type=cartoon;;
+			*) echo ${1%%/*}:invalid;;
+		esac
+		start_spinner "Fetching info about episode[id:$(echo "$1" | rev | cut -d/ -f1 | rev | cut -d- -f1)]"
+		${DEBUG:-false} && set -x
+		if ! [[ $1 =~ ^http* ]]; then
+			local d
+			d=$1
+			shift
+			set "https://ww5.dubbedanime.net/$d" "$@"
+			page_url="https://ww5.dubbedanime.net/${d%%-*}"
+			unset d
+		fi
+		parse_episede_page="$(curl "${CURL_OPTIONS[@]}" -ks "$1" | sed 's|\;$||g' | grep 'var\ episode\|var\ xuath' | cut -d= -f2-)"
+		if [ -z "$parse_episede_page" ];then
+			parse_episede_page="$(curl "${CURL_OPTIONS[@]}" -ks "$page_url" | sed 's|\;$||g' | grep 'var\ episode\|var\ xuath' | cut -d= -f2-)"
+		fi
+		unset page_url
+		parse_episede_page="$(echo "$parse_episede_page" | head -1|jq -c ". + { \"auth\" : \"$(echo "$parse_episede_page"|tail -1|cut -d\' -f2)\"}")"
+		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
+			tr=dubbed
+		fi
+		if [[ $tr = dubbed ]] || [[ $tr = subbed ]]; then
+			filter="grep '\"type\":\"$tr'"
+		else
+			filter="cat"
+		fi
+		if [ -z "$parse_episede_page" ];then
+			stop_spinner 1
+			echo Episode not available.
+			${NOBREAK:-false} && return 0 || return 1
+		fi
+		if [ "$episode_type" = "episode" ]; then
+			ep_title=$(echo "$parse_episede_page" | jq -r '.name.default')
+			local ep_number
+			ep_number=$(echo "$parse_episede_page" | jq -r '.number')
+			if [ "$ep_number" = "null" ]; then
+				ep_number=$(echo "$parse_episede_page" | jq -r '.name.default' | rev | cut -d' ' -f1 | rev)
+				if ! [[ $ep_number =~ ^[[:digit:].]+$ ]];then
+					((null_ep_count+=1))
+					ep_number=${null_ep_count}n
+					# shellcheck disable=SC2001
+					ep_title="$(echo "$ep_title"|sed 's|episode|special|gI') ${ep_number}"
+					export null_ep_count
+				fi
+			fi
+			ep_title=${ep_title% *}
+			if [ "${ep_title% *}" = "${ep_title##* }" ]; then
+				ep_title="$TITLE $ep_title"
+			elif [[ "${ep_title% *}" =~ ${ep_title##* }$ ]]; then
+				ep_title="$(echo "$ep_title"|tr ' ' $'\n'|head -n -1|xargs echo)"
+			fi
+			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
+			ep_title="$(echo "$ep_title"|sed 's| *$||g;s|^ *||g')"
+			ep_id_list=$(
+				echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+				curl "${CURL_OPTIONS[@]}" -ks "https://vid.xngine.com/api/episode/$(echo "$parse_episede_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+			)
+
+			if [ -z "$ep_id_list" ]; then
+				tr=subbed
+				ep_id_list=$(
+					echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+					curl "${CURL_OPTIONS[@]}" -ks "https://vid.xngine.com/api/episode/$(echo "$parse_episede_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+				)
+			fi
+			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
+				ep_title="${ep_title// ep / extra }"
+			fi
+			ep_file_name="$(echo "$ep_title" | replace_invalid)-$tr.mp4"
+		elif [ "$episode_type" = "cartoon" ]; then
+			ep_title="$TITLE"
+			ep_number="$(echo "$parse_episede_page" | jq -r '.number')"
+			ep_title="$ep_title ep $ep_number"
+			ep_id_list=$(echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | awk -e '!seen[$0]++')
+			ep_file_name="$(echo "$ep_title" | replace_invalid).mp4"
+		fi
+		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/\\\|}"'/{print};!/'"${PREFERRED_HOSTS//,/\\|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
+		set +x
+		if [ -n "$parse_episede_page" ] && [ -n "$ep_title" ]; then
+			stop_spinner 0
+		else
+			stop_spinner 1
+			return 1
+		fi
+		ep_title=$(ellipsis $(($(tput cols) - 8)) "$ep_title")
+		vbar
+		vbar "$ep_title" true
+		vbar "ID:$(echo "$1" | rev | cut -d/ -f1 | rev | cut -d- -f1)$([ -n "$progress" ] && [ -n "$total_pw" ] && echo " - Progress:$progress/$total_pw")"
+		vbar
+		if [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -z "$REPLACE_FAIL" ]; then
+			REPLACE_FAIL=true
+		elif [ "$(echo "$ep_id_list" | wc -l)" -gt 1 ] && [ -z "$REPLACE_FAIL" ]; then
+			REPLACE_FAIL=false
+		fi
+		${DEBUG:-false} && set -x
+		for n in $ep_id_list; do
+			if [ -n "$_sp_pid" ]; then
+				stop_spinner 1
+			fi
+			ep_file_url=
+			ep_file_host=$(echo "$n" | jq -r '.host')
+			ep_file_id=$(echo "$n" | jq -r '.id'|xargs basename -a)
+			set +x
+			start_spinner "Getting url from provider[$ep_file_host:$(ellipsis 15 "$ep_file_id")]"
+			${DEBUG:-false} && set -x
+			if [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ]; then
+				while [ -z "$ep_file_url" ]; do
+					sleep 1
+					ep_file_url=$(get_url "$n")
+				done
+			else
+				ep_file_url=$(get_url "$n")
+			fi
+			for ep_file_url_current in $ep_file_url; do
+				if ! [[ $ep_file_url_current =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]] &&\
+					remote_exist "$ep_file_url_current"; then
+					continue
+				fi
+				ep_file_url=
+				stop_spinner 1
+				continue 2
+			done
+			if [ -z "$ep_file_url" ]; then
+				stop_spinner 1
+				continue
+			fi
+			stop_spinner 0
+			if [[ $(echo "$ep_file_url" | wc -l) -gt 1 ]]; then
+				file_num=0
+			fi
+			for ep_file_url_current in $ep_file_url; do
+				if [ -n "$file_num" ]; then
+					file_num=$((file_num + 1))
+					if [ "$episode_type" = "cartoon" ]; then
+						ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num.mp4"
+					else
+						ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num-$tr.mp4"
+					fi
+				fi
+				ep_file_name="${ep_file_name//---/--}"
+				if ! { [[ $tr = dubbed ]] || [[ $tr = subbed ]] ; }; then
+					tr=$(echo "$n" | jq -r '.type')
+				fi
+				if ${SKIP_DOWNLOAD:-false}; then
+					continue
+				fi
+				compare_episode "$ep_file_name" "$ep_file_url_current"
+				ret=$?
+				if ((ret == 0)); then
+					download "$ep_file_name" "$ep_file_url_current"
+				elif (
+					((ret == 4)) \
+						&& (
+							${REPLACE_FAIL:-false} || ((${failed_tests:-0} <= 5))
+						) && ! ${NO_REPLACE:-false}
+				) || ((ret == 5)) || (${REPLACE_MANUAL:-false} && ((ret == 3))); then
+					#echo " overwriting"
+					rm "$ep_file_name"
+					download "$ep_file_name" "$ep_file_url_current"
+				else
+					echo "File doesn't match."
+					continue 2
+				fi
+			done
+			break
+		done
+	fi
+}
+
+download() {
+	local s1 s2 ret tried
+	s1=$(curl -kLsIXGET "$2" | awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($0) ~ /content-length/){ print $2 }}')
+	s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
+	if ((s1 >= s2)); then
+		until fget "$2" "$1"; do
+			ret=$?
+			if [[ $ret = 10 ]];then
+				return
+			elif ((tried <= ${MAX_TRY:-5})); then
+				tput cuu 2
+				((tried>1)) && (tput el1;tput el;tput cuu1)
+				tput el1
+				tput el
+				((tried+=1))
+				echo "Retrying...[$tried]"
+			else
+				break
+			fi
+		done
+	else
+		echo "Manually downloaded $1[$(byte_hr "$s2")],skipping."
+	fi
+	if ((ret == 0)) || [ "$CHECK_FILE" == "false" ]; then
+		da_db set saved "$current_ep"
+		return 0
+	fi
+	start_spinner "Checking $(ellipsis 40 "$1") integrity"
+	${DEBUG:-false} && set -x
+	if [ -n "$(ffmpeg -v error -map 0:0 -f null - -i "$1" 2>&1 | grep -v '^\[\|^[[:blank:]]')" ] || ((s1 < s2)); then
+		stop_spinner 1
+		echo "$1 is corrupted"
+		return $((ret + 1))
+	else
+		stop_spinner 0
+		da_db set saved "$current_ep"
+		return $((ret + $?))
+	fi
+}
+compare_episode() {
+	${SKIP_COMPARE:-false} && return 0
+	${DEBUG:-false} && set -x
+	local size wsize BS="$BS" hash1 hash2
+	if [[ $BS =~ ^[[:digit:].]+[[:digit:]kKmM]$ ]]; then
+		BS=$(echo "$BS" | byte_mr)
+	else
+		BS=524288
+	fi
+	if [ ! -e "$1" ] || { [ -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]; }; then
+		return 0
+	elif [ "$CHECK_FILE" == "error" ]; then
+		return 2
+	fi
+	size=$(stat -Lc%s "$1")
+	if ((${BS:-524288} > size)); then
+		BS=$size
+	fi
+	wsize=$(curl -LksIXGET "$2" |awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($0) ~ /content-length/){ print $2 }}')
+	if ((size > wsize)); then
+		return 3
+	elif ((size == 0)); then
+		return 0
+	fi
+	${DEBUG:-false} && set -x
+	if ! (dd if="$1" of=/dev/null bs=1 count=1 status=none 2> /dev/null && exit "$(ffprobe -hide_banner -loglevel 14 "$1" 2>&1 | wc -l)"); then
+		return 5
+	fi
+	if command -v mediainfo &> /dev/null; then
+		asize=$(mediainfo "$1" 2> /dev/null | tr -s '[:blank:]' \  | grep -i '^stream size' | sed 's|: |:|g' | cut -d: -f2 | cut -d\  -f1 | awk '{printf $0"*1048576+"};END {printf "0\n"}' | bc | cut -d\. -f1)
+	else
+		asize=$size
+	fi
+	if ((asize > wsize)); then
+		return 3
+	fi
+	${DEBUG:-false} && set +x
+	failed_tests=${TOTAL_CHECKS:-10}
+	IFS=' ' read -ra offsets < <(srand 0 $((size - ${BS:-524288})) $((BS / 2)) "${TOTAL_CHECKS:-10}")
+	if [ "${#offsets}" = "0" ]; then
+		exit 1
+	fi
+	for ((i = 0; i < ${TOTAL_CHECKS:-${#offsets}}; i++)); do
+		printf "\rComparing episode[test:%d]" "$((i + 1))"
+		start=${offsets[$i]}
+		hash1="$(dd bs=1 count="${BS:-524288}" status=none if="$1" skip="$start" | sha256sum | cut -d\  -f1)"
+		hash2="$(curl -skr "$start-$((start + ${BS:-524288} - 1))" "$2" | sha256sum | cut -d\  -f1)"
+		test "$hash1" = "$hash2" && failed_tests=$((failed_tests - 1))
+		test "$hash1" = "$hash2" || echo -e "\rComparing episode[test:$((i + 1)):fail]"
+		test "$hash1" = "$hash2" || return 4
+	done
+	echo -e "\rComparing episode[test:1-${TOTAL_CHECKS:-${#offsets}}:pass]"
+	return 0
+}
+SUPPORTED_HOSTS='mp4upload\|mp4.sh\|trollvid\|vidstreaming\|xstreamcdn'
+get_effective_url()
+{
+	xargs curl -ILksXGET -o /dev/null -w '%{url_effective}\n' 2>/dev/null| grep '^http'
+}
+get_url() {
+	local ep_file_host ep_file_id n
+	ep_file_host=$(echo "$@" | jq -r '.host')
+	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
+	ep_file_auth=$(echo "$@" | jq -r '.auth' | grep -v 'null' || true)
+	if ! { echo "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"; }; then
+		echo "unimplemented:$ep_file_host"
+		return 1
+	fi
+	for n in $ep_file_id; do
+		if [ -n "$(type -t ${ep_file_host}:get_url || type -w ${ep_file_host}:get_url)" ]; then
+			${ep_file_host}:get_url "${n}$ep_file_auth"
+		else
+			echo "unimplemented:${ep_file_host/_/.}"
+			break
+		fi
+	done
+}
+
+mp4upload:get_url() {
+	curl -ks "https://www.mp4upload.com/embed-$1.html" | grep 'eval(' | cut -d\> -f2- | js-beautify -xn -e \\n -k --brace-style=expand - 2> /dev/null | tr -d \",\ \)\; | grep '^src' | cut -d: -f2-
+}
+
+xstreamcdn:get_url() {
+	curl -sX POST "https://www.xstreamcdn.com/api/source/$1" --data "r=https://www.xstreamcdn.com/f/$1" --data 'd=www.xstreamcdn.com' | jq -r 'select(.success == true).data[0].file' 2> /dev/null|get_effective_url
+}
+
+trollvid:get_url() {
+	curl -so- -H 'accept-encoding: identity' -H 'referer: https://localhost/' "https://mp4.sh/embed${CALLED_FROM_MP4_SH:+c}/$1" | grep source | tr -d \" | tr \  \\n | grep '^src' | cut -d= -f2-|get_effective_url
+}
+
+mp4.sh:get_url() {
+	CALLED_FROM_MP4_SH=true trollvid:get_url "$@"
+}
+
+vidstreaming:get_url() {
+	curl -s "https://vidstreaming.io/streaming.php?id=$1" | sed -n '/data-video=".*\/v\//{s/.*data-video="\(.*\)\/v\/\(.*\)".*/\1\/api\/source\/\2/;p}' | xargs curl -X POST -s 2>/dev/null| jq -r 'select(.success == true).data[0].file'|get_effective_url
+}
+
+if [[ $# != 0 ]] && [[ $1 != latest ]]; then
+	while [ -n "$1" ]; do
+		case $1 in
+			(-v | --version)
+				#+option
+					#short: -v
+					#long: --version
+					#text: Show version and license.
+				#-option
+				if [ "${0##*/}" = "35footer" ]; then
+					echo " danime  master-$(git rev-parse HEAD | cut -c 1-6)"
+				else
+					echo " danime  dist-$(grep '^#VERSION_INFO=05d4d7' "$0" | cut -d= -f2)"
+				fi
+				echo
+				echo
+				da_get_license
+				exit 0
+				;;
+			(-l | --license)
+				#+option
+					#short: -l
+					#long: --license
+					#text: Show license.
+				#-option
+				if [ -e "LICENSE" ] && [ "$(head -1 LICENSE | tr -d '[:blank:]')" = "GNUGENERALPUBLICLICENSE" ]; then
+					da_get_license true
+					echo
+					echo "See 'LICENSE' for more details."
+				else
+					da_get_license
+				fi
+				exit 0
+				;;
+			(-i| --id)
+				#+option
+					#short: -i
+					#long: --id
+					#text: Prefer these ids to download if available.
+					#args: id1[,id2[,...]]
+				#-option
+				PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${2//,/|}"
+				shift
+			;;
+			(--id=[[:alnum:].,]*)
+				tmp="${1##*=}"
+				PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${tmp//,/|}"
+				unset tmp
+			;;
+			(--list-mirror)
+				#+option
+					#long: --list-mirror
+					#text: List supported mirrors
+				#-option
+				echo Supported Mirrors
+				echo -e "\t${SUPPORTED_HOSTS//\\|/ }"
+				exit 0
+				;;
+			(-m | --mirror)
+				#+option
+					#short: -m
+					#long: --mirror
+					#text: select preferred mirrors.
+					#args: mirror1[,mirror2[,...]]
+				#-option
+				if echo "${SUPPORTED_HOSTS//\\|/$'\n'}" | grep -q "${2//,/\\|}"; then
+					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${2//,/|}"
+				fi
+				shift
+				;;
+			(--mirror=[[:alnum:].,]*)
+				tmp="${1##*=}"
+				if echo "${SUPPORTED_HOSTS//\\|/$'\n'}" | grep -q "${tmp//,/\\|}"; then
+					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${tmp//,/|}"
+				fi
+				unset tmp
+				;;
+			(--break | -b)
+				#+option
+					#short: -b
+					#long: --break
+					#text: break on error
+				#-option
+				BREAK=true
+				;;
+			(-nb|--no-break)
+				#+option
+					#short: -nb
+					#long: --no-break
+					#text: don't break on error
+				#-option
+				BREAK=false
+				;;
+			(-B[[:digit:].]*[kKmM] | --block=[[:digit:].]*[kKmM])
+				#+option
+					#short: -B
+					#long: --block
+					#text: set block size for testing.(allowed suffixes: kM)
+					#args: <block size>
+				#-option
+				BS=${1#*=}
+				[[ $BS =~ ^[[:digit:].]+[[:digit:]kKmM]$ ]] || BS=${1/-B/}
+				BS=$(echo "$BS" | byte_mr)
+				;;
+			(-B[[:digit:].]* | --block=[[:digit:].]*)
+				BS=${1#*=}
+				[[ $BS =~ ^[[:digit:].]+$ ]] || BS=${1/-B/}
+				;;
+			(-B | --block)
+				BS=$2
+				if [[ $BS =~ ^[[:digit:].]+[[:digit:]kKmM]$ ]]; then
+					BS=$(echo "$BS" | byte_mr)
+					shift
+				else
+					echo "Invalid block size." 1>&2
+				fi
+				;;
+			(--debug)
+				#+option
+					#long: --debug
+					#text: enable debug mode
+				#-option
+				DEBUG=true
+				;;
+			(-A)
+				#+option
+					#short: -A
+					#IDNT: 3
+					#text: Set search type to Anime(default).
+				#-option
+				TYPE=anime
+				;;
+			(-C)
+				#+option
+					#short: -C
+					#IDNT: 3
+					#text: Set search type to Cartoon.
+				#-option
+				TYPE=cartoon
+				;;
+			(-c | --continue)
+				#+option
+					#short: -c
+					#long: --continue
+					#text: Reload previous episode selection.
+				#-option
+				CONTINUE=true
+			;;
+			(-nc | --no-continue)
+				#+option
+					#short: -nc
+					#long: --no-continue
+					#IDNT: 1
+					#text: Don't Reload previous episode selection.
+				#-option
+				CONTINUE=false
+			;;
+			(-n | --no-break-or-reset)
+				#+option
+					#short: -n
+					#long: --no-break-or-reset
+					#IDNT: 1
+					#text: equivalent to -nb -nr.
+				#-option
+				NOBREAK=true
+				NORESET=true
+				;;
+			(-R | --reset)
+				#+option
+					#short: -R
+					#long: --reset
+					#text: Clear screen on selection change.
+				#-option
+				NORESET=false
+			;;
+			(-r | --replace)
+				#+option
+					#short: -r
+					#long: --replace
+					#text: Replace unmatched episode.
+					#args: manual, fail
+				#-option
+				if echo "$2" | grep -q 'manual\|fail'; then
+					eval "REPLACE_$(echo "$2" | tr '[:lower:]' '[:upper:]')=true"
+					shift
+				else
+					REPLACE_FAIL=true
+					REPLACE_MANUAL=true
+				fi
+				;;
+			(-r[fm] | --replace=fail | --replace=manual)
+				REPLACE="$(echo "${1#*=}" | tr '[:lower:]' '[:upper:]')"
+				if ! echo "$REPLACE" | grep -qi 'manual\|fail'; then
+					REPLACE="$(
+						if [ "${1/-r/}" = "m" ]; then
+							echo manual
+						else
+							echo fail
+						fi | tr '[:lower:]' '[:upper:]'
+					)"
+				fi
+				eval "REPLACE_$REPLACE=true"
+				unset REPLACE
+				;;
+			(-f | --file-list)
+				#+option
+					#short: -f
+					#long: --file-list
+					#text: select files to download or prompt for a list.
+					#args: [file-index-list]
+				#-option
+				FILE_LIST=true
+				unset FILE_LIST_RANGE
+				if [[ ${2} =~ ^[[:digit:],-]+$ ]]; then
+					FILE_LIST_RANGE=${2}
+					shift
+				fi
+				;;
+			(-f[[:digit:],-]* | --file-list=[[:digit:],-]*)
+				FILE_LIST=true
+				FILE_LIST_RANGE=${1#*=}
+				# FILE_LIST_RANGE=${FILE_LIST_RANGE// /}
+				[[ $FILE_LIST_RANGE =~ ^[[:digit:],-]+$ ]] || FILE_LIST_RANGE=${1/-f/}
+				FILE_LIST_RANGE=$(echo "$FILE_LIST_RANGE" | grep -o . | grep '^[[:digit:],-]*$' | tr -d \\n | sed 's/,$//')
+				;;
+			(-s | --select)
+				#+option
+					#short: -s
+					#long: --select
+					#text: Select search results.
+					#args: <result-index-list>
+				#-option
+				if [[ $2 =~ ^[[:digit:],-]+$ ]]; then
+					RES_LIST=$2
+					shift
+				else
+					echo "Invalid selection index." 1>&2
+					exit 1
+				fi
+				;;
+			(-s[[:digit:],-]* | --select=[[:digit:],-]*)
+				RES_LIST=${1#*=}
+				[[ $RES_LIST =~ ^[[:digit:],-]+$ ]] || RES_LIST=${1/-s/}
+				;;
+			(-u|--update)
+				#+option
+					#short: -u
+					#long: --update
+					#text: Update and continue incomplete downloads.
+				#-option
+				DO_UPDATE=true
+			;;
+			(-h | --help)
+				#+option
+					#short: -h
+					#long: --help
+					#text: Show help
+				#-option
+				danime_help
+				exit 0
+				;;
+			(-T[[:digit:]]* | --timeout=[[:digit:]]*)
+				RSOLV=${1#*=}
+				[[ $RSOLV =~ ^[[:digit:]]+$ ]] || RSOLV=${1/-T/}
+				;;
+			(-T | --timeout)
+				#+option
+					#short: -T
+					#long: --timeout
+					#text: Set timeout for requests.
+				#-option
+				if [[ ${2} =~ ^[[:digit:],-]+$ ]]; then
+					RSOLV=${2}
+					shift
+				else
+					echo Invalid argument.
+					exit 1
+				fi
+				;;
+			(-t | --try)
+				#+option
+					#short: -t
+					#long: --try
+					#text: set retry attempts
+					#args: <retry>
+				#-option
+				if [[ ${2} =~ ^[[:digit:],-]+$ ]]; then
+					MAX_TRY=${2}
+					shift
+				else
+					echo Invalid argument.
+					exit 1
+				fi
+			;;
+			(-t[[:digit:]]* | --try=[[:digit:]]*)
+				MAX_TRY=${1#*=}
+				[[ $MAX_TRY =~ ^[[:digit:]]+$ ]] || MAX_TRY=${1/-t/}
+			;;
+			(-a | --all)
+				#+option
+					#short: -a
+					#long: --all
+					#text: Download all results. implies -n
+				#-option
+				DOWNLOAD_ALL=true
+				NOBREAK=true
+				NORESET=true
+				unset RES_LIST FILE_LIST_RANGE
+				;;
+			(-q | --queue)
+				#+option
+					#short: -q
+					#long: --queue
+					#text: Add selected results to download queue. implies -n
+				#-option
+				NOBREAK=true
+				NORESET=true
+				UPDATE_QUEUE=true
+				;;
+			(-nr | --no-reset)
+				#+option
+					#short: -nr
+					#long: --no-reset
+					#text: Don't reset terminal on selection download.
+				#-option
+				NORESET=true
+				;;
+			(-F[[:alpha:]]* | --force=*)
+				#+option
+					#short: -F
+					#long: --force
+					#text: Force subbed or dubbed.
+					#args: sub, dub
+				#-option
+				FORCE=${1##*=}
+				[[ $FORCE =~ ^[ds]ub$ ]] || FORCE=${1/-F/}
+				;;
+			(-F | --force)
+				FORCE=$2
+				shift 1
+				if [ -z "$FORCE" ]; then
+					FORCE=${TYPE_ANIME:0:3}
+				fi
+				;;
+			(-d | --dry-run)
+				SKIP_DOWNLOAD=true
+				;;
+			(-S | --sub | -D | --dub)
+				#+option
+					#short: -S
+					#short: -D
+					#long: --sub
+					#long: --dub
+					#IDNT: 1
+					#text: Prefer subbed/dubbed for downloading.
+				#-option
+				PREFERRED_TR=$(echo "$1" | tr -d - | cut -c1 | tr '[:upper:]' '[:lower:]')ub
+				;;
+			(-[[:alnum:]]?? | --[[:alnum:]]*)
+				echo "Invalid option -- $1" 1>&2
+				exit 1
+				;;
+			(*)
+				SEARCHSTR="$(echo "$SEARCHSTR $1" | sed 's|^ *||g;s|* $||g')"
+				;;
+		esac
+		shift
+	done
+	PREFERRED_HOSTS="${PREFERRED_HOSTS//null\\\|/}"
+	if [[ -n $TYPE_ANIME ]] && { [[ $TYPE_ANIME = subbed ]] || [[ $TYPE_ANIME = dubbed ]] ; }; then
+		tr=$TYPE_ANIME
+	else
+		tr="$(echo "$@" | sed 'y/০১২৩৪৫৬৭৮৯/0123456789/' | sed 's| |\n|g' | grep -E '^sub$' || echo dub)bed"
+	fi
+	if { [[ -n "$FILE_LIST_RANGE" ]] || [[ -n "$RES_LIST" ]] ; } && $DOWNLOAD_ALL; then
+		DOWNLOAD_ALL=false
+		echo -e "Warning: --all/-a option can only be used when no\n\tselection or episode limit specified.\n\tDisabling autodownload mode"
+	fi
+	[[ -n $FORCE ]] && echo "${FORCE} enforced."
+	if [[ $SEARCHSTR != '' ]] || ${DO_UPDATE:-false} ; then
+		python3 -c 'from sys import argv, stdout
+import requests, os
+from http.cookiejar import MozillaCookieJar as MCJ
+from lxml import html
+
+cookiesFile = os.environ["HOME"] + "/.da-cookies.txt"
+
+try:
+	cj = MCJ(cookiesFile)
+	if os.path.exists(cookiesFile):
+		cj.load(ignore_discard=True, ignore_expires=True)
+
+	r = requests.Session()
+	r.cookies = cj
+	r.headers = {"user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
+	html.fromstring(r.get("https://ww5.dubbedanime.net/").text).get_element_by_id("logo")
+except:
+	print("Update hijacked cookies in \"~/.da-cookies.txt\"")
+	exit(1)' || exit
+		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
+			if ${DO_UPDATE:-false};then
+				da_update
+				exit
+			fi
+			if [ -n "$FILE_LIST_RANGE" ] && ! validate_limit "$FILE_LIST_RANGE"; then
+				echo "$(
+					tput setaf 1
+					tput dim
+				)Invalid limit:$FILE_LIST_RANGE$(tput sgr0)" > /dev/stderr
+				exit 1
+			fi
+			da_search "$SEARCHSTR"
+			exit $?
+		else
+			echo Request timed out
+			exit 5
+		fi
+	else
+		danime_help
+		exit 1
+	fi
+else
+	danime_help
+	exit 1
+fi
