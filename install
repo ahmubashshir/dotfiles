@@ -1,5 +1,9 @@
 #!/bin/sh
 cd "$(dirname "$0")"
+if [ -d ./bin ];then
+	echo Soft linking "${n//dot-/}"
+	ln -Tfs  "$PWD/bin" "$HOME/bin"
+fi
 if realpath "$0"|grep -q "^$HOME";then
 	for n in dot-*;do
 		p="$(realpath "$n")"

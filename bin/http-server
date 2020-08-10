@@ -1,0 +1,92 @@
+#!/usr/bin/python3
+import gi,sys,os,random
+gi.require_version('Gtk', '3.0')
+gi.require_version('Vte','2.91')
+from gi.repository import Gtk as gtk ,Vte as vte,Gio as gio,GLib
+
+def uses_php(dpath):
+	import os
+	for root, dirs, files in os.walk(dpath):
+		for file in files:
+			if file.endswith((".php", ".phtml", ".php3", ".php4", ".php5", ".php7", ".phps", ".php-s", ".pht", ".phar")):
+				return True
+	return False
+
+def which(program):
+	import os
+	def is_exe(fpath):
+		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+	fpath, fname = os.path.split(program)
+	if fpath:
+		if is_exe(program):
+			return program
+	else:
+		for path in os.environ["PATH"].split(os.pathsep):
+			exe_file = os.path.join(path, program)
+			if is_exe(exe_file):
+				return exe_file
+	return None
+
+class main(gtk.Window):
+   #gui defination
+	def __init__(self):
+		gtk.Window.__init__(self)
+		self.port= random.randint(1025,35565) if len(sys.argv)<3 else int(sys.argv[2])
+		self.vbox = gtk.Box(spacing=0)
+		self.set_icon_name("network-server")
+		self.add(self.vbox)
+		self.term=vte.Terminal()
+		self.term.set_size(85,20)
+		self.vbox.pack_start(self.term, True, True, 0)
+		self.vs=gtk.VScrollbar(adjustment=self.term.get_vadjustment())
+		self.vbox.pack_start(self.vs, False, False, 1)
+		self.term.connect("child-exited",self.closed)
+		self.set_title("HTTPServer: Serving on http://0.0.0.0:%d"%self.port)
+
+	def closed(self,*args):
+		window.destroy()
+		gtk.main_quit()
+
+	def on_show(self,code):
+		if which('php') is None:
+			print("php is not installed")
+			self.term.spawn_sync(
+				vte.PtyFlags.NO_WTMP,
+				None,
+				['/usr/bin/env','true'],
+				[],
+				GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+				None,
+				None
+			)
+			return 1
+		if which('webfsd') is None:
+			print("webfs is not installed")
+			self.term.spawn_sync(
+				vte.PtyFlags.NO_WTMP,
+				None,
+				['/usr/bin/env','true'],
+				[],
+				GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+				None,
+				None
+			)
+			return 1
+		self.term.spawn_sync(
+			vte.PtyFlags.NO_WTMP,
+			None,
+				[which('php'),'-S','0.0.0.0:%d'%self.port,'-t',sys.argv[1]]
+				if uses_php(sys.argv[1])
+				else
+				[which('webfsd'),'-F','-l','/dev/stdout','-p','%d'%self.port,'-r',sys.argv[1]]
+			,
+			[],
+			GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+			None,
+			None
+			)
+window = main()
+window.connect("delete-event", gtk.main_quit)
+window.connect("show", window.on_show)
+window.show_all()
+gtk.main()

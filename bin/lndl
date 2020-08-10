@@ -1,0 +1,245 @@
+#!/bin/bash
+if ! { hash jq && hash curl && hash pv;} 2>/dev/null;then
+	exit 1
+fi
+if tty -s;then
+	if tput setaf 0 &>/dev/null; then
+		ALL_OFF="$(tput sgr0)"
+		BOLD="$(tput bold)"
+		BLUE="${BOLD}$(tput setaf 4)"
+		GREEN="${BOLD}$(tput setaf 2)"
+		RED="${BOLD}$(tput setaf 1)"
+		YELLOW="${BOLD}$(tput setaf 3)"
+	else
+		ALL_OFF="\e[0m"
+		BOLD="\e[1m"
+		BLUE="${BOLD}\e[34m"
+		GREEN="${BOLD}\e[32m"
+		RED="${BOLD}\e[31m"
+		YELLOW="${BOLD}\e[33m"
+	fi
+fi
+readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
+show_help()
+{
+	echo "usage ${0##*/}: "
+	echo "  (h)elp      show this."
+	echo "  (a)dd <id>  Add Google Drive public folder id to Library."
+	echo "  (s)ync      Synchronize library with remote folder."
+	echo "  lib         Use functions defined here in scripts."
+}
+log_entry() {
+	echo "[$(date +%s)] [lndl-$action] [$target]${etarget:+ [$etarget]}${data:+ [$data]}" >> "$LOG"
+}
+add_sync()
+{
+	local id name response mime dir pending target etarget action data
+	pending=()
+	for id in "$@";do
+		response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" |sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g'|head -n -1|tail -n +3)"
+		name="$(echo "$response"|grep ^name|cut -d: -f2-)"
+		mime="$(echo "$response"|grep ^mime|cut -d: -f2-)"
+		if [[ ${mime##*.} == folder ]];then
+			dir="$LNDIR/$name"
+			if [ -d "$dir" ];then
+				echo "$GREEN===> Updating '$(ellipsis $(($(tput cols) - 20)) "$name")'...$ALL_OFF"
+				action=old
+				target="$name"
+				etarget='{re-sync}'
+				data="ID=$id"
+			else
+				action=new
+				target="$name"
+				etarget='{new-sync}'
+				data="ID=$id"
+				echo "$GREEN===> Adding '$(ellipsis $(($(tput cols) - 20)) "$name")'...$ALL_OFF"
+				mkdir -p "$dir"
+			fi
+			log_entry
+			cat > "$dir"/00update <<EOF
+#!/bin/bash
+source \${LNLIB:-${0##*/}} lib
+cd "\$(dirname "\$0")"
+drive_sync $id
+EOF
+			chmod +x "$dir/00update"
+			pending+=("$dir/00update")
+		fi
+	done
+	if ((${#pending}>0));then
+		echo "$BLUE===> Synchronizing new novels...$ALL_OFF"
+	fi
+	for each in "${pending[@]}";do
+		LNLIB="$0" "$each"
+	done
+}
+start_sync()
+{
+	local IFS n
+	echo "$GREEN===> Synchronizing Light Novel Library...$ALL_OFF"
+	IFS=$'\n'
+	for n in $(find "$LNDIR"/ -name '00update' -executable|sort);do
+		echo "$BLUE===>$GREEN Downloading '$(ellipsis $(($(tput cols) - 30)) "$(basename "$(dirname "$n")")")'...$ALL_OFF"
+		LNLIB="$0" "$n"
+	done
+
+}
+#lib
+function byte_hr() {
+	local size_670b2dbb unit_670b2dbb n_670b2dbb
+	size_670b2dbb=$1
+	for n_670b2dbb in 'B' 'kB' 'MB' 'GB' 'TB' 'PB' 'EB' 'ZB'; do
+		unit_670b2dbb=$n_670b2dbb
+		i_670b2dbb=${size_670b2dbb%.*}
+		if ((i_670b2dbb / 1024 == 0)); then
+			break
+		else
+			size_670b2dbb=$(echo "scale=2;$size_670b2dbb/1024.00" | bc | sed 's|\.00$||g')
+		fi
+	done
+	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
+}
+ls_drive()
+{
+	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
+	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
+	return $?
+}
+get_drive()
+{
+	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
+	local size JSON md5sums try target etarget action data
+	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
+	until [ -n "$size" ];do
+		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		size="$(echo "$JSON"|jq -r .size)"
+	done
+	md5sums="$(echo "$JSON"|jq -r .md5Checksum) $1"
+	if echo "$md5sums"|md5sum -c --quiet &>/dev/null; then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+		sleep 2
+		return 0
+	else
+		echo
+		try=0
+		until echo "$md5sums"|md5sum -c --quiet &>/dev/null || ((try==5));do
+			tput cuu1
+			curl -sL "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s $size > "$1"
+			((try+=1))
+			sleep 5
+		done
+		action=get
+		target="$(basename "$PWD")"
+		etarget="$1"
+		data="ID=$2;MD5SUM=$(echo "$JSON"|jq -r .md5Checksum)"
+		log_entry
+	fi
+}
+ellipsis() {
+	python3 -c "try:
+	from sys import argv
+	l=int(int(argv[1])/2)
+	if len(' '.join(argv[2:]))>l*2:
+		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
+	else:
+		print(' '.join(argv[2:]),sep='')
+except KeyboardInterrupt:
+	pass" "$@"
+
+}
+drive_sync () {
+	local files n name id mime FD action target etarget data
+	trap no_more_locking EXIT
+	FD=$(shuf -i 1-1000 -n 1)
+	eval "exec $FD>./.lock"
+	eval "lock()             { flock -\$1 $FD; }"
+	no_more_locking()  { lock u; lock xn && rm -f ./.lock;unset lock; }
+	lock xn||{
+		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
+		return 1
+	}
+	files=()
+	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
+	false
+	until [ "${PIPESTATUS[0]}" = "0" ];do
+		for n in $(ls_drive $1);do
+			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
+			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
+			mime=$(echo $n|cut -d\| -f3|cut -d: -f2)
+			if [[ $mime != 'application/vnd.google-apps.folder' ]]
+			then
+				get_drive "$name" "$id"
+				files+=('-not' '-samefile' "$name")
+			else
+				mkdir -p "$name" 2> /dev/null && (
+					cd "$name" && drive_sync $id && cd ..
+				) || echo "Invalid name \"$name\"" >&2
+			fi
+		done
+		[ "${PIPESTATUS[0]}" = "0" ] || {
+			sleep 10
+			tput cuu1
+			tput el
+			false
+		}
+	done
+	if [ -n "${files[*]}" ];then
+		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
+		for name in .lock 00update;do
+			if [ -f "$name" ];then
+				files+=('-not' '-samefile' "$name")
+			fi
+		done
+		find -maxdepth 1 -type f "${files[@]}" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
+	fi
+}
+
+if (($#==0));then
+	show_help
+else
+	export LOG="$LNDIR/lndl.log"
+	case $1 in
+		help|h) shift; unset byte_hr ls_drive get_drive drive_sync start_sync add_sync ;show_help;;
+		add|a)  shift; unset byte_hr ls_drive get_drive drive_sync start_sync;add_sync "$@";;
+		sync|s) shift; unset byte_hr ls_drive get_drive drive_sync add_sync;start_sync;;
+		log)	shift;
+			if [[ $1 = help ]];then
+				echo Filters: old new get all
+				exit 0
+			fi
+			if [ -n "$1" ] && ! echo $1|grep -wq 'old\|new\|get\|all';then
+				echo Unsupported filter: $1
+				exit 1
+			fi
+			if [ -n "$2" ] && ! echo $2|grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}';then
+				echo Invalid date: $2
+			elif echo $2|grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}';then
+				case $2 in
+					today)
+						date=$(date --iso-8601|xargs date +%s -d)
+					;;
+					*)
+						date=$(date +%s -d $2)
+					;;
+				esac
+			fi
+			awk -v "action=$1" -v "Date=$date" -F" " 'BEGIN {OFS = FS} {gsub("[][]","",$1);$1=strftime("[%FT%T%z]",$1); close(cmd);if(action ~ /old|new|get/){if($2 == "[lndl-"action"]" )print $0}else{print $0}}' "$LOG"
+		;;
+		sync-thread|st)
+			shift
+			unset byte_hr ls_drive get_drive drive_sync add_sync start_sync;
+			p=$([[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&echo $1||echo 2 )
+			[[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&shift
+			if [ -x /usr/bin/tmux-xpanes ]||[ -x /usr/local/bin/tmux-xpanes ];then
+				exec tmux-xpanes -l ev -e "$(for ((i=0;i<p;i++));do echo "$0 sync;exit";done)"
+			else
+				echo $RED===>$BLUE tmux-xpanes not installed...$ALL_OFF 1>&2
+				echo $YELLOW===>$GREEN using single threaded sync...$ALL_OFF 1>&2
+				exec $0 sync
+			fi
+		;;
+		lib)  shift; unset start_sync add_sync show_help ;;
+		*)    unset byte_hr ls_drive get_drive drive_sync start_sync add_sync;echo "ERROR: Unsupported command '$1'";show_help;exit 1;;
+	esac
+fi

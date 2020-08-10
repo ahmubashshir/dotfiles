@@ -1,0 +1,13 @@
+#!/usr/bin/env python2
+from gtk import icon_theme_get_default
+from sys import argv
+if len(argv) > 1:
+	icon_theme = icon_theme_get_default()
+	for icon_name in argv[1:]:
+		icon = icon_theme.lookup_icon(icon_name, 256, 0)
+		if icon:
+		    print "%s: %s" % (icon_name, icon.get_filename()) if len(argv) > 2 else icon.get_filename()
+		else:
+		    print "'%s' not found" % icon_name
+else:
+	print "no args"

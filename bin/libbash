@@ -1,0 +1,269 @@
+#!/bin/bash
+function check_up_server() {
+	t_efbec206=$2
+	t_efbec206=${t_efbec206:=3}
+	[ $t_efbec206 -gt 3 ] && echo "Resolving $1,wait $t_efbec206 seconds" 1>&2
+	resp_efbec206=$(wget -T $t_efbec206 "$1" -S --spider -qO - 2>&1 | head -1 | tr -d \  | cut -d/ -f1)
+	if [[ $resp_efbec206 = 'HTTP' ]]; then
+		return 0
+	fi
+	return 1
+}
+function goto() {
+	label=$1
+	cmd=$(sed -n "/#$label:/,/#$label:end/p" "$0" | grep -v ':$')
+	if [[ -z $cmd ]]; then
+		echo "$label not defined"
+		return 1
+	fi
+	eval "$cmd"
+	return
+}
+function byte_hr() {
+	local size_670b2dbb
+	local unit_670b2dbb
+	local n_670b2dbb
+	size_670b2dbb=$1
+	for n_670b2dbb in 'B' 'kB' 'MB' 'GB' 'TB' 'PB' 'EB' 'ZB'; do
+		unit_670b2dbb=$n_670b2dbb
+		i_670b2dbb=${size_670b2dbb%.*}
+		if ((i_670b2dbb / 1024 == 0)); then
+			break
+		else
+			size_670b2dbb=$(echo "scale=2;$size_670b2dbb/1024.00" | bc | sed 's|\.00$||g')
+		fi
+	done
+	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
+}
+function fget() {
+	url_933be66d="$1"
+	name_933be66d="$2"
+	if (($# > 2)); then
+		shift 2
+	else
+		shift $#
+	fi
+	if echo "$url_933be66d" | grep -q 'google.com/uc?\|^d?id='; then
+		[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
+		url_933be66d="https://www.googleapis.com/drive/v3/files/$(echo "$url_933be66d" | tr '?&' '\n' | grep '^id=' | cut -d= -f2)?alt=media&key=$DRIVE_API_KEY"
+		name_933be66d="$(curl "https://www.googleapis.com/drive/v3/files/$(echo "${url_933be66d%%\?*}" | xargs basename)?key=$DRIVE_API_KEY" -s | jq '.name' -r)"
+	fi
+	S_933be66d=$(curl -skLIXGET "$url_933be66d" 2>&1 |awk '/^HTTP\/[12.]+ 200/,/^\r$/ {gsub(/\r/,"");if(length)print}')
+	if (exit "$?"); then
+		if [ "$name_933be66d" = "" ]; then
+			name_933be66d="${url_933be66d##*/}"
+		fi
+		dlsize_933be66d=$(echo "$S_933be66d" | awk 'tolower($0) ~ /content-length:/ {print $2}' | tail -1)
+		dld_933be66d="false"
+		if [ -e "$name_933be66d" ]; then
+			lsof_933be66d=$(lsof "$name_933be66d" 2> /dev/null)
+			pid_933be66d=$(echo "$lsof_933be66d" | awk '/[[:digit:]]+[w:W:u]/ {print $2}' | tail -1)
+			perm_933be66d=$(echo "$lsof_933be66d" | awk '/[[:digit:]]+[w:W:u]/ {print $4}' | tail -1)
+			process_933be66d=$(echo "$lsof_933be66d" | awk '/[[:digit:]]+[w:W:u]/ {print $1}' | tail -1)
+			size_933be66d=$(stat -Lc%s "$name_933be66d")
+		else
+			size_933be66d=0
+			pid_933be66d=""
+			perm_933be66d=""
+			process_933be66d=""
+		fi
+		if [ -e "$name_933be66d" ] && ((dlsize_933be66d <= size_933be66d)); then
+			dld_933be66d="true"
+		fi
+		if [ $dld_933be66d = "false" ]; then
+			response_933be66d=$(echo "$S_933be66d" | awk '/HTTP\/[12.]/ {print $2}' | tail -1)
+			if [[ $response_933be66d =~ 20. ]]; then
+				if [[ "$perm_933be66d" == "" ]]; then
+					echo "Server Response:$response_933be66d $(server_responce "$response_933be66d")"
+					if [ -e "$name_933be66d" ] && ((dlsize_933be66d > size_933be66d)) && [ "$pid_933be66d" = "" ]; then
+						echo -e "Appending to '$name_933be66d'\nleft $(byte_hr $((dlsize_933be66d - size_933be66d))) from $(byte_hr "$dlsize_933be66d")"
+					elif [ ! -e "$name_933be66d" ]; then
+						echo -e "Writing to '$name_933be66d'\nFile Size: $(byte_hr "$dlsize_933be66d")"
+					fi
+					wget "$@" --show-progress -qcO "$name_933be66d" "$url_933be66d" || ([ "$?" = "5" ] && wget "$@" --show-progress -qcO "$name_933be66d" --no-check-certificate "$url_933be66d" || (exit $?))
+				else
+					(exit 10)
+				fi
+			else
+				echo "$response_933be66d $(server_responce "$response_933be66d")"
+				[[ $response_933be66d =~ 40. ]] && ${SHOW_URL:-false} && echo "$url_933be66d"
+				[[ "${response_933be66d:0:1}${response_933be66d:2:3}" =~ ^[[:digit:],-]+$ ]] && return "${response_933be66d:0:1}${response_933be66d:2:3}" || ( echo ${response_933be66d:0:1}${response_933be66d:2:3} && return 99)
+			fi
+		fi
+	else
+		(exit 4)
+	fi
+	ex_933be66d=$?
+	if [ "$dld_933be66d" = "false" ]; then
+		case $ex_933be66d in
+			0 | 8)
+				echo -e "$(
+					tput setaf 2
+					tput bold
+				)Saved $name_933be66d [$(byte_hr "$dlsize_933be66d" "")]"
+				;;
+
+			1) echo -e "$(
+				tput setaf 1
+				tput dim
+			)Unknown error occured" ;;
+			2) echo -e "$(tput setaf 1)Option parsing error" ;;
+			3) echo -e "$(
+				tput setaf 1
+				tput smul
+			)I/O Error" ;;
+			4) echo -e "$(
+				tput setaf 1
+				tput smul
+			)Network Failure" ;;
+			5) echo -e "$(
+				tput setaf 1
+				tput dim
+			)SSL verification failure" ;;
+			6) echo -e "$(
+				tput setaf 1
+				tput dim
+			)Username/password authentication failure" ;;
+			7) echo -e "$(
+				tput setaf 1
+				tput dim
+			)Protocol errors" ;;
+			10) echo -e "$(
+				tput setaf 1
+				tput dim
+			)'$name_933be66d' is Open in $process_933be66d for writing.\npid:$pid_933be66d\tFD:$perm_933be66d" ;;
+			*) true ;;
+		esac
+		tput sgr0
+		return $ex_933be66d
+	else
+		if ((dlsize_933be66d == size_933be66d)); then
+			echo -e "Already downloaded $name_933be66d [$(byte_hr $size_933be66d)]."
+		else
+			echo -e "Already downloaded $name_933be66d [$(byte_hr $size_933be66d)],\nbut size doesn't match.[size on server $(byte_hr "$dlsize_933be66d")]"
+		fi
+		return 0
+	fi
+}
+function server_responce() {
+	case $1 in
+		100) echo "Continue" ;;
+		101) echo "Switching Protocols" ;;
+		102) echo "Processing" ;;
+		200) echo "OK" ;;
+		201) echo "Created" ;;
+		202) echo "Accepted" ;;
+		203) echo "Non-authoritative Information" ;;
+		204) echo "No Content" ;;
+		205) echo "Reset Content" ;;
+		206) echo "Partial Content" ;;
+		207) echo "Multi-Status" ;;
+		208) echo "Already Reported" ;;
+		226) echo "IM Used" ;;
+		300) echo "Multiple Choices" ;;
+		301) echo "Moved Permanently" ;;
+		302) echo "Found" ;;
+		303) echo "See Other" ;;
+		304) echo "Not Modified" ;;
+		305) echo "Use Proxy" ;;
+		307) echo "Temporary Redirect" ;;
+		308) echo "Permanent Redirect" ;;
+		400) echo "Bad Request" ;;
+		401) echo "Unauthorized" ;;
+		402) echo "Payment Required" ;;
+		403) echo "Forbidden" ;;
+		404) echo "Not Found" ;;
+		405) echo "Method Not Allowed" ;;
+		406) echo "Not Acceptable" ;;
+		407) echo "Proxy Authentication Required" ;;
+		408) echo "Request Timeout" ;;
+		409) echo "Conflict" ;;
+		410) echo "Gone" ;;
+		411) echo "Length Required" ;;
+		412) echo "Precondition Failed" ;;
+		413) echo "Payload Too Large" ;;
+		414) echo "Request-URI Too Long" ;;
+		415) echo "Unsupported Media Type" ;;
+		416) echo "Requested Range Not Satisfiable" ;;
+		417) echo "Expectation Failed" ;;
+		418) echo "I'm a teapot" ;;
+		421) echo "Misdirected Request" ;;
+		422) echo "Unprocessable Entity" ;;
+		423) echo "Locked" ;;
+		424) echo "Failed Dependency" ;;
+		426) echo "Upgrade Required" ;;
+		428) echo "Precondition Required" ;;
+		429) echo "Too Many Requests" ;;
+		431) echo "Request Header Fields Too Large" ;;
+		444) echo "Connection Closed Without Response" ;;
+		451) echo "Unavailable For Legal Reasons" ;;
+		499) echo "Client Closed Request" ;;
+		500) echo "Internal Server Error" ;;
+		501) echo "Not Implemented" ;;
+		502) echo "Bad Gateway" ;;
+		503) echo "Service Unavailable" ;;
+		504) echo "Gateway Timeout" ;;
+		505) echo "HTTP Version Not Supported" ;;
+		506) echo "Variant Also Negotiates" ;;
+		507) echo "Insufficient Storage" ;;
+		508) echo "Loop Detected" ;;
+		510) echo "Not Extended" ;;
+		511) echo "Network Authentication Required" ;;
+		599) echo "Network Connect Timeout Error" ;;
+		*) echo "Invalid Response" ;;
+	esac
+	return 0
+}
+function urldecode() {
+	: "${*//+/ }"
+	echo -e "${_//%/\\x}"
+}
+function vbar() {
+	w=$(tput cols)
+	print=$1
+	title=$2
+	strlen=${#print}
+	char=$(printf "%s" "$print" | sed 's|[＂﹖]|\n|g' | wc -l)
+	strlen=$((strlen + char))
+	if [ "$print" != "" ]; then
+		if (((w - strlen - 8) / 2 < 0)); then
+			print=$( (echo "$1" | tr ' ' '\n' | {
+				mapfile -tn $((-3 * ((w - strlen - 8) / 2))) a
+				printf "%s " "${a[@]}" ...
+				tail -n $((-3 * ((w - strlen - 8) / 2) + 3)) | tr '\n' ' '
+			}) | sed 's|[[:blank:]]*$||g;s|^*[[:blank:]]||g')
+			strlen=${#print}
+		fi
+		if [ "$title" = "true" ]; then
+			len=$(((w - strlen - 8) / 2))
+		else
+			len=$(((w - strlen - 2) / 2))
+		fi
+
+		for ((i = 0; i < len; i++)); do
+			printf "─"
+		done
+
+		if [ "$title" = "true" ]; then
+			echo -n "--- $print ---"
+			for ((i = 0; i < (w - (len * 2 + strlen + 8)); i++)); do
+				printf "─"
+			done
+		else
+			printf ' %s ' "$print"
+			for ((i = 0; i < (w - (len * 2 + strlen + 2)); i++)); do
+				printf "─"
+			done
+		fi
+
+		for ((i = 0; i < len; i++)); do
+			printf "─"
+		done
+
+	else
+		for ((i = 0; i < w; i++)); do
+			printf "─"
+		done
+	fi
+	printf "\n"
+}

@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+import pickle
+from os.path import dirname
+from os import environ
+from gi.repository import Gio as g
+from subprocess import call, getoutput as get
+with open('/'.join([environ['HOME'],'.local/share/trackma/ahmubashshir.kitsu/anime.list']), 'rb') as f:
+	anime = pickle.load(f)
+with open('/'.join([environ['HOME'],'.local/share/trackma/ahmubashshir.kitsu/anime.meta']), 'rb') as f:
+	files = pickle.load(f)
+for n in files['library'].keys():
+		if anime[n]['my_status'] == 'completed':
+				for i in reversed(files['library'][n].keys()):
+					try:
+						fpath = dirname(files['library'][n][i])\
+						if dirname(files['library'][n][i]) != '/mnt/Multimedia/Animation/English'\
+						else files['library'][n][i]
+						break
+					except:
+						pass
+				print(fpath)
+				show_emblems = g.File.new_for_path(fpath)\
+					.query_info("metadata::emblems", g.FileQueryInfoFlags.NONE, None)\
+					.get_attribute_stringv('metadata::emblems')
+				if not 'checkmark' in show_emblems:
+					show_emblems.append('checkmark')
+					while '' in show_emblems:
+						show_emblems.remove('')
+					cmd = [ 'gio', 'set', '-t', 'stringv', fpath, 'metadata::emblems'] + show_emblems
+					call(cmd)
+					call(['touch','-d',get('date -R -r "%s"'%fpath),fpath])
+					print("Checked '%s': '%s'"%(anime[n]['title'],fpath))

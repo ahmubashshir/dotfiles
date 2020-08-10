@@ -1,0 +1,42 @@
+#!/bin/bash -e
+if [ -f PKGBUILD ];then
+	source ./PKGBUILD
+else
+	echo run this script inside a directory with a PKGBUILD.
+fi
+source /etc/makepkg.conf
+source /etc/pkgrepo.conf
+if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ];then
+	unset FORCEREBUILD
+fi
+mkdir -p ~/.config/pkgbuild
+if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ]||[ ! -f "/home/mubashshir/.config/repoctl/config.toml" ];then
+	repoctl new config  "${PKGREPO:-$PWD}/${REPO}"
+	cat >> /home/mubashshir/.config/repoctl/config.toml <<EOF
+add_params = [
+  "-v",
+  "-s",
+  "-k",
+  "$GPGKEY" #GPGKEY
+]
+EOF
+fi
+sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" "/home/mubashshir/.config/repoctl/config.toml"
+for split in ${pkgname[@]};do
+	if [ "$FORCEREBUILD" = "true" ]||{ echo "$*"|grep -q '\-f'; };then
+		break
+	fi
+        for ARCH in ${arch[@]};do
+		if [ -f "${PKGDEST:-$PWD}/${split}-${epoch:+$epoch:}${pkgver}-${pkgrel}-${arch}${PKGEXT}" ];then
+			FORCEREBUILD=true
+			break 2
+		fi
+	done
+done
+updpkgsums
+makepkg -cC ${FORCEREBUILD:+-f} "$@"
+for split in ${pkgname[@]};do
+	for ARCH in ${arch[@]};do
+		repoctl add -mrs "${PKGDEST:-$PWD}/${split}-${epoch:+$epoch:}${pkgver}-${pkgrel}-${arch}${PKGEXT}"
+	done
+done
