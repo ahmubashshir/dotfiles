@@ -1,0 +1,63 @@
+#!/usr/bin/python3
+import os,sys,subprocess as sp
+try:
+	from termcolor import colored
+except ImportError:
+	sys.stderr.write('\x1b[1;31m' + "You Have to install termcolor using:\n\b$  sudo pip3 install termcolor\nor\n#  pip3 install termcolor" + '\x1b[0m'+"\n")
+	exit(-1)
+
+conf="/.hidden"
+db=[]
+if sys.argv.count("--list")==0 and len(sys.argv)>1:
+	args=sys.argv
+	args.pop(0)
+	if sp.getoutput("basename "+os.getcwd()) in args:
+		conf="/../.hidden"
+	try:
+		with open(os.getcwd()+conf,'r') as f:
+			db.extend(f.read().splitlines())
+	except FileNotFoundError:
+		with open(os.getcwd()+conf,'w') as f:
+			f.write("")
+#	print(db)
+#	print(args)
+	for a in args:
+		if a in db:
+			db.remove(a)
+		else:
+			db.append(a)
+	if len(db)>0:
+		with open(os.getcwd()+conf,'w') as f:
+			for a in db:
+				f.write("%s\n"%(a))
+	else:
+		os.system("rm "+os.getcwd()+conf)
+#	try:
+#		with open(os.getcwd()+conf,'r') as f:
+#			db.clear()
+#			db.extend(f.read().splitlines())
+#		print(db)
+#	except FileNotFoundError:
+#		print("No File is hidden")
+else:
+	try:
+		with open(os.getcwd()+conf,'r') as f:
+			db.clear()
+			db.extend(f.read().splitlines())
+		for n in db:
+			if os.path.exists(n)==False:
+				db.remove(n)
+		with open(os.getcwd()+conf,'w') as f:
+			for a in db:
+				f.write("%s\n"%(a))
+		if len(db)>0:
+			print("Hidden Files in:"+os.getcwd())
+			for n in db:
+				print("  "+n)
+		else:
+			print(colored("No File is hidden","red"))
+	except FileNotFoundError:
+		print(colored("No File is hidden","red"))
+if "--list" in sys.argv:
+	input(colored("\nPress Enter to continue.","green"))
+	exit()

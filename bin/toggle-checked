@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+from os.path import realpath,basename
+from subprocess import call, getoutput as get
+from gi.repository import Gio as g
+from sys import argv
+
+
+def set_emblems(path,emblems):
+	file = g.File.new_for_path(path)
+	info = file.query_info('metadata::emblems', 0, None)
+	cmd = [ 'gio', 'set', '-t', 'stringv', path, 'metadata::emblems']
+	if emblems == []:
+		cmd.append('')
+	else:
+		cmd += emblems
+	call(cmd)
+	call(['touch','-d',get('date -R -r "%s"'%path),path])
+def get_emblems(path):
+	file = g.File.new_for_path(path)
+	info = file.query_info('metadata::emblems', 0, None).get_attribute_stringv('metadata::emblems')
+	if info == ['']:
+		return []
+	else:
+		return info
+
+if len(argv) == 1 or '--help' in argv or '-h' in argv:
+	print("help:\n  %s file1 [file2 [...]]"%basename(argv[0]))
+else:
+	for n in argv[1:]:
+		file = realpath(n)
+		meta = get_emblems(file)
+		if not 'checkmark' in meta:
+			meta.append('checkmark')
+		else:
+			meta.remove('checkmark')
+		set_emblems(file, meta)

@@ -1,0 +1,10 @@
+#!/bin/bash
+if { ldconfig -p | grep -q libMangoHud.so ;} && [ -z "$LD_PRELOAD" ];then
+    export LD_PRELOAD=libMangoHud.so
+fi
+if type -t rpcs3-override &>/dev/null;then
+	rpcs3=rpcs3-override
+else
+	rpcs3=/usr/bin/rpcs3
+fi
+exec "$rpcs3" "$@"

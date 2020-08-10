@@ -1,0 +1,18 @@
+#!/bin/bash
+function displaytime {
+  local T=$1
+  local D=$((T/(60*60*24)))
+  local H=$(((T/(60*60))%24))
+  local M=$(((T/60)%60))
+  local S=$((T%60))
+  printf '<txt>'
+  (( $D > 0 )) && printf '%d days\n' $D
+  (( $H > 0 )) && printf '%d hours\n' $H
+  (( $M > 0 )) && printf '%d minutes\n' $M
+  printf '%d seconds</txt>\n' $S
+}
+displaytime "$(datediff -f%S "$(uptime -s)$(date +%z)" now)"
+printf '<tool>'
+uptime -p
+uptime|sed s/',  '/'\n'/g|tail -n -2
+printf '</tool>'
