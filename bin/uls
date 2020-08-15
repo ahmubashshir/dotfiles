@@ -17,6 +17,9 @@ for k in "$@";do
 	fi
 	for n in "$k"/*;do
 		if ! gio info "$n" -a metadata::emblems|grep 'metadata::emblems:'|cut -d\[ -f2-|cut -d\] -f1|tr -d ,|grep -q checkmark;then
+			if grep -q "$(basename "$n")" "$(dirname "$n")/.hidden";then
+				continue
+			fi
 			if echo "${n##*/}"|grep -q '[[:blank:]]';then
 				echo -e "$idnt'${n##*/}'"
 			else
