@@ -9,7 +9,7 @@ if [ -x /usr/bin/thefuck ];then
 	eval "$(thefuck --alias)"
 	alias shit='fuck'
 fi
-if [[ $- == *i* ]] && [ -x /usr/bin/ufetch ] && getterm|grep -vq 'gedit\|tmux';then
+if [[ $- == *i* ]] && [ -x /usr/bin/ufetch ] && getterm|grep -vq 'gedit\|tmux\|octopi';then
 	ufetch >&2
 fi
 #aliases
@@ -119,6 +119,9 @@ export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
 export GPGID=56DB0538F60D951C
 if [ -z "$WINEARCH" ];then
 	export WINEARCH=win64
+fi
+if [ -n "${ZSH_VERSION:-}" ] ; then
+	export VIRTUAL_ENV_DISABLE_PROMPT=1
 fi
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC

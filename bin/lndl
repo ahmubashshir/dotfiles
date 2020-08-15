@@ -23,10 +23,11 @@ readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
 show_help()
 {
 	echo "usage ${0##*/}: "
-	echo "  (h)elp      show this."
-	echo "  (a)dd <id>  Add Google Drive public folder id to Library."
-	echo "  (s)ync      Synchronize library with remote folder."
-	echo "  lib         Use functions defined here in scripts."
+	echo "  (h)elp           show this."
+	echo "  (a)dd <id>       Add Google Drive public folder id to Library."
+	echo "  (s)ync           Synchronize library with remote folder."
+	echo "  (s)ync-(t)hread  Synchronize library with remote folder."
+	echo "  lib              Use functions defined here in scripts."
 }
 log_entry() {
 	echo "[$(date +%s)] [lndl-$action] [$target]${etarget:+ [$etarget]}${data:+ [$data]}" >> "$LOG"
