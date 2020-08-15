@@ -134,13 +134,16 @@ if [[ $ENV[color_prompt] = yes ]];then
 		RETVAL=$?
 		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
 		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
+		[[ -n $VIRTUAL_ENV ]] && {
+			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
+		} || VENV_PROMPT=""
 		if ${ZCOMPILED:-false};then
 			compinit -C
 			unset ZCOMPILED
 		fi
 		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]\n%F{red}├────[pts:${GPG_TTY##*/}]-[%F{cyan}${ENV[cwd]}%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
+	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${GPG_TTY##*/}%b%F{red}]-[%F{cyan}%B${ENV[cwd]}%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
 else
 	chpwd()
 	{
@@ -158,20 +161,20 @@ reload()
 	compinit
 	bashcompinit
 }
-zcompaliases()
-{
-	compdef https=http
-	compdef userctl=systemctl
-	compdef yt-dl=youtube-dl
-	compdef yt-mp3=youtube-dl
-	compdef commit=git
-	compdef clone=git
-	compdef push=git
-	compdef tag=git
-	compdef add=yay
-	compdef del=yay
-	compdef upd=yay
+if [[ $(getterm) = octopi ]];then
+	unset PS1 PS2 PS3 PS4 HISTFILE
+fi
 
+# suffix aliases
+{
+	jq-pager() {
+		[ -z "$1" ] && return
+		[ -x /usr/bin/jiq ] && jiq < "$1" || { jq -C '.' "$@"|less;}
+	}
+	alias -s json='jq-pager'
+	alias -s {txt,md}='less'
+	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
+	alias -s html='lynx'
 }
 start_zcompile()
 {
@@ -180,7 +183,6 @@ start_zcompile()
 }
 compinit
 start_zcompile&!
-zcompaliases
 
 bashcompinit
 bashcompsys

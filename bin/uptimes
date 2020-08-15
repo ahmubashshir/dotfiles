@@ -1,0 +1,10 @@
+#!/bin/bash
+journalctl --list-boots |\
+	tr -s '—' ' ' |\
+		awk '{print $1";"$4"T"$5$6":00;"$8"T"$9$10":00"}' |\
+			while read;do
+				echo "$REPLY" |\
+					awk -F';' '{"datediff -f \"%F %0Hh %0Mm %0Ss\" "$2" "$3 | getline line;print $1"\t"line}'
+			done |\
+				awk '{lines[a++]=$0};END{while(a--) print lines[a]}' |\
+					column -R IDX -tN IDX,UPTIME -s $'\t'
