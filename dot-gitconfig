@@ -27,13 +27,13 @@
 	st = status
 	uncommit = reset --soft HEAD^
 	progress = diff --stat
-	forkcfg = config remote.pushDefault ahmubashshir
+	forkcfg = ! git config remote.pushDefault ahmubashshir && git config branch.master.remote ahmubashshir
 	amend = commit --amend
 	pg = diff --shortstat
-	cfr = ! hub fork && git config remote.pushDefault ahmubashshir
+	cftc = ! hub fork && git config remote.pushDefault ahmubashshir && git config branch.master.remote ahmubashshir
 	rf = !git pull --all && git pull origin master && git push --all
 	up = ![ "$(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge")" = '' ] && git push -u || git push
-	cpr = !git push -q && hub pull-request
+	cpr = !git push && hub pull-request
 	hist = !giggle
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
