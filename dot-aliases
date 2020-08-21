@@ -41,7 +41,6 @@ alias k="kill"
 alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
 alias yt-mp3="youtube-dl --restrict-filenames --xattrs --add-metadata --audio-format best -ir 1M -R 10 -x -o '%(title)s.%(acodec)s.%(ext)s' --audio-format mp3 --embed-thumbnail --convert-subs lrc -c"
 alias sudoe="sudo -E "
-alias update-hub='cd $GOPATH/src/github.com/github/hub;git stash&&git stash drop;git pull;make;sudo -EH make install prefix=/usr;cd $OLDPWD'
 if hash tldr 2>/dev/null;then
 	alias '?'=tldr
 	alias h=tldr
