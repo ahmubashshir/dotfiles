@@ -1,10 +1,12 @@
 #!/bin/bash
-journalctl --list-boots |\
+if [ ! -x /usr/bin/datediff ];then
+	timespan='{"datediff -f \"%F %0Hh %0Mm %0Ss\" "$2" "$3 | getline line;print $1"\t"line}'
+else
+	timespan='{d=h=m=s=0;"expr $(date +%s --date="$3") - $(date +%s --date="$2")"|getline l;if((l>59)){((s=l%60));((l=(l-s)/60));if((l>59)){((m=l%60));((l=(l-m)/60));if((l>23)){((h=l%24));((d=(l-h)/24))}else{((h=l))}}else{((m=l))}}else{((s=l))};l=sprintf("%dd %02dh %02dm %02ds",d,h,m,s);print $1"\t"l}'
+fi
+journalctl --list-boots --utc |\
 	tr -s '—' ' ' |\
-		awk '{print $1";"$4"T"$5$6":00;"$8"T"$9$10":00"}' |\
-			while read;do
-				echo "$REPLY" |\
-					awk -F';' '{"datediff -f \"%F %0Hh %0Mm %0Ss\" "$2" "$3 | getline line;print $1"\t"line}'
-			done |\
+		awk '{print $1";"$4"T"$5$6";"$8"T"$9$10}' |\
+			awk -F';' "$timespan" |\
 				awk '{lines[a++]=$0};END{while(a--) print lines[a]}' |\
 					column -R IDX -tN IDX,UPTIME -s $'\t'
