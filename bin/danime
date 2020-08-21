@@ -90,12 +90,14 @@ DOWNLOAD_ALL=${DOWNLOAD_ALL:-false}
 FILE_LIST=${FILE_LIST:-false}
 FORCE=
 SEARCHSTR=
+USER_AGENT="${USER_AGENT:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36}"
 PREFERRED_TR=${PREFERRED_TR:-dub}
 CURL_OPTIONS=(
+	--compressed
 	-H 'authority: ww5.dubbedanime.net'
 	-H 'pragma: no-cache'
 	-H 'cache-control: no-cache'
-	-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'
+	-H 'user-agent: '"$USER_AGENT"
 	-H 'origin: https://ww5.dubbedanime.net'
 	-H 'sec-fetch-site: same-origin'
 	-H 'sec-fetch-mode: cors'
@@ -1473,7 +1475,7 @@ try:
 
 	r = requests.Session()
 	r.cookies = cj
-	r.headers = {"user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36"}
+	r.headers.update({"user-agent": "'"$USER_AGENT"'"})
 	html.fromstring(r.get("https://ww5.dubbedanime.net/").text).get_element_by_id("logo")
 except:
 	print("Update hijacked cookies in \"~/.da-cookies.txt\"")
