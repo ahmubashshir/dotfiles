@@ -1,0 +1,19 @@
+#!/bin/bash -e
+# HOOK-CONDITION: [ "$(git config --bool aur.hook.gitigore)" != "false" ]
+# HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
+git reset
+if [ ! -f .gitigore ];then
+	hook_print "Initializing gitignore"
+	echo '*' >.gitignore
+else
+	hook_print "Updating gitignore"
+fi
+for n in "${STAGED[@]}";do
+	grep -q "$n$" .gitignore && continue
+	echo '!'"$n" >> .gitignore
+done
+git add --force .gitignore
+for n in "${STAGED[@]}";do
+	git add --force "$n"
+done
