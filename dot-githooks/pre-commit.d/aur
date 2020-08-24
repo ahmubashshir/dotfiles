@@ -4,5 +4,6 @@
 if grep -q 'git://|git+http' PKGBUILD;then
 	makepkg -o
 fi
+hook_print "Updating SRCINFO" info
 makepkg --printsrcinfo > .SRCINFO
 git add .SRCINFO
