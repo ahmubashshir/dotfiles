@@ -70,6 +70,8 @@
 	prune = true
 [url "ssh://aur@aur.archlinux.org/"]
     insteadOf = "aur:"
+[url "http://aur.archlinux.org/"]
+	insteadOf = "pkg:"
 [sendemail]
 	smtpServer = smtp.gmail.com
 	smtpServerPort = 587
