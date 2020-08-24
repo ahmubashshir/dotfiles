@@ -6,7 +6,7 @@ else
 fi
 journalctl --list-boots --utc |\
 	tr -s '—' ' ' |\
-		awk '{print $1";"$4"T"$5$6";"$8"T"$9$10}' |\
+		awk '{if($1 != "0" )print $1";"$4"T"$5$6";"$8"T"$9$10;else {"echo $(date --iso-8601=seconds --date=\"$(uptime -s)\") $(date --iso-8601=seconds)"|getline $0;print "0;"$1";"$2}}' |\
 			awk -F';' "$timespan" |\
 				awk '{lines[a++]=$0};END{while(a--) print lines[a]}' |\
 					column -R IDX -tN IDX,UPTIME -s $'\t'
