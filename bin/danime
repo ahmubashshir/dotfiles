@@ -8,7 +8,7 @@
 # shellcheck disable=SC2016
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
-#VERSION_INFO=05d4d7
+#VERSION_INFO=r133.8f39945
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -90,8 +90,8 @@ DOWNLOAD_ALL=${DOWNLOAD_ALL:-false}
 FILE_LIST=${FILE_LIST:-false}
 FORCE=
 SEARCHSTR=
-USER_AGENT="${USER_AGENT:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36}"
 PREFERRED_TR=${PREFERRED_TR:-dub}
+USER_AGENT="${USER_AGENT:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36}"
 CURL_OPTIONS=(
 	--compressed
 	-H 'authority: ww5.dubbedanime.net'
@@ -102,7 +102,6 @@ CURL_OPTIONS=(
 	-H 'sec-fetch-site: same-origin'
 	-H 'sec-fetch-mode: cors'
 	-H 'sec-fetch-dest: empty'
-	-H 'referer: https://ww5.dubbedanime.net/browse-anime'
 )
 if [ -e ~/.da-cookies.txt ];then
 	CURL_OPTIONS+=( --cookie ~/.da-cookies.txt )
@@ -379,7 +378,7 @@ da_db_add()
 {
 
 	data="$(jq '. * { "'"$TYPE"'" : {"'"$id"'":{ "title":null ,"path":null,"url":null,"total":null,"saved":null}} }' "$CACHE_FILE")"
-	echo "$data" > "$CACHE_FILE"
+	da_db write "$data"
 }
 da_db_list()
 {
@@ -393,7 +392,7 @@ da_db_set()
 {
 	if da_db_has;then
 		data="$(jq '.'"$TYPE"'."'"$id"'".'"$1"'='"$2" "$CACHE_FILE")"
-		echo "$data" > "$CACHE_FILE"
+		da_db write "$data"
 	fi
 }
 da_db_get()
@@ -405,9 +404,15 @@ da_db_has(){
 }
 da_db_del()
 {
-	if da_db_has;then
+	if da_db has;then
 		data="$(jq 'del(."'"$TYPE"'"."'"$id"'")' "$CACHE_FILE")"
-		echo "$data" > "$CACHE_FILE"
+		da_db write "$data"
+	fi
+}
+da_db_write()
+{
+	if [ -n "$@" ];then
+		echo "$@" > "$CACHE_FILE"
 	fi
 }
 da_api_search() {
@@ -542,22 +547,66 @@ da_update()
 	local TYPE id dir updatable n new_eps
 	NORESET=true
 	updatable=()
-	for n in $(da_db list);do
-		TYPE="$(dirname $n)"
-		id="$(basename $n)"
-		if ! [ -d "$(da_db get path)" ];then
-			da_db del
-			continue
-		fi
-		echo -n "[$n] Checking update..."
-		new_eps=$(( $(da_get_len "$n-$(da_db get url)") - $(da_db get saved) ))
-		if ((new_eps>0));then
-			updatable+=( "$n" )
-			echo -e "\r[$n] Queueing update($new_eps+)..."
+	if ${DO_UPDATE_LIST:-false};then
+		for n in $(da_db list);do
+			TYPE="$(dirname $n)"
+			id="$(basename $n)"
+			if ! [ -d "$(da_db get path)" ];then
+				da_db del
+				continue
+			fi
+			echo "[$n] $(da_db get title)"
+		done
+		return 0
+	elif (( "${#DO_UPDATE_ONLY[@]}" == 0 ));then
+		for n in $(da_db list);do
+			TYPE="$(dirname $n)"
+			id="$(basename $n)"
+			if ! [ -d "$(da_db get path)" ];then
+				da_db del
+				continue
+			fi
+			echo -n "[$n] Checking update..."
+			new_eps=$(( $(da_get_len "$n-$(da_db get url)") - $(da_db get saved) ))
+			if ((new_eps>0));then
+				updatable+=( "$n" )
+				echo -e "\r[$n] Queueing update($new_eps+)..."
+			else
+				echo
+			fi
+		done
+	elif (( "${#DO_UPDATE_ONLY[@]}" )); then
+		if (( "${#DO_UPDATE_ONLY[@]}" > 1 )) && [ "${DO_UPDATE_ONLY[0]}" = "!" ]; then
+			DO_UPDATE_ONLY=("$(echo "${DO_UPDATE_ONLY[@]}" | cut -d' ' -f2-|tr -s ' ' '|')")
+			for n in $(da_db list);do
+				TYPE="$(dirname $n)"
+				id="$(basename $n)"
+				if echo "$n"|grep -qE "${DO_UPDATE_ONLY[0]}";then
+					continue
+				fi
+				if ! [ -d "$(da_db get path)" ];then
+					da_db del
+					continue
+				fi
+				echo -n "[$n] Checking update..."
+				new_eps=$(( $(da_get_len "$n-$(da_db get url)") - $(da_db get saved) ))
+				if ((new_eps>0));then
+					updatable+=( "$n" )
+					echo -e "\r[$n] Queueing update($new_eps+)..."
+				else
+					echo
+				fi
+			done
 		else
-			echo
+			for n in "${DO_UPDATE_ONLY[@]}";do
+				TYPE="$(dirname $n)"
+				id="$(basename $n)"
+				if da_db has;then
+					updatable+=( "$n" )
+				fi
+			done
 		fi
-	done
+	fi
 	for n in "${updatable[@]}";do
 		TYPE="$(dirname $n)"
 		id="$(basename $n)"
@@ -605,7 +654,7 @@ da_get_len()
 			xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/li/a/@href' - 2> /dev/null|wc -l
 		;;
 		subbed|dubbed)
-			xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/li[@data-'$type'="true"]/a/@href' - 2> /dev/null|wc -l
+			xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/li[@data-'$type'="true" or @data-'${type:0:3}'="true"]/a/@href' - 2> /dev/null|wc -l
 		;;
 		*)
 			return 1
@@ -629,9 +678,9 @@ da_get() {
 	fi
 	start_spinner "Fetching \"$TYPE/$id\" info"
 	da_page=$(curl "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series")
-	da_page_json=$(echo "$da_page"|grep 'var anime\|var cartoon'|cut -d= -f2-|cut -d\  -f2-|sed 's/\;$//g'|jq)
+	da_page_json=$(echo "$da_page"|grep -E '(let|var) (anime|cartoon)'|cut -d= -f2-|cut -d\  -f2-|sed 's/\;$//g'|jq)
 	if [[ $TYPE == anime ]]; then
-		baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/node()' - 2> /dev/null | awk '/<li/,/li>/{printf $0;if (++o%3 == 0) print ""}' | (while read -rs xml_node; do echo -e "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href,";subbed=",//li/@data-subbed="true",";dubbed=",//li/@data-dubbed="true"," ")' -; done) | tr -s ' ' \\n | tac)
+		baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/node()' - 2> /dev/null | awk '/<li/,/li>/{printf $0;if (++o%3 == 0) print ""}' | while read -rs xml_node; do echo -e "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href,";subbed=",//li/@data-subbed="true" or //li/@data-sub="true",";dubbed=",//li/@data-dubbed="true" or //li/@data-dub="true"," ")' -; done| tr -s ' ' \\n | tac)
 	else
 		baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/li/node()' - 2> /dev/null | (while read -rs xml_node; do echo "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href," ")' - 2> /dev/null; done) | tr -s ' ' '\n' | grep -v '=$' | tac)
 	fi
@@ -787,12 +836,12 @@ da_get_episede() {
 			page_url="https://ww5.dubbedanime.net/${d%%-*}"
 			unset d
 		fi
-		parse_episede_page="$(curl "${CURL_OPTIONS[@]}" -ks "$1" | sed 's|\;$||g' | grep 'var\ episode\|var\ xuath' | cut -d= -f2-)"
-		if [ -z "$parse_episede_page" ];then
-			parse_episede_page="$(curl "${CURL_OPTIONS[@]}" -ks "$page_url" | sed 's|\;$||g' | grep 'var\ episode\|var\ xuath' | cut -d= -f2-)"
+		parse_episode_page="$(curl -H "referer: https://ww5.dubbedanime.net/$TYPE/$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$1" | grep -E '(var|let) (episode|xToken|xuath)')"
+		if [ -z "$parse_episode_page" ];then
+			parse_episode_page="$(curl -H "referer: https://ww5.dubbedanime.net/$TYPE/$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$page_url" | grep -E '(var|let) (episode|xToken|xuath)')"
 		fi
 		unset page_url
-		parse_episede_page="$(echo "$parse_episede_page" | head -1|jq -c ". + { \"auth\" : \"$(echo "$parse_episede_page"|tail -1|cut -d\' -f2)\"}")"
+		parse_episode_page="$(echo "$parse_episode_page" | cut -d= -f2- | sed 's/\;$//g;s/^[[:blank:]]*//g' | head -1|jq -c ". + { \"auth\" : \"$(echo "$parse_episode_page"|tail -1|cut -d\' -f2)\"}")"
 		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
 			tr=dubbed
 		fi
@@ -801,17 +850,17 @@ da_get_episede() {
 		else
 			filter="cat"
 		fi
-		if [ -z "$parse_episede_page" ];then
+		if [ -z "$parse_episode_page" ];then
 			stop_spinner 1
 			echo Episode not available.
 			${NOBREAK:-false} && return 0 || return 1
 		fi
 		if [ "$episode_type" = "episode" ]; then
-			ep_title=$(echo "$parse_episede_page" | jq -r '.name.default')
+			ep_title=$(echo "$parse_episode_page" | jq -r '.name.default')
 			local ep_number
-			ep_number=$(echo "$parse_episede_page" | jq -r '.number')
+			ep_number=$(echo "$parse_episode_page" | jq -r '.number')
 			if [ "$ep_number" = "null" ]; then
-				ep_number=$(echo "$parse_episede_page" | jq -r '.name.default' | rev | cut -d' ' -f1 | rev)
+				ep_number=$(echo "$parse_episode_page" | jq -r '.name.default' | rev | cut -d' ' -f1 | rev)
 				if ! [[ $ep_number =~ ^[[:digit:].]+$ ]];then
 					((null_ep_count+=1))
 					ep_number=${null_ep_count}n
@@ -829,15 +878,15 @@ da_get_episede() {
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
 			ep_title="$(echo "$ep_title"|sed 's| *$||g;s|^ *||g')"
 			ep_id_list=$(
-				echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-				curl "${CURL_OPTIONS[@]}" -ks "https://vid.xngine.com/api/episode/$(echo "$parse_episede_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+				echo "$parse_episode_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episode_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+				curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
 			)
 
 			if [ -z "$ep_id_list" ]; then
 				tr=subbed
 				ep_id_list=$(
-					echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-					curl "${CURL_OPTIONS[@]}" -ks "https://vid.xngine.com/api/episode/$(echo "$parse_episede_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+					echo "$parse_episode_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episode_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
+					curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
 				)
 			fi
 			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
@@ -846,14 +895,14 @@ da_get_episede() {
 			ep_file_name="$(echo "$ep_title" | replace_invalid)-$tr.mp4"
 		elif [ "$episode_type" = "cartoon" ]; then
 			ep_title="$TITLE"
-			ep_number="$(echo "$parse_episede_page" | jq -r '.number')"
+			ep_number="$(echo "$parse_episode_page" | jq -r '.number')"
 			ep_title="$ep_title ep $ep_number"
-			ep_id_list=$(echo "$parse_episede_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episede_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | awk -e '!seen[$0]++')
+			ep_id_list=$(echo "$parse_episode_page" | jq --tab -r '.videos' | grep -v '"date"' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | tr -d \\t | sed 's/,},/}/;s/,}/}/' |da_add_auth "$parse_episode_page"| jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | awk -e '!seen[$0]++')
 			ep_file_name="$(echo "$ep_title" | replace_invalid).mp4"
 		fi
 		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/\\\|}"'/{print};!/'"${PREFERRED_HOSTS//,/\\|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
 		set +x
-		if [ -n "$parse_episede_page" ] && [ -n "$ep_title" ]; then
+		if [ -n "$parse_episode_page" ] && [ -n "$ep_title" ]; then
 			stop_spinner 0
 		else
 			stop_spinner 1
@@ -1029,7 +1078,7 @@ compare_episode() {
 		printf "\rComparing episode[test:%d]" "$((i + 1))"
 		start=${offsets[$i]}
 		hash1="$(dd bs=1 count="${BS:-524288}" status=none if="$1" skip="$start" | sha256sum | cut -d\  -f1)"
-		hash2="$(curl -skr "$start-$((start + ${BS:-524288} - 1))" "$2" | sha256sum | cut -d\  -f1)"
+		hash2="$(curl -Lskr "$start-$((start + ${BS:-524288} - 1))" "$2" | sha256sum | cut -d\  -f1)"
 		test "$hash1" = "$hash2" && failed_tests=$((failed_tests - 1))
 		test "$hash1" = "$hash2" || echo -e "\rComparing episode[test:$((i + 1)):fail]"
 		test "$hash1" = "$hash2" || return 4
@@ -1091,18 +1140,23 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 					#text: Show version and license.
 				#-option
 				if [ "${0##*/}" = "35footer" ]; then
-					echo " danime  master-$(git rev-parse HEAD | cut -c 1-6)"
+					printf "danime master-r%d.%s" \
+						"$(git rev-list --count HEAD)" \
+						"$(git rev-parse --short HEAD)"
+					(( $(printf '%d' "$(git diff --shortstat|cut -d' ' -f2)" ) )) && {
+						printf '-'
+						git diff --shortstat|cut -d' ' -f2
+					}
 				else
-					echo " danime  dist-$(grep '^#VERSION_INFO=05d4d7' "$0" | cut -d= -f2)"
+					echo "danime $(grep '^#VERSION_INFO=r133.8f39945' "$0" | cut -d= -f2)"
 				fi
-				echo
 				echo
 				da_get_license
 				exit 0
 				;;
-			(-l | --license)
+			(-L | --license)
 				#+option
-					#short: -l
+					#short: -L
 					#long: --license
 					#text: Show license.
 				#-option
@@ -1329,9 +1383,25 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#+option
 					#short: -u
 					#long: --update
-					#text: Update and continue incomplete downloads.
+					#text: Update and continue incomplete downloads,
+					#IDNT: 4
+					#text: adding '!' as first arg inverts match.
+					#IDNT: 2
+					#args: [! ][id1[ id2[ ...]]]
 				#-option
 				DO_UPDATE=true
+				if (($#>1));then
+					shift
+					DO_UPDATE_ONLY=("$@")
+				fi
+			;;
+			(-l|--list)
+				#+option
+					#short: -l
+					#long: --list
+					#text: List updatable/interrupted series.
+				#-option
+				DO_UPDATE_LIST=true
 			;;
 			(-h | --help)
 				#+option
@@ -1460,7 +1530,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		echo -e "Warning: --all/-a option can only be used when no\n\tselection or episode limit specified.\n\tDisabling autodownload mode"
 	fi
 	[[ -n $FORCE ]] && echo "${FORCE} enforced."
-	if [[ $SEARCHSTR != '' ]] || ${DO_UPDATE:-false} ; then
+	if [[ $SEARCHSTR != '' ]] || ${DO_UPDATE:-false} || ${DO_UPDATE_LIST:-false} ; then
 		python3 -c 'from sys import argv, stdout
 import requests, os
 from http.cookiejar import MozillaCookieJar as MCJ
@@ -1481,7 +1551,7 @@ except:
 	print("Update hijacked cookies in \"~/.da-cookies.txt\"")
 	exit(1)' || exit
 		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
-			if ${DO_UPDATE:-false};then
+			if ${DO_UPDATE:-false} || ${DO_UPDATE_LIST:-false};then
 				da_update
 				exit
 			fi
