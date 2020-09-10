@@ -1,0 +1,163 @@
+#!/bin/sh
+man() {
+    LESS_TERMCAP_md=$'\e[01;31m' \
+    LESS_TERMCAP_me=$'\e[0m' \
+    LESS_TERMCAP_se=$'\e[0m' \
+    LESS_TERMCAP_so=$'\e[01;44;33m' \
+    LESS_TERMCAP_ue=$'\e[0m' \
+    LESS_TERMCAP_us=$'\e[01;32m' \
+    command man "$@"
+}
+# functions
+pwdp()
+{
+	readlink /proc/$1/cwd||echo Permission denied >>/dev/stderr
+}
+get_termemu() {
+	ps -h -o comm -p $(ps -h -o ppid -p $$ 2>/dev/null) 2>/dev/null
+}
+port()
+{
+	netcat -zvw10 "$@"
+}
+fpio()
+{
+	if [ -f "$1" ];then
+		curl --upload-file "$1" "https://filepush.co/upload/$(basename "$1")"
+	else
+		echo no such file
+	fi
+}
+get_m3u()
+{
+	echo Building download link from playlist url 1>&2
+	echo -ne "URL\t:  " 1>&2
+	curl "$1" 2>/dev/null|grep -v ^#|sed '/^$/d'|( (head -2|cut -d\& -f1) && (tail -2|cut -d\? -f2|cut -d\& -f2-|awk 'NR==1 {print "&"$0;}'))|awk 'NR>=2 && NR<=3 {printf $0;}'|awk "{print \"$(dirname "$1"|tr -d '[:blank:]')/\"\$0;}"
+}
+wlen()
+{
+	wget --spider -O- $1 2>&1|grep Length|sed 's|Length|Size|g'
+}
+sql2db()
+{
+	name=$1
+	echo "Converting $1 to ${1%.*}.db"
+	curl -F files[]=@"$1" 'https://www.rebasedata.com/api/v1/convert?outputFormat=sqlite&errorResponse=zip' -o .tmp.zip
+	unzip .tmp.zip 2>/dev/null
+	mv "data.sqlite" "${1%.*}.db"
+	rm .tmp.zip
+}
+urldecode()
+{
+	: "${*//+/ }";
+	echo -e "${_//%/\\x}";
+}
+embed()
+{
+bash -c "set -x;echo -e \"\$(cat \"$1\")\">/dev/null" 2>&1|tail -n +2|sed 's|^+ echo -e |embeddable:\n|g'
+}
+log()
+{
+	for n in $@
+	do
+		echo -e "$(strings $n|sed 's/\[0;/\\033[0;/')"
+	done
+}
+ellipsis() {
+	python3 -c "try:
+	from sys import argv
+	l=int(int(argv[1])/2)
+	if len(' '.join(argv[2:]))>l*2:
+		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
+	else:
+		print(' '.join(argv[2:]),sep='')
+except KeyboardInterrupt:
+	pass" "$@"
+}
+#gdrive
+ls_drive()
+{
+	echo -e "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
+	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
+	return $?
+}
+get_drive()
+{
+	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
+	local size JSON md5sums try
+	echo -e " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
+	until [ -n "$size" ];do
+		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		python -mjson.tool - &>/dev/null || continue
+		size="$(echo "$JSON"|jq -r .size)"
+	done
+	md5sums="$(echo "$JSON"|jq -r .md5Checksum) $1"
+	if echo "$md5sums"|md5sum -c --quiet &>/dev/null; then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+		sleep 2
+		return 0
+	else
+		echo
+		try=0
+		until echo "$md5sums"|md5sum -c --quiet &>/dev/null || ((try==5));do
+			tput cuu1
+			curl -sL "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s $size > "$1"
+			((try+=1))
+			sleep 5
+		done
+	fi
+}
+rdl_drive () {
+	files=()
+	false
+	until [ "${PIPESTATUS[0]}" = "0" ];do
+		for n in $(ls_drive $1);do
+			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
+			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
+			mime=$(echo $n|cut -d\| -f3|cut -d: -f2)
+			if [[ $mime != 'application/vnd.google-apps.folder' ]]
+			then
+				get_drive $id "$name"
+				files+=('-not' '-samefile' "$name")
+			else
+				mkdir -p "$name" 2> /dev/null && (
+					cd "$name" && rdl_drive $id && cd ..
+				) || echo "Invalid name \"$name\"" >&2
+			fi
+			echo
+		done
+		[ "${PIPESTATUS[0]}" = "0" ] || {
+			sleep 10
+			tput cuu1
+			tput el
+			false
+		}
+	done
+	if [ -n "${files[*]}" ];then
+		find -type f "${files[@]}" -exec echo Removing '{}' \; -delete
+	fi
+
+}
+#end:gdrive
+title()
+{
+	printf "\033];%s\07" "$@"
+}
+geticon()
+{
+	if [ "$1" = "" ];then
+		echo -e "Usage:\ngeticon <url>"
+	else
+		rm -f "$name.png"
+		tmp=$(mktemp -u .favicon.XXXXXXXXXX.ico|cut -d/ -f2)
+		name=$(echo $1|cut -d/ -f3)
+		wget -q $1/favicon.ico -O "$tmp"
+		convert "$tmp" "$name.png"
+		rm $tmp
+	fi
+}
+dd()
+{
+	/bin/dd status=progress "$@"
+}

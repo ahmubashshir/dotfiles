@@ -51,7 +51,6 @@ setopt histignorespace histfindnodups histsavenodups
 # Use emacs keybindings even if our EDITOR is set to vi
 bindkey -e
 
-[ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 #source ~/.zsh/notifyosd
 
 ## Zstyle Config
@@ -92,7 +91,10 @@ zstyle ':vcs_info:*'   check-for-staged-changes true
 if [ -f $HOME/.zinputrc ];then
 	. $HOME/.zinputrc
 fi
-
+if [ -f "$HOME/.shell/import" ];then
+	emulate sh -c 'source '$HOME'/.shell/import'
+fi
+[ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 ## customize
 export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
@@ -124,7 +126,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 			ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
 			ENV[cwd]=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
 		else
-			[[ $PWD == $HOME ]] && ENV[cwd]='~' || ENV[cwd]=${PWD##*/}
+			[[ $PWD == $HOME ]] && ENV[cwd]='~' || { [[ $PWD == / ]] && ENV[cwd]=/ || ENV[cwd]=${PWD##*/} ;}
 		fi
 	}
 	chpwd
@@ -187,7 +189,9 @@ start_zcompile&!
 bashcompinit
 bashcompsys
 bashcompadd cpu-x winetricks
-
+if [ -f "$HOME/.zsh/compdef" ];then
+	source $HOME'/.zsh/compdef'
+fi
 if [ -f /tmp/zprof.$UID ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-

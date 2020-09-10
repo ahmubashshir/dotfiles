@@ -1,0 +1,39 @@
+#compdef danime
+
+# zsh completions for 'danime'
+# automatically generated with http://github.com/RobSis/zsh-completion-generator
+local arguments
+
+arguments=(
+  {-v,--version}'[show version and license.]'
+  {-L,--license}'[show license.]'
+  {-i,--id}'[prefer these ids to download if available.]'
+  '--list-mirror[list supported mirrors]'
+  {-m,--mirror}'[select preferred mirrors.]'
+  {-b,--break}'[break on error]'
+  {-nb,--no-break}'[dont break on error]'
+  {-B,--block}'[set block size for testing.(allowed suffixes: kM)]'
+  '--debug[enable debug mode]'
+  '-A[set search type to Anime(default).]'
+  '-C[set search type to Cartoon.]'
+  {-c,--continue}'[reload previous episode selection.]'
+  {-nc,--no-continue}'[t Reload previous episode selection.]'
+  {-n,--no-break-or-reset}'[to -nb -nr.]'
+  {-R,--reset}'[clear screen on selection change.]'
+  {-r,--replace}'[replace unmatched episode.]'
+  {-f,--file-list}'[select files to download or prompt for a list.]'
+  {-s,--select}'[select search results.]'
+  {-u,--update}'[update and continue incomplete downloads]'
+  {-l,--list}'[list updatable/interrupted series.]'
+  {-h,--help}'[show help]'
+  {-T,--timeout}'[set timeout for requests.]'
+  {-t,--try}'[set retry attempts]'
+  {-a,--all}'[download all results. implies -n]'
+  {-q,--queue}'[add selected results to download queue. implies -n]'
+  {-nr,--no-reset}'[dont reset terminal on selection download.]'
+  {-F,--force}'[force subbed or dubbed.]'
+  {-S,-D,--sub,--dub}'[subbed/dubbed for downloading.]'
+  '*:search keywords:'
+)
+
+_arguments -s $arguments
