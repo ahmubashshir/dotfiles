@@ -8,7 +8,7 @@
 # shellcheck disable=SC2016
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
-#VERSION_INFO=r133.8f39945
+#VERSION_INFO=r134.6329865
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -712,7 +712,7 @@ da_get() {
 				)
 			)bed"
 		elif [[ -n $FORCE ]]; then
-			tr=${FORCE}bed
+			tr=${FORCE:0:3}bed
 		elif [ "$(echo "$baseurl" | grep dubbed=true | tr -d '[:space:]')" != "" ]; then
 			tr=dubbed
 		elif [ "$(echo "$baseurl" | grep subbed=true | tr -d "[:space:]")" != "" ]; then
@@ -724,7 +724,7 @@ da_get() {
 			echo "$(
 				tput setaf 1
 				tput dim
-			)\"$(ellipsis 38 "$TITLE")\" doesn't have any ${tr}bed episode yet.$(tput sgr0)" 1>&2
+			)\"$(ellipsis 38 "$TITLE")\" doesn't have any ${tr} episode yet.$(tput sgr0)" 1>&2
 			if ! find . -name '*.mp4' |grep -q '\.mp4$';then
 				cd ..
 				rm -rf "$OLDPWD"
@@ -770,7 +770,7 @@ da_get() {
 		dl_notify="Episode ${ep_show:5} is"
 	fi
 	if [ -n "$FORCE" ];then
-		echo "$FORCE" > .type
+		echo "${FORCE:0:3}" > .type
 	fi
 	${DEBUG:-false} && set +x
 	${SKIP_DOWNLOAD:-false} || anime_cover "https://cdn.animeapi.com/images/${1%%-*}.jpg" &
@@ -1148,7 +1148,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 						git diff --shortstat|cut -d' ' -f2
 					}
 				else
-					echo "danime $(grep '^#VERSION_INFO=r133.8f39945' "$0" | cut -d= -f2)"
+					echo "danime $(grep '^#VERSION_INFO=r134.6329865' "$0" | cut -d= -f2)"
 				fi
 				echo
 				da_get_license

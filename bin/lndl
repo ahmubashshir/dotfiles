@@ -61,7 +61,7 @@ add_sync()
 #!/bin/bash
 source \${LNLIB:-${0##*/}} lib
 cd "\$(dirname "\$0")"
-drive_sync $id
+drv_sync $id
 EOF
 			chmod +x "$dir/00update"
 			pending+=("$dir/00update")
@@ -86,6 +86,40 @@ start_sync()
 
 }
 #lib
+drive_sync() { drv_sync "$@";}
+download()
+{
+	curl -sL "$1"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s ${size:-0} > "$2"
+}
+read_header() {
+	awk -F: -v name="$1" 'gsub(/\r/,"") && tolower($1) == name {gsub(name":","");gsub(/^[ \t]+/,"");gsub(/[ \t]+$/,"");val=$0} END{print val}'
+}
+http_code() {
+	awk '/^HTTP/{code=$2} END{print code}'
+}
+cleanup() {
+	if [ -n "$*" ];then
+		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
+		for name in lock.lck 00update;do
+			if [ -f "$name" ];then
+				set -- -not -samefile "$name" "$@"
+			fi
+		done
+		find -maxdepth 1 -type f "$@" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
+	fi
+}
+lock() {
+	local FD
+	trap no_more_locking EXIT
+	FD=$(shuf -i 1-1000 -n 1)
+	eval "exec $FD>./lock.lck"
+	eval "_lock()             { flock -\$1 $FD; }"
+	no_more_locking()  { _lock u; _lock xn && rm -f ./lock.lck;unset _lock; }
+	_lock xn||{
+		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
+		return 1
+	}
+}
 function byte_hr() {
 	local size_670b2dbb unit_670b2dbb n_670b2dbb
 	size_670b2dbb=$1
@@ -100,16 +134,30 @@ function byte_hr() {
 	done
 	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
 }
-ls_drive()
+
+ellipsis() {
+	python3 -c "try:
+	from sys import argv
+	l=int(int(argv[1])/2)
+	if len(' '.join(argv[2:]))>l*2:
+		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
+	else:
+		print(' '.join(argv[2:]),sep='')
+except KeyboardInterrupt:
+	pass" "$@"
+}
+
+# Google Drive
+drv_ls()
 {
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
 	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
 	return $?
 }
-get_drive()
+drv_get()
 {
 	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
-	local size JSON md5sums try target etarget action data
+	local size JSON md5sums try target etarget action data COND
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ];do
@@ -126,7 +174,7 @@ get_drive()
 		try=0
 		until echo "$md5sums"|md5sum -c --quiet &>/dev/null || ((try==5));do
 			tput cuu1
-			curl -sL "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s $size > "$1"
+			download "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY" "$1"
 			((try+=1))
 			sleep 5
 		done
@@ -137,44 +185,24 @@ get_drive()
 		log_entry
 	fi
 }
-ellipsis() {
-	python3 -c "try:
-	from sys import argv
-	l=int(int(argv[1])/2)
-	if len(' '.join(argv[2:]))>l*2:
-		print(' '.join(argv[2:])[0:l],'...',' '.join(argv[2:])[-l:],sep='')
-	else:
-		print(' '.join(argv[2:]),sep='')
-except KeyboardInterrupt:
-	pass" "$@"
-
-}
-drive_sync () {
-	local files n name id mime FD action target etarget data
-	trap no_more_locking EXIT
-	FD=$(shuf -i 1-1000 -n 1)
-	eval "exec $FD>./.lock"
-	eval "lock()             { flock -\$1 $FD; }"
-	no_more_locking()  { lock u; lock xn && rm -f ./.lock;unset lock; }
-	lock xn||{
-		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
-		return 1
-	}
+drv_sync () {
+	local files n name id mime
+	lock||return 1
 	files=()
 	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ];do
-		for n in $(ls_drive $1);do
+		for n in $(drv_ls $1);do
 			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
 			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
 			mime=$(echo $n|cut -d\| -f3|cut -d: -f2)
 			if [[ $mime != 'application/vnd.google-apps.folder' ]]
 			then
-				get_drive "$name" "$id"
+				drv_get "$name" "$id"
 				files+=('-not' '-samefile' "$name")
 			else
 				mkdir -p "$name" 2> /dev/null && (
-					cd "$name" && drive_sync $id && cd ..
+					cd "$name" && drv_sync $id && cd ..
 				) || echo "Invalid name \"$name\"" >&2
 			fi
 		done
@@ -185,15 +213,72 @@ drive_sync () {
 			false
 		}
 	done
-	if [ -n "${files[*]}" ];then
-		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
-		for name in .lock 00update;do
-			if [ -f "$name" ];then
-				files+=('-not' '-samefile' "$name")
-			fi
+	cleanup "${files[@]}"
+}
+
+# Armaell Library
+al_get()
+{
+	local size HEADER try target etarget action data COND
+	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	until [ "$(echo "$HEADER"|http_code)" = "200" ];do
+		HEADER=$(curl -kLsIXGET "$2")
+	done
+	size="$(echo "$HEADER"|read_header content-length)"
+	date="$(echo "$HEADER"|read_header last-modified|xargs --null date +%s -d)"
+	if [ -f "$(echo $1|tr -d $'\r')" ] && ((size == $(stat -c%s "$1") )) && (( date == $(stat -c%Y "$1") ))
+	then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+		sleep 2
+		return 0
+	else
+		echo
+		until ((try==5));do
+			tput cuu1
+			download "$2" "$1"
+			touch -t "$(date +%y%m%d%H%M.%S -d @$date)" "$1"
+			((size == $(stat -c%s "$1") )) && (( date == $(stat -c%Y "$1") )) &>/dev/null && break
+			((try+=1))
+			sleep 5
 		done
-		find -maxdepth 1 -type f "${files[@]}" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
+		action=get
+		target="$(basename "$PWD")"
+		etarget="$1"
+		data="ID=$(echo "$2"|xargs dirname|xargs basename);EPOC=$(echo "$2"|xargs basename)"
+		log_entry
 	fi
+}
+al_ls() {
+	local line
+	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
+	curl -s https://armaell-library.net/novel/$1|awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){print "https://armaell-library.net/file/"m[1]}'
+}
+al_sync()
+{
+	local files n name
+	lock||return 1
+	files=()
+	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
+	false
+	until [ "${PIPESTATUS[0]}" = "0" ];do
+		for n in $(al_ls $1);do
+			name=$(curl -XGET -kLsI "$n"|read_header content-disposition)
+			if [ -z "$(echo "$name"|awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ];then
+				name=$(echo "$name"|awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}'|tr -s '<>:"/\|?*' '-')
+			else
+				name=$(echo "$name"|awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}'|tr -s '<>:"/\|?*' '-')
+			fi
+			al_get "$name" "$n"
+			files+=('-not' '-samefile' "$name")
+		done
+		[ "${PIPESTATUS[0]}" = "0" ] || {
+			sleep 10
+			tput cuu1
+			tput el
+			false
+		}
+	done
+	cleanup "${files[@]}"
 }
 
 if (($#==0));then
@@ -201,9 +286,9 @@ if (($#==0));then
 else
 	export LOG="$LNDIR/lndl.log"
 	case $1 in
-		help|h) shift; unset byte_hr ls_drive get_drive drive_sync start_sync add_sync ;show_help;;
-		add|a)  shift; unset byte_hr ls_drive get_drive drive_sync start_sync;add_sync "$@";;
-		sync|s) shift; unset byte_hr ls_drive get_drive drive_sync add_sync;start_sync;;
+		help|h) shift; unset byte_hr drv_ls drv_get drv_sync start_sync add_sync ;show_help;;
+		add|a)  shift; unset byte_hr drv_ls drv_get drv_sync start_sync;add_sync "$@";;
+		sync|s) shift; unset byte_hr drv_ls drv_get drv_sync add_sync;start_sync;;
 		log)	shift;
 			if [[ $1 = help ]];then
 				echo Filters: old new get all
@@ -229,7 +314,7 @@ else
 		;;
 		sync-thread|st)
 			shift
-			unset byte_hr ls_drive get_drive drive_sync add_sync start_sync;
+			unset byte_hr drv_ls drv_get drv_sync add_sync start_sync;
 			p=$([[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&echo $1||echo 2 )
 			[[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&shift
 			if [ -x /usr/bin/tmux-xpanes ]||[ -x /usr/local/bin/tmux-xpanes ];then
@@ -241,6 +326,6 @@ else
 			fi
 		;;
 		lib)  shift; unset start_sync add_sync show_help ;;
-		*)    unset byte_hr ls_drive get_drive drive_sync start_sync add_sync;echo "ERROR: Unsupported command '$1'";show_help;exit 1;;
+		*)    unset byte_hr drv_ls drv_get drv_sync start_sync add_sync;echo "ERROR: Unsupported command '$1'";show_help;exit 1;;
 	esac
 fi
