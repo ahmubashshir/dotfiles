@@ -1,0 +1,102 @@
+#!/bin/bash
+if [ -e ~/bin/libbash ];then
+	source ~/bin/libbash
+fi
+if [ -e ~/.weeb/aliases.sh ];then
+	source ~/.weeb/aliases.sh
+fi
+if [ -x /usr/bin/thefuck ];then
+	eval "$(thefuck --alias)"
+	alias shit='fuck'
+fi
+if [[ $- == *i* ]] && [ -x /usr/bin/ufetch ] && getterm|grep -vq 'gedit\|tmux\|octopi';then
+	ufetch >&2
+fi
+#aliases
+exec 3>/dev/null
+if hash apt &>/dev/null;then
+	alias apt-i="apt install"
+	alias আপ্ত='apt'
+	alias apt-r="apt remove"
+	alias apt-ri="apt reinstall"
+	alias apt-fu="apt full-upgrade"
+	alias apt-du="apt dist-upgrade"
+	alias apt-uu="apt upgrade"
+	alias apt-u="apt update"
+fi
+alias fixhist="sed -i '/[[:print:]]/!d' ~/.$0_history"
+alias cls="rm -f ~/.bash_history"
+alias err="echo -e \"$1\" &> /dev/stderr"
+alias j2me="java -cp /mnt/Software/Java/SE/microemulator-2.0.4/microemulator.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/microemu-jsr-75.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/cldcapi11.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/midpapi20.jar:/mnt/Software/Java/SE/microemulator-2.0.4/lib/microemu-nokiaui.jar org.microemu.app.Main org.microemu.cldc.file.FileSystem org.microemu.examples.fcview-impl.FCViewMIDlet $1"
+alias gist='gist -sc --skip-empty'
+alias q="exit"
+alias c="clear"
+alias add='yay -S --needed'
+alias del='yay -Rcsn'
+if [ -x /usr/bin/time ];then
+	alias time="/usr/bin/time"
+fi
+alias t=time
+alias k="kill"
+alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
+alias yt-mp3="youtube-dl --restrict-filenames --xattrs --add-metadata --audio-format best -ir 1M -R 10 -x -o '%(title)s.%(ext)s' --audio-format mp3 --embed-thumbnail --convert-subs lrc -c"
+alias sudoe="sudo -E "
+if hash tldr 2>/dev/null;then
+	alias '?'=tldr
+	alias h=tldr
+fi
+alias ls='ls --color=auto'
+alias dir='dir --color=auto'
+alias vdir='vdir --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias userctl='systemctl --user'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+alias ..='cd ..'
+alias ...='cd ..; cd ..'
+alias ....='cd ..; cd ..; cd ..'
+alias লসুসব='lsusb'
+if hash gcp &>/dev/null;then
+	alias cp='gcp'
+fi
+alias লস='ls'
+alias গছ='gcc'
+alias panbackup='xfpanel-switch save $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias panload='xfpanel-switch load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias tree='tree --dirsfirst'
+alias 'গ++'='g++'
+alias prime='env DRI_PRIME=1'
+if [ -x /usr/bin/wormhole ];then
+	alias send='wormhole send'
+ 	alias recv='wormhole receive'
+elif [ -x /usr/bin/wormhole-william ];then
+	alias send='wormhole-william send'
+	alias recv='wormhole-william recv'
+fi
+if [ -x /usr/bin/plowdown ];then
+	alias fsget='plowdown'
+fi
+alias mprime='mprime -s'
+if hash hub 2>/dev/null;then
+	alias git=hub
+fi
+alias sudo='sudo -H'
+alias চপ='cp'
+alias দ্য='dd'
+alias মাকির='mkdir'
+alias commit='git commit'
+alias clone='git clone'
+alias push='[[ $(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge") = "" ]] && git push --all -u || git push --all'
+alias tag='git tag -s'
+alias spider='curl -ILksXGET'
+alias ফ্রি='free'
+alias আলিয়াস='alias'
+### Colored Output
+alias diff='diff --color=auto'
+alias grep='grep --color=auto'
+alias ip='ip -color=auto'

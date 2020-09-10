@@ -23,7 +23,9 @@ appendpath()
 		esac
 	done
 }
-
+if [ -f ~/.shell/environment ]; then
+  . ~/.shell/environment
+fi
 if [ -f "$HOME/.bashrc" ] && [ -n "$BASH_VERSION" ]; then
 	. "$HOME/.bashrc"
 fi
@@ -35,11 +37,4 @@ high=true appendpath "$HOME/.local/bin"
 PROXY=socks4://37.57.3.244:1080
 # set PATH so it includes user's private bin if it exists
 #[ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
-export LESS=-Xr
 unset high
-export ENABLE_VKBASALT=1
-export mesa_glthread=true
-export WINEDEBUG=-all
-export WINEESYNC=1
-export LNDIR="/mnt/Books/Light Novels"
-export TERMINAL="xfce4-terminal"

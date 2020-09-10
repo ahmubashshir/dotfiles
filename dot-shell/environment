@@ -1,0 +1,65 @@
+#!/bin/sh
+export LESS=-Xr
+export ENABLE_VKBASALT=1
+export mesa_glthread=true
+export WINEDEBUG=-all
+export WINEESYNC=1
+export LNDIR="/mnt/Books/Light Novels"
+export TERMINAL="xfce4-terminal"
+export GOPATH=$HOME/.go
+export MANGOHUD=1
+export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
+export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
+export GPGID=56DB0538F60D951C
+if [ -z "$WINEARCH" ];then
+	export WINEARCH=win64
+fi
+if [ -n "${ZSH_VERSION:-}" ] ; then
+	export VIRTUAL_ENV_DISABLE_PROMPT=1
+fi
+test -x /usr/bin/dircolors &&\
+test -r ~/.shell/dircolors &&\
+eval "$(dircolors -b ~/.shell/dircolors)" || eval "$(dircolors -b)"
+export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
+export RELAY_SECRET=IX7xntnRW3CC
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+#export PROXY=socks4://37.57.3.244:1080
+export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
+if [ -z "$XDG_DATA_HOME" ];then
+	export XDG_DATA_HOME=$HOME/.local/share
+fi
+#colors
+if tty -s;then
+	if tput setaf 0 &>/dev/null; then
+		ALL_OFF="$(tput sgr0)"
+		BOLD="$(tput bold)"
+		BLUE="${BOLD}$(tput setaf 4)"
+		GREEN="${BOLD}$(tput setaf 2)"
+		RED="${BOLD}$(tput setaf 1)"
+		YELLOW="${BOLD}$(tput setaf 3)"
+	else
+		ALL_OFF="\e[0m"
+		BOLD="\e[1m"
+		BLUE="${BOLD}\e[34m"
+		GREEN="${BOLD}\e[32m"
+		RED="${BOLD}\e[31m"
+		YELLOW="${BOLD}\e[33m"
+	fi
+fi
+blck='\033[0;30'
+dgry='\033[1;30'
+lgry='\033[0;37'
+red='\033[0;31'
+lred='\033[1;31'
+grn='\033[0;32'
+lgrn='\033[1;32'
+brown='\033[0;33'
+yellow='\033[1;33'
+blu='\033[0;34'
+lblu='\033[1;34'
+prpl='\033[0;35'
+lprpl='\033[1;35'
+cyn='\033[0;36'
+lcyn='\033[1;36'
+wht='\033[1;37'
+rst='\033[0m'

@@ -6,10 +6,12 @@
 # If not running interactively, don't do anything
 # Alias definitions.
 # You may want to put all your additions into a separate file like
-# ~/.aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-if [ -f ~/.aliases ]; then
-  . ~/.aliases
+if [ -f ~/.shell/environment ]; then
+  . ~/.shell/environment
+fi
+if [ -f ~/.shell/import ]; then
+  . ~/.shell/import
 fi
 case $- in
     *i*) ;;
