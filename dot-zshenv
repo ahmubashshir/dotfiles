@@ -1,6 +1,6 @@
 #!/bin/zsh
-if [ -f "$HOME/.aliases" ];then
-	emulate sh -c 'source '$HOME'/.aliases'
+if [ -f $HOME/.shell/environment ]; then
+	emulate sh -c 'source '$HOME'/.shell/environment'
 fi
 if [ -f $HOME'/.profile' ];then
 	emulate sh -c 'source '$HOME'/.profile'

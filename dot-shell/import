@@ -1,0 +1,3 @@
+#!/bin/sh
+source "$HOME/.shell/functions"
+source "$HOME/.shell/aliases"
