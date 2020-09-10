@@ -1,0 +1,8 @@
+#!/bin/sh
+if (($(id -u)));then
+	exec sudo "$0"
+fi
+pacman-mirrors -f
+pacman -Syy
+powerpill -Suw
+pacman -Su
