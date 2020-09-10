@@ -7,7 +7,7 @@ function displaytime {
   local S=$((T%60))
   printf '<txt>'
   (( $D > 0 )) && printf '%dd ' $D
-  (( $H > 0 )) && printf '%dh ' $H
+  (( $H > 0 )) && printf '%dh\n' $H
   (( $M > 0 )) && printf '%dm ' $M
   printf '%ds</txt>\n' $S
 }

@@ -1,0 +1,3 @@
+#!/bin/bash
+rsp="$(curl -T "$1" https://oshi.at -o /dev/stdout)"
+echo "$rsp"
