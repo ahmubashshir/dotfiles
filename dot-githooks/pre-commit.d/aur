@@ -1,5 +1,4 @@
 #!/bin/bash -e
-# HOOK-CONDITION: [ "$(git config --bool aur.hook.srcinfo)" != "false" ]
 # HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
 if grep -q 'git://|git+http' PKGBUILD;then
 	makepkg -o
