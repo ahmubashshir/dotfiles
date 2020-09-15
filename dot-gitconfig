@@ -31,6 +31,7 @@
 	amend = commit --amend
 	pg = diff --shortstat
 	cftc = ! hub fork && git config remote.pushDefault ahmubashshir && git config branch.master.remote ahmubashshir
+	pullmod = submodule foreach git pull
 	rf = !git pull --all && git pull origin master && git push --all
 	up = ![ "$(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge")" = '' ] && git push -u || git push
 	cpr = !git push && hub pull-request
