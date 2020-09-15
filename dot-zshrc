@@ -100,6 +100,10 @@ export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
 fi
+
+## ignore invalid commands
+zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
+
 ## set title
 function xterm_title_precmd () {
 	printf '\e]2;%s\a' "zsh@$$ [${ENV[cwd]}]"

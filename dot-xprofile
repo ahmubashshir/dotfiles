@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -f ~/.shell/environment ]; then
-. ~/.shell/.environment
+. ~/.shell/environment
 fi
 export GTK_IM_MODULE=ibus
 export QT_IM_MODULE=ibus
