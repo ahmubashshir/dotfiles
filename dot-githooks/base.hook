@@ -33,17 +33,21 @@ hook_print()
 			COLOR=$BOLD
 		;;
 	esac
-	printf "[${GREEN}${ACTION}${ALL_OFF}:${BLUE}${HOOKNAME}${ALL_OFF} ${COLOR}%5s${ALL_OFF}] %s.\n" "${2-info}" "$1"
+	[[ $2 = debug ]] && ! (( $GIT_DEBUG_HOOKS )) && return 0
+	printf "  ${COLOR}%s.${ALL_OFF}\n" "$1"
 }
 if [ -d "$0.d" ];then
 	for n in "$0.d"/*;do
-		if "${0%/*}/hook-condition" "$n";then
-			printf "[$GREEN${0##*/}${ALL_OFF}:${BLUE}${n##*/}${ALL_OFF}${BOLD}  info${ALL_OFF}] running hook.\n"
-			(
-				HOOKNAME=${n##*/}
-				ACTION=${0##*/}
-				source "$n" "$@"
-			)
+		if [ -x "$n" ];then
+			name="${n//\d\//}";name="${name##*/}"
+			if "${0%/*}/hook-condition" "$n" "$name" "${0##*/}";then
+				printf "[$GREEN${0##*/}${ALL_OFF}.${BLUE}${n##*/}${ALL_OFF}] running.\n"
+				(
+					HOOKNAME="${n##*/}"
+					ACTION="${0##*/}"
+					source "$n" "$@"
+				)
+			fi
 		fi
 	done
 fi
