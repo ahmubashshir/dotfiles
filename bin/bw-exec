@@ -1,0 +1,4 @@
+#!/bin/bash
+export GDK_BACKEND=broadway
+export BROADWAY_DISPLAY=:$UID
+exec "$@"

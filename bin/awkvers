@@ -1,0 +1,57 @@
+#!/bin/awk -f
+function array(name , ref, prvidx)
+{
+	line=_
+	if(isarray(ref))
+	{
+		for(idx in ref)
+		{
+			if(isarray(ref[idx]))
+			{
+				line=line ((line)?"\n":_)array(name,ref[idx],prvidx" ["idx"]")
+			}
+			else
+			{
+				line=line ((line)?"\n":_)name prvidx " ["idx"] = \""ref[idx]"\""
+			}
+		}
+		return line
+	}
+	else
+	{
+		return name" = \""ARGC"\""
+	}
+}
+BEGIN {
+	print array("ARGC", ARGC)
+	print array("ARGIND", ARGIND)
+	print array("ARGV", ARGV)
+	print array("BINMODE", BINMODE)
+	print array("CONVFMT", CONVFMT)
+	print array("ENVIRON", ENVIRON)
+	print array("ERRNO", ERRNO)
+	print array("FIELDWIDTHS", FIELDWIDTHS)
+	print array("FILENAME", FILENAME)
+	print array("FNR", FNR)
+	print array("FPAT", FPAT)
+	print array("FS", FS)
+	print array("FUNCTAB", FUNCTAB)
+	print array("IGNORECASE", IGNORECASE)
+	print array("LINT", LINT)
+	print array("NF", NF)
+	print array("NR", NR)
+	print array("OFMT", OFMT)
+	print array("OFS", OFS)
+	print array("ORS", ORS)
+	print array("PREC", PREC)
+	print array("PROCINFO", PROCINFO)
+	print array("RLENGTH", RLENGTH)
+	print array("ROUNDMODE", ROUNDMODE)
+	print array("RS", RS)
+	print array("RSTART", RSTART)
+	print array("RT", RT)
+	print array("SUBSEP", SUBSEP)
+	print array("SYMTAB", SYMTAB)
+	print array("TEXTDOMAIN", TEXTDOMAIN)
+	exit 0
+}
