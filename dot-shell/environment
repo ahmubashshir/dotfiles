@@ -1,4 +1,7 @@
 #!/bin/sh
+if [ -z "$HOME" ];then
+	export HOME=~
+fi
 export LESS=-Xr
 export ENABLE_VKBASALT=1
 export mesa_glthread=true
