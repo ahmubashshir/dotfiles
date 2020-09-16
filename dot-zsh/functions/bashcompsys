@@ -1,0 +1,6 @@
+emulate -L bash
+if type -w bashcompinit &>/dev/null;then
+	for n in /etc/bash_completion.d/*;do
+		source "$n" &>/dev/null||true
+	done
+fi
