@@ -11,7 +11,14 @@ fi
 
 ## variables
 fpath+=(~/.zsh/functions ~/.cache/zsh/compdump.zwc ~/.cache/zsh)
-cmdignore=+(man info gcc g++ shit nano xed gedit vlc)
+cmdignore+=(
+	man info
+	gcc g++ pbi wormhole
+	shit danime git
+	nano xed gedit vi vim
+	vlc mpv celluloid
+	yay pacman
+)
 typeset -A ENV
 
 ## modules
@@ -33,15 +40,16 @@ autoload -Uz compinit
 autoload -Uz add-zsh-hook
 autoload -Uz bashcompinit
 autoload -Uz bashcompsys
-autoload -Uz zsh-gitstatus
-autoload -Uz zsh-async
-autoload -Uz vcs_info
+autoload -Uz zplugin
 ## Start
 case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
 esac
-zsh-async
-zsh-gitstatus
+## local plugins
+zplugin async
+zplugin git
+zplugin notify
+## options
 setopt extended_glob prompt_subst
 setopt +o nomatch
 setopt autocd incappendhistory extendedhistory
@@ -51,7 +59,7 @@ setopt histignorespace histfindnodups histsavenodups
 # Use emacs keybindings even if our EDITOR is set to vi
 bindkey -e
 
-#source ~/.zsh/notifyosd
+NOTIF[tmout]=20
 
 ## Zstyle Config
 zstyle :compinstall filename '/home/mubashshir/.zshrc'
@@ -81,11 +89,6 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
-zstyle ':vcs_info:*'   enable  git
-zstyle ':vcs_info:*'   formats '%s;%b;%i;%c;%u;%r;%S'
-zstyle ':vcs_info:*'   actionformats '%s;%b;%i;%c;%u;%r;%S;%a'
-zstyle ':vcs_info:*'   check-for-changes true
-zstyle ':vcs_info:*'   check-for-staged-changes true
 
 # The following lines were added by compinstall
 if [ -f $HOME/.zinputrc ];then
@@ -102,7 +105,7 @@ if [ -e ./.env_setup ];then
 fi
 
 ## ignore invalid commands
-zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
+#zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
 
 ## set title
 function xterm_title_precmd () {
@@ -140,6 +143,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 		RETVAL=$?
 		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
 		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
+		unset RETVAL
 		[[ -n $VIRTUAL_ENV ]] && {
 			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
 		} || VENV_PROMPT=""
