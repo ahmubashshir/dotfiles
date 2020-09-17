@@ -1,0 +1,16 @@
+local plugname plug
+[[ -z $1 ]] && return 1
+plugname=$1;shift
+for n in $plugname zsh-$plugname;do
+	plug="$HOME/.zsh/plugins/$plugname/$n.plugin.zsh"
+	if [ -f "$plug" ];then
+		if [[ -s "$plug" && ( ! -s "$plug.zwc" || "$plug" -nt "$plug.zwc" ) ]]
+		then
+			rm -f "$plug.zwc"
+			zcompile "$plug" &!
+		fi
+		source "$plug" "$@"
+		return 0
+	fi
+done
+return 1
