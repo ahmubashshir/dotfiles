@@ -1,6 +1,6 @@
 #!/bin/zsh
-autoload -U zsh-gitstatus-plugin
-zsh-gitstatus-plugin
+autoload -Uz zplugin
+zplugin gitstatus
 gitstatus_stop "gitstatus$$" && gitstatus_start -s -1 -u -1 -c -1 -d -1 "gitstatus$$"
 # Allow for functions in the prompt.
 setopt PROMPT_SUBST
@@ -117,4 +117,3 @@ function _git_prompt_update() {
 	# The length of GITSTATUS_PROMPT after removing %f and %F.
 	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
 }
-unfunction zsh-gitstatus-plugin zsh-gitstatus
