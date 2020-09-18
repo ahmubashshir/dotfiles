@@ -1,0 +1,41 @@
+#compdef dots
+_list_commands()
+{
+	local -a commands
+	commands=(
+		'ln:link dotfiles.'
+		'ls:list dotfiles.'
+		'ps:use chr as seperator.'
+		'cp:track path.'
+		'rm:unlink and delete dotfile.'
+		'help:show this help.'
+	)
+	_describe 'command' commands
+}
+_list_dotfiles()
+{
+	local dotdir="$(dirname "$(realpath "$(which dots)")")"
+	local -a dotfiles
+	dotfiles=( "$dotdir"/dot-* )
+	dotfiles=( ${dotfiles[@]##*/} )
+	if ((${#dotfiles}+1<${#line}));then
+		_message 'no more arguments'
+	else
+		_values -w "dotfiles" "${dotfiles[@]}"
+	fi
+}
+_command_args()
+{
+	case $line[1] in
+		(ln|ls|help)	_message 'no more arguments';;
+		(ps)	_arguments '2:seperator:';;
+		(cp)	_files;;
+		(rm)	_list_dotfiles;;
+	esac
+}
+local args state
+args=(
+	 "1:command:_list_commands"
+	 "*:args:_command_args"
+)
+_arguments -s "${args[@]}"
