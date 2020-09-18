@@ -10,7 +10,7 @@ if [ -f /tmp/zprof.$UID ];then
 fi
 
 ## variables
-fpath+=(~/.zsh/functions ~/.cache/zsh/compdump.zwc ~/.cache/zsh)
+fpath+=(~/.zsh/functions ~/.cache/zsh/compdump ~/.cache/zsh)
 cmdignore+=(
 	man info
 	gcc g++ pbi wormhole
@@ -36,19 +36,26 @@ SAVEHIST=3000
 HISTDUP=erase
 
 ## Lazy load section
-autoload -Uz compinit
 autoload -Uz add-zsh-hook
 autoload -Uz bashcompinit
 autoload -Uz bashcompsys
-autoload -Uz zplugin
+autoload -Uz zplug
 ## Start
 case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
 esac
 ## local plugins
-zplugin async
-zplugin git
-zplugin notify
+zplug async
+zplug git
+zplug notify
+#zplug autosuggestions
+zplug syntax-highlighting
+zplug autopair
+#ZSH_AUTOSUGGEST_STRATEGY=(completion)
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=""
+#ZSH_AUTOSUGGEST_USE_ASYNC=1
+#ZSH_AUTOSUGGEST_HISTORY_IGNORE="?(#c50,)"
+
 ## options
 setopt extended_glob prompt_subst
 setopt +o nomatch
@@ -109,14 +116,13 @@ fi
 
 ## set title
 function xterm_title_precmd () {
-	printf '\e]2;%s\a' "zsh@$$ [${ENV[cwd]}]"
+	print -Pn "\e]2;zsh@$$ [%1~]\a"
 }
 function xterm_title_preexec () {
-	{ echo "$1"|grep -wq cd; } && return
 	{
 		sleep 0.003
-		local pid=( $(pgrep -nlP $$) )
-		((pid[1])) && printf '\e]2;%s\a' "$pid[2]@$pid[1] [${ENV[cwd]}]"
+		local proc=( $(pgrep -nlP $$) )
+		[[ $proc[2] != zsh ]] && [ -d /proc/$proc[1] ] && print -Pn "\e]2;$proc[2]@$proc[1] [%1~]\a"
 	} &!
 }
 if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
@@ -127,13 +133,10 @@ fi
 if [[ $ENV[color_prompt] = yes ]];then
 	chpwd()
 	{
-		unset ENV[vfs] ENV[cwd] ENV[gnome_vfs]
+		unset ENV[vfs] ENV[gnome_vfs]
 		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ENV[gnome_vfs]=true
 		if ${ENV[gnome_vfs]:-false};then
 			ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
-			ENV[cwd]=$(echo ${PWD##*/}|tr / \\n|tail -1|(read k;echo $k|grep -v ':host=' || echo /))
-		else
-			[[ $PWD == $HOME ]] && ENV[cwd]='~' || { [[ $PWD == / ]] && ENV[cwd]=/ || ENV[cwd]=${PWD##*/} ;}
 		fi
 	}
 	chpwd
@@ -147,28 +150,18 @@ if [[ $ENV[color_prompt] = yes ]];then
 		[[ -n $VIRTUAL_ENV ]] && {
 			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
 		} || VENV_PROMPT=""
-		if ${ZCOMPILED:-false};then
-			compinit -C
-			unset ZCOMPILED
-		fi
 		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${GPG_TTY##*/}%b%F{red}]-[%F{cyan}%B${ENV[cwd]}%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
+	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${GPG_TTY##*/}%b%F{red}]-[%F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
 else
-	chpwd()
-	{
-		unset ENV[vfs] ENV[cwd] ENV[gnome_vfs]
-		[[ $PWD == $HOME ]] && ENV[cwd]='~' || ENV[cwd]=${PWD##*/}
-	}
-	chpwd
-	PROMPT='[%m::%n ${ENV[cwd]}]$ '
+	PROMPT='[%m::%n %1~]$ '
 fi
 reload()
 {
 	source ~/.zshrc
 	source ~/.zshenv
 	rm $HOME/.cache/zsh/compdump
-	compinit
+	zcompinit
 	bashcompinit
 }
 if [[ $(getterm) = octopi ]];then
@@ -186,13 +179,8 @@ fi
 	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
 	alias -s html='lynx'
 }
-start_zcompile()
-{
-	  	zcompare "$HOME/.cache/zsh/compdump"
-	  	export ZCOMPILED=true
-}
-compinit
-start_zcompile&!
+
+zcompinit
 
 bashcompinit
 bashcompsys
