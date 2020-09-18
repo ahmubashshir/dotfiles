@@ -1,0 +1,42 @@
+#compdef zplugin
+_list_plugins()
+{
+	local -a plugins
+	plugins=()
+	local plugpath i j k
+	if (( ${+zplugdirs} )); then
+		typeset -a zplugdirs
+	fi
+	for plugpath in "$HOME/.zsh/plugins" "/usr/share/zsh/plugins";do
+		if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
+			zplugdirs+=("$plugpath")
+		fi
+	done
+	for plugpath in $zplugdirs[@];do
+		for i in "$plugpath"/*(/);do
+			i=${i:t}
+			j=${i#zsh-}
+			for plug in "$i/$j.plugin" \
+				"$plugpath/$i/zsh-$j.plugin" \
+				"$plugpath/$i/$j.plugin" \
+				"$plugpath/$i/zsh-$j.plugin" \
+				"$plugpath/$i/$j" \
+				"$plugpath/$i/$j" \
+				"$plugpath/$i/zsh-$j"
+			do
+				if [ -f "$plug.zsh" ];then
+					plugins+=($j)
+					break
+				fi
+			done
+		done
+	done
+	_values "plugins" "${plugins[@]}"
+}
+
+local args
+args=(
+    "1:plugin:_list_plugins"
+    "*::plugin arguments:"
+)
+_arguments -s "${args[@]}"

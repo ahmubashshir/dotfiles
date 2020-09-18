@@ -1,0 +1,34 @@
+local plugname plug plugpath
+[[ -z $1 ]] && return 1
+if (( ${+zplugdirs} )); then
+	typeset -a zplugdirs
+fi
+for plugpath in "$HOME/.zsh/plugins" "/usr/share/zsh/plugins";do
+	if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
+		zplugdirs+=("$plugpath")
+	fi
+done
+plugname=$1;shift
+for plugpath in $zplugdirs[@]
+do
+	for plug in "$plugpath/$plugname/$plugname.plugin" \
+				"$plugpath/$plugname/zsh-$plugname.plugin" \
+				"$plugpath/zsh-$plugname/$plugname.plugin" \
+				"$plugpath/zsh-$plugname/zsh-$plugname.plugin" \
+				"$plugpath/$plugname/$plugname" \
+				"$plugpath/zsh-$plugname/$plugname" \
+				"$plugpath/zsh-$plugname/zsh-$plugname"
+	do
+		if [ -f "$plug.zsh" ]
+		then
+			if [[ -w $plugpath ]] && [[ -s "$plug" && ( ! -s "$plug.zwc" || "$plug" -nt "$plug.zwc" ) ]]
+			then
+				rm -f "$plug.zwc"
+				zcompile "$plug" &!
+			fi
+			source "$plug.zsh" "$@"
+			return 0
+		fi
+	done
+done
+return 1
