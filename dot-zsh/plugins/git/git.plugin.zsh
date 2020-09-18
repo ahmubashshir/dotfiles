@@ -1,6 +1,6 @@
 #!/bin/zsh
-autoload -Uz zplugin
-zplugin gitstatus
+autoload -Uz zplug
+zplug gitstatus
 gitstatus_stop "gitstatus$$" && gitstatus_start -s -1 -u -1 -c -1 -d -1 "gitstatus$$"
 # Allow for functions in the prompt.
 setopt PROMPT_SUBST
