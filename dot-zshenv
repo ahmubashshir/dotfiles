@@ -1,10 +1,54 @@
 #!/bin/zsh
+emulate sh -c 'source /etc/profile'
 if [ -f $HOME/.shell/environment ]; then
 	emulate sh -c 'source '$HOME'/.shell/environment'
 fi
 if [ -f $HOME'/.profile' ];then
 	emulate sh -c 'source '$HOME'/.profile'
 fi
+unfunction appendpath
+
+if [ ! -d ~/.cache/zsh ];then
+	rm -f ~/.cache/zsh
+	mkdir -p ~/.cache/zsh
+fi
+if [[ -o interactive ]];then
+	trap 'compinit -C' POLL
+fi
+zcompinit()
+{
+	autoload -Uz compinit
+	compinit "$@"
+	[[ $* =~ -[[:alnum:]]*C ]] || {
+		local n k
+		for n in $fpath[@];do
+			if [[ -f $n ]] && [[ -w $n:P:h ]];then
+				zcompare "$n"
+			elif [[ -d $n ]] && [[ -w $n ]];then
+				for k in "$n"/^*.zwc(^/);do
+					zcompare "$k"
+				done
+			fi
+		done
+		if [[ -o interactive ]];then
+			kill -POLL $$
+		fi
+	} &!
+}
+
+safe-source()
+{
+	if [ -f "$1" ];then
+		source "$@"
+	fi
+}
+
+zcompare() {
+	if [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
+		zcompile ${1}
+	fi
+}
+
 bashcompadd()
 {
 	for n in "$@";do
@@ -13,3 +57,6 @@ bashcompadd()
 		fi
 	done
 }
+
+trap rehash USR1
+safe-source /usr/share/doc/pkgfile/command-not-found.zsh
