@@ -16,6 +16,3 @@
 [submodule "dot-zsh/plugins/autocomplete"]
 	path = dot-zsh/plugins/autocomplete
 	url = https://github.com/marlonrichert/zsh-autocomplete
-[submodule ".dotfiles"]
-	path = .dotfiles
-	url = https://github.com/jbernard/dotfiles
