@@ -1,0 +1,97 @@
+#!/bin/bash
+PATHSEP=:
+shopt -s nullglob
+if realpath "$0"|grep -q "^$HOME" && (($#==0));then
+	cd "$(dirname "$0")"
+	## non hidden dirs
+	for n in bin;do
+		echo Soft linking $n
+		if [ ! -L "$HOME/$n" ];then
+			rm -rf "$HOME/$n"
+		fi
+		ln -Tfs  "$PWD/$n" "$HOME/$n"
+	done
+	for n in dot-*;do
+		s="$(realpath "$n")"
+		t="${n#dot-}";t="${t//$PATHSEP//}"
+		if [ -f "${s##*/}" ];then
+			echo Hard linking "$t"
+			ln -f "$s" "$HOME/.$t"
+		else
+			echo Soft linking "$t"
+			if [ ! -L "$HOME/.$t" ];then
+				rm -fr "$HOME/.$t"
+			fi
+			if [ -L "$n" ];then
+				s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$s")
+			fi
+			ln -Tfs  "$s" "$HOME/.$t"
+		fi
+	done
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^(ps|pathsep)$ ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
+	sed -i 's/^PATHSEP=.*$/PATHSEP='$2'/' $0
+	for n in *;do
+		if [[ $n != ${n//$PATHSEP/$2} ]];then
+			echo "$n -> ${n//$PATHSEP/$2}"
+			mv "$n" "${n//$PATHSEP/$2}"
+		fi
+	done
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^rm$ ]];then
+	shift
+	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
+	for n in "$@";do
+		if [[ $n = ${0##*/} ]];then
+			echo Can\'t remove dotfiles manager >&2
+		elif [ -e "$n" ];then
+			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete';do
+				unset REPLY;until [[ $REPLY =~ [YyNn$'\n'] ]];do
+					read -i y -N 1 -rp"$p $n"'? [y/N]:'
+					case "$REPLY" in
+						(n|N|$'\n')	[[ "$REPLY" != $'\n' ]] && echo;continue 3;;
+						(y|Y)		[[ $p != 'Really really delete' ]] && {
+										printf '\r'
+										tput el
+									} || echo;;
+						(*)			printf '\r';tput el;;
+					esac
+				done
+			done
+			t="${n#dot-}";t="${t//$PATHSEP//}"
+			echo Deleting $t
+			if [ ! -L "$HOME/.$t" ];then
+				rm -fr "$HOME/.$t"
+			else
+				rm -f "$HOME/.$t"
+			fi
+			rm -rf $n
+		else
+			echo \'$n\' doesn\'t exist >&2
+		fi
+	done
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^cp$ ]];then
+	shift
+	for n in "$@";do
+		p="$(realpath --no-symlinks "$n")"
+		if echo "$p"|grep -q "^$HOME/" ;then
+			t="$(echo $n|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
+			if [ -d "$n" ];then
+				cp -r "$n" "$t"
+				rm -r "$n"
+				ln -s "$PWD/$t" "$n"
+			elif [ -L "$n" ] && [ ! -d "$(realpath "$n")" ] && [ ! -f "$(realpath "$n")" ];then
+				ln -fs "$(realpath "$n")" "$t"
+				rm "$n"
+				ln -s "$(realpath "$t")" "$n"
+			elif realpath "$n"|grep -q "^$HOME/" && [ -L "$n" ];then
+				ln -fs "$(realpath "$n")" "$t"
+			elif realpath "$n"|grep -q "^$HOME/" && [ -f "$n" ];then
+				ln "$n" "$t"
+			fi
+		else
+			echo $n is niether under '$HOME' nor a symlink. >&2
+		fi
+	done
+else
+	echo This repo should reside under \'$HOME\'
+	exit 1
+fi
