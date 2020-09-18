@@ -14,26 +14,26 @@ if [ ! -d ~/.cache/zsh ];then
 fi
 if [[ -o interactive ]];then
 	trap 'compinit -C' POLL
+	autoload -Uz compinit
 fi
 zcompinit()
 {
-	autoload -Uz compinit
-	compinit "$@"
-	[[ $* =~ -[[:alnum:]]*C ]] || {
-		local n k
-		for n in $fpath[@];do
-			if [[ -f $n ]] && [[ -w $n:P:h ]];then
-				zcompare "$n"
-			elif [[ -d $n ]] && [[ -w $n ]];then
-				for k in "$n"/^*.zwc(^/);do
-					zcompare "$k"
-				done
-			fi
-		done
-		if [[ -o interactive ]];then
+	if [[ -o interactive ]];then
+		compinit $@
+		[[ $* =~ -[[:alnum:]]*C ]] || {
+			local n k
+			for n in $fpath[@];do
+				if [[ -f $n ]] && [[ -w $n:P:h ]];then
+					zcompare "$n"
+				elif [[ -d $n ]] && [[ -w $n ]];then
+					for k in "$n"/^*.zwc(^/);do
+						zcompare "$k"
+					done
+				fi
+			done
 			kill -POLL $$
-		fi
-	} &!
+		} &!
+	fi
 }
 
 safe-source()
