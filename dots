@@ -80,7 +80,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 		p="$(realpath --no-symlinks "$n")"
 		if echo "$p"|grep -q "^$HOME/" ;then
 			t="$(echo $n|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
-			if { [ -d "$n" ]||[ -f "$n" ];} && [ ! -L "$n" ];then
+			if [ -d "$n" ] && [ ! -L "$n" ];then
 				cp -r "$n" "$dotdir/$t"
 				rm -r "$n"
 				ln -s "$dotdir/$t" "$n"
