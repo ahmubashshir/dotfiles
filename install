@@ -1,21 +1,7 @@
 #!/bin/sh
 cd "$(dirname "$0")"
+echo Syncing dotfiles
 if [ -d ./bin ];then
-	echo Soft linking bin
 	ln -Tfs  "$PWD/bin" "$HOME/bin"
 fi
-if realpath "$0"|grep -q "^$HOME";then
-	for n in dot-*;do
-		p="$(realpath "$n")"
-		if [ -f "$n" ];then
-			echo Hard linking "${n//dot-/}"
-			ln -f "$p" "$HOME/${n//dot-/.}"
-		else
-			echo Soft linking "${n//dot-/}"
-			ln -Tfs  "$p" "$HOME/${n//dot-/.}"
-		fi
-	done
-else
-	echo This repo should reside under \'$HOME\'
-	exit 1
-fi
+./bin/dotfiles --sync
