@@ -1,8 +1,8 @@
 #!/bin/bash
 PATHSEP=:
 shopt -s nullglob
-if realpath "$0"|grep -q "^$HOME" && (($#==0));then
-	cd "$(dirname "$0")"
+cd "$(dirname "$(realpath "$0")")"
+if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	## non hidden dirs
 	for n in bin;do
 		echo Soft linking $n
@@ -14,7 +14,7 @@ if realpath "$0"|grep -q "^$HOME" && (($#==0));then
 	for n in dot-*;do
 		s="$(realpath "$n")"
 		t="${n#dot-}";t="${t//$PATHSEP//}"
-		if [ -f "${s##*/}" ];then
+		if [ -f "${s##*/}" ] && [ ! -L "$n" ];then
 			echo Hard linking "$t"
 			ln -f "$s" "$HOME/.$t"
 		else
@@ -28,7 +28,7 @@ if realpath "$0"|grep -q "^$HOME" && (($#==0));then
 			ln -Tfs  "$s" "$HOME/.$t"
 		fi
 	done
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^(ps|pathsep)$ ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
 	sed -i 's/^PATHSEP=.*$/PATHSEP='$2'/' $0
 	for n in *;do
 		if [[ $n != ${n//$PATHSEP/$2} ]];then
@@ -36,7 +36,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^(ps|pathsep)$ ]] &
 			mv "$n" "${n//$PATHSEP/$2}"
 		fi
 	done
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^rm$ ]];then
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
 	shift
 	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
 	for n in "$@";do
@@ -56,8 +56,8 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^rm$ ]];then
 					esac
 				done
 			done
-			t="${n#dot-}";t="${t//$PATHSEP//}"
 			echo Deleting $t
+			t="${n#dot-}";t="${t//$PATHSEP//}"
 			if [ ! -L "$HOME/.$t" ];then
 				rm -fr "$HOME/.$t"
 			else
@@ -68,29 +68,53 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^rm$ ]];then
 			echo \'$n\' doesn\'t exist >&2
 		fi
 	done
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 =~ ^cp$ ]];then
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 	shift
+	dotdir="$PWD"
+	cd "$OLDPWD"
 	for n in "$@";do
+		if [ -L "$n" ] && readlink "$n"|grep -q "^$dotdir";then
+			echo Already tracking \'$n\' >&2
+			continue
+		fi
 		p="$(realpath --no-symlinks "$n")"
 		if echo "$p"|grep -q "^$HOME/" ;then
 			t="$(echo $n|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
-			if [ -d "$n" ];then
-				cp -r "$n" "$t"
+			if { [ -d "$n" ]||[ -f "$n" ];} && [ ! -L "$n" ];then
+				cp -r "$n" "$dotdir/$t"
 				rm -r "$n"
-				ln -s "$PWD/$t" "$n"
+				ln -s "$dotdir/$t" "$n"
 			elif [ -L "$n" ] && [ ! -d "$(realpath "$n")" ] && [ ! -f "$(realpath "$n")" ];then
-				ln -fs "$(realpath "$n")" "$t"
+				ln -fs "$(realpath "$n")" "$dotdir/$t"
 				rm "$n"
-				ln -s "$(realpath "$t")" "$n"
+				ln -s "$(realpath "$dotdir/$t")" "$n"
 			elif realpath "$n"|grep -q "^$HOME/" && [ -L "$n" ];then
-				ln -fs "$(realpath "$n")" "$t"
+				if [ -f "$dotdir/$(readlink "$n"|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')" ];then
+					n="$(readlink "$n"|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
+				else
+					n="$(realpath "$n")"
+				fi
+				ln -fs "$n" "$dotdir/$t"
 			elif realpath "$n"|grep -q "^$HOME/" && [ -f "$n" ];then
-				ln "$n" "$t"
+				ln "$n" "$dotdir/$t"
 			fi
 		else
 			echo $n is niether under '$HOME' nor a symlink. >&2
 		fi
 	done
+elif [[ $1 = ls ]];then
+	find -maxdepth 1 -name 'dot-*' -print|cut -d/ -f2|columns
+elif (($#==0))||[[ $1 = help ]];then
+	(
+		exec >&2
+		echo "${0##*/} help:"
+		echo "   ln         link dotfiles."
+		echo "   ls         list dotfiles."
+		echo "   ps [chr]   use chr as seperator."
+		echo "   cp [path]  track path."
+		echo "   rm [dot]   unlink and delete dotfile."
+		echo "   help       show this help."
+	)
 else
 	echo This repo should reside under \'$HOME\'
 	exit 1
