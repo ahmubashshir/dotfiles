@@ -101,7 +101,9 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
-zstyle ':chpwd:*' recent-dirs-file ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs/${TTY##*/} +
+
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.cache/zsh/compcache
 
 # The following lines were added by compinstall
 if [ -f $HOME/.zinputrc ];then
