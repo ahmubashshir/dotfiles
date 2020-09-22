@@ -1,5 +1,5 @@
 #!/bin/zsh
-if [ -f /tmp/zprof.$UID ];then
+if [ -e /tmp/zprof.$UID ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
 	PS4='+$EPOCHREALTIME %N:%i> '
@@ -17,7 +17,7 @@ cmdignore+=(
 	shit danime git
 	nano xed gedit vi vim
 	vlc mpv celluloid
-	yay pacman
+	yay pacman bc
 )
 typeset -A ENV
 
@@ -181,14 +181,19 @@ fi
 }
 
 zcompinit
-
-bashcompinit
+bashcomps=(
+	cpu-x
+	winetricks
+	windscribe
+)
+complete() { true;}
 bashcompsys
-bashcompadd cpu-x winetricks
-if [ -f "$HOME/.zsh/compdef" ];then
+bashcompadd "${bashcomps[@]}"
+
+if [ -r "$HOME/.zsh/compdef" ];then
 	source $HOME'/.zsh/compdef'
 fi
-if [ -f /tmp/zprof.$UID ];then
+if [ -e /tmp/zprof.$UID ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
 fi

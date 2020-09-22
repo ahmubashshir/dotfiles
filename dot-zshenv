@@ -13,7 +13,7 @@ if [ ! -d ~/.cache/zsh ];then
 	mkdir -p ~/.cache/zsh
 fi
 if [[ -o interactive ]];then
-	trap 'compinit -C' POLL
+	trap 'compinit -C;[ -r $HOME/.zsh/compdef ] && source $HOME/.zsh/compdef' POLL
 	autoload -Uz compinit
 fi
 zcompinit()
@@ -31,6 +31,7 @@ zcompinit()
 					done
 				fi
 			done
+			sleep 0.5
 			kill -POLL $$
 		} &!
 	fi
@@ -44,7 +45,7 @@ safe-source()
 }
 
 zcompare() {
-	if [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
+	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
 		zcompile ${1}
 	fi
 }
