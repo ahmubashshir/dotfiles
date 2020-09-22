@@ -71,7 +71,6 @@ bindkey -e
 
 # Config Variables
 NOTIF[tmout]=20
-DIRSTACKSIZE=20
 
 ## Zstyle Config
 zstyle :compinstall filename '/home/mubashshir/.zshrc'
@@ -135,12 +134,8 @@ function xterm_title_preexec {
 function reset_broken_terminal {
 	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
 }
-function chpwd_dirstack {
-	print -l -- "$PWD" "${(u)dirstack[@]}" > "$DIRSTACKFILE"
-}
 # zsh hooks
 add-zsh-hook -Uz precmd reset_broken_terminal
-add-zsh-hook chpwd chpwd_dirstack
 if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
 	add-zsh-hook -Uz precmd xterm_title_precmd
 	add-zsh-hook -Uz preexec xterm_title_preexec
