@@ -1,4 +1,5 @@
 #!/bin/zsh
+autoload -Uz zrecompile
 emulate sh -c 'source /etc/profile'
 if [ -f $HOME/.shell/environment ]; then
 	emulate sh -c 'source '$HOME'/.shell/environment'
@@ -13,11 +14,17 @@ if [ ! -d ~/.cache/zsh ];then
 	mkdir -p ~/.cache/zsh
 fi
 if [[ -o interactive ]];then
-	trap 'compinit -C;[ -r $HOME/.zsh/compdef ] && source $HOME/.zsh/compdef' POLL
+	function TRAPPOLL {
+		compinit -C
+		[ -r $HOME/.zsh/compdef ] && source $HOME/.zsh/compdef
+	}
 	autoload -Uz compinit
 fi
-zcompinit()
-{
+# Traps
+function TRAPUSR1 { rehash; }
+
+# misc functions
+function zcompinit {
 	if [[ -o interactive ]];then
 		compinit $@
 		[[ $* =~ -[[:alnum:]]*C ]] || {
@@ -37,27 +44,39 @@ zcompinit()
 	fi
 }
 
-safe-source()
-{
+function safe-source {
 	if [ -f "$1" ];then
 		source "$@"
 	fi
 }
-
-zcompare() {
+function zrecompile_start {
+	for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef};do
+		if [ -f $n ];then
+			zrecompile -p -R $n -- &!
+		fi
+	done
+}
+function zcompare {
 	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
 		zcompile ${1}
 	fi
 }
 
-bashcompadd()
-{
+function bashcompadd {
 	for n in "$@";do
 		if [ -f "/usr/share/bash-completion/completions/$n" ];then
 			source "/usr/share/bash-completion/completions/$n"
 		fi
 	done
 }
-
-trap rehash USR1
+if ! [[ -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs" ]];then
+	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
+fi
+if tty -s;then
+	DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs/${TTY##*/}"
+	if [[ -f "$DIRSTACKFILE" ]] && (( ${#dirstack} == 0 )); then
+		dirstack=("${(@f)"$(< "$DIRSTACKFILE")"}")
+		[[ -d "${dirstack[1]}" ]] && cd -- "${dirstack[1]}"
+	fi
+fi
 safe-source /usr/share/doc/pkgfile/command-not-found.zsh

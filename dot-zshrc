@@ -40,6 +40,9 @@ autoload -Uz add-zsh-hook
 autoload -Uz bashcompinit
 autoload -Uz bashcompsys
 autoload -Uz zplug
+
+# compile this file
+zrecompile_start&!
 ## Start
 case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
@@ -63,10 +66,12 @@ setopt autocd incappendhistory extendedhistory
 setopt histfcntllock histnostore histreduceblanks sharehistory
 setopt histexpiredupsfirst histignoredups histignorealldups
 setopt histignorespace histfindnodups histsavenodups
-# Use emacs keybindings even if our EDITOR is set to vi
+setopt AUTO_PUSHD PUSHD_SILENT PUSHD_TO_HOME PUSHD_IGNORE_DUPS PUSHD_MINUS
 bindkey -e
 
+# Config Variables
 NOTIF[tmout]=20
+DIRSTACKSIZE=20
 
 ## Zstyle Config
 zstyle :compinstall filename '/home/mubashshir/.zshrc'
@@ -96,6 +101,7 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
+zstyle ':chpwd:*' recent-dirs-file ${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs/${TTY##*/} +
 
 # The following lines were added by compinstall
 if [ -f $HOME/.zinputrc ];then
@@ -106,7 +112,6 @@ if [ -f "$HOME/.shell/import" ];then
 fi
 [ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 ## customize
-export GPG_TTY=$(tty)
 if [ -e ./.env_setup ];then
 	source .env_setup
 fi
@@ -114,35 +119,44 @@ fi
 ## ignore invalid commands
 #zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
 
-## set title
-function xterm_title_precmd () {
+## Zsh Hook Functions
+function xterm_title_precmd {
 	print -Pn "\e]2;zsh@$$ [%1~]\a"
 }
-function xterm_title_preexec () {
+function xterm_title_preexec {
 	{
 		sleep 0.003
 		local proc=( $(pgrep -nlP $$) )
 		[[ $proc[2] != zsh ]] && [ -d /proc/$proc[1] ] && print -Pn "\e]2;$proc[2]@$proc[1] [%1~]\a"
 	} &!
 }
+function reset_broken_terminal {
+	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
+}
+function chpwd_dirstack {
+	print -l -- "$PWD" "${(u)dirstack[@]}" > "$DIRSTACKFILE"
+}
+# zsh hooks
+add-zsh-hook -Uz precmd reset_broken_terminal
+add-zsh-hook chpwd chpwd_dirstack
 if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
 	add-zsh-hook -Uz precmd xterm_title_precmd
 	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
 
+# Prompt Setup
 if [[ $ENV[color_prompt] = yes ]];then
-	chpwd()
-	{
-		unset ENV[vfs] ENV[gnome_vfs]
-		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && export ENV[gnome_vfs]=true
-		if ${ENV[gnome_vfs]:-false};then
+	function chpwd {
+		ENV[vfs]=''
+		ENV[gnome_vfs]=false
+		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && ENV[gnome_vfs]=true
+		if $ENV[gnome_vfs];then
 			ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
 		fi
 	}
 	chpwd
 	_git_prompt_update
-	precmd()
-	{
+	function precmd {
 		RETVAL=$?
 		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
 		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
@@ -152,15 +166,14 @@ if [[ $ENV[color_prompt] = yes ]];then
 		} || VENV_PROMPT=""
 		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${GPG_TTY##*/}%b%F{red}]-[%F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
+	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${TTY##*/}%b%F{red}]-[%F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
 else
 	PROMPT='[%m::%n %1~]$ '
 fi
-reload()
-{
+function reload {
 	source ~/.zshrc
 	source ~/.zshenv
-	rm $HOME/.cache/zsh/compdump
+	rm $HOME/.cache/zsh/compdump*
 	zcompinit
 	bashcompinit
 }
@@ -170,7 +183,7 @@ fi
 
 # suffix aliases
 {
-	jq-pager() {
+	function jq-pager {
 		[ -z "$1" ] && return
 		[ -x /usr/bin/jiq ] && jiq < "$1" || { jq -C '.' "$@"|less;}
 	}
@@ -186,12 +199,12 @@ bashcomps=(
 	winetricks
 	windscribe
 )
-complete() { true;}
+function complete { true }
 bashcompsys
 bashcompadd "${bashcomps[@]}"
 
-if [ -r "$HOME/.zsh/compdef" ];then
-	source $HOME'/.zsh/compdef'
+if [ -r ~/.zsh/compdef ];then
+	source ~/.zsh/compdef
 fi
 if [ -e /tmp/zprof.$UID ];then
 	unsetopt XTRACE
