@@ -14,6 +14,7 @@ if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	for n in dot-*;do
 		s="$(realpath "$n")"
 		t="${n#dot-}";t="${t//$PATHSEP//}"
+		mkdir -p "$(dirname "$HOME/.$t")"
 		if [ -f "${s##*/}" ] && [ ! -L "$n" ];then
 			echo Hard linking "$t"
 			ln -f "$s" "$HOME/.$t"
