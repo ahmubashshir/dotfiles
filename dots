@@ -103,7 +103,14 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 		fi
 	done
 elif [[ $1 = ls ]];then
-	find -maxdepth 1 -name 'dot-*' -print|cut -d/ -f2|columns
+	if [[ -n $(env which columns 2>/dev/null) ]];then
+		cmd=columns
+	elif [[ -n $(env which column 2>/dev/null) ]];then
+		cmd='column -x'
+	else
+		cmd=cat
+	fi
+	find -maxdepth 1 -name 'dot-*' -print|cut -d/ -f2|eval "$cmd"
 elif (($#==0))||[[ $1 = help ]];then
 	(
 		exec >&2
