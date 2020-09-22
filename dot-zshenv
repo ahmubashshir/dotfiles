@@ -69,14 +69,4 @@ function bashcompadd {
 		fi
 	done
 }
-if ! [[ -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs" ]];then
-	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs"
-fi
-if tty -s;then
-	DIRSTACKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/dirs/${TTY##*/}"
-	if [[ -f "$DIRSTACKFILE" ]] && (( ${#dirstack} == 0 )); then
-		dirstack=("${(@f)"$(< "$DIRSTACKFILE")"}")
-		[[ -d "${dirstack[1]}" ]] && cd -- "${dirstack[1]}"
-	fi
-fi
 safe-source /usr/share/doc/pkgfile/command-not-found.zsh
