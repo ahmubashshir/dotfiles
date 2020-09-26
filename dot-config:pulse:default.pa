@@ -1,0 +1,4 @@
+.include /etc/pulse/default.pa
+oad-module module-echo-cancel source_name=noecho source_properties=device.description=EchoCancel
+pactl set-default-source noecho
+pactl set-default-sink noecho
