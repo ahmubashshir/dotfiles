@@ -10,7 +10,7 @@ if [ -e /tmp/zprof.$UID ];then
 fi
 
 ## variables
-fpath+=(~/.zsh/functions ~/.cache/zsh/compdump ~/.cache/zsh)
+fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump ~/.cache/zsh )
 cmdignore+=(
 	man info
 	gcc g++ pbi wormhole

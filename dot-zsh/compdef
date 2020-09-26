@@ -1,2 +1,2 @@
 #!/bin/zsh
-compdef port=netcat
+#compdef port=netcat
