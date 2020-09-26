@@ -8,7 +8,7 @@
 # shellcheck disable=SC2016
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
-#VERSION_INFO=r135.487ffc9
+#VERSION_INFO=r138.44821f0
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -806,9 +806,12 @@ da_get() {
 	fi
 	[[ $DISPLAY != '' ]] && notify-send --urgency=normal -a DubbedAnime --expire-time=1000000 --icon=emblem-downloads --category=transfer.complete "Download Completed" "<b>$TITLE</b>\n${dl_notify} downloaded"
 }
-da_add_auth()
+da_read_ep_json()
 {
-	while read -r ep_id;do if echo "$ep_id"|jq -r '.host'|grep -q 'trollvid\|mp4\.sh';then echo "$ep_id"|jq -Mc ". + { \"auth\" : \"$(echo "$@"|jq -r '.auth')\"}";else echo "$ep_id";fi;done
+	cat | {
+		jq -Mc '.videos[]|del(.date)|if (.host|test("'$SUPPORTED_HOSTS'")) then .ep = "'"$2"'" else . end'
+		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$3" | jq -Mc '.[]'
+	} |jq -Mc 'select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )'| eval "$1"
 }
 da_get_episede() {
 	tr=${1##*-}
@@ -826,7 +829,7 @@ da_get_episede() {
 			cartoon|c) episode_type=cartoon;;
 			*) echo ${1%%/*}:invalid;;
 		esac
-		start_spinner "Fetching info about episode[id:$(echo "$1" | rev | cut -d/ -f1 | rev | cut -d- -f1)]"
+		start_spinner "Fetching info about episode[id:$(echo "${1%%-*}"|xargs basename)]"
 		${DEBUG:-false} && set -x
 		if ! [[ $1 =~ ^http* ]]; then
 			local d
@@ -843,7 +846,7 @@ da_get_episede() {
 			set "$page_url" "$@"
 		fi
 		unset page_url
-		parse_episode_page="$(echo "$parse_episode_page" | cut -d= -f2- | sed 's/\;$//g;s/^[[:blank:]]*//g' | head -1|jq -c ". + { \"url\" : \"$1\"}")"
+		parse_episode_page="$(echo "$parse_episode_page" | cut -d= -f2- | sed 's/\;$//g;s/^[[:blank:]]*//g' | head -1)"
 		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
 			tr=dubbed
 		fi
@@ -879,17 +882,11 @@ da_get_episede() {
 			fi
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
 			ep_title="$(echo "$ep_title"|sed 's| *$||g;s|^ *||g')"
-			ep_id_list=$(
-				echo "$parse_episode_page" | jq -Mc ".videos[]|del(.date) + { \"url\" : \"$1\"}" | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-				curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-			)
+			ep_id_list=$( echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "${1%%-*}"|xargs basename)" "$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
 
 			if [ -z "$ep_id_list" ]; then
 				tr=subbed
-				ep_id_list=$(
-					echo "$parse_episode_page" | jq -Mc ".videos[]|del(.date) + { \"url\" : \"$1\"}" | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-					curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")" | jq '.' | tail +2 | head -n -1 | awk '!match($0,"}"){printf $0};match($0,"}")' | grep -v status | sed 's/,$//' | jq -Mc . | grep '"id"' | grep $SUPPORTED_HOSTS | eval $filter
-				)
+				ep_id_list=$( echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "${1%%-*}"|xargs basename)" "$(echo "$parse_episode_page" | jq -r '.slug'|sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
 			fi
 			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
 				ep_title="${ep_title// ep / extra }"
@@ -899,7 +896,7 @@ da_get_episede() {
 			ep_title="$TITLE"
 			ep_number="$(echo "$parse_episode_page" | jq -r '.number')"
 			ep_title="$ep_title ep $ep_number"
-			ep_id_list=$(echo "$parse_episode_page" | jq -Mc ".videos[]|del(.date) + { \"url\" : \"$1\"}" | grep '"id"' | grep $SUPPORTED_HOSTS | awk -e '!seen[$0]++')
+			ep_id_list=$(echo "$parse_episode_page" | jq -Mc '.videos[]|del(.date)|select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | awk -e '!seen[$0]++')
 			ep_file_name="$(echo "$ep_title" | replace_invalid).mp4"
 		fi
 		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/\\\|}"'/{print};!/'"${PREFERRED_HOSTS//,/\\|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
@@ -997,7 +994,7 @@ da_get_episede() {
 
 download() {
 	local s1 s2 ret tried
-	s1=$(curl -kLsIXGET "$2" | awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($0) ~ /content-length/){ print $2 }}')
+	s1=$(curl -kLsIXGET "$2" | awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($1) ~ /^content-length:$/){ print $2 }}')
 	s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
 	if ((s1 >= s2)); then
 		until fget "$2" "$1"; do
@@ -1052,7 +1049,7 @@ compare_episode() {
 	if ((${BS:-524288} > size)); then
 		BS=$size
 	fi
-	wsize=$(curl -LksIXGET "$2" |awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($0) ~ /content-length/){ print $2 }}')
+	wsize=$(curl -LksIXGET "$2" |awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($1) ~ /^content-length:$/){ print $2 }}')
 	if ((size > wsize)); then
 		return 3
 	elif ((size == 0)); then
@@ -1088,7 +1085,10 @@ compare_episode() {
 	echo -e "\rComparing episode[test:1-${TOTAL_CHECKS:-${#offsets}}:pass]"
 	return 0
 }
-SUPPORTED_HOSTS='mp4upload\|mp4.sh\|trollvid\|vidstreaming\|xstreamcdn'
+SUPPORTED_HOSTS='mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
+if curl -s "${CURL_OPTIONS[@]}" 'https://ww5.dubbedanime.net/user/info' -X 'POST'|jq --exit-status '. != null' &>/dev/null;then
+	SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
+fi
 get_effective_url()
 {
 	xargs curl -ILksXGET -o /dev/null -w '%{url_effective}\n' 2>/dev/null| grep '^http'
@@ -1097,14 +1097,14 @@ get_url() {
 	local ep_file_host ep_file_id n
 	ep_file_host=$(echo "$@" | jq -r '.host')
 	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
-	ep_url=$(echo "$@" | jq -r '.url' | grep -wv 'null')
+	ep_id=$(echo "$@" | jq -r '.ep' | grep -wv 'null')
 	if ! { echo "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"; }; then
 		echo "unimplemented:$ep_file_host"
 		return 1
 	fi
 	for n in $ep_file_id; do
-		if [ -n "$(type -t ${ep_file_host}:get_url || type -w ${ep_file_host}:get_url)" ]; then
-			${ep_file_host}:get_url "${n}" "$ep_url"
+		if [ -n "$(type -t ${ep_file_host// /+}:get_url || type -w ${ep_file_host// /+}:get_url)" ]; then
+			${ep_file_host// /+}:get_url "${n}" "$ep_id"
 		else
 			echo "unimplemented:${ep_file_host/_/.}"
 			break
@@ -1122,36 +1122,24 @@ xstreamcdn:get_url() {
 
 trollvid:get_url() {
 	#exec 2>/tmp/out.${CALLED_FROM_MP4_SH:-false}
-	if [ -f ~/.da-cookies.txt ];then
-		curl -o /dev/null -w '%{url_effective}\n' -sLIXGET "${CURL_OPTIONS[@]}" "https://ww5.dubbedanime.net/download/$(echo $2|xargs basename|cut -d- -f1)/$1"
-	else
-		set "$1" "$(curl -H "referer: https://ww5.dubbedanime.net/$TYPE/$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$2" | grep -E "(var|let) (xToken|xuath)" | sed -E "s/.* = '"'\?x=(.*)'"'.*/\1/")"
-		#set -x
-		curl "https://mp4.sh/download/$1?x=$2" \
-		-H 'authority: mp4.sh' \
-		-H 'pragma: no-cache' \
-		-H 'cache-control: no-cache' \
-		-H 'upgrade-insecure-requests: 1' \
-		-H 'user-agent: '"$USER_AGENT" \
-		-H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
-		-H 'sec-fetch-site: none' \
-		-H 'sec-fetch-mode: navigate' \
-		-H 'sec-fetch-user: ?1' \
-		-H 'sec-fetch-dest: document' \
-		-H 'accept-language: en-US,en;q=0.9,bn;q=0.8,ar;q=0.7' \
-		-H 'cookie: __cfduid=d5e25eb2c3a9e01d99994e1004d5330971600289507; _gaid=59277e8785243a92a61db5942548a251' \
-		--compressed
-	fi
-}
-
-mp4.sh:get_url() {
-	CALLED_FROM_MP4_SH=true trollvid:get_url "$@"
+	curl -o /dev/null -w '%{url_effective}\n' -sLIXGET "${CURL_OPTIONS[@]}" "https://ww5.dubbedanime.net/download/$2/$1"
 }
 
 vidstreaming:get_url() {
-	curl -s "https://vidstreaming.io/streaming.php?id=$1" | sed -n '/data-video=".*\/v\//{s/.*data-video="\(.*\)\/v\/\(.*\)".*/\1\/api\/source\/\2/;p}' | xargs curl -X POST -s 2>/dev/null| jq -r 'select(.success == true).data[0].file'|get_effective_url
+	curl -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" | jq -r 'if has("source_bk") and ( .source_bk[]|length >0 ) then .source_bk else .source end|.[0]|.file' | get_effective_url
 }
 
+gogo+server:get_url() {
+	curl -s "https://vid.xngine.com/api/gogo/$1"|jq -r 'if has("backup") then .backup.file else .source.file end' | get_effective_url
+}
+
+mixdrop:get_url() {
+	curl -s "https://mixdrop.to/e/$1"|grep '^eval'|js-beautify|grep MDCore.wurl|sed -E 's@.* = "//(.*)".*@https://\1@'
+}
+
+cloud9:get_url() {
+	curl "https://api.cloud9.to/stream/$1"|jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
+}
 if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	while [ -n "$1" ]; do
 		case $1 in
@@ -1170,7 +1158,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 						git diff --shortstat|cut -d' ' -f2
 					}
 				else
-					echo "danime $(grep '^#VERSION_INFO=r135.487ffc9' "$0" | cut -d= -f2)"
+					echo "danime $(grep '^#VERSION_INFO=r138.44821f0' "$0" | cut -d= -f2)"
 				fi
 				echo
 				da_get_license
@@ -1212,7 +1200,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 					#text: List supported mirrors
 				#-option
 				echo Supported Mirrors
-				echo -e "\t${SUPPORTED_HOSTS//\\|/ }"
+				echo -e "${SUPPORTED_HOSTS//|/$'\n  '}"
 				exit 0
 				;;
 			(-m | --mirror)
@@ -1222,14 +1210,14 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 					#text: select preferred mirrors.
 					#args: mirror1[,mirror2[,...]]
 				#-option
-				if echo "${SUPPORTED_HOSTS//\\|/$'\n'}" | grep -q "${2//,/\\|}"; then
+				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -q "${2//,/|}"; then
 					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${2//,/|}"
 				fi
 				shift
 				;;
 			(--mirror=[[:alnum:].,]*)
 				tmp="${1##*=}"
-				if echo "${SUPPORTED_HOSTS//\\|/$'\n'}" | grep -q "${tmp//,/\\|}"; then
+				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -q "${tmp//,/|}"; then
 					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${tmp//,/|}"
 				fi
 				unset tmp
@@ -1541,7 +1529,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		esac
 		shift
 	done
-	PREFERRED_HOSTS="${PREFERRED_HOSTS//null\\\|/}"
+	PREFERRED_HOSTS="${PREFERRED_HOSTS//null\|/}"
 	if [[ -n $TYPE_ANIME ]] && { [[ $TYPE_ANIME = subbed ]] || [[ $TYPE_ANIME = dubbed ]] ; }; then
 		tr=$TYPE_ANIME
 	else
