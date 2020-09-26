@@ -13,16 +13,6 @@ export XSECURELOCK_AUTHPROTO=authproto_htpasswd
 while read line; do
     export "$line"
 done <<<$(bash -ic 'env' 2>/dev/null)
-{
-	pactl set-card-profile		alsa_card.pci-0000_00_1b.0 output:analog-stereo+input:analog-stereo
-#	pactl set-card-profile		alsa_card.usb-_Webcam_C170-02 input:multichannel-input
-	pactl set-default-sink		alsa_output.pci-0000_00_1b.0.analog-stereo
-#	pactl set-default-source	alsa_input.usb-_Webcam_C170-02.multichannel-input
-	pactl set-default-source	alsa_input.pci-0000_00_1b.0.analog-stereo
-	pactl set-sink-port			alsa_output.pci-0000_00_1b.0.analog-stereo analog-output-headphones
-#	pactl set-source-port		alsa_input.usb-_Webcam_C170-02.multichannel-input multichannel-input
-	pactl set-source-port		alsa_input.pci-0000_00_1b.0.analog-stereo analog-input-front-mic
-} &>/dev/null
 #xset +dpms
 #xset s blank
 systemctl --user restart ibus.slice
