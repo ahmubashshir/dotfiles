@@ -2,6 +2,7 @@
 
 get_games_list() {
 	alert "Downloading games list..." &
+	[ -f all_games_data ] || touch all_games_data
 	if [ "$(expr $(date +%s) - $(stat -c%Y all_games_data) )" -ge 86400 ] || (($(wc -l all_games_data|cut -d\  -f1)==0));then
 		legendary list-games | grep -E '^[[:blank:]]+[*+]' 1>all_games_data || {
 			exit 2 && alert "E1: Failed to download games list."
