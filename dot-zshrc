@@ -154,16 +154,12 @@ if [[ $ENV[color_prompt] = yes ]];then
 	chpwd
 	_git_prompt_update
 	function precmd {
-		RETVAL=$?
-		[[ $RETVAL -ne 0 ]] &&	sym="%F{cyan}>>" || sym=">>"
-		[[ $RETVAL -ne 0 ]] && ret="%F{red}$RETVAL%F{green}"||ret=""
-		unset RETVAL
 		[[ -n $VIRTUAL_ENV ]] && {
 			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
 		} || VENV_PROMPT=""
 		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}┌───=[%F{yellow}%B%m%F{red}%b::%F{green}%n%F{red}]${VENV_PROMPT}\n%F{red}├────[%f%Bpts:%F{cyan}${TTY##*/}%b%F{red}]-[%F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}\n└─$sym%F{lightgreen} '
+	PROMPT=$'%F{red}╭───[%F{yellow}%B@%F{green}%n%F{red}%b]-[%Bpts:%F{cyan}${TTY##*/}%b%F{red}]\n%F{red}├───[%F{green} %F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}${VENV_PROMPT}\n╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
 else
 	PROMPT='[%m::%n %1~]$ '
 fi
