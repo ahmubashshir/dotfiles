@@ -10,9 +10,9 @@ if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ];then
 	unset FORCEREBUILD
 fi
 mkdir -p ~/.config/pkgbuild
-if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ]||[ ! -f "/home/mubashshir/.config/repoctl/config.toml" ];then
+if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ]||[ ! -f ~/.config/repoctl/config.toml ];then
 	repoctl new config  "${PKGREPO:-$PWD}/${REPO}"
-	cat >> /home/mubashshir/.config/repoctl/config.toml <<EOF
+	cat >> ~/.config/repoctl/config.toml <<EOF
 add_params = [
   "-v",
   "-s",
@@ -21,7 +21,7 @@ add_params = [
 ]
 EOF
 fi
-sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" "/home/mubashshir/.config/repoctl/config.toml"
+sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
 for split in ${pkgname[@]};do
 	if [ "$FORCEREBUILD" = "true" ]||{ echo "$*"|grep -q '\-f'; };then
 		break

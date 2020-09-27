@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-#VERSION_INFO=r139.ac5af5b
+# VERSION r142.c92ef99
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -343,10 +343,11 @@ da_get_license()
 	echo " it under the terms of the GNU General Public License as published by"
 	echo " the Free Software Foundation; either version 2 of the License, or"
 	echo " (at your option) any later version."
-	if ${1:-false};then
+	echo
+	if [ -e "LICENSE" ] && [ "$(head -1 LICENSE | tr -d '[:blank:]')" = "GNUGENERALPUBLICLICENSE" ]; then
+		echo "See 'LICENSE' for more details."
 		return 0
 	fi
-	echo
 	echo " 'danime' is distributed in the hope that it will be useful,"
 	echo " but WITHOUT ANY WARRANTY; without even the implied warranty of"
 	echo " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
@@ -1159,7 +1160,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 						git diff --shortstat|cut -d' ' -f2
 					}
 				else
-					echo "danime $(grep '^#VERSION_INFO=r139.ac5af5b' "$0" | cut -d= -f2)"
+					echo "danime $(awk '/^# VERSION/{print $3;exit}' "$0")"
 				fi
 				echo
 				da_get_license
@@ -1171,13 +1172,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 					#long: --license
 					#text: Show license.
 				#-option
-				if [ -e "LICENSE" ] && [ "$(head -1 LICENSE | tr -d '[:blank:]')" = "GNUGENERALPUBLICLICENSE" ]; then
-					da_get_license true
-					echo
-					echo "See 'LICENSE' for more details."
-				else
-					da_get_license
-				fi
+				da_get_license
 				exit 0
 				;;
 			(-i| --id)
