@@ -8,7 +8,8 @@
 # shellcheck disable=SC2016
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
-#VERSION_INFO=r138.44821f0
+((def_header)) && return 0 || def_header=1
+#VERSION_INFO=r139.ac5af5b
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1158,7 +1159,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 						git diff --shortstat|cut -d' ' -f2
 					}
 				else
-					echo "danime $(grep '^#VERSION_INFO=r138.44821f0' "$0" | cut -d= -f2)"
+					echo "danime $(grep '^#VERSION_INFO=r139.ac5af5b' "$0" | cut -d= -f2)"
 				fi
 				echo
 				da_get_license

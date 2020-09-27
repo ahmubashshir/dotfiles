@@ -1,4 +1,5 @@
 #!/bin/bash
+((def_libbash)) && return 0 || def_libbash=1
 function check_up_server() {
 	t_efbec206=$2
 	t_efbec206=${t_efbec206:=3}
