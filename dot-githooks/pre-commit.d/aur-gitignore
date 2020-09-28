@@ -13,7 +13,7 @@ for n in "${STAGED[@]}";do
 	echo '!'"$n" >> .gitignore
 done
 grep '^!' .gitignore|cut -c2-|while read line;do
-	if ! [ -e "$line" ];then
+	if ! { [ -e "$line" ] || [ "$line" = "*" ];};then
 		sed -i "/^\!$line$/d" .gitignore
 	fi
 done
