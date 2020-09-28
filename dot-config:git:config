@@ -44,7 +44,6 @@
 	protocol = https
 
 [core]
-	excludesfile = ~/.gitignore_global
 	askPass = /usr/lib/seahorse/ssh-askpass
 	hooksPath = ~/.githooks
 [diff]
