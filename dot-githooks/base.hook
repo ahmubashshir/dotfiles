@@ -34,14 +34,14 @@ hook_print()
 		;;
 	esac
 	[[ $2 = debug ]] && ! (( $GIT_DEBUG_HOOKS )) && return 0
-	printf "  ${COLOR}%s.${ALL_OFF}\n" "$1"
+	echo "  ${COLOR}$1${ALL_OFF}"
 }
 if [ -d "$0.d" ];then
 	for n in "$0.d"/*;do
 		if [ -x "$n" ];then
 			name="${n//\d\//}";name="${name##*/}"
 			if "${0%/*}/hook-condition" "$n" "$name" "${0##*/}";then
-				printf "[$GREEN${0##*/}${ALL_OFF}.${BLUE}${n##*/}${ALL_OFF}] running.\n"
+				echo "[$GREEN${0##*/}${ALL_OFF}] ${BLUE}${n##*/}${ALL_OFF}"
 				(
 					HOOKNAME="${n##*/}"
 					ACTION="${0##*/}"
