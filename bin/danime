@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r142.c92ef99
+# VERSION r142.c92ef99-1
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1136,11 +1136,11 @@ gogo+server:get_url() {
 }
 
 mixdrop:get_url() {
-	curl -s "https://mixdrop.to/e/$1"|grep '^eval'|js-beautify|grep MDCore.wurl|sed -E 's@.* = "//(.*)".*@https://\1@'
+	curl -s "https://mixdrop.to/e/$1"|grep '^eval'|js-beautify -|grep MDCore.wurl|sed -E 's@.* = "//(.*)".*@https://\1@'
 }
 
 cloud9:get_url() {
-	curl "https://api.cloud9.to/stream/$1"|jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
+	curl -s "https://api.cloud9.to/stream/$1"|jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
 }
 if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	while [ -n "$1" ]; do

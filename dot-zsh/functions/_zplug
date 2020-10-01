@@ -1,4 +1,4 @@
-#compdef zplugin
+#compdef zplug
 _list_plugins()
 {
 	local -a plugins
