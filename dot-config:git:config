@@ -34,6 +34,7 @@
 	pullmod = submodule foreach git pull
 	rf = !git pull --all && git pull origin master && git push --all
 	up = ![ "$(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge")" = '' ] && git push -u || git push
+	rmbr = !"f() { br=$(git rev-parse --abbrev-ref HEAD);git checkout master;git branch -D "$br" 2>/dev/null;git push $(git remote|grep -Em 1 '(ahmubashshir|origin)') --delete "$br" 2>/dev/null; };f"
 	cpr = !git push && hub pull-request
 	hist = !giggle
 	gui = !gitg -a 2>/dev/null
