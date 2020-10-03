@@ -55,6 +55,7 @@ call plug#begin()
 	Plug 'ervandew/supertab'
 	Plug 'ludovicchabant/vim-gutentags'
 	Plug 'guru245/gutentags_plus'
+	Plug 'wakatime/vim-wakatime'
 call plug#end()
 
 set visualbell
