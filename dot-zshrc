@@ -182,11 +182,8 @@ else
 	PROMPT='[%m::%n %1~]$ '
 fi
 function reload {
-	source ~/.zshrc
-	source ~/.zshenv
-	rm $HOME/.cache/zsh/compdump*
-	zcompinit
-	bashcompinit
+	rm -f $HOME/.cache/zsh/compdump*
+	exec zsh
 }
 if [[ $(getterm) = octopi ]];then
 	unset PS1 PS2 PS3 PS4 HISTFILE
