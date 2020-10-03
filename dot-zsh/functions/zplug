@@ -19,14 +19,15 @@ do
 				"$plugpath/zsh-$plugname/$plugname" \
 				"$plugpath/zsh-$plugname/zsh-$plugname"
 	do
-		if [ -f "$plug.zsh" ]
+		plugin="$plug.zsh"
+		if [ -f "$plugin" ]
 		then
-			if [[ -w $plugpath ]] && [[ -s "$plug" && ( ! -s "$plug.zwc" || "$plug" -nt "$plug.zwc" ) ]]
+			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
 			then
-				rm -f "$plug.zwc"
-				zcompile "$plug" &!
+				rm -f "$plugin.zwc"
+				zcompile "$plugin" &!
 			fi
-			source "$plug.zsh" "$@"
+			source "$plugin" "$@"
 			return 0
 		fi
 	done

@@ -21,6 +21,13 @@
 *.tar
 *.zip
 
+# Backups #
+*~
+*.bak
+*.old
+*.part
+*.swp
+
 # Logs and databases #
 ######################
 *.log
@@ -40,6 +47,7 @@ Thumbs.db
 # IDE files #
 #############
 nbproject
+**/vendor/bundle
 .~lock.*
 .buildpath
 .idea

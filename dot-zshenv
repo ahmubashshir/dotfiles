@@ -8,7 +8,10 @@ if [ -f $HOME'/.profile' ];then
 	emulate sh -c 'source '$HOME'/.profile'
 fi
 unfunction appendpath
-
+zcompile()
+{
+	builtin zcompile "$@"
+}
 if [ ! -d ~/.cache/zsh ];then
 	rm -f ~/.cache/zsh
 	mkdir -p ~/.cache/zsh
