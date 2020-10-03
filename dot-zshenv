@@ -1,5 +1,4 @@
 #!/bin/zsh
-autoload -Uz zrecompile
 emulate sh -c 'source /etc/profile'
 if [ -f $HOME/.shell/environment ]; then
 	emulate sh -c 'source '$HOME'/.shell/environment'
@@ -42,7 +41,7 @@ function zcompinit {
 				fi
 			done
 			sleep 0.5
-			kill -POLL $$
+			[ -d $$ ] && kill -POLL $$
 		} &!
 	fi
 }
@@ -55,13 +54,14 @@ function safe-source {
 function zrecompile_start {
 	for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef};do
 		if [ -f $n ];then
-			zrecompile -p -R $n -- &!
+			zcompare $n -Rz &!
 		fi
 	done
 }
 function zcompare {
 	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
-		zcompile ${1}
+		echo zcompile: ${1:t} >&2
+		zcompile "${@:2}" "$1"
 	fi
 }
 
