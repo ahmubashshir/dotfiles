@@ -21,3 +21,6 @@
 [submodule "dot-zsh/plugins/startup-timer"]
 	path = dot-zsh/plugins/startup-timer
 	url = https://github.com/paulmelnikow/zsh-startup-timer.git
+[submodule "dot-zsh/plugins/bash-completions-fallback"]
+	path = dot-zsh/plugins/bash-completions-fallback
+	url = https://github.com/3v1n0/zsh-bash-completions-fallback.git
