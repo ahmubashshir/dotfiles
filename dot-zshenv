@@ -9,6 +9,7 @@ fi
 unfunction appendpath
 zcompile()
 {
+	sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
 	builtin zcompile "$@"
 }
 if [ ! -d ~/.cache/zsh ];then
@@ -21,6 +22,9 @@ if [[ -o interactive ]];then
 		[ -r $HOME/.zsh/compdef ] && source $HOME/.zsh/compdef
 	}
 	autoload -Uz compinit
+	YSU_MESSAGE_POSITION=after
+	YSU_HARDCORE=1
+	YSU_MESSAGE_FORMAT="$(print -P %B%F{cyan})Use \"$(print -P %F{blue})%alias$(print -P %F{cyan})\", $(print -P %F{red})you little shit!$(print -P %b%f)"
 fi
 # Traps
 function TRAPUSR1 { rehash; }
@@ -60,7 +64,6 @@ function zrecompile_start {
 }
 function zcompare {
 	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
-		echo zcompile: ${1:t} >&2
 		zcompile "${@:2}" "$1"
 	fi
 }
