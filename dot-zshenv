@@ -7,8 +7,7 @@ if [ -f $HOME'/.profile' ];then
 	emulate sh -c 'source '$HOME'/.profile'
 fi
 unfunction appendpath
-zcompile()
-{
+function zcompile {
 	sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
 	builtin zcompile "$@"
 }
@@ -62,17 +61,11 @@ function zrecompile_start {
 		fi
 	done
 }
+
 function zcompare {
 	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
 		zcompile "${@:2}" "$1"
 	fi
 }
 
-function bashcompadd {
-	for n in "$@";do
-		if [ -f "/usr/share/bash-completion/completions/$n" ];then
-			source "/usr/share/bash-completion/completions/$n"
-		fi
-	done
-}
 safe-source /usr/share/doc/pkgfile/command-not-found.zsh

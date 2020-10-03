@@ -37,8 +37,6 @@ HISTDUP=erase
 
 ## Lazy load section
 autoload -Uz add-zsh-hook
-autoload -Uz bashcompinit
-autoload -Uz bashcompsys
 autoload -Uz zplug
 
 # compile this file
@@ -54,6 +52,8 @@ zplug notify
 zplug syntax-highlighting
 zplug autopair
 zplug you-should-use
+zplug bash-completions-fallback
+
 [ -x /usr/bin/wakatime ] &&\
 zplug wakatime
 #ZSH_AUTOSUGGEST_STRATEGY=(completion)
@@ -204,14 +204,6 @@ fi
 }
 
 zcompinit
-bashcomps=(
-	cpu-x
-	winetricks
-	windscribe
-)
-function complete { true }
-bashcompsys
-bashcompadd "${bashcomps[@]}"
 
 if [ -r ~/.zsh/compdef ];then
 	source ~/.zsh/compdef
