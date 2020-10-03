@@ -47,6 +47,7 @@ case "$TERM" in
 esac
 ## local plugins
 # zplug async
+zplug hacker-quotes
 zplug git
 zplug notify
 zplug syntax-highlighting

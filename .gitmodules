@@ -24,3 +24,6 @@
 [submodule "dot-zsh/plugins/bash-completions-fallback"]
 	path = dot-zsh/plugins/bash-completions-fallback
 	url = https://github.com/3v1n0/zsh-bash-completions-fallback.git
+[submodule "dot-zsh/plugins/hacker-quotes"]
+	path = dot-zsh/plugins/hacker-quotes
+	url = https://github.com/oldratlee/hacker-quotes.git
