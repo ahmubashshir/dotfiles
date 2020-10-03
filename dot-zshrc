@@ -54,6 +54,8 @@ zplug notify
 zplug syntax-highlighting
 zplug autopair
 zplug you-should-use
+[ -x /usr/bin/wakatime ] &&\
+zplug wakatime
 #ZSH_AUTOSUGGEST_STRATEGY=(completion)
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=""
 #ZSH_AUTOSUGGEST_USE_ASYNC=1
