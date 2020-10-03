@@ -42,7 +42,7 @@ function _git_prompt_update() {
 	emulate -L zsh
 	typeset -g  GITSTATUS_PROMPT=''
 	typeset -gi GITSTATUS_PROMPT_LEN=0
-	${ENV[vfs]:-false} && return 0
+	${ENV[in_vfs]:-false} && return 0
 	# Call gitstatus_query synchronously. Note that gitstatus_query can also be called
 	# asynchronously; see documentation in gitstatus.plugin.zsh.
 	local \

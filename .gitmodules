@@ -1,3 +1,5 @@
+[submodule "*"]
+	shallow = true
 [submodule "dot-weeb"]
 	path = dot-weeb
 	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6
@@ -7,12 +9,6 @@
 [submodule "dot-zsh/plugins/gitstatus"]
 	path = dot-zsh/plugins/gitstatus
 	url = https://github.com/romkatv/gitstatus
-	shallow = true
-[submodule "*"]
-	shallow = true
 [submodule "tmux"]
 	path = tmux
 	url = https://github.com/gpakosz/.tmux.git
-[submodule "dot-zsh/plugins/autocomplete"]
-	path = dot-zsh/plugins/autocomplete
-	url = https://github.com/marlonrichert/zsh-autocomplete

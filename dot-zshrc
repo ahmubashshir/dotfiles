@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh -x
 if [ -e /tmp/zprof.$UID ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
@@ -84,8 +84,6 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' glob set
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' ignore-parents parent pwd
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
 zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
@@ -100,9 +98,24 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
 zstyle ':completion:*' use-compctl false
 zstyle ':completion:*' verbose true
+zstyle ':completion:*' list-grouped true
+zstyle ':completion:*' list-dirs-first true
+zstyle ':completion:*' list-rows-first true
+zstyle ':completion:*' remove-all-dups true #
+#zstyle ':completion:*' #
+#zstyle ':completion:*' #
+
+
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+zstyle ':completion:*:kill:*' gain-privileges true
 
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path ~/.cache/zsh/compcache
+
+zstyle ':autocomplete:list-choices:*' max-lines 20%
+zstyle ':autocomplete:*' groups always
+zstyle ':autocomplete:tab:*' completion fzf
 
 # The following lines were added by compinstall
 if [ -f $HOME/.zinputrc ];then
@@ -111,7 +124,7 @@ fi
 if [ -f "$HOME/.shell/import" ];then
 	emulate sh -c 'source '$HOME'/.shell/import'
 fi
-[ -z $(get_termemu|grep 'geany') ] && HISTFILE=${HISTFILE:-~/.zsh_history}
+[ -z "$(get_termemu|grep 'geany')" ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 ## customize
 if [ -e ./.env_setup ];then
 	source .env_setup
@@ -144,11 +157,17 @@ fi
 # Prompt Setup
 if [[ $ENV[color_prompt] = yes ]];then
 	function chpwd {
-		ENV[vfs]=''
-		ENV[gnome_vfs]=false
-		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]]*$ ]] && ENV[gnome_vfs]=true
-		if $ENV[gnome_vfs];then
-			ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}$(echo ${PWD}|tr / \\n|grep ':host='|(read k;echo -n $k|cut -d: -f1;echo -n '://';echo -n $k|cut -d: -f2|tr , \\n|(grep '^user' && echo @)|cut -d= -f2;echo -n $k|cut -d: -f2|tr , \\n|grep '^host'|cut -d= -f2)|tr -d \\n;echo)%F{red}]"
+		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]] ]] && ENV[in_vfs]=true
+		if ${ENV[in_vfs]:-false};then
+			if [[ ${PWD}/ =~ ^${ENV[vfs_root]}/ ]];then
+				if
+				ENV[vfs_root]=$(sed -En 's@(/run/user/[[:digit:]]+/gvfs/[[:alnum:]:=,.-]*)($|/.*)@\1/@;p' <<<$PWD)
+				ENV[vfs_url]=$(sed -En 's@/run/user/[[:digit:]]+/gvfs/([[:alnum:]:=,.-]*)($|/.*)@\1@;s@([[:alnum:]]*):@\1://@;s/host=(.*)/\1/;/user=/{s://([[:alnum:]].*),user=(.*)://\2@\1:};p' <<<$PWD)
+				ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}${ENV[vfs_url]}%F{red}]"
+			fi
+			[[ ${PWD} = ^${ENV[vfs_root]} ]] && ENV[vfs_pwd]=/
+		else
+			unset ENV[in_vfs] ENV[vfs] ENV[vfs_url]	ENV[vfs_root] ENV[vfs_pwd]
 		fi
 	}
 	chpwd
@@ -157,9 +176,9 @@ if [[ $ENV[color_prompt] = yes ]];then
 		[[ -n $VIRTUAL_ENV ]] && {
 			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
 		} || VENV_PROMPT=""
-		RPROMPT="$ret"
 	}
-	PROMPT=$'%F{red}╭───[%F{yellow}%B@%F{green}%n%F{red}%b]-[%Bpts:%F{cyan}${TTY##*/}%b%F{red}]\n%F{red}├───[%F{green} %F{cyan}%B%1~%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}${VENV_PROMPT}\n╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
+	PROMPT=$'%F{red}╭───[%F{yellow}%B@%F{green}%n%F{red}%b]-[%Bpts:%F{cyan}${TTY##*/}%b%F{red}]\n%F{red}├───[%F{green} %F{cyan}%B${ENV[vfs_pwd]:-%1~}%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}${VENV_PROMPT}\n╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
+	RPROMPT='%(?..%F{red}%?%f)'
 else
 	PROMPT='[%m::%n %1~]$ '
 fi
