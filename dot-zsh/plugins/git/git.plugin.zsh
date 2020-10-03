@@ -30,7 +30,7 @@ _git_prompt_update_async()
 {
 	sleep 0.1
 	local pid
-	pid=$(pgrep -fP $$ "$1" 2>/dev/null)
+	pid=$(pgrep -nfP $$ "$1" 2>/dev/null)
 	((pid>$$)) || return
 	while sleep 0.1; do
 		test -d "/proc/$pid" && continue || break
