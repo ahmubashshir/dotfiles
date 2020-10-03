@@ -160,7 +160,6 @@ if [[ $ENV[color_prompt] = yes ]];then
 		[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/[[:print:]] ]] && ENV[in_vfs]=true
 		if ${ENV[in_vfs]:-false};then
 			if [[ ${PWD}/ =~ ^${ENV[vfs_root]}/ ]];then
-				if
 				ENV[vfs_root]=$(sed -En 's@(/run/user/[[:digit:]]+/gvfs/[[:alnum:]:=,.-]*)($|/.*)@\1/@;p' <<<$PWD)
 				ENV[vfs_url]=$(sed -En 's@/run/user/[[:digit:]]+/gvfs/([[:alnum:]:=,.-]*)($|/.*)@\1@;s@([[:alnum:]]*):@\1://@;s/host=(.*)/\1/;/user=/{s://([[:alnum:]].*),user=(.*)://\2@\1:};p' <<<$PWD)
 				ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}${ENV[vfs_url]}%F{red}]"
