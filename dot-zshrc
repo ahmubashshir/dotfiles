@@ -48,12 +48,12 @@ case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
 esac
 ## local plugins
-zplug async
+# zplug async
 zplug git
 zplug notify
-#zplug autosuggestions
 zplug syntax-highlighting
 zplug autopair
+zplug you-should-use
 #ZSH_AUTOSUGGEST_STRATEGY=(completion)
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE=""
 #ZSH_AUTOSUGGEST_USE_ASYNC=1
