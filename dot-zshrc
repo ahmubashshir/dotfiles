@@ -220,3 +220,4 @@ if [ -e /tmp/zprof.$UID ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
 fi
+zplug startup-timer
