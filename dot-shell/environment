@@ -20,9 +20,8 @@ fi
 if [ -n "${ZSH_VERSION:-}" ] ; then
 	export VIRTUAL_ENV_DISABLE_PROMPT=1
 fi
-test -x /usr/bin/dircolors &&\
-test -r ~/.shell/dircolors &&\
-eval "$(dircolors -b ~/.shell/dircolors)" || eval "$(dircolors -b)"
+[[ -x /usr/bin/dircolors ]]&&\
+export LS_COLORS=$({ [[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b; }|sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -49,20 +48,3 @@ if tty -s;then
 		YELLOW="${BOLD}\e[33m"
 	fi
 fi
-blck='\033[0;30'
-dgry='\033[1;30'
-lgry='\033[0;37'
-red='\033[0;31'
-lred='\033[1;31'
-grn='\033[0;32'
-lgrn='\033[1;32'
-brown='\033[0;33'
-yellow='\033[1;33'
-blu='\033[0;34'
-lblu='\033[1;34'
-prpl='\033[0;35'
-lprpl='\033[1;35'
-cyn='\033[0;36'
-lcyn='\033[1;36'
-wht='\033[1;37'
-rst='\033[0m'
