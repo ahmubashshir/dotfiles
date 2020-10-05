@@ -1,6 +1,6 @@
 #!/bin/zsh
 # commands to ignore
-typeset -g -A NOTIF
+typeset -gA NOTIF
 NOTIF[tmout]=${NOTIF[tmout]:-10}
 NOTIF[units]=${NOTIF[units]:-0}
 cmdignore+=(htop tmux top vim)

@@ -172,14 +172,15 @@ if [[ $ENV[color_prompt] = yes ]];then
 			unset ENV[in_vfs] ENV[vfs] ENV[vfs_url]	ENV[vfs_root] ENV[vfs_pwd]
 		fi
 	}
-	chpwd
-	_git_prompt_update
+	for n in $chpwd_functions chpwd;do
+		$n
+	done
 	function precmd {
 		[[ -n $VIRTUAL_ENV ]] && {
 			VENV_PROMPT="-[%F{cyan}%B %F{green}${VIRTUAL_ENV##*/}%b%F{red}]"
 		} || VENV_PROMPT=""
 	}
-	PROMPT=$'%F{red}╭───[%F{yellow}%B@%F{green}%n%F{red}%b]-[%Bpts:%F{cyan}${TTY##*/}%b%F{red}]\n%F{red}├───[%F{green} %F{cyan}%B${ENV[vfs_pwd]:-%1~}%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}${VENV_PROMPT}\n╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
+	PROMPT=$'%F{red}╭───[%F{yellow}%B@%F{green}%n%F{red}%b]-[%Bpts:%F{cyan}${TTY:t}%b%F{red}]\n%F{red}├───[%F{green} %F{cyan}%B${ENV[vfs_pwd]:-%1~}%b%F{red}]${ENV[vfs]}${GITSTATUS_PROMPT}${VENV_PROMPT}\n╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
 	RPROMPT='%(?..%F{red}%?%f)'
 else
 	PROMPT='[%m::%n %1~]$ '
