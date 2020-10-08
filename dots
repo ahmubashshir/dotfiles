@@ -5,29 +5,21 @@ cd "$(dirname "$(realpath "$0")")"
 if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	## non hidden dirs
 	for n in bin;do
-		echo Soft linking $n
+		echo Linking "$n" '->' "~/$n"
 		if [ ! -L "$HOME/$n" ];then
 			rm -rf "$HOME/$n"
 		fi
 		ln -Tfs  "$PWD/$n" "$HOME/$n"
 	done
 	for n in dot-*;do
-		s="$(realpath "$n")"
+		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		t="${n#dot-}";t="${t//$PATHSEP//}"
 		mkdir -p "$(dirname "$HOME/.$t")"
-		if [ -f "${s##*/}" ] && [ ! -L "$n" ];then
-			echo Hard linking "$t"
-			ln -f "$s" "$HOME/.$t"
-		else
-			echo Soft linking "$t"
-			if [ ! -L "$HOME/.$t" ];then
-				rm -fr "$HOME/.$t"
-			fi
-			if [ -L "$n" ];then
-				s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$s")
-			fi
-			ln -Tfs  "$s" "$HOME/.$t"
+		echo Linking "$n" '->' "~/.$t"
+		if [ ! -L "$HOME/.$t" ];then
+			rm -fr "$HOME/.$t"
 		fi
+		ln -Tfs "$s" "$HOME/.$t"
 	done
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
 	sed -i 's/^PATHSEP=.*$/PATHSEP='$2'/' $0
@@ -97,7 +89,8 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 				fi
 				ln -fs "$n" "$dotdir/$t"
 			elif realpath "$n"|grep -q "^$HOME/" && [ -f "$n" ];then
-				ln "$n" "$dotdir/$t"
+				cp "$n" "$dotdir/$t"
+				ln -fs "$dotdir/$t" "$n"
 			fi
 		else
 			echo $n is niether under '$HOME' nor a symlink. >&2
