@@ -1,0 +1,12 @@
+#!/bin/bash
+trap 'rm -f $1' QUIT EXIT INT TERM
+exec 1>/dev/null 2>/dev/null
+[ -z "$1" ] && {
+	set $(mktemp -u)
+	xfce4-screenshooter --save "$1" --region
+}
+[ -e "$1" ] || exit
+curl -s https://saucenao.com/search.php -F "file=@$1" |\
+	xmllint --html --xpath "string(//*[@id=\"yourimage\"]/a/img/@src)" - 2>/dev/null |\
+	awk "{print \"https://trace.moe/?url=https://saucenao.com/\"\$0}" |\
+	xargs xdg-open

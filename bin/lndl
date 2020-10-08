@@ -191,7 +191,9 @@ drv_sync () {
 	files=()
 	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
 	false
+	let try=0
 	until [ "${PIPESTATUS[0]}" = "0" ];do
+		((++try < 10)) || { echo " $BLUE==>$RED Skipping...$ALL_OFF";return;}
 		for n in $(drv_ls $1);do
 			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
 			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
