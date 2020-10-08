@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1090
 if [ -e ~/bin/libbash ];then
 	source ~/bin/libbash
 fi
@@ -19,7 +20,6 @@ if hash apt 1>&3 2>&1;then
 fi
 alias fixhist="sed -i '/[[:print:]]/!d' ~/.$0_history"
 alias cls="rm -f ~/.bash_history"
-alias err="echo -e \"$1\" &> /dev/stderr"
 alias gist='gist -sc --skip-empty'
 alias q="exit"
 alias c="clear"
@@ -65,8 +65,8 @@ fi
 alias sudo='sudo -H'
 alias commit='git commit'
 alias clone='git clone'
-alias push='[[ $(git config "branch.$(git rev-parse --abbrev-ref HEAD).merge") = "" ]] && git push --all -u || git push --all'
-alias tag='git tag -s'
+alias push='git push -u'
+alias pull='git pull --prune'
 alias spider='curl -ILksXGET'
 ### Colored Output
 
