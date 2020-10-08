@@ -164,7 +164,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 		if ${ENV[in_vfs]:-false};then
 			if [[ ${PWD}/ =~ ^${ENV[vfs_root]}/ ]];then
 				ENV[vfs_root]=$(sed -En 's@(/run/user/[[:digit:]]+/gvfs/[[:alnum:]:=,.-]*)($|/.*)@\1/@;p' <<<$PWD)
-				ENV[vfs_url]=$(sed -En 's@/run/user/[[:digit:]]+/gvfs/([[:alnum:]:=,.-]*)($|/.*)@\1@;s@([[:alnum:]]*):@\1://@;s/host=(.*)/\1/;/user=/{s://([[:alnum:]].*),user=(.*)://\2@\1:};p' <<<$PWD)
+				ENV[vfs_url]=$(echo -e $(sed -nE 's@/run/user/[[:digit:]]+/gvfs/([[:alnum:]:=%,.-]*)($|/.*)@\1@;s@([[:alnum:]]*)(:[[:alnum:]:=%,.-]*),(s)sl=true(.*)@\1\3\2\4@;s@([[:alnum:]]*):@\1://@;s/host=(.*)/\1/;/user=/{s://([[:alnum:]].*),user=(.*)://\2@\1:};/(,|)prefix=/{s@(,|)prefix=(.*)@\2@;s/%(..)/\\x\1/g;};p' <<<$PWD))
 				ENV[vfs]=$'\n'"├────[%F{yellow}VFS %F{green}${ENV[vfs_url]}%F{red}]"
 			fi
 			[[ ${PWD} = ^${ENV[vfs_root]} ]] && ENV[vfs_pwd]=/
