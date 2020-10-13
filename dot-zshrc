@@ -105,7 +105,7 @@ zstyle ':completion:*' list-grouped true
 zstyle ':completion:*' list-dirs-first true
 zstyle ':completion:*' list-rows-first true
 zstyle ':completion:*' remove-all-dups true #
-zstyle ':completion:*' hosts on
+#zstyle ':completion:*' hosts on
 #zstyle ':completion:*' #
 
 
