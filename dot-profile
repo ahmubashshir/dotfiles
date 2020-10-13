@@ -9,7 +9,7 @@
 #umask 022
 
 # if running bash
-appendpath()
+append_path()
 {
 	for n in "$@";do
 		case ":$PATH:" in
@@ -23,16 +23,27 @@ appendpath()
 		esac
 	done
 }
+high=true append_path "$HOME/bin"
+high=true append_path "$HOME/.go/bin"
+high=true append_path "$HOME/.local/bin"
+unset -f append_path
+for n in $(echo $PATH|tr ':' '\n');do
+        case ":$P:" in
+		*:"$n":*)
+		;;
+		*)
+			if [ -d "$n" ];then
+				P="${P:+$P:}$n"
+			fi
+		;;
+	esac
+done
+export PATH=$P
+unset P high
 if [ -f ~/.shell/environment ]; then
   . ~/.shell/environment
 fi
 if [ -f "$HOME/.bashrc" ] && [ -n "$BASH_VERSION" ]; then
 	. "$HOME/.bashrc"
 fi
-# set PATH so it includes user's private bins if they exists
-
-high=true appendpath "$HOME/bin"
-high=true appendpath "$HOME/.go/bin"
-high=true appendpath "$HOME/.local/bin"
 PROXY=socks4://37.57.3.244:1080
-unset high
