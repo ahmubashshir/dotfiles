@@ -1,5 +1,10 @@
 #!/bin/zsh
 setopt extended_glob
+emulate sh -c 'source /etc/profile'
+if [ -f $HOME'/.profile' ];then
+	emulate sh -c 'source '$HOME'/.profile'
+fi
+unfunction appendpath
 {
 	for n in ~/.zsh/functions/^*.zwc;do
 		zcompare "$n"

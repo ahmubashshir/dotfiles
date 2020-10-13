@@ -1,0 +1,7 @@
+#compdef deletemark
+_list_bookmarks() {
+	local -a bookmarks
+	bookmarks=( ${(f)"$(showmarks|tr -s '[:blank:]'|awk -F $'\t' '{print $1":"$2}')"} )
+	_describe "bookmarks" bookmarks
+}
+_arguments -s "1:bookmark:_list_bookmarks"

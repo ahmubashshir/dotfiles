@@ -13,7 +13,7 @@ pwdp()
 {
 	readlink /proc/$1/cwd||echo Permission denied >>/dev/stderr
 }
-get_termemu() {
+get_term() {
 	ps -h -o comm -p $(ps -h -o ppid -p $$ 2>/dev/null) 2>/dev/null
 }
 port()

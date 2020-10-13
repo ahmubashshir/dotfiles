@@ -14,8 +14,8 @@ appendpath()
 	for n in "$@";do
 		case ":$PATH:" in
 			*:"$n":*)
-		        	;;
-		        *)
+			;;
+		    *)
 				if [ -d "$n" ];then
 					${high:-false} && PATH="$n${PATH:+:$PATH}" || PATH="${PATH:+$PATH:}$n"
 				fi
@@ -35,6 +35,4 @@ high=true appendpath "$HOME/bin"
 high=true appendpath "$HOME/.go/bin"
 high=true appendpath "$HOME/.local/bin"
 PROXY=socks4://37.57.3.244:1080
-# set PATH so it includes user's private bin if it exists
-#[ -x /usr/bin/tmux ] && [ "$(get_termemu)" = "login" ] && exec tmux || true
 unset high
