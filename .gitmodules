@@ -27,3 +27,6 @@
 [submodule "dot-zsh/plugins/hacker-quotes"]
 	path = dot-zsh/plugins/hacker-quotes
 	url = https://github.com/oldratlee/hacker-quotes.git
+[submodule "dot-zsh/plugins/zshmarks"]
+	path = dot-zsh/plugins/zshmarks
+	url = https://github.com/jocelynmallon/zshmarks.git
