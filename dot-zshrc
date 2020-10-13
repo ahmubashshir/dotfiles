@@ -62,6 +62,10 @@ zplug you-should-use && {
 	YSU_MESSAGE_FORMAT="$(print -P %B%F{cyan})Use \"$(print -P %F{blue})%alias$(print -P %F{cyan})\", $(print -P %F{red})you little shit!$(print -P %b%f)"
 	function ysu:start { enable_you_should_use; }
 	function ysu:stop { disable_you_should_use; }
+	function ysu:stat {
+		echo YSU Stats
+		check_alias_usage 2>&1|grep -v 'entry='
+	}
 }
 zplug bash-completions-fallback
 [ -x /usr/bin/wakatime ] &&\
