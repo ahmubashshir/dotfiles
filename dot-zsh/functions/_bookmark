@@ -1,0 +1,2 @@
+#compdef bookmark
+_arguments -s '1::bookmark id:'
