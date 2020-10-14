@@ -37,23 +37,30 @@ add_sync()
 	local id name response mime dir pending target etarget action data
 	pending=()
 	for id in "$@";do
-		response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" |sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g'|head -n -1|tail -n +3)"
-		name="$(echo "$response"|grep ^name|cut -d: -f2-)"
-		mime="$(echo "$response"|grep ^mime|cut -d: -f2-)"
+		if [[ $id =~ [[:lower:]-] ]];then
+			src=al
+			name=$(curl -s "https://armaell-library.net/novel/$id/rss"|xmllint --xpath 'string(/rss/channel/title)' - 2>/dev/null|tr -s '<>:"/\|?*' '-' 2>/dev/null)
+			[[ -n $name ]] && mime='inode/dir-novel.folder'
+		else
+			src=drv
+			response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" |sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g'|head -n -1|tail -n +3)"
+			name="$(echo "$response"|grep ^name|cut -d: -f2-)"
+			mime="$(echo "$response"|grep ^mime|cut -d: -f2-)"
+		fi
 		if [[ ${mime##*.} == folder ]];then
 			dir="$LNDIR/$name"
 			if [ -d "$dir" ];then
-				echo "$GREEN===> Updating '$(ellipsis $(($(tput cols) - 20)) "$name")'...$ALL_OFF"
+				echo "$GREEN===> Updating '"$src:$(ellipsis $(($(tput cols) - 20)) "$name")"'...$ALL_OFF"
 				action=old
 				target="$name"
-				etarget='{re-sync}'
+				etarget='{re-sync:'$src'}'
 				data="ID=$id"
 			else
 				action=new
 				target="$name"
-				etarget='{new-sync}'
+				etarget='{new-sync:'$src'}'
 				data="ID=$id"
-				echo "$GREEN===> Adding '$(ellipsis $(($(tput cols) - 20)) "$name")'...$ALL_OFF"
+				echo "$GREEN===> Adding '"$src:$(ellipsis $(($(tput cols) - 20)) "$name")"'...$ALL_OFF"
 				mkdir -p "$dir"
 			fi
 			log_entry
@@ -61,7 +68,7 @@ add_sync()
 #!/bin/bash
 source \${LNLIB:-${0##*/}} lib
 cd "\$(dirname "\$0")"
-drv_sync $id
+${src}_sync $id
 EOF
 			chmod +x "$dir/00update"
 			pending+=("$dir/00update")
@@ -98,7 +105,7 @@ http_code() {
 	awk '/^HTTP/{code=$2} END{print code}'
 }
 cleanup() {
-	if [ -n "$*" ];then
+	if (($#>0 && $#%3==0));then
 		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
 		for name in lock.lck 00update;do
 			if [ -f "$name" ];then
@@ -190,10 +197,10 @@ drv_sync () {
 	lock||return 1
 	files=()
 	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
-	false
 	let try=0
+	false
 	until [ "${PIPESTATUS[0]}" = "0" ];do
-		((++try < 10)) || { echo " $BLUE==>$RED Skipping...$ALL_OFF";return;}
+		((++try < 10)) || { echo " $BLUE==>$RED Skipping... $ALL_OFF";return;}
 		for n in $(drv_ls $1);do
 			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
 			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
@@ -253,17 +260,20 @@ al_get()
 al_ls() {
 	local line
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
-	curl -s https://armaell-library.net/novel/$1|awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){print "https://armaell-library.net/file/"m[1]}'
+	curl -s "https://armaell-library.net/novel/$1"|awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
 }
 al_sync()
 {
-	local files n name
+	local files n name urls
 	lock||return 1
 	files=()
 	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
+	let try=0
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ];do
-		for n in $(al_ls $1);do
+		((++try < 10)) || { echo " $BLUE==>$RED Skipping... $ALL_OFF";return;}
+		read -rsa urls < <(al_ls $1)
+		for n in "${urls[@]}";do
 			name=$(curl -XGET -kLsI "$n"|read_header content-disposition)
 			if [ -z "$(echo "$name"|awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ];then
 				name=$(echo "$name"|awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}'|tr -s '<>:"/\|?*' '-')
@@ -273,7 +283,7 @@ al_sync()
 			al_get "$name" "$n"
 			files+=('-not' '-samefile' "$name")
 		done
-		[ "${PIPESTATUS[0]}" = "0" ] || {
+		((${#urls} != 0 )) || {
 			sleep 10
 			tput cuu1
 			tput el
