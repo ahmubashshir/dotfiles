@@ -1,8 +1,14 @@
 #!/bin/bash
 PATHSEP=:
 shopt -s nullglob
-cd "$(dirname "$(realpath "$0")")"
-if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
+cd "$(
+	dirname "$(
+		realpath "$(
+			[[ $0 =~ / ]] && echo $0 ||which $0
+		)"
+	)"
+)"
+if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	## non hidden dirs
 	for n in bin;do
 		echo Linking "$n" '->' "~/$n"
@@ -11,9 +17,10 @@ if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
 		fi
 		ln -Tfs  "$PWD/$n" "$HOME/$n"
 	done
+
 	for n in dot-*;do
-		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		t="${n#dot-}";t="${t//$PATHSEP//}"
+		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		mkdir -p "$(dirname "$HOME/.$t")"
 		echo Linking "$n" '->' "~/.$t"
 		if [ ! -L "$HOME/.$t" ];then
@@ -21,6 +28,7 @@ if realpath "$0"|grep -q "^$HOME" && [[ $1 = ln ]];then
 		fi
 		ln -Tfs "$s" "$HOME/.$t"
 	done
+
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
 	sed -i 's/^PATHSEP=.*$/PATHSEP='$2'/' $0
 	for n in *;do
@@ -116,6 +124,9 @@ elif (($#==0))||[[ $1 = help ]];then
 		echo "   rm [dot]   unlink and delete dotfile."
 		echo "   help       show this help."
 	)
+elif (($#>0));then
+	echo Invalid subcommand $1
+	exit 1
 else
 	echo This repo should reside under \'$HOME\'
 	exit 1
