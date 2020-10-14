@@ -39,6 +39,7 @@
 	hist = !giggle
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
+	cb = checkout
 [color]
 	ui = auto
 [hub]
