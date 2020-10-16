@@ -82,3 +82,5 @@
 	default = current
 [pull]
 	rebase = true
+[branch]
+	autoSetupMerge = true
