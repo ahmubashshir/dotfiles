@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r142.c92ef99-1
+# VERSION r146.6872281
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1096,7 +1096,7 @@ get_effective_url()
 	xargs curl -ILksXGET -o /dev/null -w '%{url_effective}\n' 2>/dev/null| grep '^http'
 }
 get_url() {
-	local ep_file_host ep_file_id n
+	local ep_file_host ep_file_id n try=0 url
 	ep_file_host=$(echo "$@" | jq -r '.host')
 	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
 	ep_id=$(echo "$@" | jq -r '.ep' | grep -wv 'null')
@@ -1106,7 +1106,12 @@ get_url() {
 	fi
 	for n in $ep_file_id; do
 		if [ -n "$(type -t ${ep_file_host// /+}:get_url || type -w ${ep_file_host// /+}:get_url)" ]; then
-			${ep_file_host// /+}:get_url "${n}" "$ep_id"
+			url=""
+			until [[ -n $url ]] && (( try++<5 ));do
+				url="$(${ep_file_host// /+}:get_url "${n}" "$ep_id")"
+				((try < 2)) || sleep 2
+			done
+			echo "$url"
 		else
 			echo "unimplemented:${ep_file_host/_/.}"
 			break
@@ -1115,7 +1120,7 @@ get_url() {
 }
 
 mp4upload:get_url() {
-	curl -ks "https://www.mp4upload.com/embed-$1.html" | grep 'eval(' | cut -d\> -f2- | js-beautify -xn -e \\n -k --brace-style=expand - 2> /dev/null | tr -d \",\ \)\; | grep '^src' | cut -d: -f2-
+	curl -ks "https://www.mp4upload.com/embed-$1.html" | grep 'eval(' | cut -d\> -f2- | js-beautify -xn -e \\n -k --brace-style=expand - 2> /dev/null | sed -znE 's@.*(http(s|)://[[:alnum:]]+.mp4upload.com:[[:digit:]]+/[[:lower:]]/[[:alnum:]]+/[[:alnum:]-]+.mp4).*@\1\n@p'
 }
 
 xstreamcdn:get_url() {
