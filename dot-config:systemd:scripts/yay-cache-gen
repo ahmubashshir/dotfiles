@@ -1,0 +1,15 @@
+#!/bin/bash
+trap 'rm -rf $tmpdir' EXIT
+tmpdir=$(mktemp -d /tmp/yay.$UID.XXXXXXXX)
+if [ -d "$tmpdir" ];then
+	cd "$tmpdir"
+else
+	exit 1
+fi
+curl --compressed -s https://aur.archlinux.org/packages.gz -o aurpkgs
+if ! [ -f aurpkgs ];then
+	grep 'AUR$' ~/.cache/yay/completion.cache{,.bak}|awk '{print $1}'|sort -u|gzip > aurpkgs.gz
+	mv -f  ~/.cache/yay/completion.cache{,.bak}
+fi
+pacman -Sl > repopkgs
+cat repopkgs aurpkgs|grep -v '^#'|awk '$2 == "" {print $1"\tAUR"} $2 != "" {print $2"\t"$1}'|sponge ~/.cache/yay/completion.cache
