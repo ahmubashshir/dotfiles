@@ -65,7 +65,7 @@ fi
 alias sudo='sudo -H'
 alias commit='git commit'
 alias clone='git clone'
-alias push='git push -u'
+alias push='git push'
 alias pull='git pull --prune'
 alias spider='curl -ILksXGET'
 ### Colored Output
