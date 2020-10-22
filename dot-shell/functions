@@ -20,6 +20,9 @@ port()
 {
 	netcat -zvw10 "$@"
 }
+gradlew () {
+	./gradlew "$@"
+}
 if [ -x /usr/bin/thefuck ];then
 	shit ()
 	{
