@@ -56,6 +56,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 	systemctl --user daemon-reload
 	if [[ -f systemd/enabled.tsv ]];then
 		while IFS=$'\t' read -r type unit;do
+			[[ $type$unit = TYPENAME ]] && continue
 			echo "systemd-user: enabling $type ${unit##*/}"
 			systemctl --user enable "$unit.$type"
 			case $type in
@@ -64,13 +65,14 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 					systemctl --user start "$unit.$type"
 				;;
 			esac
-		done <<<$(grep -vE '^([[:blank:]]*#|$)' systemd/enabled.tsv)
+		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/enabled.tsv)"
 	fi
 	if [[ -f systemd/links.tsv ]];then
-		while IFS=$'\t' read -r target rel name path;do
+		while IFS=$'\t' read -r target install name path;do
+			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
 			echo "systemd-user: enabling $name in $target"
-			ln -Tfs "$path" ~/.config/systemd/user/"$target.$rel"/"$name"
-		done <<<$(grep -vE '^([[:blank:]]*#|$)' systemd/links.tsv)
+			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
+		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/links.tsv)"
 		systemctl --user daemon-reload
 	fi
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
