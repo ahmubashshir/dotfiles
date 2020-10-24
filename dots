@@ -40,13 +40,13 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[
 	done
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 	mkdir -p ~/.config/systemd/user
-	for unit in systemd/*/*;do
+	for unit in systemd/units/*;do
 		if ! { [ -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}";};then
 			echo "systemd-user: installing ${unit##*/}"
 			cp "$unit" ~/.config/systemd/user/"${unit##*/}"
 		fi
 	done
-	for override in systemd-override/*;do
+	for override in systemd/override/*;do
 		mkdir -p ~/.config/systemd/user/"${override##*/}.d"
 		if ! { [ -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf;};then
 			echo "systemd-user: overriding ${override##*/}"
@@ -54,7 +54,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 		fi
 	done
 	systemctl --user daemon-reload
-	if [[ -f systemd/enabled.tsv ]];then
+	if [[ -f systemd/config/enabled.tsv ]];then
 		while IFS=$'\t' read -r type unit;do
 			[[ $type$unit = TYPENAME ]] && continue
 			echo "systemd-user: enabling $type ${unit##*/}"
@@ -65,14 +65,14 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 					systemctl --user start "$unit.$type"
 				;;
 			esac
-		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/enabled.tsv)"
+		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/config/enabled.tsv)"
 	fi
-	if [[ -f systemd/links.tsv ]];then
+	if [[ -f systemd/config/links.tsv ]];then
 		while IFS=$'\t' read -r target install name path;do
 			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
 			echo "systemd-user: enabling $name in $target"
 			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
-		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/links.tsv)"
+		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/config/links.tsv)"
 		systemctl --user daemon-reload
 	fi
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
