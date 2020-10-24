@@ -10,9 +10,15 @@ export XSECURELOCK_DATETIME_FORMAT="%A, %B %d, %Y %l:%M %P"
 export XSECURELOCK_BLANK_DPMS_STATE=off
 export XSECURELOCK_FONT="Hack:style=Regular"
 export XSECURELOCK_AUTHPROTO=authproto_htpasswd
+
 while read line; do
-    export "$line"
-done <<<$(bash -ic 'env' 2>/dev/null)
+	export "$line"
+done <<<$(bash -c 'env' 2>/dev/null)
+
+if [ -x ~/.shell/path.$SHELL ];then
+    export "PATH=$(~/.shell/path.$SHELL)"
+fi
+
 #xset +dpms
 #xset s blank
 systemctl --user restart ibus.slice
