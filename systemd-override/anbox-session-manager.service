@@ -1,0 +1,3 @@
+[Unit]
+Before=anbox-launchers.service anbox-launchers.timer
+Requires=anbox-launchers.service anbox-launchers.timer

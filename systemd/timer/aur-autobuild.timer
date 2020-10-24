@@ -1,0 +1,10 @@
+[Unit]
+Description=Build aur packages weekly.
+
+[Timer]
+OnCalendar=weekly
+RandomizedDelaySec=4h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

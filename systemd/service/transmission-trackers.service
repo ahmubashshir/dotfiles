@@ -1,0 +1,6 @@
+[Unit]
+Description=Update Transmission trackers
+[Service]
+ExecStart=/bin/env %h/.config/systemd/scripts/transmission-trackers
+[Install]
+WantedBy=default.target

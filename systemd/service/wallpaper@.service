@@ -1,0 +1,13 @@
+[Unit]
+Description=%i dynamic wallpaper
+
+[Service]
+Type=simple
+ExecCondition=/bin/sh -c '/usr/bin/lstimed|/bin/grep -qw %i'
+ExecStartPre=/bin/sleep 2
+ExecStart=/usr/bin/settimed %i
+RestartSec=3
+MemoryHigh=10M
+
+[Install]
+WantedBy=default.target

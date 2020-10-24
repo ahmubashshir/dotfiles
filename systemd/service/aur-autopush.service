@@ -1,0 +1,8 @@
+[Unit]
+Description=AUR auto push
+
+[Service]
+Slice=aur.slice
+StandardOutput=syslog+console
+StandardError=syslog+console
+ExecStart=%h/Documents/aur/autopush
