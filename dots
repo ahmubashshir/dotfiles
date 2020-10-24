@@ -4,16 +4,17 @@ shopt -s nullglob
 cd "$(
 	dirname "$(
 		realpath "$(
-			[[ $0 =~ / ]] && echo $0 ||which $0
+			[[ $0 =~ / ]] && echo "$0" ||which "$0"
 		)"
 	)"
-)"
+)" || exit
+custom_dirs=(bin)
 if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	## non hidden dirs
-	for n in bin;do
-		echo Linking "$n" '->' "~/$n"
+	for n in "${custom_dirs[@]}";do
+		echo Linking "$n" '->' "\~/$n"
 		if [ ! -L "$HOME/$n" ];then
-			rm -rf "$HOME/$n"
+			rm -rf "${HOME:?}/$n"
 		fi
 		ln -Tfs  "$PWD/$n" "$HOME/$n"
 	done
@@ -22,7 +23,7 @@ if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 		t="${n#dot-}";t="${t//$PATHSEP//}"
 		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		mkdir -p "$(dirname "$HOME/.$t")"
-		echo Linking "$n" '->' "~/.$t"
+		echo Linking "$n" '->' "\~/.$t"
 		if [ ! -L "$HOME/.$t" ];then
 			rm -fr "$HOME/.$t"
 		fi
@@ -30,18 +31,53 @@ if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	done
 
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
-	sed -i 's/^PATHSEP=.*$/PATHSEP='$2'/' $0
+	sed -i 's/^PATHSEP=.*$/PATHSEP='"$2"'/' "$0"
 	for n in *;do
-		if [[ $n != ${n//$PATHSEP/$2} ]];then
+		if [[ $n != "${n//$PATHSEP/$2}" ]];then
 			echo "$n -> ${n//$PATHSEP/$2}"
 			mv "$n" "${n//$PATHSEP/$2}"
 		fi
 	done
+elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
+	mkdir -p ~/.config/systemd/user
+	for unit in systemd/*/*;do
+		if ! { [ -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}";};then
+			echo "systemd-user: installing ${unit##*/}"
+			cp "$unit" ~/.config/systemd/user/"${unit##*/}"
+		fi
+	done
+	for override in systemd-override/*;do
+		mkdir -p ~/.config/systemd/user/"${override##*/}.d"
+		if ! { [ -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf;};then
+			echo "systemd-user: overriding ${override##*/}"
+			cp "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
+		fi
+	done
+	systemctl --user daemon-reload
+	if [[ -f systemd/enabled.tsv ]];then
+		while IFS=$'\t' read -r type unit;do
+			echo "systemd-user: enabling $type ${unit##*/}"
+			systemctl --user enable "$unit.$type"
+			case $type in
+				(timer)
+					echo "systemd-user: starting $type ${unit##*/}"
+					systemctl --user start "$unit.$type"
+				;;
+			esac
+		done <<<$(grep -vE '^([[:blank:]]*#|$)' systemd/enabled.tsv)
+	fi
+	if [[ -f systemd/links.tsv ]];then
+		while IFS=$'\t' read -r target rel name path;do
+			echo "systemd-user: enabling $name in $target"
+			ln -Tfs "$path" ~/.config/systemd/user/"$target.$rel"/"$name"
+		done <<<$(grep -vE '^([[:blank:]]*#|$)' systemd/links.tsv)
+		systemctl --user daemon-reload
+	fi
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
 	shift
 	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
 	for n in "$@";do
-		if [[ $n = ${0##*/} ]];then
+		if [[ $n = "${0##*/}" ]];then
 			echo Can\'t remove dotfiles manager >&2
 		elif [ -e "$n" ];then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete';do
@@ -57,30 +93,30 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
 					esac
 				done
 			done
-			echo Deleting $t
+			echo "Deleting $t"
 			t="${n#dot-}";t="${t//$PATHSEP//}"
 			if [ ! -L "$HOME/.$t" ];then
 				rm -fr "$HOME/.$t"
 			else
 				rm -f "$HOME/.$t"
 			fi
-			rm -rf $n
+			rm -rf "$n"
 		else
-			echo \'$n\' doesn\'t exist >&2
+			echo "'$n' doesn't exist" >&2
 		fi
 	done
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 	shift
 	dotdir="$PWD"
-	cd "$OLDPWD"
+	cd "$OLDPWD" || exit
 	for n in "$@";do
 		if [ -L "$n" ] && readlink "$n"|grep -q "^$dotdir";then
-			echo Already tracking \'$n\' >&2
+			echo "Already tracking '$n'" >&2
 			continue
 		fi
 		p="$(realpath --no-symlinks "$n")"
 		if echo "$p"|grep -q "^$HOME/" ;then
-			t="$(echo $n|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
+			t="$(echo "$n"|sed "s@$HOME/@@;s@^\.@dot-@;s@/@$PATHSEP@g'")"
 			if [ -d "$n" ] && [ ! -L "$n" ];then
 				cp -r "$n" "$dotdir/$t"
 				rm -r "$n"
@@ -90,8 +126,8 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 				rm "$n"
 				ln -s "$(realpath "$dotdir/$t")" "$n"
 			elif realpath "$n"|grep -q "^$HOME/" && [ -L "$n" ];then
-				if [ -f "$dotdir/$(readlink "$n"|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')" ];then
-					n="$(readlink "$n"|sed 's@'$HOME'/@@;s@^\.@dot-@;s@/@'$PATHSEP'@g')"
+				if [ -f "$dotdir/$(readlink "$n"|sed "s@$HOME/@@;s@^\.@dot-@;s@/@$PATHSEP@g")" ];then
+					n="$(readlink "$n"|sed "s@$HOME/@@;s@^\.@dot-@;s@/@$PATHSEP@g")"
 				else
 					n="$(realpath "$n")"
 				fi
@@ -101,7 +137,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 				ln -fs "$dotdir/$t" "$n"
 			fi
 		else
-			echo $n is niether under '$HOME' nor a symlink. >&2
+			echo "$n is niether under '$HOME' nor a symlink." >&2
 		fi
 	done
 elif [[ $1 = ls ]];then
@@ -110,9 +146,9 @@ elif [[ $1 = ls ]];then
 	elif [[ -n $(env which column 2>/dev/null) ]];then
 		cmd='column -x'
 	else
-		cmd=cat
+		cmd='cat'
 	fi
-	find -maxdepth 1 -name 'dot-*' -print|cut -d/ -f2|eval "$cmd"
+	find . -maxdepth 1 -name 'dot-*' -print|cut -d/ -f2|eval "$cmd"
 elif (($#==0))||[[ $1 = help ]];then
 	(
 		exec >&2
@@ -125,9 +161,9 @@ elif (($#==0))||[[ $1 = help ]];then
 		echo "   help       show this help."
 	)
 elif (($#>0));then
-	echo Invalid subcommand $1
+	echo "Invalid subcommand $1"
 	exit 1
 else
-	echo This repo should reside under \'$HOME\'
+	echo "This repo should reside under '$HOME'"
 	exit 1
 fi
