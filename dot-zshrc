@@ -1,5 +1,5 @@
 #!/bin/zsh -x
-if [ -e /tmp/zprof.$UID ];then
+if [ -e zprof ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
 	PS4='+$EPOCHREALTIME %N:%i> '
@@ -208,7 +208,7 @@ fi
 }
 
 zcompinit
-if [ -e /tmp/zprof.$UID ];then
+if [ -e zprof ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
 fi

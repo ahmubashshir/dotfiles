@@ -1,0 +1,3 @@
+~/.go/bin|prepend
+~/.local/bin|prepend
+~/bin|prepend
