@@ -39,11 +39,13 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[
 		fi
 	done
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
+	mod=0
 	mkdir -p ~/.config/systemd/user
 	for unit in systemd/units/*;do
 		if ! { [ -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}";};then
 			echo "systemd-user: installing ${unit##*/}"
 			cp "$unit" ~/.config/systemd/user/"${unit##*/}"
+			((mod++))
 		fi
 	done
 	for override in systemd/override/*;do
@@ -51,12 +53,15 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 		if ! { [ -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf;};then
 			echo "systemd-user: overriding ${override##*/}"
 			cp "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
+			((mod++))
 		fi
 	done
-	systemctl --user daemon-reload
+	((mod>0)) && systemctl --user daemon-reload || true
+
 	if [[ -f systemd/config/enabled.tsv ]];then
 		while IFS=$'\t' read -r type unit;do
 			[[ $type$unit = TYPENAME ]] && continue
+			[[ $(systemctl --user is-enabled "$unit.$type") = enabled ]] && continue
 			echo "systemd-user: enabling $type ${unit##*/}"
 			systemctl --user enable "$unit.$type"
 			case $type in
@@ -68,13 +73,17 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/config/enabled.tsv)"
 	fi
 	if [[ -f systemd/config/links.tsv ]];then
+		mod=0
 		while IFS=$'\t' read -r target install name path;do
 			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
+			[[ $(readlink ~/.config/systemd/user/"$target.$install/$name") = $path ]] && continue
 			echo "systemd-user: enabling $name in $target"
 			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
+			((mod++))
 		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/config/links.tsv)"
-		systemctl --user daemon-reload
+		((mod>0)) && systemctl --user daemon-reload || true
 	fi
+
 elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
 	shift
 	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
