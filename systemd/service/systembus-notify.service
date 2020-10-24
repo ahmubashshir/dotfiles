@@ -1,0 +1,21 @@
+#[Unit]
+#Description=systembus notifier
+
+#[Service]
+#ExecCondition=/bin/test -n $DISPLAY
+#ExecStart=/usr/bin/systembus-notify
+#Restart=always
+
+#[Install]
+#WantedBy=default.target
+
+[Unit]
+Description=Show desktop notifications for earlyoom
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/systembus-notify -q
+
+[Install]
+WantedBy=graphical-session.target

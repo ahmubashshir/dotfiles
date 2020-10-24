@@ -1,0 +1,10 @@
+[Unit]
+Description=Build aur packages
+
+[Service]
+Slice=aur.slice
+MemoryHigh=100M
+MemoryMax=300M
+ExecStart=/bin/find %h/Documents/aur %h/etc/aur -maxdepth 2 -name PKGBUILD -exec %h/bin/pkgbuild '{}' \;
+StandardOutput=syslog+console
+StandardError=syslog+console

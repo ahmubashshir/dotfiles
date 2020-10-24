@@ -1,0 +1,6 @@
+[Unit]
+Description=sync github forks
+
+[Service]
+MemoryMax=100M
+ExecStart=%h/.config/systemd/scripts/github-sync-forks

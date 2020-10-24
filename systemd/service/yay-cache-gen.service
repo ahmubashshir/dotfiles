@@ -1,0 +1,8 @@
+[Unit]
+Description=yay package cache generator.
+
+[Service]
+ExecStart=/bin/env %h/.config/systemd/scripts/yay-cache-gen
+
+[Install]
+WantedBy=default.target

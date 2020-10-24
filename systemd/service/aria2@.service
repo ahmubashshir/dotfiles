@@ -1,0 +1,15 @@
+[Unit]
+Description=aria2 on port %I for PersepolisDM
+
+[Service]
+ExecCondition=/usr/bin/test -x /usr/bin/aria2c
+ExecStart=/usr/bin/aria2c --no-conf --enable-rpc --rpc-listen-port=%I --rpc-max-request-size=2M --rpc-listen-all
+RestartSec=3
+WatchdogSec=3h
+Restart=always
+MemoryHigh=20M
+WatchdogSignal=SIGTERM
+#MemoryMax=100M
+
+[Install]
+WantedBy=default.target

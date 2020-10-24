@@ -1,0 +1,10 @@
+[Unit]
+Description=scan home daily with clamav
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,7 @@
+[Unit]
+Description=clamav scanner
+
+[Service]
+MemoryHigh=100M
+MemoryMax=300M
+ExecStart=%h/.config/systemd/scripts/clamscan

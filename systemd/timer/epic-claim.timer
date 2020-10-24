@@ -1,0 +1,10 @@
+[Unit]
+Description=Automatically claim free games on Epic Games Store 4 times a week.
+
+[Timer]
+OnCalendar=Fri,Sun,Tue,Thu 16:00 UTC
+RandomizedDelaySec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

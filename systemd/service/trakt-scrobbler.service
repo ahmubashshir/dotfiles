@@ -1,0 +1,8 @@
+[Unit]
+Description=Trakt Scrobbler Service
+
+[Service]
+ExecStart="/usr/bin/trakts" run
+
+[Install]
+WantedBy=default.target

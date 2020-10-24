@@ -1,0 +1,42 @@
+#!/bin/bash
+exec 3>/dev/null
+query='{
+	viewer {
+		repositories(isFork:true,first:100) {
+			edges {
+				node {
+					name,
+					parent {
+						nameWithOwner
+					}
+				}
+			}
+		}
+	}
+}'
+filter='.data.viewer.repositories.edges[]|.node| .name+":"+.parent.nameWithOwner'
+while IFS=': ' read -r repo src;do
+	if git -C ~/Documents/git/$repo rev-parse 2>&3;then
+		pushd ~/Documents/git/$repo
+		current=$(git rev-parse --abbrev-ref HEAD)
+		default=$(git symbolic-ref --short HEAD)
+		if [[ $current != $default ]];then
+			git checkout $default
+		fi
+		if ! [[ "$(git remote get-url origin)" != "https://github.com/$src.git" ]];then
+			git remote set-url origin "https://github.com/$src.git"
+		fi
+		if ! git config remote.ahmubashshir.url > /dev/null;then
+			git remote add ahmubashshir "https://github.com/ahmubashshir/$repo.git"
+			git config remote.pushDefault ahmubashshir
+		fi
+		git stash
+		git pull
+		git push
+		git stash pop
+		if [[ $current != $default ]];then
+			git checkout $current
+		fi
+		popd
+	fi
+done <<<$(curl -s --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql|jq -r "$filter")

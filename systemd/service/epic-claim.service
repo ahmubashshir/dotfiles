@@ -1,0 +1,5 @@
+[Unit]
+Description=Automatically claim free games on Epic Games Store.
+[Service]
+Environment=HEADLESS=1
+ExecStart=%h/.config/systemd/epic-claim
