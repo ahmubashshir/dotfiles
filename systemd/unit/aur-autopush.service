@@ -5,4 +5,4 @@ Description=AUR auto push
 Slice=aur.slice
 StandardOutput=syslog+console
 StandardError=syslog+console
-ExecStart=%h/Documents/aur/autopush
+ExecStart=/bin/sh -c '/bin/find %h/Documents/aur %h/etc/aur -maxdepth 1 -not -name aur|%h/bin/aur-autopush --stdin'
