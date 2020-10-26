@@ -51,6 +51,12 @@ fpio()
 		echo no such file
 	fi
 }
+fixhist () {
+	file=".$(readlink /proc/$$/exe|xargs basename)_history"
+	hash iconv||return
+	iconv -f utf-8 -t utf-8 -c ~/"$file" > ~/"$file~"
+	mv ~/"$file"{~,}
+}
 get_m3u()
 {
 	echo Building download link from playlist url 1>&2
