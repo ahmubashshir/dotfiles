@@ -1,0 +1,11 @@
+#!/bin/bash
+typeset -a enabled
+for unit in unit/*.* $(awk '!/^TYPE[[:blank:]]+NAME$/{print $2"."$1}' config/enabled.tsv);do
+	if [[ $(systemctl --user is-enabled "${unit##*/}") = enabled ]] && [[ ! "${enabled[*]}" =~ $unit ]];then
+		enabled+=("${unit##*/}")
+	fi
+done
+printf 'TYPE\tNAME\n' > config/enabled.tsv
+for unit in "${enabled[@]}";do
+	printf '%s\t%s\n' "${unit##*.}" "${unit%.*}" >> config/enabled.tsv
+done
