@@ -11,14 +11,6 @@ fi
 
 ## variables
 fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump ~/.cache/zsh )
-cmdignore+=(
-	man info
-	gcc g++ pbi wormhole
-	shit danime git
-	nano xed gedit vi vim
-	vlc mpv celluloid
-	yay pacman bc
-)
 typeset -A ENV
 
 ## modules
@@ -52,8 +44,18 @@ esac
 } && zplug hacker-quotes
 zplug git
 zplug bd
-zplug notify && {
-	NOTIF[tmout]=20
+zplug auto-notify && {
+	AUTO_NOTIFY_THRESHOLD=20
+	AUTO_NOTIFY_EXPIRE_TIME=5000
+	AUTO_NOTIFY_WHITELIST=()
+	AUTO_NOTIFY_IGNORE+=(
+		man info
+		gcc g++ pbi wormhole
+		shit danime git
+		nano xed gedit vi vim
+		vlc mpv celluloid
+		yay pacman bc
+	)
 }
 zplug syntax-highlighting
 zplug autopair

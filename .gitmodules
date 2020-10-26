@@ -33,3 +33,6 @@
 [submodule "dot-zsh/plugins/bd"]
 	path = dot-zsh/plugins/bd
 	url = https://github.com/Tarrasch/zsh-bd.git
+[submodule "dot-zsh/plugins/auto-notify"]
+	path = dot-zsh/plugins/auto-notify
+	url = https://github.com/MichaelAquilina/zsh-auto-notify.git
