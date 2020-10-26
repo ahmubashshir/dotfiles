@@ -18,7 +18,6 @@ if hash apt 1>&3 2>&1;then
 	alias apt-uu="apt upgrade"
 	alias apt-u="apt update"
 fi
-alias fixhist="sed -i '/[[:print:]]/!d' ~/.$0_history"
 alias cls="rm -f ~/.bash_history"
 alias gist='gist -sc --skip-empty'
 alias q="exit"
