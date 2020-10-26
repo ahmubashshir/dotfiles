@@ -30,3 +30,6 @@
 [submodule "dot-zsh/plugins/zshmarks"]
 	path = dot-zsh/plugins/zshmarks
 	url = https://github.com/jocelynmallon/zshmarks.git
+[submodule "dot-zsh/plugins/bd"]
+	path = dot-zsh/plugins/bd
+	url = https://github.com/Tarrasch/zsh-bd.git

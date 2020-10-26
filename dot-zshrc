@@ -51,6 +51,7 @@ esac
 	ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE=1
 } && zplug hacker-quotes
 zplug git
+zplug bd
 zplug notify && {
 	NOTIF[tmout]=20
 }
