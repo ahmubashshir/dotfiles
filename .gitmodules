@@ -36,3 +36,6 @@
 [submodule "dot-zsh/plugins/auto-notify"]
 	path = dot-zsh/plugins/auto-notify
 	url = https://github.com/MichaelAquilina/zsh-auto-notify.git
+[submodule "dot-zsh/plugins/systemd"]
+	path = dot-zsh/plugins/systemd
+	url = https://github.com/le0me55i/zsh-systemd.git
