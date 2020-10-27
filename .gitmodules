@@ -42,3 +42,6 @@
 [submodule "submodules/tmux"]
 	path = submodules/tmux
 	url = https://github.com/gpakosz/.tmux
+[submodule "submodules/transmission-trackers"]
+	path = submodules/transmission-trackers
+	url = https://github.com/blind-oracle/transmission-trackers
