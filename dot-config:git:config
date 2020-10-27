@@ -43,7 +43,7 @@
 	addmod = submodule add
 	root = rev-parse --show-toplevel
 	run = "!exec "
-	rmmod = "!f(){ dir=$(git rev-parse --show-toplevel);git config --file \"$dir/.gitmodules\" --remove-section submodule.$1;git config --remove-section submodule.$1;git rm --cached $1; };f"
+	rmmod = "!f(){ set -x;dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
 [color]
