@@ -39,3 +39,6 @@
 [submodule "dot-zsh/plugins/systemd"]
 	path = dot-zsh/plugins/systemd
 	url = https://github.com/le0me55i/zsh-systemd.git
+[submodule "dot-zsh/plugins/lazyload"]
+	path = dot-zsh/plugins/lazyload
+	url = https://github.com/qoomon/zsh-lazyload.git
