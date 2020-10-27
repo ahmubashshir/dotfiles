@@ -74,6 +74,14 @@
     insteadOf = "aur:"
 [url "http://aur.archlinux.org/"]
 	insteadOf = "pkg:"
+[url "https://github.com/"]
+	insteadOf = "gh:"
+[url "https://gitlab.com/"]
+	insteadOf = "gl:"
+[url "https://gitlab.gnome.org/"]
+	insteadOf = "gnome:"
+[url "https://gitlab.xfce.org/"]
+	insteadOf = "xfce:"
 [sendemail]
 	smtpServer = smtp.gmail.com
 	smtpServerPort = 587
