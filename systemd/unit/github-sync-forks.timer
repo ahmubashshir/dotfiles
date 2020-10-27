@@ -2,8 +2,8 @@
 Description=sync github forks daily
 
 [Timer]
-OnCalendar=daily
-RandomizedDelaySec=1h
+OnCalendar=00/2:00
+RandomizedDelaySec=10m
 Persistent=true
 
 [Install]
