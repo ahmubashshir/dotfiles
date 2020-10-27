@@ -36,7 +36,7 @@ elif [[ $1 = --stdin ]];then
 	done
 fi
 for n in "$@";do
-	if [ -f "$n/PKGBUILD" ];then
+	if [ -f "$n/PKGBUILD" ] && [ ! -e "$n/WIP" ];then
 		(
 			pkgver=0;pkgrel=0
 			cd "$n" &>/dev/null||exit
