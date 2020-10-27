@@ -43,7 +43,10 @@ esac
 	ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE=1
 } && zplug hacker-quotes
 zplug git
-zplug bd
+zplug bd && {
+	unalias .. ... ....
+}
+zplug lazyload
 zplug auto-notify && {
 	AUTO_NOTIFY_THRESHOLD=20
 	AUTO_NOTIFY_EXPIRE_TIME=5000
