@@ -19,7 +19,7 @@
 	stat = !tig status
 	fsclr = !git reflog expire --expire=now --all&&git gc --prune=now
 	tlog = !tig log
-	dt = difftool
+	dt = diff
 	mt = mergetool
 	unstage = reset HEAD
 	last = log -1 HEAD
@@ -48,14 +48,14 @@
 [core]
 	askPass = /usr/lib/seahorse/ssh-askpass
 	hooksPath = ~/.githooks
+	editor = nano
 [diff]
 	guitool = meld
-	tool    = vimdiff
 [instaweb]
 	browser = chromium-browser
 [merge]
 	guitool = meld
-	tool = vimdiff
+	tool = nano
 [web]
 	browser = chromium-browser
 [cola]
@@ -84,3 +84,6 @@
 	rebase = true
 [branch]
 	autoSetupMerge = true
+[mergetool "nano"]
+	trustExitCode = false
+	cmd = nano $MERGED
