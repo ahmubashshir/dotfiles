@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r146.6872281
+# VERSION r147.37e5d60
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1106,10 +1106,10 @@ get_url() {
 	fi
 	for n in $ep_file_id; do
 		if [ -n "$(type -t ${ep_file_host// /+}:get_url || type -w ${ep_file_host// /+}:get_url)" ]; then
-			url=""
-			until [[ -n $url ]] && (( try++<5 ));do
+			url="";try=0
+			while [[ -z $url ]] && (( try++<5 ));do
+				((try > 1)) && sleep 2
 				url="$(${ep_file_host// /+}:get_url "${n}" "$ep_id")"
-				((try < 2)) || sleep 2
 			done
 			echo "$url"
 		else
@@ -1179,6 +1179,27 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#-option
 				da_get_license
 				exit 0
+				;;
+			(--login)
+				#+option
+					#long: --login
+					#text: Log in to dubbedanime.net.
+					#args: <username> <passeword>
+				#-option
+				shift
+				(($# != 2)) && {
+					echo invalid number of arguments
+					exit
+				}
+				exec curl \
+					-H 'referer: https://ww5.dubbedanime.net/login' \
+					-H 'origin: https://ww5.dubbedanime.net' \
+					--data "username=$1" \
+					--data "password=$2" \
+					--data 'remember=yes' \
+				https://otaku.cafe/forums/connect.php \
+					-so /dev/null \
+				--cookie-jar ~/.da-cookies.txt
 				;;
 			(-i| --id)
 				#+option
