@@ -1,8 +1,31 @@
 #!/bin/bash -e
 # HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+
 if grep -q 'git://|git+http' PKGBUILD;then
 	makepkg -o
 fi
 echo "info:Updating SRCINFO"
 makepkg --printsrcinfo > .SRCINFO
 git add .SRCINFO
+
+IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
+git reset -q
+if [ ! -f .gitignore ];then
+	echo "info:Initializing gitignore"
+	echo '*' >.gitignore
+else
+	echo "info:Updating gitignore"
+fi
+for n in "${STAGED[@]}";do
+	grep -q "$n$" .gitignore && continue
+	echo '!'"$n" >> .gitignore
+done
+grep '^!' .gitignore|cut -c2-|while read -r line;do
+	if ! { [ -f "$line" ] || [ "$line" = "*" ];};then
+		sed -i "/^\!$line$/d" .gitignore
+	fi
+done
+git add --force .gitignore
+for n in "${STAGED[@]}";do
+	git add --force "$n"
+done
