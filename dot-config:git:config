@@ -46,6 +46,13 @@
 	rmmod = "!f(){ set -x;dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
+	crbs = rebase --continue
+	rbs = rebase
+	mrg = merge
+	cmrg = merge --continue
+	amrg = merge --abort
+	arbs = rebase --abort
+	srbs = rebase --skip
 [color]
 	ui = auto
 [hub]
@@ -62,6 +69,8 @@
 [merge]
 	guitool = meld
 	tool = nano
+	summary = true
+	log = true
 [web]
 	browser = chromium-browser
 [cola]
@@ -96,8 +105,6 @@
 	default = current
 [pull]
 	rebase = true
-[branch]
-	autoSetupMerge = true
 [mergetool "nano"]
 	trustExitCode = false
 	cmd = nano $MERGED
