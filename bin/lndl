@@ -37,7 +37,7 @@ add_sync()
 	local id name response mime dir pending target etarget action data
 	pending=()
 	for id in "$@";do
-		if [[ $id =~ [[:lower:]-] ]];then
+		if [[ $id =~ ^[[:digit:][:lower:]-]+$ ]];then
 			src=al
 			name=$(curl -s "https://armaell-library.net/novel/$id/rss"|xmllint --xpath 'string(/rss/channel/title)' - 2>/dev/null|tr -s '<>:"/\|?*' '-' 2>/dev/null)
 			[[ -n $name ]] && mime='inode/dir-novel.folder'
@@ -74,7 +74,7 @@ EOF
 			pending+=("$dir/00update")
 		fi
 	done
-	if ((${#pending}>0));then
+	if ((${#pending[@]}>0));then
 		echo "$BLUE===> Synchronizing new novels...$ALL_OFF"
 	fi
 	for each in "${pending[@]}";do
