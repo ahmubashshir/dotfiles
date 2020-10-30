@@ -42,36 +42,43 @@ function _git_prompt_update() {
 	gitstatus_check "gitstatus$$" || gitstatus_start -s -1 -u -1 -c -1 -d -1 "gitstatus$$"
 	gitstatus_query "gitstatus$$" || return 1
 	[[ $VCS_STATUS_RESULT == 'ok-sync' ]] || return 0  # not a git repo
-	local p where  # branch name, tag or commit
+	local head stat where  # branch name, tag or commit
 
-	p="%B${GIT_STATUS[clean]}"
+	head="%B${GIT_STATUS[clean]}"
 	if [[ -n $VCS_STATUS_LOCAL_BRANCH ]]; then
-	    p+=' '
+	    head+=' '
 		where=$VCS_STATUS_LOCAL_BRANCH
 	elif [[ -n $VCS_STATUS_TAG ]]; then
-		p+=' '
+		head+=' '
 		where=$VCS_STATUS_TAG
 	else
-		p+=' '
+		head+=' '
 		where=${VCS_STATUS_COMMIT[1,8]}
 	fi
 
 	(( $#where > 32 )) && where[13,-13]="…"  # truncate long branch names and tags
-	p+="${where//\%/%%}%b"             # escape %
+	head+="${where//\%/%%}%b"             # escape %
 
 	# ⇣42 if behind the remote.
-	(( VCS_STATUS_COMMITS_BEHIND )) && p+="${GIT_STATUS[changed]}%B⇣%b${VCS_STATUS_COMMITS_BEHIND}"
+	(( VCS_STATUS_COMMITS_BEHIND )) && stat+="${GIT_STATUS[changed]}%B⇣%b${VCS_STATUS_COMMITS_BEHIND}"
 
 	# ⇡42 if ahead of the remote; no leading space if also behind the remote: ⇣42⇡42.
-	(( VCS_STATUS_COMMITS_AHEAD  )) && p+="${GIT_STATUS[changed]}%B⇡%b${VCS_STATUS_COMMITS_AHEAD}"
+	(( VCS_STATUS_COMMITS_AHEAD  )) && stat+="${GIT_STATUS[changed]}%B⇡%b${VCS_STATUS_COMMITS_AHEAD}"
 
 	# ⇠42 if behind the push remote.
-	(( VCS_STATUS_PUSH_COMMITS_BEHIND )) && p+="${GIT_STATUS[changed]}%B⇠%b${VCS_STATUS_PUSH_COMMITS_BEHIND}"
+	(( VCS_STATUS_PUSH_COMMITS_BEHIND )) && stat+="${GIT_STATUS[changed]}%B⇠%b${VCS_STATUS_PUSH_COMMITS_BEHIND}"
 	# ⇢42 if ahead of the push remote; no leading space if also behind: ⇠42⇢42.
-	(( VCS_STATUS_PUSH_COMMITS_AHEAD  )) && p+="${GIT_STATUS[changed]}%B⇢%b${VCS_STATUS_PUSH_COMMITS_AHEAD}"
-	p+="%B${GIT_STATUS[seperator]}:%b${GIT_STATUS[clean]}"
+	(( VCS_STATUS_PUSH_COMMITS_AHEAD  )) && stat+="${GIT_STATUS[changed]}%B⇢%b${VCS_STATUS_PUSH_COMMITS_AHEAD}"
+	((
+		  VCS_STATUS_COMMITS_BEHIND
+		+ VCS_STATUS_COMMITS_AHEAD
+		+ VCS_STATUS_PUSH_COMMITS_BEHIND
+		+ VCS_STATUS_PUSH_COMMITS_AHEAD
+	)) && {
+		stat+="%B${GIT_STATUS[seperator]}:%b${GIT_STATUS[clean]}"
+	}
 	# *42 if have stashes.
-	(( VCS_STATUS_STASHES        	  )) && p+="${GIT_STATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
+	(( VCS_STATUS_STASHES        	  )) && stat+="${GIT_STATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
 	((
 			VCS_STATUS_NUM_CONFLICTED
 		+	VCS_STATUS_NUM_STAGED
@@ -79,21 +86,21 @@ function _git_prompt_update() {
 		+	VCS_STATUS_NUM_UNTRACKED
 	)) && {
 		# ~42 if have merge conflicts.
-		(( VCS_STATUS_NUM_CONFLICTED )) && p+="${GIT_STATUS[conflicted]}%B~%b${VCS_STATUS_NUM_CONFLICTED}%f"
+		(( VCS_STATUS_NUM_CONFLICTED )) && stat+="${GIT_STATUS[conflicted]}%B~%b${VCS_STATUS_NUM_CONFLICTED}%f"
 
 		# +42 if have staged changes.
-		(( VCS_STATUS_NUM_STAGED     )) && p+="${GIT_STATUS[modified]}%B+%b${VCS_STATUS_NUM_STAGED}%f"
+		(( VCS_STATUS_NUM_STAGED     )) && stat+="${GIT_STATUS[modified]}%B+%b${VCS_STATUS_NUM_STAGED}%f"
 
 		# !42 if have unstaged changes.
-		(( VCS_STATUS_NUM_UNSTAGED   )) && p+="${GIT_STATUS[modified]}%B!%b${VCS_STATUS_NUM_UNSTAGED}%f"
+		(( VCS_STATUS_NUM_UNSTAGED   )) && stat+="${GIT_STATUS[modified]}%B!%b${VCS_STATUS_NUM_UNSTAGED}%f"
 
 		# ?42 if have untracked files. It's really a question mark, your font isn't broken.
-		(( VCS_STATUS_NUM_UNTRACKED  )) && p+="${GIT_STATUS[untracked]}%B?%b${VCS_STATUS_NUM_UNTRACKED}%f"
+		(( VCS_STATUS_NUM_UNTRACKED  )) && stat+="${GIT_STATUS[untracked]}%B?%b${VCS_STATUS_NUM_UNTRACKED}%f"
 
 		# 'merge' if the repo is in an unusual state.
-		[[ -n $VCS_STATUS_ACTION     ]] && p+="${GIT_STATUS[conflicted]}:✘"
-	} || p+="✔"
-	GITSTATUS_PROMPT="-[${p}%F{red}]"
+		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GIT_STATUS[conflicted]}:✘"
+	} || head+=":✔"
+	GITSTATUS_PROMPT="-[${head}${stat:+:$stat}%F{red}]"
 	# The length of GITSTATUS_PROMPT after removing %f and %F.
 	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
 }
