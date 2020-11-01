@@ -36,7 +36,6 @@ if hash tldr 1>&3 2>&1;then
 	alias h=tldr
 	alias run-help=tldr
 fi
-alias userctl='systemctl --user'
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'

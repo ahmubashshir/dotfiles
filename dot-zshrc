@@ -60,9 +60,7 @@ zplug auto-notify && {
 		yay pacman bc
 	)
 }
-zplug systemd && {
-	unalias userctl
-}
+zplug systemd
 zplug syntax-highlighting
 zplug autopair
 zplug you-should-use && {
