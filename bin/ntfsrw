@@ -1,5 +1,5 @@
 #!/bin/zsh
-ntfs=($(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1))
+ntfs=(${(f)"$(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1)"})
 for n in "${ntfs[@]}";udisksctl unmount -b $n
 for n in "${ntfs[@]}";ntfsfix $n
 for n in "${(Oa)ntfs[@]}";udisksctl mount -b $n
