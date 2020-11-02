@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="c">
+  <snippet override="c-inc">
+    <text><![CDATA[#include "${1:file}.h"
+$0]]></text>
+    <tag>I</tag>
+    <description>#include ".."</description>
+  </snippet>
+  <snippet override="c-Inc">
+    <text><![CDATA[#include <${1:file}.h>
+$0]]></text>
+    <tag>i</tag>
+    <description>#include &lt;..&gt;</description>
+  </snippet>
+  <snippet override="c-main">
+    <text><![CDATA[int main (int argc, char *argv[])
+{
+	$0
+	return 0;
+}]]></text>
+    <tag>main</tag>
+    <description>main</description>
+  </snippet>
+</snippets>

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="cpp">
+  <snippet override="cpp-Inc">
+    <text><![CDATA[#include <${1:file}>
+$0]]></text>
+    <description>#include &lt;..&gt;</description>
+    <tag>inc</tag>
+  </snippet>
+  <snippet override="cpp-inc">
+    <text><![CDATA[#include "${1:file}"
+$0]]></text>
+    <description>#include ".."</description>
+    <tag>Inc</tag>
+  </snippet>
+</snippets>

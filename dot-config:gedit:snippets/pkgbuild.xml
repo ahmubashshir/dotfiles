@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="pkgbuild">
+  <snippet>
+    <tag>m</tag>
+    <text><![CDATA[# Maintainer: $1 <$2@$3>]]></text>
+    <description>Maintainer</description>
+  </snippet>
+  <snippet>
+    <tag>b</tag>
+    <text><![CDATA[build() {
+	$1
+}]]></text>
+    <description>build</description>
+  </snippet>
+  <snippet>
+    <tag>pr</tag>
+    <text><![CDATA[prepare() {
+	$1
+}]]></text>
+    <description>prepare</description>
+  </snippet>
+</snippets>
