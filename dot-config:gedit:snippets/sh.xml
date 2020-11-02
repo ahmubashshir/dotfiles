@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<snippets language="sh">
+  <snippet>
+    <tag>inc</tag>
+    <text><![CDATA[((def_$1)) && return 0 || def_$1=1]]></text>
+    <description>include</description>
+    <accelerator><![CDATA[<Primary>i]]></accelerator>
+  </snippet>
+</snippets>
