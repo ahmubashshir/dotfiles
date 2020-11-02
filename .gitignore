@@ -1,3 +1,4 @@
 *.zwc
 *.swp
 bin/youtube-dl
+bin/faketty
