@@ -38,6 +38,7 @@ fi
 for n in "$@";do
 	if [ -f "$n/PKGBUILD" ] && [ ! -e "$n/WIP" ];then
 		(
+			typeset -a exclude
 			pkgver=0;pkgrel=0
 			cd "$n" &>/dev/null||exit
 			git stash &>/dev/null
@@ -86,7 +87,16 @@ for n in "$@";do
 				git push
 				use_vpn d
 			fi
-			git clean -fde '*.*'
+			for src in "${source[@]}";do
+				if [[ \
+					$src =~ ^[[:alnum:].-]+::[[:lower:]]+:// ||\
+					$src =~ ^[[:alnum:].-]+::[[:lower:]]+\+[[:lower:]+]+:// \
+				]];then
+					exclude+=('-e' "${src%%::*}")
+				fi
+			done
+			fakeroot rm -rf src pkg
+			git clean -fxd "${exclude[@]}"
 		)
 	fi
 done
