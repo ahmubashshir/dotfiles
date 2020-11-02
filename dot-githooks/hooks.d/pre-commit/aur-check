@@ -1,22 +1,21 @@
 #!/bin/bash -e
 # HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
 # HOOK-CONDITION: [[ -x /usr/bin/namcap ]]
-namcap="$(namcap -m PKGBUILD 2>&1)"
+namcap="$(namcap -im PKGBUILD 2>&1)"
 if [ -z "$namcap" ];then
 	exit
 fi
-namcap="$(echo "$namcap"|sed -nE 's@^PKGBUILD \([[:alnum:]-]+\) ([IEDW]): ([[:alnum:]-]+) (.*)$@\1\|\2\|\3@p')"
+namcap="$(echo "$namcap"|sed -nE 's@^PKGBUILD \([[:alnum:]-]+\) ([IEDW]): ([[:alnum:]-]+) (.*)$@\1\|\2\|\3@p;s@^PKGBUILD \([[:alnum:]-]+\) ([IEDW]): ([[:alnum:]-]+)$@\1\|\2@p')"
 if [ -z "$namcap" ];then
 	echo 'E:Invalid PKGBUILD'
 	exit
 fi
 while IFS=$'|' read -r lvl reason cause;do
 	case $reason in
-		(non-unique-source-name)
-			msg="source file name not unique";;
-		(missing-pkgfunction)
-			msg="package() is not defined";;
-		(*) msg="${reason//-/ }";;
+		(non-unique-source-name)	msg="source file name not unique";;
+		(missing-pkgfunction)		msg="package() is not defined";;
+		(missing-contributor) 		msg="contributor tags missing";;
+		(*) 						msg="${reason//-/ }";;
 	esac
-	echo "$lvl:$msg: $cause"
+	echo "$lvl:$msg${cause:+: $cause}"
 done <<<"$namcap"
