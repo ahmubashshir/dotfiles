@@ -36,7 +36,7 @@
 	up = "![ \"$(git config \"branch.$(git rev-parse --abbrev-ref HEAD).merge\")\" = '' ] && git push -u || git push"
 	rmbr = "!f() { br=$(git rev-parse --abbrev-ref HEAD);git checkout master;git branch -D \"$br\" 2>/dev/null;git push $(git remote|grep -Em 1 '(ahmubashshir|origin)') --delete \"$br\" 2>/dev/null; };f"
 	cpr = !git push && hub pull-request
-	hist = !giggle
+	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
 	cb = checkout
@@ -53,6 +53,10 @@
 	amrg = merge --abort
 	arbs = rebase --abort
 	srbs = rebase --skip
+	log = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+	br = branch
+	type = cat-file -t
+	dump = cat-file -p
 [color]
 	ui = auto
 [hub]
@@ -107,4 +111,7 @@
 	rebase = true
 [mergetool "nano"]
 	trustExitCode = false
-	cmd = nano $MERGED
+	cmd = nano '+r/^=======$' $MERGED
+[log]
+	decorate = short
+	date = iso
