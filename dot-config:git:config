@@ -57,6 +57,7 @@
 	br = branch
 	type = cat-file -t
 	dump = cat-file -p
+	bro = checkout --orphan
 [color]
 	ui = auto
 [hub]
