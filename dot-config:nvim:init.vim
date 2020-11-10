@@ -1,1 +1,1 @@
-/home/mubashshir/.vimrc
+dot-vimrc
