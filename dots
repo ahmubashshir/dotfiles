@@ -23,7 +23,7 @@ if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 		t="${n#dot-}";t="${t//$PATHSEP//}"
 		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		mkdir -p "$(dirname "$HOME/.$t")"
-		echo Linking "$n" '->' "\~/.$t"
+		echo Linking "$n" '->' "~/.$t"
 		if [ ! -L "$HOME/.$t" ];then
 			rm -fr "$HOME/.$t"
 		fi
