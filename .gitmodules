@@ -48,3 +48,6 @@
 [submodule "dot-zsh/plugins/syntax-highlighting"]
 	path = dot-zsh/plugins/syntax-highlighting
 	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
+[submodule "dot-zsh/plugins/history-substring-search"]
+	path = dot-zsh/plugins/history-substring-search
+	url = https://github.com/zsh-users/zsh-history-substring-search.git
