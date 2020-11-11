@@ -45,3 +45,6 @@
 [submodule "dot-zsh/plugins/autopair"]
 	path = dot-zsh/plugins/autopair
 	url = https://github.com/hlissner/zsh-autopair.git
+[submodule "dot-zsh/plugins/syntax-highlighting"]
+	path = dot-zsh/plugins/syntax-highlighting
+	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
