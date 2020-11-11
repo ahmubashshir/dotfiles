@@ -39,8 +39,7 @@
 	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
-	cb = checkout
-	addmod = submodule add
+	ch = checkout
 	root = rev-parse --show-toplevel
 	run = "!exec "
 	rmmod = "!f(){ set -x;dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
