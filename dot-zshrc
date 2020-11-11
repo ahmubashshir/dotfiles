@@ -61,8 +61,8 @@ zplug auto-notify && {
 	)
 }
 zplug systemd
-zplug syntax-highlighting
 zplug autopair
+zplug syntax-highlighting
 zplug you-should-use && {
 	YSU_MESSAGE_POSITION=after
 	YSU_HARDCORE=1
@@ -89,6 +89,10 @@ zplug zshmarks && {
 	alias mark=bookmark
 	alias unmark=deletemark
 	alias lsmark=showmarks
+}
+zplug history-substring-search && {
+	bindkey "$terminfo[kcuu1]" history-substring-search-up
+	bindkey "$terminfo[kcud1]" history-substring-search-down
 }
 ## options
 setopt extended_glob prompt_subst
@@ -220,4 +224,5 @@ if [ -e zprof ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
 fi
+
 zplug startup-timer
