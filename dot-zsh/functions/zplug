@@ -3,6 +3,9 @@ local plugname plug plugpath
 if (( ${+zplugdirs} )); then
 	typeset -a zplugdirs
 fi
+if (( ${+plugins} )); then
+	typeset -ga plugins
+fi
 for plugpath in "$HOME/.zsh/plugins" "/usr/share/zsh/plugins";do
 	if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
 		zplugdirs+=("$plugpath")
@@ -28,6 +31,7 @@ do
 				zcompile "$plugin" &!
 			fi
 			source "$plugin" "$@"
+			plugins+=("$plugname")
 			return 0
 		fi
 	done
