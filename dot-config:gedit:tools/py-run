@@ -1,0 +1,21 @@
+#!/bin/bash
+# [Gedit Tool]
+# Input=document
+# Shortcut=F5
+# Languages=python,python3
+# Save-files=document
+# Name=Run
+# Applicability=all
+# Output=output-panel
+
+v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
+file=$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME
+if [ "$v" != "" ];then
+	if [ "$v" == "python" ];then
+		python2 $file
+	else
+		python3 $file
+	fi
+else
+	python3 $file
+fi

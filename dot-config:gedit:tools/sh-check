@@ -1,0 +1,14 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Check
+# Languages=pkgbuild,sh
+# Input=document
+# Output=output-panel
+# Applicability=titled
+# Save-files=document
+# Shortcut=F4
+
+if command -V shellcheck &>/dev/null;then
+	shellcheck -Calways -x -f gcc "$GEDIT_CURRENT_DOCUMENT_NAME" && echo "No error reported."
+	exit 0
+fi

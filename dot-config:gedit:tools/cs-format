@@ -1,0 +1,21 @@
+#!/bin/bash
+# [Gedit Tool]
+# Input=selection-document
+# Languages=c-sharp
+# Name=Format C#
+# Applicability=all
+# Output=replace-selection
+# Shortcut=F6
+# Save-files=document
+
+check()
+{
+	for n in "$@";do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n &>/dev/null;then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check astyle
+astyle --mode=cs  --indent-namespaces --indent-classes --style=gnu --indent=tab

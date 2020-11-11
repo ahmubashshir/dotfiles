@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+# [Gedit Tool]
+# Name=Beautify
+# Input=selection-document
+# Output=replace-selection
+# Applicability=all
+# Save-files=document
+# Languages=json
+# Shortcut=F4
+
+import json
+import sys
+j = json.load(sys.stdin)
+print(json.dumps(j, sort_keys=True, indent=4))

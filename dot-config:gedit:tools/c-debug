@@ -1,0 +1,42 @@
+#!/bin/bash
+# [Gedit Tool]
+# Shortcut=<Shift>F2
+# Output=output-panel
+# Languages=c
+# Input=nothing
+# Name=Debug
+# Save-files=nothing
+# Applicability=all
+
+dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
+name=${GEDIT_CURRENT_DOCUMENT_NAME%.*}
+case $dext in
+ [c,C]) lang=C;;
+ [c,C][p,P,x,X][p,P,x,X])lang=C++;;
+ [j,J][a,A][v,V][a,A])lang=Java;;
+ *) cc=gdb;;
+esac
+
+
+if [ "$lang" = Java ];then
+	cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+	arg=`zenity --entry --title="Compile..." --text="Any argument to debug?\n*Optional*\n seperate each with \"- \"" --entry-text="" 2> /dev/null`
+	clear
+	javac $GEDIT_CURRENT_DOCUMENT_NAME
+	exo-open --launch TerminalEmulator jdb ${GEDIT_CURRENT_DOCUMENT_NAME%.*} $arg
+else
+	arg=`zenity --name=Gedit --entry --title="GNU Debugger" --text="Any argument for debugging?" 2> /dev/null`
+	echo "Options:$arg"
+	case $lang in
+		C)
+			gcc $GEDIT_CURRENT_DOCUMENT_NAME -g -o z.$name.amd64.elf
+			;;
+		C++)
+			g++ $GEDIT_CURRENT_DOCUMENT_NAME -g -o z.$name.amd64.elf
+	esac
+	if [ -f "core" ];then
+		exo-open --launch TerminalEmulator gdb z.$name.amd64.elf core $arg
+	else
+		exo-open --launch TerminalEmulator gdb z.$name.amd64.elf $arg
+	fi
+fi

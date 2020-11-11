@@ -1,0 +1,21 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Format
+# Input=selection-document
+# Output=replace-selection
+# Applicability=titled
+# Save-files=document
+# Languages=css
+# Shortcut=F3
+
+check()
+{
+	for n in "$@";do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n &>/dev/null;then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check css-beautify
+css-beautify -itn

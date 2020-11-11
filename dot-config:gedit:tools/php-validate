@@ -1,0 +1,11 @@
+#!/bin/bash
+# [Gedit Tool]
+# Output=output-panel
+# Shortcut=F5
+# Name=Validate Code
+# Save-files=document
+# Input=document
+# Applicability=all
+# Languages=php
+
+php -l $GEDIT_CURRENT_DOCUMENT_NAME

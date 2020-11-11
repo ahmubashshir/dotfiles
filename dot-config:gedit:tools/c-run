@@ -1,0 +1,23 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Run......
+# Applicability=local
+# Languages=c,cpp,pascal
+# Save-files=nothing
+# Output=nothing
+# Shortcut=F5
+# Input=nothing
+
+dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
+n=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.${dext}$// `
+arg=`zenity --name=gEdit --entry --title="gEdit" --text="Input:" 2> /dev/null`
+args=`for n in $arg
+do
+printf "$n "
+done`
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+if [ "$dext" = "pas" ];then
+xterm -e "cb_console_runner ./z.$n.linux.amd64.elf $args"
+else
+exo-open --launch TerminalEmulator "cb_console_runner ./z.$n.amd64.elf $args"
+fi

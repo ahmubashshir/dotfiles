@@ -1,0 +1,21 @@
+#!/bin/sh
+# [Gedit Tool]
+# Languages=html
+# Name=Run
+# Input=document
+# Save-files=nothing
+# Shortcut=F5
+# Output=output-panel
+# Applicability=all
+
+check()
+{
+	for n in "$@";do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n &>/dev/null;then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check epiphany
+epiphany --private-instance --incognito-mode $GEDIT_CURRENT_DOCUMENT_NAME

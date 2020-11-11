@@ -1,0 +1,12 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Run
+# Input=nothing
+# Output=nothing
+# Applicability=local
+# Save-files=document
+# Languages=go
+# Shortcut=F5
+
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+exo-open --launch TerminalEmulator "cb_console_runner go run \"$GEDIT_CURRENT_DOCUMENT_PATH\""

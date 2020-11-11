@@ -1,0 +1,12 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Run............
+# Languages=sh
+# Applicability=titled
+# Output=nothing
+# Shortcut=F5
+# Save-files=document
+# Input=document
+
+chmod +x $GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME
+exo-open --launch TerminalEmulator "bash --debugger $GEDIT_CURRENT_DOCUMENT_NAME" 2>/dev/null

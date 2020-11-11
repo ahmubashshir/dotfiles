@@ -1,0 +1,118 @@
+#!/bin/bash
+# [Gedit Tool]
+# Input=nothing
+# Output=output-panel
+# Shortcut=<Shift>F1
+# Applicability=titled
+# Save-files=document
+# Languages=c,cpp,java
+# Name=Compile...
+
+export TERM=dumb
+type=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
+name=${GEDIT_CURRENT_DOCUMENT_NAME%.*}
+dext=${GEDIT_CURRENT_DOCUMENT_NAME#*.}
+case $type in
+ x-csrc) compiler=gcc;lang=C;;
+ x-c++src)compiler=g++;lang=C++;;
+ x-java)compiler=javac;lang=Java;;
+ *) compiler=gcc;lang=C;;
+esac
+if [ "$lang" = Java ];then
+	cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+	arg=`zenity --entry --title="Compile..." --text="Any compiler argument?\n*Optional*\n seperate each with \"- \"" --entry-text="" 2> /dev/null`
+	clear
+	javac $arg $GEDIT_CURRENT_DOCUMENT_NAME
+	if [ "$?" != 0 ];then
+		err=$?
+		echo Resolve the errors
+		zenity --name=Gedit --error --title="Java Compiler" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
+		exit $err
+	else
+		zenity --name=Gedit --info --title="Java Compiler" --text="$GEDIT_CURRENT_DOCUMENT_NAME compiled successfully" 2> /dev/null
+		clear
+		exit 0
+	fi
+else
+	target=`zenity --name=Gedit --list --title=$compiler --text="Select Target Platform" --column=Target Linux_x86_64 Windows_i386 Windows_x86_64  2> /dev/null `
+	if [ $? -ne 0 ];then
+		echo "Compilation is cancelled by $USER"> /dev/stderr
+		exit 1
+	fi
+	case $target in
+		Linux_x86_64) cc=$compiler ; ext=elf ; target=amd64 ;;
+		Windows_x86_64) cc=x86_64-w64-mingw32-$compiler-win32 ; ext=exe;target=w64;;
+		Windows_i386) cc=i686-w64-mingw32-$compiler-win32 ; ext=exe ;target=w32 ;;
+		*) cc=$compiler ; target=amd64 ; ext=elf ;;
+	esac
+	if [ "$dext" != "" ];then
+		case $type in
+			x-csrc) dext=c;;
+			x-c++src) dext=cpp;;
+			x-java) dext=java;;
+			*) dext=c;;
+		esac
+		exted=false
+		dname="$name.$dext"
+	fi
+	echo -e "Target=$target\nCompiler=$cc\nExtention=$ext\nLanguage=$lang\nDocName=$name"
+	if [ -d "./$name.$target" ];then
+		cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/$dname"
+	else
+		mkdir $name.$target
+		cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/$dname"
+	fi
+	arg=`zenity --name=Gedit --entry --title="$cc" --text="Any extra argument?\n*use oniy if sugested after 1st Compile*" 2> /dev/null`
+	arg="$arg -L."
+	if [ -n "$(grep '<math.h>' $GEDIT_CURRENT_DOCUMENT_NAME)" ];then
+		arg="$arg -lm"
+	fi
+	if [ -n "$(grep '<gmp.h>' $GEDIT_CURRENT_DOCUMENT_NAME)" ];then
+		arg="$arg -lgmp"
+	fi
+	if [ -n "$(grep '<jni.h>' $GEDIT_CURRENT_DOCUMENT_NAME)" ];then
+		JAVA_HOME=$(dirname $(dirname $(readlink /etc/alternatives/javac)))
+		arg="$arg -I$JAVA_HOME/include -I$JAVA_HOME/include/linux "
+		echo
+	fi
+	echo "Options:$arg"
+	shared=$(grep target: $GEDIT_CURRENT_DOCUMENT_NAME|cut -d: -f2)
+	if [ "$shared" = "shared" ];then
+		arg="$arg -shared -fPIC -Wall"
+		if ! $exted;then
+		$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -c "$GEDIT_CURRENT_DOCUMENT_NAME" -o "$name.$target.o"
+		$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg "$name.$target.o" -o "lib$name.$target.so"
+		else
+		$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -c "$GEDIT_CURRENT_DOCUMENT_NAME" -o "$name.$target.o"
+		$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg "$name.$target.o" -o "lib$name.$target.so"
+		fi
+	else
+		if $exted;then
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -Wall -c "$GEDIT_CURRENT_DOCUMENT_NAME" -o "$name.$target/$name.$target.o"
+		else
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -Wall -c "./$name.$target/$dname" -o "$name.$target/$name.$target.o" 2>&1|sed "s|\./$name.$target/$dname|$GEDIT_CURRENT_DOCUMENT_NAME|g" 1>&2
+		fi
+		if [ "$?" != 0 ];then
+			err=$?
+			echo -e "Resolve the errors" &> /dev/stderr
+			cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+			zenity --name=Gedit --error --title="$cc" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
+			rm -rf "$name.$target" 2> /dev/null
+			exit $err
+		else
+			cd "$name.$target"
+			g++ -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" "$name.$target.o" -o "$name.$target.$ext" $arg
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -E "$name.$dext" -o "$name.$target.i" &> /dev/null
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -S "$name.$dext" -o "$name.$target.s" &> /dev/null
+			clear 2> /dev/null
+			cd ..
+			cp ./$name.$target/$name.$target.$ext z.$name.$target.$ext
+			tar -cf "z.$name.$target.tar" "$name.$target" 2> /dev/null
+			rm -f "z.$name.$target.tgz" &> /dev/null
+			gzip "z.$name.$target.tar" 2> /dev/null
+			mv ./z.$name.$target.tar.gz ./z.$name.$target.tgz 2> /dev/null
+			rm -r -f "$name.$target"
+			exit 0 2>/dev/null
+		fi
+	fi
+fi

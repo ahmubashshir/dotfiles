@@ -1,0 +1,21 @@
+#!/bin/bash
+# [Gedit Tool]
+# Input=selection-document
+# Save-files=document
+# Output=replace-selection
+# Languages=c,cpp,cpphdr,chdr
+# Applicability=titled
+# Shortcut=F7
+# Name=Format.........
+
+check()
+{
+	for n in "$@";do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n &>/dev/null;then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check astyle
+astyle --mode=c  --indent-namespaces --indent-classes --style=allman --indent=tab

@@ -1,0 +1,21 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Format Java
+# Languages=java
+# Save-files=document
+# Applicability=titled
+# Shortcut=F6
+# Input=selection-document
+# Output=replace-selection
+
+check()
+{
+	for n in "$@";do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n &>/dev/null;then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check astyle
+astyle --mode=java --indent-namespaces --indent-classes --style=gnu --indent=tab 
