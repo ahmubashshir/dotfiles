@@ -52,7 +52,7 @@ function _git_prompt_update() {
 		head+=' '
 		where=$VCS_STATUS_TAG
 	else
-		head+=' '
+		head+=' '
 		where=${VCS_STATUS_COMMIT[1,8]}
 	fi
 
