@@ -42,3 +42,6 @@
 [submodule "submodules/transmission-trackers"]
 	path = submodules/transmission-trackers
 	url = https://github.com/blind-oracle/transmission-trackers
+[submodule "dot-zsh/plugins/autopair"]
+	path = dot-zsh/plugins/autopair
+	url = https://github.com/hlissner/zsh-autopair.git
