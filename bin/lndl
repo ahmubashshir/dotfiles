@@ -89,6 +89,7 @@ start_sync()
 	for n in $(find "$LNDIR"/ -name '00update' -executable|sort);do
 		echo "$BLUE===>$GREEN Downloading '$(ellipsis $(($(tput cols) - 30)) "$(basename "$(dirname "$n")")")'...$ALL_OFF"
 		LNLIB="$0" "$n"
+		touch "${n%/*}/stat.txt"
 	done
 
 }
@@ -107,7 +108,7 @@ http_code() {
 cleanup() {
 	if (($#>0 && $#%3==0));then
 		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
-		for name in lock.lck 00update;do
+		for name in lock.lck 00update stat.txt;do
 			if [ -f "$name" ];then
 				set -- -not -samefile "$name" "$@"
 			fi
