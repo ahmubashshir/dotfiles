@@ -47,6 +47,7 @@ zplug bd && {
 	unalias .. ... ....
 }
 zplug lazyload
+zplug completions
 zplug auto-notify && {
 	AUTO_NOTIFY_THRESHOLD=20
 	AUTO_NOTIFY_EXPIRE_TIME=5000

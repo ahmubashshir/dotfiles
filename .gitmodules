@@ -51,3 +51,6 @@
 [submodule "dot-zsh/plugins/history-substring-search"]
 	path = dot-zsh/plugins/history-substring-search
 	url = https://github.com/zsh-users/zsh-history-substring-search.git
+[submodule "dot-zsh/plugins/completions"]
+	path = dot-zsh/plugins/completions
+	url = https://github.com/zsh-users/zsh-completions.git
