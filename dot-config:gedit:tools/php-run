@@ -1,0 +1,11 @@
+#!/bin/bash
+# [Gedit Tool]
+# Output=nothing
+# Save-files=document
+# Name=Run server
+# Languages=php
+# Input=nothing
+# Applicability=all
+# Shortcut=F6
+
+xfce4-terminal --title="PHP Server" --command="sudo -A php -S 127.0.0.1:1050 -t $GEDIT_CURRENT_DOCUMENT_DIR" --hide-menubar

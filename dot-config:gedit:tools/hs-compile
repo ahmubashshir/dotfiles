@@ -1,0 +1,61 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Compile...
+# Input=document
+# Applicability=titled
+# Languages=haskell
+# Save-files=document
+# Shortcut=F5
+# Output=output-panel
+
+dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
+case $dext in
+ [h,H][s,S]) compiler=ghc;lang=Haskell;name=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[h,H][s,S]$// `;;
+ *) cc=ghc;;
+esac
+#target=`zenity --name=Gedit --list --title=GCC --text="Select Target Platform" --column=Target Linux_x86_64 Windows_i386 Windows_x86_64  2> /dev/null `
+#if [ $? -ne 0 ];then
+#	echo "Compilation is cancelled by $USER"> /dev/stderr
+#	exit 1
+#fi
+#case $target in
+#	Linux_x86_64 ) cc=$compiler ; ext=elf ; target=amd64 ;;
+#	Windows_x86_64) cc=x86_64-w64-mingw32-$compiler-win32 ; ext=exe;target=w64;;
+#	Windows_i386) cc=i686-w64-mingw32-$compiler-win32 ; ext=exe ;target=w32 ;;
+#	*) cc=$compiler ; target=amd64 ; ext=elf ;;
+#esac
+#echo -e "Target=$target\nCompiler=$cc\nExtention=$ext\nLanguage=$lang\nDocName=$name\nDocExt=$dext"
+cc=$compiler
+ext=elf
+target=amd64
+if [ -d "./$name.$target" ];then
+	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/src-$name.$target.$dext"
+else
+	mkdir $name.$target
+	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/src-$name.$target.$dext"
+fi
+arg=`zenity --name=Gedit --entry --title=$compiler --text="Any extra argument?\n*use oniy if sugested after 1st Compile*" 2> /dev/null`
+$cc $arg -Wall -o "$name.$target/$name.$target.$ext" "$GEDIT_CURRENT_DOCUMENT_NAME"
+if [ "$?" != 0 ];then
+	err=$?
+	echo -e "Resolve the errors" &> /dev/stderr
+	cd $GEDIT_CURRENT_DOCUMENT_DIR
+	zenity --name=Gedit --error --title=$compiler --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
+	rm -rf "$name.$target" 2> /dev/null
+	exit $err
+else
+	cd "$name.$target"
+	$cc	-E src-$name.$target.$dext -o $name.$target.pre.$dext &> /dev/null
+	$cc	-c src-$name.$target.$dext -o $name.$target.o &> /dev/null
+	$cc	-C src-$name.$target.$dext -o $name.$target.hc &> /dev/null
+	$cc -S src-$name.$target.$dext -o $name.$target.$dext.s &> /dev/null
+	clear 2> /dev/null
+	cd ..
+	tar -cf "z.$name.$target.tar" "$name.$target" 2> /dev/null
+	rm -rf "$name.$target" 2> /dev/null
+	rm -f "z.$name.$target.tgz" &> /dev/null
+	gzip "z.$name.$target.tar" 2> /dev/null
+	mv ./z.$name.$target.tar.gz ./z.$name.$target.tgz 2> /dev/null
+	$cc $arg -Wall -o "z.$name.$target.$ext" "$name.$dext" &> /dev/null
+	exit 0 2> /dev/null
+fi

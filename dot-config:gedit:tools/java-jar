@@ -1,0 +1,29 @@
+#!/bin/bash
+# [Gedit Tool]
+# Shortcut=F4
+# Languages=java
+# Save-files=document
+# Name=Make JAR
+# Input=document
+# Applicability=titled
+# Output=output-panel
+
+mkdir /tmp/java
+cp $GEDIT_CURRENT_DOCUMENT_NAME /tmp/java
+cd /tmp/java
+arg=`zenity --entry --title="Make JAR" --text="Any compiler argument?\n*Optional*\n seperate each with \"- \"" --entry-text="" 2> /dev/null`
+javac $arg $GEDIT_CURRENT_DOCUMENT_NAME
+rm -rf *.java
+mkdir META-INF
+cd META-INF
+main=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$// `
+jar=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$// `
+echo "Manifest-Version: 1.0" > MANIFEST.MF
+echo "Created-By: 1.8.0 (Oracle Inc.)[Gedit 3.18.3]" >> MANIFEST.MF
+echo "Main-class: $main" >> MANIFEST.MF
+cd ..
+clear
+zip -r -b . $jar.zip . 2> /dev/null
+mv $jar.zip "$GEDIT_CURRENT_DOCUMENT_DIR/$jar.jar"
+cd $GEDIT_CURRENT_DOCUMENT_DIR
+rm -rf /tmp/java

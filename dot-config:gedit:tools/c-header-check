@@ -1,0 +1,11 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Check
+# Languages=chdr,cpphdr
+# Input=nothing
+# Output=output-panel
+# Applicability=titled
+# Save-files=document
+# Shortcut=F5
+
+g++ -fsyntax-only -Wcpp "$GEDIT_CURRENT_DOCUMENT_NAME"

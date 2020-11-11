@@ -1,0 +1,12 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=IRB
+# Applicability=all
+# Input=nothing
+# Save-files=nothing
+# Shortcut=F4
+# Languages=ruby
+# Output=output-panel
+
+cd $GEDIT_CURRENT_DOCUMENT_DIR
+xfce4-terminal --title="IRB Prompt" --command="irb" --hide-menubar

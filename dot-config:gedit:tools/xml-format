@@ -1,0 +1,11 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Format
+# Languages=xml
+# Output=replace-document
+# Shortcut=F5
+# Applicability=all
+# Input=document
+# Save-files=nothing
+
+xmllint --format $GEDIT_CURRENT_DOCUMENT_NAME

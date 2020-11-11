@@ -1,0 +1,12 @@
+#!/bin/sh
+# [Gedit Tool]
+# Output=output-panel
+# Languages=ruby
+# Applicability=all
+# Name=Run...
+# Save-files=nothing
+# Shortcut=F5
+# Input=nothing
+
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+ruby $GEDIT_CURRENT_DOCUMENT_NAME

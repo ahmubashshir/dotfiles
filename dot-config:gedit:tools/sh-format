@@ -1,0 +1,15 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Format
+# Languages=pkgbuild,sh
+# Input=nothing
+# Output=nothing
+# Applicability=titled
+# Save-files=document
+# Shortcut=F3
+
+if type -tf shfmt &> /dev/null;then
+	shfmt -bn -ci -sr "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+else
+	echo shfmt not installed 1>&2
+fi

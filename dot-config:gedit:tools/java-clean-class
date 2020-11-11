@@ -1,0 +1,12 @@
+#!/bin/bash
+# [Gedit Tool]
+# Shortcut=F8
+# Languages=java
+# Save-files=document
+# Name=Clean
+# Input=nothing
+# Applicability=local
+# Output=nothing
+
+rm -r $GEDIT_CURRENT_DOCUMENT_DIR/*.class 2> /dev/null
+clear
