@@ -7,5 +7,5 @@ for unit in unit/*.* $(awk '!/^TYPE[[:blank:]]+NAME$/{print $2"."$1}' config/ena
 done
 printf 'TYPE\tNAME\n' > config/enabled.tsv
 for unit in "${enabled[@]}";do
-	printf '%s\t%s\n' "${unit##*.}" "${unit%.*}" >> config/enabled.tsv
-done
+	printf '%s\t%s\n' "${unit##*.}" "${unit%.*}"
+done|sort -u >> config/enabled.tsv
