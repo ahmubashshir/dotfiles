@@ -21,6 +21,6 @@ fi
 
 #xset +dpms
 #xset s blank
-systemctl --user restart ibus.slice
+systemctl --user start ibus@$DISPLAY
 dbus-update-activation-environment --systemd --all
 numlockx on
