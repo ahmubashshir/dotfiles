@@ -62,6 +62,9 @@ alias mprime='mprime -s'
 if hash hub 2>/dev/null;then
 	alias git=hub
 fi
+for n in g gut giy hut;do
+	alias "$n=git"
+done
 alias sudo='sudo -H'
 alias commit='git commit'
 alias clone='git clone'
