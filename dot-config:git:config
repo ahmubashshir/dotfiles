@@ -57,6 +57,7 @@
 	type = cat-file -t
 	dump = cat-file -p
 	bro = checkout --orphan
+	a = add
 [color]
 	ui = auto
 [hub]
