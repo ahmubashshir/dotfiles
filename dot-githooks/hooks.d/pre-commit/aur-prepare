@@ -5,7 +5,8 @@ if grep -q 'git://|git+http' PKGBUILD;then
 	makepkg -o
 fi
 echo "I:Updating SRCINFO"
-makepkg --printsrcinfo > .SRCINFO
+makepkg --verifysource -f && \
+	makepkg --printsrcinfo > .SRCINFO
 git add .SRCINFO
 
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'

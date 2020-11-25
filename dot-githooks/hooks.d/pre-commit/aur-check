@@ -15,6 +15,7 @@ while IFS=$'|' read -r lvl reason cause;do
 		(non-unique-source-name)	msg="source file name not unique";;
 		(missing-pkgfunction)		msg="package() is not defined";;
 		(missing-contributor) 		msg="contributor tags missing";;
+		(missing-makedeps)			continue;;
 		(*) 						msg="${reason//-/ }";;
 	esac
 	echo "$lvl:$msg${cause:+: $cause}"
