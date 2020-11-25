@@ -27,6 +27,7 @@
 *.old
 *.part
 *.swp
+*.orig
 
 # Logs and databases #
 ######################
