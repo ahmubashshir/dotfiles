@@ -58,6 +58,13 @@
 	dump = cat-file -p
 	bro = checkout --orphan
 	a = add
+	cm = commit
+	get = pull
+	put = push
+	cfg = config
+	gcfg = config --global
+	cl = clone
+	hash = rev-parse HEAD
 [color]
 	ui = auto
 [hub]
@@ -116,3 +123,8 @@
 [log]
 	decorate = short
 	date = iso
+[hub "fork"]
+	remote = fork
+	setDefault = true
+[rebase]
+	autoStash = true
