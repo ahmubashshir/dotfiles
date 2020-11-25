@@ -66,10 +66,6 @@ for n in g gut giy hut;do
 	alias "$n=git"
 done
 alias sudo='sudo -H'
-alias commit='git commit'
-alias clone='git clone'
-alias push='git push'
-alias pull='git pull'
 alias spider='curl -ILksXGET'
 ### Colored Output
 
