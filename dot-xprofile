@@ -10,7 +10,7 @@ export XSECURELOCK_DATETIME_FORMAT="%A, %B %d, %Y %l:%M %P"
 export XSECURELOCK_BLANK_DPMS_STATE=off
 export XSECURELOCK_FONT="Hack:style=Regular"
 export XSECURELOCK_AUTHPROTO=authproto_htpasswd
-
+export XSECURELOCK_PASSWORD_PROMPT=disco
 while read line; do
 	export "$line"
 done <<<$(bash -c 'env' 2>/dev/null)
@@ -21,6 +21,6 @@ fi
 
 #xset +dpms
 #xset s blank
-systemctl --user start ibus@$DISPLAY
+systemctl --user restart ibus@$DISPLAY
 dbus-update-activation-environment --systemd --all
 numlockx on
