@@ -1,0 +1,54 @@
+#!/bin/bash
+# [Gedit Tool]
+# Name=Build
+# Languages=
+# Input=nothing
+# Output=output-panel
+# Applicability=titled
+# Save-files=nothing
+
+tool=""
+BUILDDIR=""
+
+try() {
+	target=$(find . -maxdepth 3 -name "$1" -print|sort|head -n 1)
+	[[ -z $target ]] && return 1
+	case $1 in
+		(autogen.sh|configure)
+			tool='make'
+			BUILDDIR"=$(dirname "$target")"
+			$target;;
+		(CMakeLists.txt)
+				cd "$(dirname "$target")" || exit
+				mkdir builddir;pushd builddir || exit
+				BUILDDIR="$PWD"
+				tool='make'
+				cmake ..
+			;;
+		(meson.build)
+			cd "$(dirname "$target")" || exit
+			BUILDDIR="$PWD/builddir"
+			tool='ninja'
+			meson --wipe builddir
+		;;
+		(Makefile)
+			BUILDDIR="$(dirname "$target")"
+			tool='make'
+		;;
+		(*) exit 1;;
+	esac
+	return 0
+}
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [[ -n $GIT_ROOT ]];then
+	cd "$GIT_ROOT" || exit
+else
+	cd "$GEDIT_CURRENT_DOCUMENT_DIR" || exit
+fi
+try autogen.sh ||\
+try configure ||\
+try CMakeLists.txt ||\
+try meson.build ||\
+try Makefile
+
+"$tool" -C "$BUILDDIR"

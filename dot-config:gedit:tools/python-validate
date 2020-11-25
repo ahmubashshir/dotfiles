@@ -4,17 +4,9 @@
 # Save-files=document
 # Output=output-panel
 # Shortcut=F3
-# Applicability=all
+# Applicability=titled
 # Languages=python,python3
-# Name=Validate Code......
+# Name=Check
 
 v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
-if [ "$v"!="" ];then
-	if [ "$v"=="Python2K" ];then
-		python -d $GEDIT_CURRENT_DOCUMENT_NAME
-	else
-		python3 -d $GEDIT_CURRENT_DOCUMENT_NAME
-	fi
-else
-	python3 -d $GEDIT_CURRENT_DOCUMENT_NAME
-fi
+pyflakes "$GEDIT_CURRENT_DOCUMENT_NAME"
