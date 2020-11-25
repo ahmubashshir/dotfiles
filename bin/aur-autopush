@@ -52,6 +52,7 @@ for n in "$@";do
 			if grep -m 1 -q '^# pkg:' PKGBUILD;then
 				type=$(awk '/^# pkg: /{print $3}' PKGBUILD)
 				src=$(awk '/^# pkg: /{print $4}' PKGBUILD)
+				provider=$(awk '/^# pkg: / && NF > 5 {print $5}' PKGBUILD)
 				case $type in
 					(bzr|git|hg|svn)
 						makepkg -o -d --skipchecksums
@@ -59,7 +60,7 @@ for n in "$@";do
 					;;
 					(*)
 						if  [ "$(type -t "$type:pkgver")" = "function" ];then
-							PKGVER=$("$type:pkgver" "${src:-${_name:-${pkgbase:-$pkgname}}}")
+							PKGVER=$("$type:pkgver" "${src:-${_name:-${pkgbase:-$pkgname}}}" "$provider")
 						else
 							PKGVER=0
 						fi
