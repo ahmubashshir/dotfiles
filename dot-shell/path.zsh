@@ -12,5 +12,15 @@ then
 			fi
 		fi
 	done < ~/.shell/path
-	echo $PATH
+	for n in $(echo $PATH|tr ':' '\n');do
+		case ":$P:" in
+			*:"$n":*) continue;;
+			*)
+				if [ -d "$n" ];then
+					P="${P:+$P:}$n"
+				fi
+			;;
+		esac
+	done
+	echo $P
 fi
