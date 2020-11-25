@@ -1,18 +1,21 @@
 #!/bin/bash
+# shellcheck disable=SC2015,SC2088
 PATHSEP=:
 shopt -s nullglob
-cd "$(
+dotdir="$(
 	dirname "$(
 		realpath "$(
 			[[ $0 =~ / ]] && echo "$0" ||which "$0"
 		)"
 	)"
-)" || exit
+)"
+cd "$dotdir" || exit
 custom_dirs=(bin)
-if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
+
+if realpath "$dotdir"|grep -q "^$HOME" && [[ $1 = ln ]];then
 	## non hidden dirs
 	for n in "${custom_dirs[@]}";do
-		echo Linking "$n" '->' "\~/$n"
+		echo Linking "$n" '->' "~/$n"
 		if [ ! -L "$HOME/$n" ];then
 			rm -rf "${HOME:?}/$n"
 		fi
@@ -30,7 +33,7 @@ if realpath "$PWD"|grep -q "^$HOME" && [[ $1 = ln ]];then
 		ln -Tfs "$s" "$HOME/.$t"
 	done
 
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]];then
 	sed -i 's/^PATHSEP=.*$/PATHSEP='"$2"'/' "$0"
 	for n in *;do
 		if [[ $n != "${n//$PATHSEP/$2}" ]];then
@@ -38,7 +41,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = ps ]] && [[ $2 =~ ^[
 			mv "$n" "${n//$PATHSEP/$2}"
 		fi
 	done
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]];then
 	mod=0
 	mkdir -p ~/.config/systemd/user
 	for unit in systemd/unit/*;do
@@ -76,7 +79,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 		mod=0
 		while IFS=$'\t' read -r target install name path;do
 			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
-			[[ $(readlink ~/.config/systemd/user/"$target.$install/$name") = $path ]] && continue
+			[[ $(readlink ~/.config/systemd/user/"$target.$install/$name") == "$path" ]] && continue
 			echo "systemd-user: enabling $name in $target"
 			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
 			((mod++))
@@ -84,7 +87,7 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = systemd ]];then
 		((mod>0)) && systemctl --user daemon-reload || true
 	fi
 
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]];then
 	shift
 	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
 	for n in "$@";do
@@ -116,9 +119,8 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = rm ]];then
 			echo "'$n' doesn't exist" >&2
 		fi
 	done
-elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 = cp ]];then
 	shift
-	dotdir="$PWD"
 	cd "$OLDPWD" || exit
 	for n in "$@";do
 		if [ -L "$n" ] && readlink "$n"|grep -q "^$dotdir";then
@@ -126,7 +128,8 @@ elif [[ $PWD == $(dirname "$(realpath "$0")") ]] && [[ $1 = cp ]];then
 			continue
 		fi
 		p="$(realpath --no-symlinks "$n")"
-		if echo "$p"|grep -q "^$HOME/" ;then
+		n="$(realpath "$n")"
+		if echo "$n"|grep -q "^$HOME/" ;then
 			t="$(echo "$n"|sed "s@$HOME/@@;s@^\.@dot-@;s@/@$PATHSEP@g")"
 			if [ -d "$n" ] && [ ! -L "$n" ];then
 				cp -r "$n" "$dotdir/$t"
