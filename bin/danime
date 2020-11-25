@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r148.5cd3202
+# VERSION r152.87b996f
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -796,6 +796,7 @@ da_get() {
 	${DEBUG:-false} && set -x
 	for k in $ep; do
 		(( ep_progress+=1 ))
+		gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" &>/dev/null
 		da_get_episede "$(echo "$url" | head -n "$k" | tail -1)" "$k" "$epc" "$ep_progress" "$total_pw"
 		if ! (exit $?); then
 			echo "Failed to download $k"
@@ -814,6 +815,29 @@ da_read_ep_json()
 		jq -Mc '.videos[]|del(.date)|if (.host|test("'$SUPPORTED_HOSTS'")) then .ep = "'"$2"'" else . end'
 		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$3" | jq -Mc '.[]'
 	} |jq -Mc 'select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )'| eval "$1"
+}
+get_mapped() {
+	python3 -c 'import yaml
+import requests as r
+from sys import argv, exit
+try:
+	with open("maps.yml") as file:
+		maps = yaml.load(file, Loader=yaml.FullLoader)
+except FileNotFoundError:
+	exit(0)
+
+if len(argv) == 2:
+	ep=int(argv[1])
+	if ep in maps["eps"].keys():
+		data = r.get(maps["api"]%maps["eps"][ep])
+		if data.ok:
+			json = data.json()
+		else:
+			exit(0)
+		for n in ["source", "source_bk"]:
+			if n in json.keys():
+				print(next(k["file"] for k in json[n]))
+				exit(0)' "$@"
 }
 da_get_episede() {
 	tr=${1##*-}
@@ -930,13 +954,9 @@ da_get_episede() {
 			set +x
 			start_spinner "Getting url from provider[$ep_file_host:$(ellipsis 15 "$ep_file_id")]"
 			${DEBUG:-false} && set -x
-			if [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ]; then
-				while [ -z "$ep_file_url" ]; do
-					sleep 1
-					ep_file_url=$(get_url "$n")
-				done
-			else
-				ep_file_url=$(get_url "$n")
+			ep_file_url=$(get_url "$n")
+			if [ -z "$ep_file_url" ] && [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -f maps.yml ];then
+				ep_file_url=$(get_mapped "$ep_number")
 			fi
 			for ep_file_url_current in $ep_file_url; do
 				if ! [[ $ep_file_url_current =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]] &&\
@@ -1090,6 +1110,7 @@ compare_episode() {
 SUPPORTED_HOSTS='mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
 if curl -s "${CURL_OPTIONS[@]}" 'https://ww5.dubbedanime.net/user/info' -X 'POST'|jq --exit-status '. != null' &>/dev/null;then
 	SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
+	export LOGGED_IN=true
 fi
 get_effective_url()
 {
@@ -1586,6 +1607,16 @@ except:
 	print("Update hijacked cookies in \"~/.da-cookies.txt\"")
 	exit(1)' || exit
 		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
+			if [ -x "${0%/*}/dubbedanime.scrap" ] && ${LOGGED_IN:-false};then
+				"${0%/*}/dubbedanime.scrap"
+				trap 'close_bus' SIGINT SIGTERM ERR EXIT
+				close_bus()
+				{
+					ret=$?
+					gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.quit &>/dev/null
+					exit $ret
+				}
+			fi
 			if ${DO_UPDATE:-false} || ${DO_UPDATE_LIST:-false};then
 				da_update
 				exit

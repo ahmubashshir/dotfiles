@@ -1,0 +1,92 @@
+#!/bin/env python3
+
+from os import environ, devnull, path, makedirs, symlink, remove, fork, setsid
+import logging as log
+import sys
+from subprocess import run, Popen
+from threading import Thread
+from pathlib import Path
+try:
+    from bs4 import BeautifulSoup
+except ModuleNotFoundError:
+    print("beautifulsoup4 not installed")
+    exit()
+try:
+    from selenium import webdriver
+except ModuleNotFoundError:
+    print("selenium not installed")
+    exit()
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
+try:
+    p = Popen(['chromedriver'], stdout=open(devnull), stderr=open(devnull))
+    p.terminate()
+    p.communicate()
+except FileNotFoundError:
+    print('chromedriver not installed')
+
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+from gi.repository import GLib
+
+import lxml.html
+import time
+
+profile_path    = Path(environ['HOME']).joinpath(".config/da-scrapper")
+user_agent      = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'
+class BThread(Thread):
+    pass
+
+class BThread(Thread):
+    def __init__(self, options):
+        Thread.__init__(self)
+        self.browser = webdriver.Chrome(options=options)
+    def run(self):
+        pass
+
+class HelloWorld(dbus.service.Object):
+    def __init__(self, conn=None, object_path=None, bus_name=None, start=None):
+        dbus.service.Object.__init__(self, conn, object_path, bus_name)
+        _options = webdriver.ChromeOptions()
+        _options.add_argument(f"user-data-dir={profile_path}")
+        _options.add_argument(f"user-agent={user_agent}")
+        _options.headless = True
+        self.thread = BThread(_options)
+        self.thread.start()
+
+    @dbus.service.method(dbus_interface="local.this.scrapper", in_signature="s", sender_keyword="sender", connection_keyword="conn")
+    def load(self, url, sender=None, conn=None):
+        self.thread.browser.get(url)
+
+    @dbus.service.method(dbus_interface="local.this.scrapper", sender_keyword="sender", connection_keyword="conn")
+    def quit(self, sender=None, conn=None):
+        self.thread.browser.quit()
+        self.thread.join()
+        sys.exit(0)
+
+if __name__ == "__main__":
+    if fork() > 0:
+        sys.exit(0)
+    setsid()
+    if fork() > 0:
+        sys.exit(0)
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SessionBus()
+    name = dbus.service.BusName("local.dubbedanime", bus)
+    helloworld = HelloWorld(bus, "/scrapper")
+    mainloop = GLib.MainLoop()
+    mainloop.run()
+
+#    WebDriverWait(browser, 600).until(
+#    	EC.presence_of_element_located(
+#    		(
+#				By.XPATH,
+#				'//*[@id="dieselReactWrapper"]'
+#			)
+#		)
+#	)
