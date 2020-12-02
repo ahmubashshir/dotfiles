@@ -43,6 +43,11 @@ for file in "${STAGED[@]}"; do
 					print path[len]
 				};'
 		)
+	else
+		case ${file##*.} in
+			py) intrprtr=python ;;
+			*) intrprtr='' ;;
+		esac
 	fi
 	if [[ ${FORMATTERS[$intrprtr]+_} ]]; then
 		if command -v "${FORMATTERS[$intrprtr]}" &> /dev/null; then
