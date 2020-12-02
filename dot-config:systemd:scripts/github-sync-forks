@@ -1,5 +1,5 @@
 #!/bin/bash
-exec 3>/dev/null
+exec 3> /dev/null
 query='{
 	viewer {
 		repositories(isFork:true,first:100) {
@@ -16,18 +16,18 @@ query='{
 }'
 REPOS_DIR=~/Documents/git
 filter='.data.viewer.repositories.edges[]|.node| .name+":"+.parent.nameWithOwner'
-while IFS=': ' read -r repo src;do
-	if git -C "$REPOS_DIR/$repo" rev-parse 2>&3;then
+while IFS=': ' read -r repo src; do
+	if git -C "$REPOS_DIR/$repo" rev-parse 2>&3; then
 		pushd "$REPOS_DIR/$repo" || continue
 		current=$(git rev-parse --abbrev-ref HEAD)
 		default=$(git symbolic-ref --short HEAD)
-		if [[ "$current" != "$default" ]];then
+		if [[ $current != "$default" ]]; then
 			git checkout "$default"
 		fi
-		if ! [[ "$(git remote get-url origin)" != "https://github.com/$src.git" ]];then
+		if ! [[ "$(git remote get-url origin)" != "https://github.com/$src.git" ]]; then
 			git remote set-url origin "https://github.com/$src.git"
 		fi
-		if ! git config remote.ahmubashshir.url > /dev/null;then
+		if ! git config remote.ahmubashshir.url > /dev/null; then
 			git remote add ahmubashshir "https://github.com/ahmubashshir/$repo.git"
 			git config remote.pushDefault ahmubashshir
 		fi
@@ -35,9 +35,9 @@ while IFS=': ' read -r repo src;do
 		git pull
 		git push
 		git stash pop
-		if [[ "$current" != "$default" ]];then
+		if [[ $current != "$default" ]]; then
 			git checkout "$current"
 		fi
 		popd || true
 	fi
-done <<<"$(curl -s --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql|jq -r "$filter")"
+done <<< "$(curl -s --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql | jq -r "$filter")"

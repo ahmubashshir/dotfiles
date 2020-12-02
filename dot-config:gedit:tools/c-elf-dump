@@ -9,5 +9,5 @@
 # Save-files=document
 
 dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
-n=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.${dext}$// `
+n=$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.${dext}$//)
 exo-open --launch TerminalEmulator "bash -c \"readelf --headers --syms --notes --use-dynamic --version-info --dynamic --unwind --relocs  z.$n.amd64.elf;read -rsp 'Press enter to continue'\""

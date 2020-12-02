@@ -1,31 +1,31 @@
 #!/bin/bash
-SUPPORTED=( "citra" )
+SUPPORTED=("citra")
 update_all_cheats()
 {
-	for n in "${SUPPORTED[@]}";do
+	for n in "${SUPPORTED[@]}"; do
 		update_cheats $n
 	done
 }
 update_citra_cheats()
 {
-	if curl -s -w '%{http_code}' -L https://github.com/FlagBrew/Sharkive -o /dev/null|grep -q 200;then
-		svn export --force https://github.com/FlagBrew/Sharkive/trunk/3ds $HOME/.local/share/citra-emu/cheats|grep '^A'|wc -l
+	if curl -s -w '%{http_code}' -L https://github.com/FlagBrew/Sharkive -o /dev/null | grep -q 200; then
+		svn export --force https://github.com/FlagBrew/Sharkive/trunk/3ds $HOME/.local/share/citra-emu/cheats | grep '^A' | wc -l
 	fi
 }
 update_cheats()
 {
-	if echo "${SUPPORTED[@]}"|grep -q "$1";then
-		echo -ne "\033[38;5;190m($(echo $1|tr a-z A-Z))\033[0m Updating cheats..."
-		update_$1_cheats|xargs echo $(echo $1|tr a-z A-Z)|awk '{print "\r\033[38;5;190m("$1")\033[0m Imported cheats for "$2" titles"}'
+	if echo "${SUPPORTED[@]}" | grep -q "$1"; then
+		echo -ne "\033[38;5;190m($(echo $1 | tr a-z A-Z))\033[0m Updating cheats..."
+		update_$1_cheats | xargs echo $(echo $1 | tr a-z A-Z) | awk '{print "\r\033[38;5;190m("$1")\033[0m Imported cheats for "$2" titles"}'
 		return $?
 	else
 		echo Unsupported cheat engine -- $1.
 		return 1
 	fi
 }
-if (($#>0));then
-	for n in "$@";do
-		update_cheats $n||break
+if (($# > 0)); then
+	for n in "$@"; do
+		update_cheats $n || break
 	done
 else
 	update_all_cheats

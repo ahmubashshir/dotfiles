@@ -1,8 +1,8 @@
 #!/bin/bash
 files=()
-for n in "$@";do
-	if [[ $n =~ ^/ ]];then
-		files+=( "file=file://$n" )
+for n in "$@"; do
+	if [[ $n =~ ^/ ]]; then
+		files+=("file=file://$n")
 	fi
 done
 exec /usr/lib/gvfsd-archive "${files[@]}"

@@ -8,77 +8,78 @@
 # Save-files=document
 # Shortcut=F4
 
-cd $GEDIT_CURRENT_DOCUMENT_DIR 
-mmcu=`zenity --list --title=AVR-GCC --text="Select Target MCU" --column=# --column="Code"  --radiolist \
-"1" "attiny4" \
-"2" "atmega16a" \
-"3" "atmega32" \
-"4" "atmega8" \
-"5" "atmega8a" \
-"6" "atmega48" \
-"7" "atmega48a" \
-"8" "atmega48p" \
-"9" "atmega88" \
-"10" "atmega88a" \
-"11" "atmega88p" \
-"12" "atmega16" \
-"13" "atmega16p" \
-"14" "atmega161" \
-"15" "atmega162" \
-"16" "atmega163" \
-"17" "atmega164a" \
-"18" "atmega164p" \
-"19" "atmega165" \
-"20" "atmega165a" \
-"21" "atmega165p" \
-"22" "atmega168" \
-"23" "atmega168a" \
-"24" "atmega168p" \
-"25" "atmega169" \
-"26" "atmega169a" \
-"27" "atmega169p" \
-"28" "atmega32m1" \
-"29" "atmega32a" \
-"30" "atmega323" \
-"31" "atmega324a" \
-"32" "atmega324p" \
-"33" "atmega325" \
-"34" "atmega325a" \
-"35" "atmega325p" \
-"36" "atmega328" \
-"37" "atmega328p" \
-"38" "atmega329" \
-"39" "atmega329a" \
-"40" "atmega64" \
-"41" "atmega64a" \
-"42" "atmega640" \
-"43" "atmega644" \
-"44" "atmega644a" \
-"45" "atmega644p" \
- 2> /dev/null \
-`
-if [ "$mmcu" != "" ];then
-	name=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.c$// `
-	if [ -e "$GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz" ];then
+cd $GEDIT_CURRENT_DOCUMENT_DIR
+mmcu=$(
+	zenity --list --title=AVR-GCC --text="Select Target MCU" --column=# --column="Code" --radiolist \
+		"1" "attiny4" \
+		"2" "atmega16a" \
+		"3" "atmega32" \
+		"4" "atmega8" \
+		"5" "atmega8a" \
+		"6" "atmega48" \
+		"7" "atmega48a" \
+		"8" "atmega48p" \
+		"9" "atmega88" \
+		"10" "atmega88a" \
+		"11" "atmega88p" \
+		"12" "atmega16" \
+		"13" "atmega16p" \
+		"14" "atmega161" \
+		"15" "atmega162" \
+		"16" "atmega163" \
+		"17" "atmega164a" \
+		"18" "atmega164p" \
+		"19" "atmega165" \
+		"20" "atmega165a" \
+		"21" "atmega165p" \
+		"22" "atmega168" \
+		"23" "atmega168a" \
+		"24" "atmega168p" \
+		"25" "atmega169" \
+		"26" "atmega169a" \
+		"27" "atmega169p" \
+		"28" "atmega32m1" \
+		"29" "atmega32a" \
+		"30" "atmega323" \
+		"31" "atmega324a" \
+		"32" "atmega324p" \
+		"33" "atmega325" \
+		"34" "atmega325a" \
+		"35" "atmega325p" \
+		"36" "atmega328" \
+		"37" "atmega328p" \
+		"38" "atmega329" \
+		"39" "atmega329a" \
+		"40" "atmega64" \
+		"41" "atmega64a" \
+		"42" "atmega640" \
+		"43" "atmega644" \
+		"44" "atmega644a" \
+		"45" "atmega644p" \
+		2> /dev/null
+)
+if [ "$mmcu" != "" ]; then
+	name=$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.c$//)
+	if [ -e "$GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz" ]; then
 		rm $GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz &> /dev/null
 	fi
 	rm -rf $name-$mmcu &> /dev/null
 	mkdir $name-$mmcu
 	mkdir $name-$mmcu/hex $name-$mmcu/bin $name-$mmcu/srec $name-$mmcu/debug
 	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name-$mmcu/$name.c"
-avr-gcc -Wall -mmcu=$mmcu -Wa,-adhlns=$name-$mmcu/debug/$name-$mmcu.lst -Os -I/usr/include -I"$GEDIT_CURRENT_DOCUMENT_DIR" -c $GEDIT_CURRENT_DOCUMENT_NAME -o $name-$mmcu/debug/$name-$mmcu.o
-	if [ "$?" != 0 ];then
+	avr-gcc -Wall -mmcu=$mmcu -Wa,-adhlns=$name-$mmcu/debug/$name-$mmcu.lst -Os -I/usr/include -I"$GEDIT_CURRENT_DOCUMENT_DIR" -c $GEDIT_CURRENT_DOCUMENT_NAME -o $name-$mmcu/debug/$name-$mmcu.o
+	if [ "$?" != 0 ]; then
 		err=$?
 		echo "Resolve the errors" > /dev/stderr
 		zenity --name=Gedit --error --title="AVR-GCC" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
 		rm -rf $name-$mmcu
 		exit $err
 	else
-		avr-g++ -L/usr/lib -I"$GEDIT_CURRENT_DOCUMENT_DIR" -L"$GEDIT_CURRENT_DOCUMENT_DIR" -o $name-$mmcu/$name-$mmcu.elf $name-$mmcu/debug/$name-$mmcu.o  -mmcu=$mmcu -Wl,-Map=$name-$mmcu/debug/$name-$mmcu.map,--cref
+		avr-g++ -L/usr/lib -I"$GEDIT_CURRENT_DOCUMENT_DIR" -L"$GEDIT_CURRENT_DOCUMENT_DIR" -o $name-$mmcu/$name-$mmcu.elf $name-$mmcu/debug/$name-$mmcu.o -mmcu=$mmcu -Wl,-Map=$name-$mmcu/debug/$name-$mmcu.map,--cref
 		avr-gcc -Wall -mmcu=$mmcu -Os -I/usr/include -I"$GEDIT_CURRENT_DOCUMENT_DIR" -E $GEDIT_CURRENT_DOCUMENT_NAME -o $name-$mmcu/debug/$name-$mmcu.prep.c 2> /dev/null
-		avr-gcc -Wall -mmcu=$mmcu -Os -I/usr/include -I"$GEDIT_CURRENT_DOCUMENT_DIR"  -I/usr/include -S $GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME -o $name-$mmcu/debug/$name-$mmcu.s  2> /dev/null
-	avr-size  -C --mcu=$mmcu $name-$mmcu/$name-$mmcu.elf 2> /dev/null
-		avr-objdump  -h -S $name-$mmcu/$name-$mmcu.elf > $name-$mmcu/debug/$name-$mmcu.lss 2> /dev/null
+		avr-gcc -Wall -mmcu=$mmcu -Os -I/usr/include -I"$GEDIT_CURRENT_DOCUMENT_DIR" -I/usr/include -S $GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME -o $name-$mmcu/debug/$name-$mmcu.s 2> /dev/null
+		avr-size -C --mcu=$mmcu $name-$mmcu/$name-$mmcu.elf 2> /dev/null
+		avr-objdump -h -S $name-$mmcu/$name-$mmcu.elf > $name-$mmcu/debug/$name-$mmcu.lss 2> /dev/null
 		avr-nm -n $name-$mmcu/$name-$mmcu.elf > $name-$mmcu/debug/$name-$mmcu.sym
 		avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex $name-$mmcu/$name-$mmcu.elf $name-$mmcu/hex/$name-$mmcu.hex 2> /dev/null
 		avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O binary $name-$mmcu/$name-$mmcu.elf $name-$mmcu/bin/$name-$mmcu.bin 2> /dev/null
@@ -88,16 +89,16 @@ avr-gcc -Wall -mmcu=$mmcu -Wa,-adhlns=$name-$mmcu/debug/$name-$mmcu.lst -Os -I/u
 		avr-objcopy --no-change-warnings -j .eeprom --change-section-lma .eeprom=0 -O srec $name-$mmcu/$name-$mmcu.elf $name-$mmcu/srec/$name-$mmcu.eep 2> /dev/null
 		avr-objcopy --no-change-warnings -j .fuse --change-section-lma .fuse=0 -O ihex $name-$mmcu/$name-$mmcu.elf $name-$mmcu/hex/$name-$mmcu.fuse 2> /dev/null
 		avr-objcopy --no-change-warnings -j .fuse --change-section-lma .fuse=0 -O binary $name-$mmcu/$name-$mmcu.elf $name-$mmcu/bin/$name-$mmcu.fuse 2> /dev/null
-		srec_cat $name-$mmcu/hex/$name-$mmcu.fuse -Intel -crop 0x00 0x01 -offset  0x00 -O $name-$mmcu/srec/$name-$mmcu.lfs -Intel  2> /dev/null
-		srec_cat $name-$mmcu/hex/$name-$mmcu.fuse -Intel -crop 0x01 0x02 -offset -0x01 -O $name-$mmcu/srec/$name-$mmcu.hfs -Intel  2> /dev/null
+		srec_cat $name-$mmcu/hex/$name-$mmcu.fuse -Intel -crop 0x00 0x01 -offset 0x00 -O $name-$mmcu/srec/$name-$mmcu.lfs -Intel 2> /dev/null
+		srec_cat $name-$mmcu/hex/$name-$mmcu.fuse -Intel -crop 0x01 0x02 -offset -0x01 -O $name-$mmcu/srec/$name-$mmcu.hfs -Intel 2> /dev/null
 		avr-objcopy --no-change-warnings -j .fuse --change-section-lma .fuse=0 -O srec $name-$mmcu/$name-$mmcu.elf $name-$mmcu/srec/$name-$mmcu.fuse 2> /dev/null
 		avr-objcopy --no-change-warnings -j .signature --change-section-lma .signature=0 -O ihex $name-$mmcu/$name-$mmcu.elf $name-$mmcu/hex/$name-$mmcu.sig 2> /dev/null
 		avr-objcopy --no-change-warnings -j .signature --change-section-lma .signature=0 -O srec $name-$mmcu/$name-$mmcu.elf $name-$mmcu/srec/$name-$mmcu.sig 2> /dev/null
-		avr-objcopy --no-change-warnings -j .signature --change-section-lma .signature=0 -O binary $name-$mmcu/$name-$mmcu.elf $name-$mmcu/bin/$name-$mmcu.sig 2> /dev/null	
+		avr-objcopy --no-change-warnings -j .signature --change-section-lma .signature=0 -O binary $name-$mmcu/$name-$mmcu.elf $name-$mmcu/bin/$name-$mmcu.sig 2> /dev/null
 		avr-objcopy --no-change-warnings -j .lock --change-section-lma .lock=0 -O ihex $name-$mmcu/$name-$mmcu.elf $name-$mmcu/hex/$name-$mmcu.lock 2> /dev/null
 		avr-objcopy --no-change-warnings -j .lock --change-section-lma .lock=0 -O binary $name-$mmcu/$name-$mmcu.elf $name-$mmcu/bin/$name-$mmcu.lock 2> /dev/null
 		avr-objcopy --no-change-warnings -j .lock --change-section-lma .lock=0 -O srec $name-$mmcu/$name-$mmcu.elf $name-$mmcu/srec/$name-$mmcu.lock 2> /dev/null
-		if [ "$?" = "0" ];then
+		if [ "$?" = "0" ]; then
 			zenity --name=Gedit --info --title="AVR-GCC" --text="$GEDIT_CURRENT_DOCUMENT_NAME compiled successfully" 2> /dev/null
 			cp $name-$mmcu/hex/$name-$mmcu.hex ./z.$name-$mmcu.hex
 			tar -cf "z.$name-$mmcu.tar" "$name-$mmcu" 2> /dev/null
@@ -112,7 +113,7 @@ avr-gcc -Wall -mmcu=$mmcu -Wa,-adhlns=$name-$mmcu/debug/$name-$mmcu.lst -Os -I/u
 			exit $err 2> /dev/null
 		fi
 	fi
-	else
-		echo "Compilation is cancelled by User:$USER" > /dev/stderr
-		exit 1
+else
+	echo "Compilation is cancelled by User:$USER" > /dev/stderr
+	exit 1
 fi

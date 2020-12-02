@@ -10,22 +10,26 @@
 
 dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
 case $dext in
- [p,P][a,A][s,S])compiler=fpc;lang=Pascal;name=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[p,P][a,A][s,S]$// `;;
- *) cc=fpc;;
+	[p,P][a,A][s,S])
+		compiler=fpc
+		lang=Pascal
+		name=$(                           echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[p,P][a,A][s,S]$//)
+		;;
+	*) cc=fpc ;;
 esac
-target=`zenity --name=Gedit --list --title=$compiler --text="Select Target Platform" --column=Target Linux FreeBSD NetBSD OpenBSD Solaris Darwin iPhone_Simulator 2> /dev/null `
+target=$(zenity --name=Gedit --list --title=$compiler --text="Select Target Platform" --column=Target Linux FreeBSD NetBSD OpenBSD Solaris Darwin iPhone_Simulator 2> /dev/null)
 case $target in
-	Linux) t=linux;;
-	Darwin) t=darwin;;
-	FreeBSD) t=freebsd;;
-	NetBSD) t=netbsd;;
-	OpenBSD) t=openbsd;;
-	iPhone_Simulator) t=iphonesim;;
-	Solaris) t=solaris;;
-	*) t=linux;;
+	Linux) t=linux ;;
+	Darwin) t=darwin ;;
+	FreeBSD) t=freebsd ;;
+	NetBSD) t=netbsd ;;
+	OpenBSD) t=openbsd ;;
+	iPhone_Simulator) t=iphonesim ;;
+	Solaris) t=solaris ;;
+	*) t=linux ;;
 esac
-if [ $? -ne 0 ];then
-	echo "Compilation is cancelled by $USER"> /dev/stderr
+if [ $? -ne 0 ]; then
+	echo "Compilation is cancelled by $USER" > /dev/stderr
 	exit 1
 fi
 cc=$compiler
@@ -33,7 +37,7 @@ arg="-T$t -Fi\"$GEDIT_CURRENT_DOCUMENT_DIR\" -Fl\"$GEDIT_CURRENT_DOCUMENT_DIR\" 
 ext=elf
 echo -e "Target=$target:amd64\nCompiler=$cc\nExtention=$ext\nLanguage=$lang\nDocName=$name\nDocExt=$dext"
 target="$t.amd64"
-if [ -d "./$name.$target" ];then
+if [ -d "./$name.$target" ]; then
 	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/$name.$dext"
 else
 	mkdir $name.$target
@@ -41,7 +45,7 @@ else
 fi
 arg="$(zenity --name=Gedit --entry --title="$cc" --text='Any extra argument?\n*use oniy if sugested after 1st Compile*' 2> /dev/null) $arg"
 $cc $arg "$GEDIT_CURRENT_DOCUMENT_NAME"
-if [ "$?" != 0 ];then
+if [ "$?" != 0 ]; then
 	err=$?
 	echo -e "Resolve the errors" &> /dev/stderr
 	cd "$GEDIT_CURRENT_DOCUMENT_DIR"
@@ -60,5 +64,5 @@ else
 	mv ./z.$name.$target.tar.gz ./z.$name.$target.tgz 2> /dev/null
 	rm -rf "$name.$target"
 	rm $name.o
-	exit 0 2>/dev/null
+	exit 0 2> /dev/null
 fi
