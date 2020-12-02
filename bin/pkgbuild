@@ -1,23 +1,23 @@
 #!/bin/bash -e
-if [ -d "$1" ] && [ -f "$1/PKGBUILD" ];then
+if [ -d "$1" ] && [ -f "$1/PKGBUILD" ]; then
 	cd "$1"
-elif [ -f "$1" ] && [[ $1 =~ PKGBUILD$ ]];then
+elif [ -f "$1" ] && [[ $1 =~ PKGBUILD$ ]]; then
 	cd "$(dirname "$1")"
 fi
-if [ -f PKGBUILD ];then
+if [ -f PKGBUILD ]; then
 	source ./PKGBUILD
 else
 	echo run this script inside a directory with a PKGBUILD.
 fi
 source /etc/makepkg.conf
 source /etc/pkgrepo.conf
-if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ];then
+if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
 	unset FORCEREBUILD
 fi
 mkdir -p ~/.config/pkgbuild
-if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ]||[ ! -f ~/.config/repoctl/config.toml ];then
-	repoctl new config  "${PKGREPO:-$PWD}/${REPO}"
-	cat >> ~/.config/repoctl/config.toml <<EOF
+if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]; then
+	repoctl new config "${PKGREPO:-$PWD}/${REPO}"
+	cat >> ~/.config/repoctl/config.toml << EOF
 add_params = [
   "-v",
   "-s",
@@ -27,12 +27,14 @@ add_params = [
 EOF
 fi
 sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
-for split in ${pkgname[@]};do
-	if [ "$FORCEREBUILD" = "true" ]||{ echo "$*"|grep -q '\-f'; };then
+for split in ${pkgname[@]}; do
+	if [ "$FORCEREBUILD" = "true" ] || {
+		echo                       "$*" | grep -q '\-f'
+	}; then
 		break
 	fi
-        for ARCH in ${arch[@]};do
-		if [ -f "${PKGDEST:-$PWD}/${split}-${epoch:+$epoch:}${pkgver}-${pkgrel}-${arch}${PKGEXT}" ];then
+	for ARCH in ${arch[@]}; do
+		if [ -f "${PKGDEST:-$PWD}/${split}-${epoch:+$epoch:}${pkgver}-${pkgrel}-${arch}${PKGEXT}" ]; then
 			FORCEREBUILD=true
 			break 2
 		fi
@@ -40,8 +42,8 @@ for split in ${pkgname[@]};do
 done
 updpkgsums
 makepkg -cC ${FORCEREBUILD:+-f} "$@"
-for split in ${pkgname[@]};do
-	for ARCH in ${arch[@]};do
+for split in ${pkgname[@]}; do
+	for ARCH in ${arch[@]}; do
 		repoctl add -mrs "${PKGDEST:-$PWD}/${split}-${epoch:+$epoch:}${pkgver}-${pkgrel}-${arch}${PKGEXT}"
 	done
 done

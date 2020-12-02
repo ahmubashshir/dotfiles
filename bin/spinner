@@ -36,86 +36,89 @@ sp32=''
 sp33='𝌆𝌇𝌊𝌓𝌮𝌯𝌲𝌻𝍖𝍕𝍒𝍉𝌮𝌭𝌪𝌡'
 sp34='🡠🡤🡡🡥🡢🡦🡣🡧'
 #
-function _spinner() {
-    # $1 start/stop
-    #
-    # on start: $2 display message
-    # on stop : $2 process exit status
-    #           $3 spinner function pid (supplied from stop_spinner)
+function _spinner()
+{
+	# $1 start/stop
+	#
+	# on start: $2 display message
+	# on stop : $2 process exit status
+	#           $3 spinner function pid (supplied from stop_spinner)
 
-	if [ -z "$on_success" ];then
-	    local on_success="DONE"
+	if [ -z "$on_success" ]; then
+		local on_success="DONE"
 	fi
-   	if [ -z "$on_fail" ];then
-    	local on_fail="FAIL"
-    fi
-    local white="\e[1;37m"
-    local green="\e[1;32m"
-    local red="\e[1;31m"
-    local nc="\e[0m"
+	if [ -z "$on_fail" ]; then
+		local on_fail="FAIL"
+	fi
+	local white="\e[1;37m"
+	local green="\e[1;32m"
+	local red="\e[1;31m"
+	local nc="\e[0m"
 
-    case $1 in
-        start)
-            # calculate the column where spinner and status msg will be displayed
-            let column=$(tput cols)-${#2}-8
-            # display message and position the cursor in $column column
-            echo -ne "${2}"
-            printf "%${column}s"
+	case $1 in
+		start)
+			# calculate the column where spinner and status msg will be displayed
+			let column=$(tput cols)-${#2}-8
+			# display message and position the cursor in $column column
+			echo -ne "${2}"
+			printf "%${column}s"
 
-            # start spinner
-            i=1
-            if [ -z "$sp" ];then
-       			sp='▁▂▃▄▅▆▇█▇▆▅▄▃▂▁'
-       		fi
-            delay=${SPINNER_DELAY:-0.15}
-            while true;do
-            	let column1=$(tput cols)-${#2}-8
-            	if [ $column -ne $column1 ];then
-	            	for (( i=0; i<column; i++ ));do
-	            		printf "\b"
-	            	done
-	            	let column=$(tput cols)-${#2}-8
-	            	echo -ne "${2}"
-	            	printf "%${column}s"
-	            fi
-                printf '\b\b\b[%s]' "${sp:$((i++))%${#sp}:1}"
-                sleep "$delay"
-            done
-            ;;
-        stop)
-            if [[ -z ${3} ]]; then
-                echo "spinner is not running.."
-                exit 1
-            fi
+			# start spinner
+			i=1
+			if [ -z "$sp" ]; then
+				sp='▁▂▃▄▅▆▇█▇▆▅▄▃▂▁'
+			fi
+			delay=${SPINNER_DELAY:-0.15}
+			while true; do
+				let column1=$(tput cols)-${#2}-8
+				if [ $column -ne $column1 ]; then
+					for ((i = 0; i < column; i++)); do
+						printf "\b"
+					done
+					let column=$(tput cols)-${#2}-8
+					echo -ne "${2}"
+					printf "%${column}s"
+				fi
+				printf '\b\b\b[%s]' "${sp:$((i++))%${#sp}:1}"
+				sleep "$delay"
+			done
+			;;
+		stop)
+			if [[ -z ${3} ]]; then
+				echo "spinner is not running.."
+				exit 1
+			fi
 
-            kill "$3" > /dev/null 2>&1
+			kill "$3" > /dev/null 2>&1
 
-            # inform the user uppon success or failure
-            echo -en "\b\b\b["
-            if [[ $2 -eq 0 ]]; then
-                echo -ne "${green}${on_success}${nc}"
-            else
-                echo -ne "${red}${on_fail}${nc}"
-            fi
-            echo -e "]"
-            ;;
-        *)
-            echo "invalid argument, try {start/stop}"
-            exit 1
-            ;;
-    esac
+			# inform the user uppon success or failure
+			echo -en "\b\b\b["
+			if [[ $2 -eq 0 ]]; then
+				echo -ne "${green}${on_success}${nc}"
+			else
+				echo -ne "${red}${on_fail}${nc}"
+			fi
+			echo -e "]"
+			;;
+		*)
+			echo "invalid argument, try {start/stop}"
+			exit 1
+			;;
+	esac
 }
 
-function start_spinner {
-    # $1 : msg to display
-    _spinner "start" "${1}" &
-    # set global spinner pid
-    _sp_pid=$!
-    disown
+function start_spinner
+{
+	# $1 : msg to display
+	_spinner "start" "${1}" &
+	# set global spinner pid
+	_sp_pid=$!
+	disown
 }
 
-function stop_spinner {
-    # $1 : command exit status
-    _spinner "stop" "$1" $_sp_pid
-    unset _sp_pid
+function stop_spinner
+{
+	# $1 : command exit status
+	_spinner "stop" "$1" $_sp_pid
+	unset _sp_pid
 }

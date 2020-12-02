@@ -8,15 +8,15 @@
 # Input=document
 # Output=output-panel
 
-if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).class" ];then
-arg=`zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text=""`
-java $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$// ) $arg
+if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).class" ]; then
+	arg=$(zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text="")
+	java $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//) $arg
 else
-if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).jar" ];then
-arg=`zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text=""`
-java -jar $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$// ).jar $arg
-else
-zenity --name=Gedit --error --title="Java Compiler" --text="compile|Make Jar $GEDIT_CURRENT_DOCUMENT_NAME first."
-exit 1
-fi
+	if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).jar" ]; then
+		arg=$(zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text="")
+		java -jar $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).jar $arg
+	else
+		zenity --name=Gedit --error --title="Java Compiler" --text="compile|Make Jar $GEDIT_CURRENT_DOCUMENT_NAME first."
+		exit 1
+	fi
 fi

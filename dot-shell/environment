@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ -z "$HOME" ];then
+if [ -z "$HOME" ]; then
 	export HOME=~
 fi
 export LESS=-Xr
@@ -13,26 +13,29 @@ export GOPATH=$HOME/.go
 export MANGOHUD=1
 export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
 export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
+export TESSERACT_API_KEY=5a64d478-9c89-43d8-88e3-c65de9999580
 export GPGID=56DB0538F60D951C
-if [ -z "$WINEARCH" ];then
+if [ -z "$WINEARCH" ]; then
 	export WINEARCH=win64
 fi
-if [ -n "${ZSH_VERSION:-}" ] ; then
+if [ -n "${ZSH_VERSION:-}" ]; then
 	export VIRTUAL_ENV_DISABLE_PROMPT=1
 fi
-[[ -x /usr/bin/dircolors ]]&&\
-export LS_COLORS=$({ [[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b; }|sed -nE "s@.*='(.*)';@\1@p")
+[[ -x /usr/bin/dircolors ]] &&
+	export LS_COLORS=$({
+		[[ -r ~/.shell/dircolors        ]] && dircolors -b ~/.shell/dircolors || dircolors -b
+	}                                                                                        | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 #export PROXY=socks4://37.57.3.244:1080
 export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
-if [ -z "$XDG_DATA_HOME" ];then
+if [ -z "$XDG_DATA_HOME" ]; then
 	export XDG_DATA_HOME=$HOME/.local/share
 fi
 #colors
-if tty -s;then
-	if tput setaf 0 &>/dev/null; then
+if tty -s; then
+	if tput setaf 0 &> /dev/null; then
 		ALL_OFF="$(tput sgr0)"
 		BOLD="$(tput bold)"
 		BLUE="${BOLD}$(tput setaf 4)"

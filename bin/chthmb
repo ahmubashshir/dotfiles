@@ -1,21 +1,21 @@
 #!/bin/bash
 #~/.cache/thumbnail.b
 #~/.cache/thumbnail.x
-f=$(readlink ~/.cache/thumbnails|tr / \\n|tail -1)
-if [[ -z $1 ]];then
-case $f in
-	thumbnail.x)
-		echo Switching to base
-		rm ~/.cache/thumbnails
-		ln -s ~/.cache/thumbnail.b  ~/.cache/thumbnails
-		;;
-	thumbnail.b)
-		echo Switching to unknown
-		rm ~/.cache/thumbnails
-		ln -s ~/.cache/thumbnail.x  ~/.cache/thumbnails
-		;;
-	*) true;;
-esac
+f=$(readlink ~/.cache/thumbnails | tr / \\n | tail -1)
+if [[ -z $1 ]]; then
+	case $f in
+		thumbnail.x)
+			echo Switching to base
+			rm ~/.cache/thumbnails
+			ln -s ~/.cache/thumbnail.b ~/.cache/thumbnails
+			;;
+		thumbnail.b)
+			echo Switching to unknown
+			rm ~/.cache/thumbnails
+			ln -s ~/.cache/thumbnail.x ~/.cache/thumbnails
+			;;
+		*) true ;;
+	esac
 else
-echo $f
+	echo $f
 fi

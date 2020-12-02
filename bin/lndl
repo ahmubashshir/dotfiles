@@ -1,9 +1,11 @@
 #!/bin/bash
-if ! { hash jq && hash curl && hash pv;} 2>/dev/null;then
+if ! {
+	hash jq && hash curl && hash pv
+}                                        2> /dev/null; then
 	exit 1
 fi
-if tty -s;then
-	if tput setaf 0 &>/dev/null; then
+if tty -s; then
+	if tput setaf 0 &> /dev/null; then
 		ALL_OFF="$(tput sgr0)"
 		BOLD="$(tput bold)"
 		BLUE="${BOLD}$(tput setaf 4)"
@@ -29,27 +31,28 @@ show_help()
 	echo "  (s)ync-(t)hread  Synchronize library with remote folder."
 	echo "  lib              Use functions defined here in scripts."
 }
-log_entry() {
+log_entry()
+{
 	echo "[$(date +%s)] [lndl-$action] [$target]${etarget:+ [$etarget]}${data:+ [$data]}" >> "$LOG"
 }
 add_sync()
 {
 	local id name response mime dir pending target etarget action data
 	pending=()
-	for id in "$@";do
-		if [[ $id =~ ^[[:digit:][:lower:]-]+$ ]];then
+	for id in "$@"; do
+		if [[ $id =~ ^[[:digit:][:lower:]-]+$ ]]; then
 			src=al
-			name=$(curl -s "https://armaell-library.net/novel/$id/rss"|xmllint --xpath 'string(/rss/channel/title)' - 2>/dev/null|tr -s '<>:"/\|?*' '-' 2>/dev/null)
+			name=$(curl -s "https://armaell-library.net/novel/$id/rss" | xmllint --xpath 'string(/rss/channel/title)' - 2> /dev/null | tr -s '<>:"/\|?*' '-' 2> /dev/null)
 			[[ -n $name ]] && mime='inode/dir-novel.folder'
 		else
 			src=drv
-			response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" |sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g'|head -n -1|tail -n +3)"
-			name="$(echo "$response"|grep ^name|cut -d: -f2-)"
-			mime="$(echo "$response"|grep ^mime|cut -d: -f2-)"
+			response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g' | head -n -1 | tail -n +3)"
+			name="$(echo "$response" | grep ^name | cut -d: -f2-)"
+			mime="$(echo "$response" | grep ^mime | cut -d: -f2-)"
 		fi
-		if [[ ${mime##*.} == folder ]];then
+		if [[ ${mime##*.} == folder ]]; then
 			dir="$LNDIR/$name"
-			if [ -d "$dir" ];then
+			if [ -d "$dir" ]; then
 				echo "$GREEN===> Updating '"$src:$(ellipsis $(($(tput cols) - 20)) "$name")"'...$ALL_OFF"
 				action=old
 				target="$name"
@@ -64,7 +67,7 @@ add_sync()
 				mkdir -p "$dir"
 			fi
 			log_entry
-			cat > "$dir"/00update <<EOF
+			cat > "$dir"/00update << EOF
 #!/bin/bash
 source \${LNLIB:-${0##*/}} lib
 cd "\$(dirname "\$0")"
@@ -74,10 +77,10 @@ EOF
 			pending+=("$dir/00update")
 		fi
 	done
-	if ((${#pending[@]}>0));then
+	if ((${#pending[@]} > 0)); then
 		echo "$BLUE===> Synchronizing new novels...$ALL_OFF"
 	fi
-	for each in "${pending[@]}";do
+	for each in "${pending[@]}"; do
 		LNLIB="$0" "$each"
 	done
 }
@@ -86,7 +89,7 @@ start_sync()
 	local IFS n
 	echo "$GREEN===> Synchronizing Light Novel Library...$ALL_OFF"
 	IFS=$'\n'
-	for n in $(find "$LNDIR"/ -name '00update' -executable|sort);do
+	for n in $(find "$LNDIR"/ -name '00update' -executable | sort); do
 		echo "$BLUE===>$GREEN Downloading '$(ellipsis $(($(tput cols) - 30)) "$(basename "$(dirname "$n")")")'...$ALL_OFF"
 		LNLIB="$0" "$n"
 		touch "${n%/*}/stat.txt"
@@ -94,41 +97,54 @@ start_sync()
 
 }
 #lib
-drive_sync() { drv_sync "$@";}
+drive_sync()
+{
+	drv_sync   "$@"
+}
 download()
 {
-	curl -sL "$1"|pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s ${size:-0} > "$2"
+	curl -sL "$1" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s ${size:-0} > "$2"
 }
-read_header() {
+read_header()
+{
 	awk -F: -v name="$1" 'gsub(/\r/,"") && tolower($1) == name {gsub(name":","");gsub(/^[ \t]+/,"");gsub(/[ \t]+$/,"");val=$0} END{print val}'
 }
-http_code() {
+http_code()
+{
 	awk '/^HTTP/{code=$2} END{print code}'
 }
-cleanup() {
-	if (($#>0 && $#%3==0));then
+cleanup()
+{
+	if (($# > 0 && $# % 3 == 0)); then
 		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
-		for name in lock.lck 00update stat.txt;do
-			if [ -f "$name" ];then
+		for name in lock.lck 00update stat.txt; do
+			if [ -f "$name" ]; then
 				set -- -not -samefile "$name" "$@"
 			fi
 		done
 		find -maxdepth 1 -type f "$@" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
 	fi
 }
-lock() {
+lock()
+{
 	local FD
 	trap no_more_locking EXIT
 	FD=$(shuf -i 1-1000 -n 1)
 	eval "exec $FD>./lock.lck"
 	eval "_lock()             { flock -\$1 $FD; }"
-	no_more_locking()  { _lock u; _lock xn && rm -f ./lock.lck;unset _lock; }
-	_lock xn||{
+	no_more_locking()
+	{
+		_lock         u
+		_lock                  xn && rm -f ./lock.lck
+		unset                                               _lock
+	}
+	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
 		return 1
 	}
 }
-function byte_hr() {
+function byte_hr()
+{
 	local size_670b2dbb unit_670b2dbb n_670b2dbb
 	size_670b2dbb=$1
 	for n_670b2dbb in 'B' 'kB' 'MB' 'GB' 'TB' 'PB' 'EB' 'ZB'; do
@@ -143,7 +159,8 @@ function byte_hr() {
 	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
 }
 
-ellipsis() {
+ellipsis()
+{
 	python3 -c "try:
 	from sys import argv
 	l=int(int(argv[1])/2)
@@ -159,7 +176,7 @@ except KeyboardInterrupt:
 drv_ls()
 {
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
-	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2>/dev/null
+	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2> /dev/null
 	return $?
 }
 drv_get()
@@ -168,46 +185,49 @@ drv_get()
 	local size JSON md5sums try target etarget action data COND
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
-	until [ -n "$size" ];do
+	until [ -n "$size" ]; do
 		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
-		size="$(echo "$JSON"|jq -r .size)"
+		size="$(echo "$JSON" | jq -r .size)"
 	done
-	md5sums="$(echo "$JSON"|jq -r .md5Checksum) $1"
-	if echo "$md5sums"|md5sum -c --quiet &>/dev/null; then
+	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
+	if echo "$md5sums" | md5sum -c --quiet &> /dev/null; then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
 		sleep 2
 		return 0
 	else
 		echo
 		try=0
-		until echo "$md5sums"|md5sum -c --quiet &>/dev/null || ((try==5));do
+		until echo "$md5sums" | md5sum -c --quiet &> /dev/null || ((try == 5)); do
 			tput cuu1
 			download "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY" "$1"
-			((try+=1))
+			((try += 1))
 			sleep 5
 		done
 		action=get
 		target="$(basename "$PWD")"
 		etarget="$1"
-		data="ID=$2;MD5SUM=$(echo "$JSON"|jq -r .md5Checksum)"
+		data="ID=$2;MD5SUM=$(echo "$JSON" | jq -r .md5Checksum)"
 		log_entry
 	fi
 }
-drv_sync () {
+drv_sync()
+{
 	local files n name id mime
-	lock||return 1
+	lock || return 1
 	files=()
-	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
+	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
 	let try=0
 	false
-	until [ "${PIPESTATUS[0]}" = "0" ];do
-		((++try < 10)) || { echo " $BLUE==>$RED Skipping... $ALL_OFF";return;}
-		for n in $(drv_ls $1);do
-			name=$(echo $n|cut -d\| -f1|cut -d: -f2|sed 's@+@ @g;s@%@\\x@g'|xargs -0 echo -ne)
-			id=$(echo $n|cut -d\| -f2|cut -d: -f2)
-			mime=$(echo $n|cut -d\| -f3|cut -d: -f2)
-			if [[ $mime != 'application/vnd.google-apps.folder' ]]
-			then
+	until [ "${PIPESTATUS[0]}" = "0" ]; do
+		((++try < 10)) || {
+			echo        " $BLUE==>$RED Skipping... $ALL_OFF"
+			return
+		}
+		for n in $(drv_ls $1); do
+			name=$(echo $n | cut -d\| -f1 | cut -d: -f2 | sed 's@+@ @g;s@%@\\x@g' | xargs -0 echo -ne)
+			id=$(echo $n | cut -d\| -f2 | cut -d: -f2)
+			mime=$(echo $n | cut -d\| -f3 | cut -d: -f2)
+			if [[ $mime != 'application/vnd.google-apps.folder' ]]; then
 				drv_get "$name" "$id"
 				files+=('-not' '-samefile' "$name")
 			else
@@ -231,60 +251,63 @@ al_get()
 {
 	local size HEADER try target etarget action data COND
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
-	until [ "$(echo "$HEADER"|http_code)" = "200" ];do
+	until [ "$(echo "$HEADER" | http_code)" = "200" ]; do
 		HEADER=$(curl -kLsIXGET "$2")
 	done
-	size="$(echo "$HEADER"|read_header content-length)"
-	date="$(echo "$HEADER"|read_header last-modified|xargs --null date +%s -d)"
-	if [ -f "$(echo $1|tr -d $'\r')" ] && ((size == $(stat -c%s "$1") )) && (( date == $(stat -c%Y "$1") ))
-	then
+	size="$(echo "$HEADER" | read_header content-length)"
+	date="$(echo "$HEADER" | read_header last-modified | xargs --null date +%s -d)"
+	if [ -f "$(echo $1 | tr -d $'\r')" ] && ((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))); then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
 		sleep 2
 		return 0
 	else
 		echo
-		until ((try==5));do
+		until ((try == 5)); do
 			tput cuu1
 			download "$2" "$1"
 			touch -t "$(date +%y%m%d%H%M.%S -d @$date)" "$1"
-			((size == $(stat -c%s "$1") )) && (( date == $(stat -c%Y "$1") )) &>/dev/null && break
-			((try+=1))
+			((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))) &> /dev/null && break
+			((try += 1))
 			sleep 5
 		done
 		action=get
 		target="$(basename "$PWD")"
 		etarget="$1"
-		data="ID=$(echo "$2"|xargs dirname|xargs basename);EPOC=$(echo "$2"|xargs basename)"
+		data="ID=$(echo "$2" | xargs dirname | xargs basename);EPOC=$(echo "$2" | xargs basename)"
 		log_entry
 	fi
 }
-al_ls() {
+al_ls()
+{
 	local line
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
-	curl -s "https://armaell-library.net/novel/$1"|awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
+	curl -s "https://armaell-library.net/novel/$1" | awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
 }
 al_sync()
 {
 	local files n name urls
-	lock||return 1
+	lock || return 1
 	files=()
-	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \;|grep -v 'EPUB document$'|cut -d: -f1|(while read -rs a;do rm "$a";done)
+	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
 	let try=0
 	false
-	until [ "${PIPESTATUS[0]}" = "0" ];do
-		((++try < 10)) || { echo " $BLUE==>$RED Skipping... $ALL_OFF";return;}
+	until [ "${PIPESTATUS[0]}" = "0" ]; do
+		((++try < 10)) || {
+			echo        " $BLUE==>$RED Skipping... $ALL_OFF"
+			return
+		}
 		read -rsa urls < <(al_ls $1)
-		for n in "${urls[@]}";do
-			name=$(curl -XGET -kLsI "$n"|read_header content-disposition)
-			if [ -z "$(echo "$name"|awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ];then
-				name=$(echo "$name"|awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}'|tr -s '<>:"/\|?*' '-')
+		for n in "${urls[@]}"; do
+			name=$(curl -XGET -kLsI "$n" | read_header content-disposition)
+			if [ -z "$(echo "$name" | awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ]; then
+				name=$(echo "$name" | awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}' | tr -s '<>:"/\|?*' '-')
 			else
-				name=$(echo "$name"|awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}'|tr -s '<>:"/\|?*' '-')
+				name=$(echo "$name" | awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}' | tr -s '<>:"/\|?*' '-')
 			fi
 			al_get "$name" "$n"
 			files+=('-not' '-samefile' "$name")
 		done
-		((${#urls} != 0 )) || {
+		((${#urls} != 0)) || {
 			sleep 10
 			tput cuu1
 			tput el
@@ -294,51 +317,72 @@ al_sync()
 	cleanup "${files[@]}"
 }
 
-if (($#==0));then
+if (($# == 0)); then
 	show_help
 else
 	export LOG="$LNDIR/lndl.log"
 	case $1 in
-		help|h) shift; unset byte_hr drv_ls drv_get drv_sync start_sync add_sync ;show_help;;
-		add|a)  shift; unset byte_hr drv_ls drv_get drv_sync start_sync;add_sync "$@";;
-		sync|s) shift; unset byte_hr drv_ls drv_get drv_sync add_sync;start_sync;;
-		log)	shift;
-			if [[ $1 = help ]];then
+		help | h)
+			shift
+			unset   byte_hr drv_ls drv_get drv_sync start_sync add_sync
+			show_help
+			;;
+		add | a)
+			shift
+			unset   byte_hr drv_ls drv_get drv_sync start_sync
+			add_sync                                                    "$@"
+			;;
+		sync | s)
+			shift
+			unset   byte_hr drv_ls drv_get drv_sync add_sync
+			start_sync
+			;;
+		log)
+			shift
+			if [[ $1 == help ]]; then
 				echo Filters: old new get all
 				exit 0
 			fi
-			if [ -n "$1" ] && ! echo $1|grep -wq 'old\|new\|get\|all';then
+			if [ -n "$1" ] && ! echo $1 | grep -wq 'old\|new\|get\|all'; then
 				echo Unsupported filter: $1
 				exit 1
 			fi
-			if [ -n "$2" ] && ! echo $2|grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}';then
+			if [ -n "$2" ] && ! echo $2 | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
 				echo Invalid date: $2
-			elif echo $2|grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}';then
+			elif echo $2 | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
 				case $2 in
 					today)
-						date=$(date --iso-8601|xargs date +%s -d)
-					;;
+						date=$(date --iso-8601 | xargs date +%s -d)
+						;;
 					*)
 						date=$(date +%s -d $2)
-					;;
+						;;
 				esac
 			fi
 			awk -v "action=$1" -v "Date=$date" -F" " 'BEGIN {OFS = FS} {gsub("[][]","",$1);$1=strftime("[%FT%T%z]",$1); close(cmd);if(action ~ /old|new|get/){if($2 == "[lndl-"action"]" )print $0}else{print $0}}' "$LOG"
-		;;
-		sync-thread|st)
+			;;
+		sync-thread | st)
 			shift
-			unset byte_hr drv_ls drv_get drv_sync add_sync start_sync;
-			p=$([[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&echo $1||echo 2 )
-			[[ $1 =~ [[:digit:]] ]]&&(($1>0))&&(($1<5))&&shift
-			if [ -x /usr/bin/tmux-xpanes ]||[ -x /usr/local/bin/tmux-xpanes ];then
-				exec tmux-xpanes -l ev -e "$(for ((i=0;i<p;i++));do echo "$0 sync;exit";done)"
+			unset byte_hr drv_ls drv_get drv_sync add_sync start_sync
+			p=$([[ $1 =~ [[:digit:]] ]] && (($1 > 0)) && (($1 < 5)) && echo $1 || echo 2)
+			[[ $1 =~ [[:digit:]] ]] && (($1 > 0)) && (($1 < 5)) && shift
+			if [ -x /usr/bin/tmux-xpanes ] || [ -x /usr/local/bin/tmux-xpanes ]; then
+				exec tmux-xpanes -l ev -e "$(for ((i = 0; i < p; i++)); do echo "$0 sync;exit"; done)"
 			else
-				echo $RED===>$BLUE tmux-xpanes not installed...$ALL_OFF 1>&2
-				echo $YELLOW===>$GREEN using single threaded sync...$ALL_OFF 1>&2
+				echo $RED=== tmux-xpanes not installed...$ALL_OFF > $BLUE 1>&2
+				echo $YELLOW=== using single threaded sync...$ALL_OFF > $GREEN 1>&2
 				exec $0 sync
 			fi
-		;;
-		lib)  shift; unset start_sync add_sync show_help ;;
-		*)    unset byte_hr drv_ls drv_get drv_sync start_sync add_sync;echo "ERROR: Unsupported command '$1'";show_help;exit 1;;
+			;;
+		lib)
+			shift
+			unset start_sync add_sync show_help
+			;;
+		*)
+			unset byte_hr drv_ls drv_get drv_sync start_sync add_sync
+			echo                                                    "ERROR: Unsupported command '$1'"
+			show_help
+			exit                                                                                                     1
+			;;
 	esac
 fi

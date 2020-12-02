@@ -1,0 +1,21 @@
+#!/bin/bash -e
+# HOOK-CONDITION: [[ -x /usr/bin/shfmt ]]
+IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
+for file in "${STAGED[@]}"; do
+	if [ "$(head -c2 "$file")" = "#!" ]; then
+		shell=$(
+			head -1 '/home/mubashshir/Documents/git/anime-scripts/danime/00header' |
+				tr ' ' '\n' |
+				grep -Ev '^-|^(.*)=(.*)$' |
+				awk '$1 ~ /bin\/env/ { enved="true" }
+				{intr=$0;}
+				(enved == "true" && NR > 2) || NR > 1 {exit;}
+				END{len=split(intr, path , "/");print path[len]}'
+		)
+		if [[ $shell =~ ^(bash|bats|mksh)$ ]]; then
+			echo "I:Formatting $file [$shell]"
+			shfmt -w -s -i 0 -ci -sr -ln "$shell" -kp -fn "$file"
+			git add "$file"
+		fi
+	fi
+done

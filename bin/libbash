@@ -1,16 +1,18 @@
 #!/bin/bash
 ((def_libbash)) && return 0 || def_libbash=1
-function check_up_server() {
+function check_up_server()
+{
 	t_efbec206=$2
 	t_efbec206=${t_efbec206:=3}
 	[ $t_efbec206 -gt 3 ] && echo "Resolving $1,wait $t_efbec206 seconds" 1>&2
 	resp_efbec206=$(wget -T $t_efbec206 "$1" -S --spider -qO - 2>&1 | head -1 | tr -d \  | cut -d/ -f1)
-	if [[ $resp_efbec206 = 'HTTP' ]]; then
+	if [[ $resp_efbec206 == 'HTTP' ]]; then
 		return 0
 	fi
 	return 1
 }
-function goto() {
+function goto()
+{
 	label=$1
 	cmd=$(sed -n "/#$label:/,/#$label:end/p" "$0" | grep -v ':$')
 	if [[ -z $cmd ]]; then
@@ -20,7 +22,8 @@ function goto() {
 	eval "$cmd"
 	return
 }
-function byte_hr() {
+function byte_hr()
+{
 	local size_670b2dbb
 	local unit_670b2dbb
 	local n_670b2dbb
@@ -36,7 +39,8 @@ function byte_hr() {
 	done
 	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
 }
-function fget() {
+function fget()
+{
 	url_933be66d="$1"
 	name_933be66d="$2"
 	if (($# > 2)); then
@@ -49,7 +53,7 @@ function fget() {
 		url_933be66d="https://www.googleapis.com/drive/v3/files/$(echo "$url_933be66d" | tr '?&' '\n' | grep '^id=' | cut -d= -f2)?alt=media&key=$DRIVE_API_KEY"
 		name_933be66d="$(curl "https://www.googleapis.com/drive/v3/files/$(echo "${url_933be66d%%\?*}" | xargs basename)?key=$DRIVE_API_KEY" -s | jq '.name' -r)"
 	fi
-	S_933be66d=$(curl -skLIXGET "$url_933be66d" 2>&1 |awk '/^HTTP\/[12.]+ 200/,/^\r$/ {gsub(/\r/,"");if(length)print}')
+	S_933be66d=$(curl -skLIXGET "$url_933be66d" 2>&1 | awk '/^HTTP\/[12.]+ 200/,/^\r$/ {gsub(/\r/,"");if(length)print}')
 	if (exit "$?"); then
 		if [ "$name_933be66d" = "" ]; then
 			name_933be66d="${url_933be66d##*/}"
@@ -74,7 +78,7 @@ function fget() {
 		if [ $dld_933be66d = "false" ]; then
 			response_933be66d=$(echo "$S_933be66d" | awk '/HTTP\/[12.]/ {print $2}' | tail -1)
 			if [[ $response_933be66d =~ 20. ]]; then
-				if [[ "$perm_933be66d" == "" ]]; then
+				if [[ $perm_933be66d == "" ]]; then
 					echo "Server Response:$response_933be66d $(server_responce "$response_933be66d")"
 					if [ -e "$name_933be66d" ] && ((dlsize_933be66d > size_933be66d)) && [ "$pid_933be66d" = "" ]; then
 						echo -e "Appending to '$name_933be66d'\nleft $(byte_hr $((dlsize_933be66d - size_933be66d))) from $(byte_hr "$dlsize_933be66d")"
@@ -88,7 +92,7 @@ function fget() {
 			else
 				echo "$response_933be66d $(server_responce "$response_933be66d")"
 				[[ $response_933be66d =~ 40. ]] && ${SHOW_URL:-false} && echo "$url_933be66d"
-				[[ "${response_933be66d:0:1}${response_933be66d:2:3}" =~ ^[[:digit:],-]+$ ]] && return "${response_933be66d:0:1}${response_933be66d:2:3}" || ( echo ${response_933be66d:0:1}${response_933be66d:2:3} && return 99)
+				[[ "${response_933be66d:0:1}${response_933be66d:2:3}" =~ ^[[:digit:],-]+$ ]] && return "${response_933be66d:0:1}${response_933be66d:2:3}" || (echo ${response_933be66d:0:1}${response_933be66d:2:3} && return 99)
 			fi
 		fi
 	else
@@ -146,7 +150,8 @@ function fget() {
 		return 0
 	fi
 }
-function server_responce() {
+function server_responce()
+{
 	case $1 in
 		100) echo "Continue" ;;
 		101) echo "Switching Protocols" ;;
@@ -215,11 +220,13 @@ function server_responce() {
 	esac
 	return 0
 }
-function urldecode() {
+function urldecode()
+{
 	: "${*//+/ }"
 	echo -e "${_//%/\\x}"
 }
-function vbar() {
+function vbar()
+{
 	w=$(tput cols)
 	print=$1
 	title=$2

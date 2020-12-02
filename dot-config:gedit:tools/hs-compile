@@ -10,8 +10,12 @@
 
 dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
 case $dext in
- [h,H][s,S]) compiler=ghc;lang=Haskell;name=`echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[h,H][s,S]$// `;;
- *) cc=ghc;;
+	[h,H][s,S])
+		compiler=ghc
+		lang=Haskell
+		name=$(                        echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[h,H][s,S]$//)
+		;;
+	*) cc=ghc ;;
 esac
 #target=`zenity --name=Gedit --list --title=GCC --text="Select Target Platform" --column=Target Linux_x86_64 Windows_i386 Windows_x86_64  2> /dev/null `
 #if [ $? -ne 0 ];then
@@ -28,15 +32,15 @@ esac
 cc=$compiler
 ext=elf
 target=amd64
-if [ -d "./$name.$target" ];then
+if [ -d "./$name.$target" ]; then
 	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/src-$name.$target.$dext"
 else
 	mkdir $name.$target
 	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/src-$name.$target.$dext"
 fi
-arg=`zenity --name=Gedit --entry --title=$compiler --text="Any extra argument?\n*use oniy if sugested after 1st Compile*" 2> /dev/null`
+arg=$(zenity --name=Gedit --entry --title=$compiler --text="Any extra argument?\n*use oniy if sugested after 1st Compile*" 2> /dev/null)
 $cc $arg -Wall -o "$name.$target/$name.$target.$ext" "$GEDIT_CURRENT_DOCUMENT_NAME"
-if [ "$?" != 0 ];then
+if [ "$?" != 0 ]; then
 	err=$?
 	echo -e "Resolve the errors" &> /dev/stderr
 	cd $GEDIT_CURRENT_DOCUMENT_DIR
@@ -45,9 +49,9 @@ if [ "$?" != 0 ];then
 	exit $err
 else
 	cd "$name.$target"
-	$cc	-E src-$name.$target.$dext -o $name.$target.pre.$dext &> /dev/null
-	$cc	-c src-$name.$target.$dext -o $name.$target.o &> /dev/null
-	$cc	-C src-$name.$target.$dext -o $name.$target.hc &> /dev/null
+	$cc -E src-$name.$target.$dext -o $name.$target.pre.$dext &> /dev/null
+	$cc -c src-$name.$target.$dext -o $name.$target.o &> /dev/null
+	$cc -C src-$name.$target.$dext -o $name.$target.hc &> /dev/null
 	$cc -S src-$name.$target.$dext -o $name.$target.$dext.s &> /dev/null
 	clear 2> /dev/null
 	cd ..

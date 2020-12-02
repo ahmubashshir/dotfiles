@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ ! -f "$1" ];then
+if [ ! -f "$1" ]; then
 	echo "${0##*/} .cap file"
 fi
 curl -# -X POST -F "email=ahmubashshir@yahoo.com" -F "file=@$1" https://api.onlinehashcrack.com

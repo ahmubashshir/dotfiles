@@ -10,8 +10,8 @@
 
 v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
 file=$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME
-if [ "$v" != "" ];then
-	if [ "$v" == "python" ];then
+if [ "$v" != "" ]; then
+	if [ "$v" == "python" ]; then
 		python2 $file
 	else
 		python3 $file

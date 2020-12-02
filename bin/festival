@@ -1,2 +1,2 @@
 #!/bin/sh
-stdbuf -o0 sed "s/n[´\`]t/n't/g;s/[“”]/\"/g"|/usr/bin/festival "$@"
+stdbuf -o0 sed "s/n[´\`]t/n't/g;s/[“”]/\"/g" | /usr/bin/festival "$@"

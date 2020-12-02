@@ -1,0 +1,28 @@
+#!/bin/sh
+
+tesseract_service_url=https://api.ocr.space/parse/image
+timestamp=$(date +%s)
+
+pwd_url=$(curl -s https://www.vpnbook.com/freevpn | grep -m2 "Password:" | tail -n1 | cut -d \" -f2)
+pass=$(curl -s -X POST --header "apikey: $TESSERACT_API_KEY" \
+	-F "url=https://www.vpnbook.com/${pwd_url}" \
+	-F 'language=eng' \
+	-F 'isOverlayRequired=true' \
+	-F 'FileType=.Auto' \
+	-F 'IsCreateSearchablePDF=false' \
+	-F 'isSearchablePdfHideTextLayer=true' \
+	-F 'scale=true' \
+	-F 'detectOrientation=false' \
+	-F 'isTable=false' \
+	${tesseract_service_url} | grep -Eo '"WordText":.*?[^\\]",' |
+	awk -F':' '{print $2}' |
+	awk -F',' '{print $1}' |
+	awk '{ gsub(/^[ \t]+|[ \t]+$/, ""); print }' |
+	tr -d \")
+
+if [ -z "$pass" ]; then
+	exit 1
+fi
+for conn in $(nmcli --terse c show | sed -En 's/^(vpnbook-[[:alnum:]]+-tcp443):[[:alnum:]-]+:vpn:/\1/p'); do
+	nmcli c modify $conn +vpn.secrets "password=$pass"
+done

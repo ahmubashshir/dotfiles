@@ -1,18 +1,19 @@
 #!/bin/bash
-function displaytime {
-  local T=$1
-  local D=$((T/(60*60*24)))
-  local H=$(((T/(60*60))%24))
-  local M=$(((T/60)%60))
-  local S=$((T%60))
-  printf '<txt>'
-  (( $D > 0 )) && printf '%dd ' $D
-  (( $H > 0 )) && printf '%dh\n' $H
-  (( $M > 0 )) && printf '%dm ' $M
-  printf '%ds</txt>\n' $S
+function displaytime
+{
+	local T=$1
+	local D=$((T / (60 * 60 * 24)))
+	local H=$(((T / (60 * 60)) % 24))
+	local M=$(((T / 60) % 60))
+	local S=$((T % 60))
+	printf '<txt>'
+	((D > 0)) && printf '%dd ' $D
+	((H > 0)) && printf '%dh\n' $H
+	((M > 0)) && printf '%dm ' $M
+	printf '%ds</txt>\n' $S
 }
 displaytime "$(datediff -f%S "$(uptime -s)$(date +%z)" now)"
 printf '<tool>'
 uptime -p
-uptime|sed s/',  '/'\n'/g|tail -n -2
+uptime | sed s/',  '/'\n'/g | tail -n -2
 printf '</tool>'
