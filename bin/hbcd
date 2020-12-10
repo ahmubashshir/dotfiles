@@ -1,0 +1,24 @@
+#!/bin/bash
+qemu_args=(
+	-boot d
+	-cdrom
+	/mnt/Games/hbcd.iso
+	-m "${HBCD_RAM:-1000}"
+)
+for dev in "$@"; do
+	if [[ $(blkid -o value -s TYPE "$dev") =~ ^(ntfs|vfat|exfat)$ ]]; then
+		if findmnt -rno SOURCE "$dev" &> /dev/null; then
+			udisksctl unmount --block-device "$dev"
+		fi
+		qemu_args+=(
+			-drive
+			"file=$dev,format=raw"
+		)
+	fi
+done
+qemu-system-i386 "${qemu_args[@]}"
+for n in "$@"; do
+	if ! findmnt -rno SOURCE "$dev" &> /dev/null; then
+		udisksctl mount --block-device "$dev"
+	fi
+done
