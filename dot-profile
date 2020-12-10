@@ -15,8 +15,8 @@ if [ -f "$HOME/.bashrc" ] && [ -n "$BASH_VERSION" ]; then
 	. "$HOME/.bashrc"
 fi
 
-if [ -x ~/.shell/path.$SHELL ];then
-	export "PATH=$(~/.shell/path.$SHELL)"
+if [ -x ~/.shell/path.${SHELL##*/} ];then
+	export "PATH=$(~/.shell/path.${SHELL##*/})"
 else
 	append_path()
 	{
