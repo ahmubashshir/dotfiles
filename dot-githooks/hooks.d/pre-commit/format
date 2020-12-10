@@ -2,15 +2,27 @@
 # shellcheck disable=SC2016
 declare -A FORMATTERS
 FORMATTERS=(
+	# shfmt
 	[sh]=shfmt
 	[bash]=shfmt
 	[mksh]=shfmt
 	[bats]=shfmt
+	# autopep
 	[python]=autopep8
 	[python3]=autopep8
 	[python2]=autopep8-python2
+	# sass
 	[scss]=sass-convert
 	[sass]=sass-convert
+	# astyle
+	[c]=astyle
+	[cpp]=astyle
+	[cxx]=astyle
+	[cs]=astyle
+	[java]=astyle
+	# misc
+	[js]=js-beautify
+	[xml]=xmllint
 )
 
 format_file()
@@ -21,6 +33,23 @@ format_file()
 		python | python3) autopep8 -i "$2" ;;
 		python2) autopep8-python2 -i "$2" ;;
 		sass | scss) sass-convert --in-place "$2" ;;
+		c | cpp | cxx | cs | java)
+			local mode style
+			case $1 in
+				c | cpp | cxx)
+					mode=c
+					style=allman
+					;;
+				cs | java)
+					mode=$1
+					style=gnu
+					;;
+			esac
+			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab < "$2" > "$2~"
+			mv "$2~" "$2"
+			;;
+		js) js-beautify -itPjakxnr "$2" &> /dev/null ;;
+		xml) xmllint --xmlout -o "$2" --format "$2" &> /dev/null ;;
 		*) return 1 ;;
 	esac
 }
@@ -31,7 +60,7 @@ for file in "${STAGED[@]}"; do
 		continue
 	fi
 	if [ "$(head -c2 "$file")" = "#!" ]; then
-		intrprtr=$(
+		fmt=$(
 			head -1 "$file" |
 				tr ' ' '\n' |
 				grep -Ev '^-|^(.*)=(.*)$' |
@@ -49,19 +78,18 @@ for file in "${STAGED[@]}"; do
 		)
 	else
 		case ${file##*.} in
-			py) intrprtr=python ;;
-			scss | sass) intrprtr=${file##*.} ;;
-			*) intrprtr='' ;;
+			py) fmt=python ;;
+			*) fmt=${file##*.} ;;
 		esac
 	fi
-	if [[ ${intrprtr} ]] && [[ ${FORMATTERS[$intrprtr]} ]]; then
-		if command -v "${FORMATTERS[$intrprtr]}" &> /dev/null; then
-			echo "I:[${intrprtr^^}] Formatting $file"
-			format_file "$intrprtr" "$file" 2> /dev/null
+	if [[ ${fmt} ]] && [[ ${FORMATTERS[$fmt]} ]]; then
+		if command -v "${FORMATTERS[$fmt]}" &> /dev/null; then
+			echo "I:[${fmt^^}] Formatting $file"
+			format_file "$fmt" "$file" 2> /dev/null
 			git add "$file"
 		else
-			echo "W:Formatter for $intrprtr [${FORMATTERS[$intrprtr]}] is not installed."
-			unset "FORMATTERS[$intrprtr]"
+			echo "W:Formatter for $fmt [${FORMATTERS[$fmt]}] is not installed."
+			unset "FORMATTERS[$fmt]"
 		fi
 	fi
 done
