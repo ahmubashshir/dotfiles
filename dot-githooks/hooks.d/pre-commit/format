@@ -8,6 +8,8 @@ FORMATTERS=(
 	[python]=autopep8
 	[python3]=autopep8
 	[python2]=autopep8-python2
+	[scss]=sass-convert
+	[sass]=sass-convert
 )
 
 format_file()
@@ -17,13 +19,14 @@ format_file()
 		sh) shfmt -w -i 0 -ci -sr -p -kp -fn "$2" ;;
 		python | python3) autopep8 -i "$2" ;;
 		python2) autopep8-python2 -i "$2" ;;
+		sass | scss) sass-convert --in-place "$2" ;;
 		*) return 1 ;;
 	esac
 }
 
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
 for file in "${STAGED[@]}"; do
-	if ! [ -e "$file" ]; then
+	if ! [ -f "$file" ]; then
 		continue
 	fi
 	if [ "$(head -c2 "$file")" = "#!" ]; then
@@ -46,10 +49,11 @@ for file in "${STAGED[@]}"; do
 	else
 		case ${file##*.} in
 			py) intrprtr=python ;;
+			scss | sass) intrprtr=${file##*.} ;;
 			*) intrprtr='' ;;
 		esac
 	fi
-	if [[ ${FORMATTERS[$intrprtr]+_} ]]; then
+	if [[ ${intrprtr} ]] && [[ ${FORMATTERS[$intrprtr]} ]]; then
 		if command -v "${FORMATTERS[$intrprtr]}" &> /dev/null; then
 			echo "I:[${intrprtr^^}] Formatting $file"
 			format_file "$intrprtr" "$file" 2> /dev/null
