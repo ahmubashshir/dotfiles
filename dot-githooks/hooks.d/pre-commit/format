@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2016
+declare -A FORMATTERS
 FORMATTERS=(
 	[sh]=shfmt
 	[bash]=shfmt
