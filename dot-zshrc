@@ -76,15 +76,6 @@ zplug you-should-use && {
 	}
 }
 zplug bash-completions-fallback
-[ -x /usr/bin/wakatime ] &&\
-zplug wakatime && {
-	function wakatime:start {
-		unset WAKATIME_DO_NOT_TRACK
-	}
-	function wakatime:stop {
-		WAKATIME_DO_NOT_TRACK=1
-	}
-}
 zplug zshmarks && {
 	alias jmp=jump
 	alias mark=bookmark
