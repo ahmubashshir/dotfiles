@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # [Gedit Tool]
 # Name=Format
 # Languages=python,python3
@@ -8,10 +8,7 @@
 # Save-files=nothing
 # Shortcut=<Shift>F1
 
-if
-	type -p autopep8 &
-	> /dev/null
-then
+if type -p autopep8 2>&1 1> /dev/null; then
 	autopep8 -
 else
 	echo autopep8 not installed 1>&2
