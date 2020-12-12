@@ -12,9 +12,6 @@
 [submodule "dot-zsh/plugins/you-should-use"]
 	path = dot-zsh/plugins/you-should-use
 	url = https://github.com/MichaelAquilina/zsh-you-should-use.git
-[submodule "dot-zsh/plugins/wakatime"]
-	path = dot-zsh/plugins/wakatime
-	url = https://github.com/sobolevn/wakatime-zsh-plugin.git
 [submodule "dot-zsh/plugins/startup-timer"]
 	path = dot-zsh/plugins/startup-timer
 	url = https://github.com/paulmelnikow/zsh-startup-timer.git
