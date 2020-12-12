@@ -42,7 +42,7 @@
 	ch = checkout
 	root = rev-parse --show-toplevel
 	run = "!exec "
-	rmmod = "!f(){ set -x;dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
+	rmmod = "!f(){ dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
 	crbs = rebase --continue
