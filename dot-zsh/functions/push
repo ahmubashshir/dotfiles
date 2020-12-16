@@ -2,7 +2,6 @@ local br
 br="$(git rev-parse --abbrev-ref HEAD)"
 [[ $br ]] || return
 if [ -z "$(git config --get "branch.$br.remote")" ];then
-	git push -u
-else
-	git push
+	set -- -u "$@"
 fi
+git push "$@"
