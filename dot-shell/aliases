@@ -72,7 +72,6 @@ if hash git 2> /dev/null; then
 		alias "$n=git"
 	done
 	alias commit='git commit'
-	alias push='git push -u'
 	alias pull='git pull'
 	alias clone='git clone'
 fi
