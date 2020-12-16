@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r152.87b996f
+# VERSION r154.d9fa658
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -32,7 +32,7 @@ fi
 if [ -n "$AP" ]; then
 	ANIME_PATH="$AP"
 fi
-if [[ $ANIME_PATH == @* ]]; then
+if [[ $ANIME_PATH = @* ]]; then
 	ANIME_PATH="$MEDIA_ROOT/${ANIME_PATH#@*}"
 fi
 if [[ -z $ANIME_PATH ]]; then
@@ -225,7 +225,7 @@ validate_limit()
 					((ret++))
 				fi
 			elif ! {
-				[[ $n =~ ^[[:digit:]]+-$ ]] || [[ $n =~ ^[[:digit:]]+$ ]]
+				[[ $n =~ ^[[:digit:]]+-$       ]] || [[ $n =~ ^[[:digit:]]+$ ]]
 			}; then
 				((ret++))
 			fi
@@ -274,10 +274,10 @@ anime_cover()
 	if [ ! -e folder.jpg ]; then
 		{
 			curl -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                               &> /dev/null
+		}                                                                                                         &> /dev/null
 		if {
-			! grep -q cover.jpg .hidden &> /dev/null
-		}                                     && [ -f cover.jpg ]; then
+			!   grep -q cover.jpg .hidden &> /dev/null
+		}                                               && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
@@ -317,7 +317,7 @@ danime_help_options()
 {
 	echo Options:
 	sed -n '/#+option/,/#-option/{s/^[[:blank:]]*//p}' "$0" | while read -r line; do
-		if [[ $line == \#+option ]]; then
+		if [[ $line = \#+option ]]; then
 			TAB=2
 			printf '\t'
 		elif [[ $line =~ ^#IDNT: ]]; then
@@ -395,7 +395,7 @@ da_db_add()
 {
 
 	data="$(jq '. * { "'"$TYPE"'" : {"'"$id"'":{ "title":null ,"path":null,"url":null,"total":null,"saved":null}} }' "$CACHE_FILE")"
-	da_db write "$data"
+	da_db_write "$data"
 }
 da_db_list()
 {
@@ -409,14 +409,14 @@ da_db_set()
 {
 	if da_db_has; then
 		data="$(jq '.'"$TYPE"'."'"$id"'".'"$1"'='"$2" "$CACHE_FILE")"
-		da_db write "$data"
+		da_db_write "$data"
 	fi
 }
 da_db_get()
 {
 	{
 		jq -re ".$TYPE.\"$id\".$*" "$CACHE_FILE" || echo 0
-	}                                        | tail -1
+	}                                              | tail -1
 }
 da_db_has()
 {
@@ -424,15 +424,20 @@ da_db_has()
 }
 da_db_del()
 {
-	if da_db has; then
+	if da_db_has; then
 		data="$(jq 'del(."'"$TYPE"'"."'"$id"'")' "$CACHE_FILE")"
-		da_db write "$data"
+		da_db_write "$data"
 	fi
 }
 da_db_write()
 {
 	if [ -n "$@" ]; then
-		echo "$@" > "$CACHE_FILE"
+		echo "$@" > "$CACHE_FILE~"
+		if jq . "$CACHE_FILE~" 2>&1 > /dev/null; then
+			mv "$CACHE_FILE~" "$CACHE_FILE"
+		else
+			rm "$CACHE_FILE~"
+		fi
 	fi
 }
 da_api_search()
@@ -710,8 +715,8 @@ da_get()
 	fi
 	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
 	if ! {
-		da_db has && ${FILE_LIST:-false}
-	}                              && [ -z "$FILE_LIST_RANGE" ]; then
+		da_db     has && ${FILE_LIST:-false}
+	}                                        && [ -z "$FILE_LIST_RANGE" ]; then
 		da_db add
 	fi
 	da_db set path "\"$PWD\""
@@ -902,7 +907,7 @@ da_get_episede()
 		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
 			tr=dubbed
 		fi
-		if [[ $tr == dubbed ]] || [[ $tr == subbed ]]; then
+		if [[ $tr = dubbed ]] || [[ $tr = subbed ]]; then
 			filter="grep '\"type\":\"$tr'"
 		else
 			filter="cat"
@@ -929,7 +934,7 @@ da_get_episede()
 			ep_title=${ep_title% *}
 			if [ "${ep_title% *}" = "${ep_title##* }" ]; then
 				ep_title="$TITLE $ep_title"
-			elif [[ ${ep_title% *} =~ ${ep_title##* }$ ]]; then
+			elif [[ "${ep_title% *}" =~ ${ep_title##* }$ ]]; then
 				ep_title="$(echo "$ep_title" | tr ' ' $'\n' | head -n -1 | xargs echo)"
 			fi
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
@@ -951,7 +956,7 @@ da_get_episede()
 			ep_id_list=$(echo "$parse_episode_page" | jq -Mc '.videos[]|del(.date)|select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | awk -e '!seen[$0]++')
 			ep_file_name="$(echo "$ep_title" | replace_invalid).mp4"
 		fi
-		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/\\\|}"'/{print};!/'"${PREFERRED_HOSTS//,/\\|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
+		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/|}"'/{print};!/'"${PREFERRED_HOSTS//,/|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
 		set +x
 		if [ -n "$parse_episode_page" ] && [ -n "$ep_title" ]; then
 			stop_spinner 0
@@ -1012,7 +1017,7 @@ da_get_episede()
 				fi
 				ep_file_name="${ep_file_name//---/--}"
 				if ! {
-					[[ $tr == dubbed ]] || [[ $tr == subbed ]]
+					[[ $tr = dubbed   ]] || [[ $tr = subbed ]]
 				}; then
 					tr=$(echo "$n" | jq -r '.type')
 				fi
@@ -1050,14 +1055,14 @@ download()
 	if ((s1 >= s2)); then
 		until fget "$2" "$1"; do
 			ret=$?
-			if [[ $ret == 10 ]]; then
+			if [[ $ret = 10 ]]; then
 				return
 			elif ((tried <= ${MAX_TRY:-5})); then
 				tput cuu 2
 				((tried > 1)) && (
-					tput    el1
-					tput             el
-					tput                     cuu1
+					tput            el1
+					tput                     el
+					tput                             cuu1
 				)
 				tput el1
 				tput el
@@ -1097,7 +1102,7 @@ compare_episode()
 		BS=524288
 	fi
 	if [ ! -e "$1" ] || {
-		[          -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
+		[                  -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
 	}; then
 		return 0
 	elif [ "$CHECK_FILE" == "error" ]; then
@@ -1159,7 +1164,7 @@ get_url()
 	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
 	ep_id=$(echo "$@" | jq -r '.ep' | grep -wv 'null')
 	if ! {
-		echo "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
+		echo     "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
 	}; then
 		echo "unimplemented:$ep_file_host"
 		return 1
@@ -1280,12 +1285,12 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#text: Prefer these ids to download if available.
 				#args: id1[,id2[,...]]
 				#-option
-				PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${2//,/|}"
+				PREFERRED_HOSTS="${PREFERRED_HOSTS:+$PREFERRED_HOSTS,}$2"
 				shift
 				;;
 			--id=[[:alnum:].,]*)
 				tmp="${1##*=}"
-				PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${tmp//,/|}"
+				PREFERRED_HOSTS="${PREFERRED_HOSTS:+$PREFERRED_HOSTS,}$tmp"
 				unset tmp
 				;;
 			--list-mirror)
@@ -1304,15 +1309,15 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#text: select preferred mirrors.
 				#args: mirror1[,mirror2[,...]]
 				#-option
-				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -q "${2//,/|}"; then
-					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${2//,/|}"
+				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -Eq "${2//,/|}"; then
+					PREFERRED_HOSTS="${PREFERRED_HOSTS:+$PREFERRED_HOSTS,}$2"
 				fi
 				shift
 				;;
 			--mirror=[[:alnum:].,]*)
 				tmp="${1##*=}"
-				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -q "${tmp//,/|}"; then
-					PREFERRED_HOSTS="${PREFERRED_HOSTS:-null}\|${tmp//,/|}"
+				if echo "${SUPPORTED_HOSTS//|/$'\n'}" | grep -Eq "${tmp//,/|}"; then
+					PREFERRED_HOSTS="${PREFERRED_HOSTS:+$PREFERRED_HOSTS,}$tmp"
 				fi
 				unset tmp
 				;;
@@ -1623,17 +1628,16 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		esac
 		shift
 	done
-	PREFERRED_HOSTS="${PREFERRED_HOSTS//null\|/}"
 	if [[ -n $TYPE_ANIME ]] && {
-		[[ $TYPE_ANIME == subbed                ]] || [[ $TYPE_ANIME == dubbed ]]
+		[[ $TYPE_ANIME = subbed                         ]] || [[ $TYPE_ANIME = dubbed ]]
 	}; then
 		tr=$TYPE_ANIME
 	else
 		tr="$(echo "$@" | sed 'y/০১২৩৪৫৬৭৮৯/0123456789/' | sed 's| |\n|g' | grep -E '^sub$' || echo dub)bed"
 	fi
 	if {
-		[[ -n $FILE_LIST_RANGE ]] || [[ -n $RES_LIST ]]
-	}                                                && $DOWNLOAD_ALL; then
+		[[ -n "$FILE_LIST_RANGE" ]] || [[ -n "$RES_LIST" ]]
+	}                                                        && $DOWNLOAD_ALL; then
 		DOWNLOAD_ALL=false
 		echo -e "Warning: --all/-a option can only be used when no\n\tselection or episode limit specified.\n\tDisabling autodownload mode"
 	fi
