@@ -1,7 +1,7 @@
 #!/bin/zsh
 function zcompile {
 	sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
-	builtin zcompile "$@"
+	builtin zcompile "$@" &!
 }
 if [ ! -d ~/.cache/zsh ];then
 	rm -f ~/.cache/zsh
@@ -26,9 +26,9 @@ function zcompinit {
 					done
 				fi
 			done
-			sleep 0.5
-			[ -d $$ ] && kill -POLL $$
-		} &!
+			compinit -C
+			safe-source $HOME/.zsh/compdef
+		}
 	fi
 }
 
@@ -40,7 +40,7 @@ function safe-source {
 function zrecompile_start {
 	for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef};do
 		if [ -f $n ];then
-			zcompare $n -Rz &!
+			zcompare $n -Rz
 		fi
 	done
 }
@@ -51,10 +51,6 @@ function zcompare {
 	fi
 }
 if [[ -o interactive ]];then
-	function TRAPPOLL {
-		compinit -C
-		safe-source $HOME/.zsh/compdef
-	}
 	autoload -Uz compinit
 	safe-source "$HOME/.zinputrc"
 	safe-source $HOME'/.shell/import'
