@@ -1,4 +1,5 @@
 #!/bin/zsh
+alias compinit="compinit -d ~/.cache/zsh/compdump"
 function zcompile {
 	sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
 	builtin zcompile "$@" &!
