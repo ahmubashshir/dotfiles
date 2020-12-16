@@ -47,7 +47,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
 	mkdir -p ~/.config/systemd/user
 	for unit in systemd/unit/*; do
 		if ! {
-			[     -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}"
+			[ -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}"
 		}; then
 			echo "systemd-user: installing ${unit##*/}"
 			cp "$unit" ~/.config/systemd/user/"${unit##*/}"
@@ -57,7 +57,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
 	for override in systemd/override/*; do
 		mkdir -p ~/.config/systemd/user/"${override##*/}.d"
 		if ! {
-			[     -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
+			[ -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
 		}; then
 			echo "systemd-user: overriding ${override##*/}"
 			cp "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
@@ -85,7 +85,9 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
 		while IFS=$'\t' read -r target install name path; do
 			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
 			[[ $(readlink ~/.config/systemd/user/"$target.$install/$name") == "$path" ]] && continue
+			[[ -f "$path" ]] || continue
 			echo "systemd-user: enabling $name in $target"
+			mkdir -p ~/.config/systemd/user/"$target.$install"
 			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
 			((mod++))
 		done <<< "$(grep -vE '^([[:blank:]]*#|$)' systemd/config/links.tsv)"
@@ -152,20 +154,20 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 		elif [ -e "$n" ]; then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete'; do
 				unset REPLY
-				until           [[ $REPLY =~ [YyNn$'\n'] ]]; do
+				until       [[ $REPLY =~ [YyNn$'\n'] ]]; do
 					read -i y -N 1 -rp"$p $n"'? [y/N]:'
 					case "$REPLY" in
 						n | N | $'\n')
-							[[ "$REPLY" != $'\n'          ]] && echo
-							continue                                          3
+							[[ "$REPLY" != $'\n'      ]] && echo
+							continue                                      3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
-							printf  '\r'
-							tput  el
-						}  || echo ;;
+							printf '\r'
+							tput el
+						} || echo ;;
 						*)
-							printf    '\r'
-							tput                el
+							printf '\r'
+							tput            el
 							;;
 					esac
 				done
