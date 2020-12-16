@@ -67,12 +67,15 @@ elif [ -x /usr/bin/wormhole-william ]; then
 	alias recv='wormhole-william recv'
 fi
 alias mprime='mprime -s'
-if hash hub 2> /dev/null; then
-	alias git=hub
+if hash git 2> /dev/null; then
+	for n in g gut giy hut; do
+		alias "$n=git"
+	done
+	alias commit='git commit'
+	alias push='git push -u'
+	alias pull='git pull'
+	alias clone='git clone'
 fi
-for n in g gut giy hut; do
-	alias "$n=git"
-done
 alias sudo='sudo -H'
 alias spider='curl -ILksXGET'
 ### Colored Output

@@ -27,15 +27,12 @@
 	st = status
 	uncommit = reset --soft HEAD^
 	progress = diff --stat
-	forkcfg = ! git config remote.pushDefault ahmubashshir && git config branch.master.remote ahmubashshir
 	amend = commit --amend
 	pg = diff --shortstat
-	cftc = ! hub fork && git config remote.pushDefault ahmubashshir && git config branch.master.remote ahmubashshir
 	pullmod = submodule foreach git pull
 	rf = !git pull --all && git pull origin master && git push --all
 	up = "![ \"$(git config \"branch.$(git rev-parse --abbrev-ref HEAD).merge\")\" = '' ] && git push -u || git push"
 	rmbr = "!f() { br=$(git rev-parse --abbrev-ref HEAD);git checkout master;git branch -D \"$br\" 2>/dev/null;git push $(git remote|grep -Em 1 '(ahmubashshir|origin)') --delete \"$br\" 2>/dev/null; };f"
-	cpr = !git push && hub pull-request
 	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
@@ -60,15 +57,13 @@
 	a = add
 	cm = commit
 	get = pull
-	put = push
+	put = push -u
 	cfg = config
 	gcfg = config --global
 	cl = clone
 	hash = rev-parse HEAD
 [color]
 	ui = auto
-[hub]
-	protocol = https
 
 [core]
 	askPass = /usr/lib/seahorse/ssh-askpass
@@ -123,8 +118,5 @@
 [log]
 	decorate = short
 	date = iso
-[hub "fork"]
-	remote = fork
-	setDefault = true
 [rebase]
 	autoStash = true
