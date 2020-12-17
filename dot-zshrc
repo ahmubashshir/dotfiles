@@ -11,7 +11,7 @@ fi
 
 ## variables
 fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
-autoload -Uz $fpath[1]/*(.:t)
+autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 typeset -A ENV
 
 ## modules
