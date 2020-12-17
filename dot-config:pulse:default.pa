@@ -1,4 +1,7 @@
 .include /etc/pulse/default.pa
+
+.ifexists module-echo-cancel.so
 load-module module-echo-cancel source_name=noecho-source sink_name=noecho-sink source_properties=device.description=EchoCancel sink_properties=device.description=EchoCancel
 set-default-source noecho-source
 set-default-sink noecho-sink
+.endif
