@@ -1,0 +1,22 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Debug
+# Languages=python
+# Input=nothing
+# Output=nothing
+# Applicability=titled
+# Save-files=document
+# Shortcut=<Shift>F5
+
+v="${GEDIT_CURRENT_DOCUMENT_TYPE#*-}"
+file="$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+if [ "$v" != "" ]; then
+	if [ "$v" == "python" ]; then
+		py=python2
+	else
+		py=python3
+	fi
+else
+	py=python3
+fi
+exo-open --launch TerminalEmulator "$py -m pdb '$file'"
