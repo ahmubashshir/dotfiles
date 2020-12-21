@@ -20,7 +20,7 @@ use_vpn()
 	echo -ne "vpn: ${p}connecting   \r"
 	false
 	until (($? == 0)); do
-		windscribe "${p}connect" &> /dev/null
+		windscribe "${p}connect" 2>&1 > /dev/null
 	done
 	echo "vpn: ${p}connected   "
 }
@@ -41,13 +41,13 @@ for n in "$@"; do
 			typeset -a exclude
 			pkgver=0
 			pkgrel=0
-			cd "$n" &> /dev/null || exit
-			git stash &> /dev/null
+			cd "$n" 2>&1 > /dev/null || exit
+			git stash 2>&1 > /dev/null
 			use_vpn c
 			git pull
 			use_vpn d
-			git stash apply &> /dev/null
-			git stash drop &> /dev/null
+			git stash apply 2>&1 > /dev/null
+			git stash drop 2>&1 > /dev/null
 			source ./PKGBUILD
 			srcdir=src
 			if grep -m 1 -q '^# pkg:' PKGBUILD; then

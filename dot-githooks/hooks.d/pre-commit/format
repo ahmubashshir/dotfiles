@@ -48,8 +48,8 @@ format_file()
 			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab < "$2" > "$2~"
 			mv "$2~" "$2"
 			;;
-		js) js-beautify -itPjakxnr "$2" &> /dev/null ;;
-		xml) xmllint --xmlout -o "$2" --format "$2" &> /dev/null ;;
+		js) js-beautify -itPjakxnr "$2" 2>&1 > /dev/null ;;
+		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
 		*) return 1 ;;
 	esac
 }
@@ -83,7 +83,7 @@ for file in "${STAGED[@]}"; do
 		esac
 	fi
 	if [[ ${fmt} ]] && [[ ${FORMATTERS[$fmt]} ]]; then
-		if command -v "${FORMATTERS[$fmt]}" &> /dev/null; then
+		if command -v "${FORMATTERS[$fmt]}" 2>&1 > /dev/null; then
 			echo "I:[${fmt^^}] Formatting $file"
 			format_file "$fmt" "$file" 2> /dev/null
 			git add "$file"

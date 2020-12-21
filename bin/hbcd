@@ -7,7 +7,7 @@ qemu_args=(
 )
 for dev in "$@"; do
 	if [[ $(blkid -o value -s TYPE "$dev") =~ ^(ntfs|vfat|exfat)$ ]]; then
-		if findmnt -rno SOURCE "$dev" &> /dev/null; then
+		if findmnt -rno SOURCE "$dev" 2>&1 > /dev/null; then
 			udisksctl unmount --block-device "$dev"
 		fi
 		qemu_args+=(
@@ -18,7 +18,7 @@ for dev in "$@"; do
 done
 qemu-system-i386 "${qemu_args[@]}"
 for n in "$@"; do
-	if ! findmnt -rno SOURCE "$dev" &> /dev/null; then
+	if ! findmnt -rno SOURCE "$dev" 2>&1 > /dev/null; then
 		udisksctl mount --block-device "$dev"
 	fi
 done

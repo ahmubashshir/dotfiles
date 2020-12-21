@@ -21,18 +21,18 @@ fi
 if [ -n "${ZSH_VERSION:-}" ]; then
 	export VIRTUAL_ENV_DISABLE_PROMPT=1
 else
-	export LESS_TERMCAP_mb=$'\E[1;31m'   # begin bold
-	export LESS_TERMCAP_md=$'\E[1;36m'   # begin blink
-	export LESS_TERMCAP_me=$'\E[0m'      # reset bold/blink
+	export LESS_TERMCAP_mb=$'\E[1;31m' # begin bold
+	export LESS_TERMCAP_md=$'\E[1;36m' # begin blink
+	export LESS_TERMCAP_me=$'\E[0m'    # reset bold/blink
 	export LESS_TERMCAP_so=$'\E[01;44;33m' # begin reverse video
-	export LESS_TERMCAP_se=$'\E[0m'      # reset reverse video
-	export LESS_TERMCAP_us=$'\E[1;32m'   # begin underline
+	export LESS_TERMCAP_se=$'\E[0m'    # reset reverse video
+	export LESS_TERMCAP_us=$'\E[1;32m' # begin underline
 	export LESS_TERMCAP_ue=$'\E[0m'
 fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
-		[[ -r ~/.shell/dircolors      ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                                      | sed -nE "s@.*='(.*)';@\1@p")
+		[[ -r ~/.shell/dircolors    ]] && dircolors -b ~/.shell/dircolors || dircolors -b
+	}                                                                                    | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -44,8 +44,7 @@ fi
 #colors
 if tty -s; then
 	if
-		tput setaf 0 &
-		> /dev/null
+		tput setaf 0 2>&1 > /dev/null
 	then
 		ALL_OFF="$(tput sgr0)"
 		BOLD="$(tput bold)"
