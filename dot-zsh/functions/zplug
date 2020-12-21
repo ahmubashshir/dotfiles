@@ -1,3 +1,4 @@
+#!/bin/zsh
 local plugname plug plugpath plugin
 [[ -z $1 ]] && return 1
 

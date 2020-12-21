@@ -1,3 +1,4 @@
+#!/bin/zsh
 rm -f $HOME/.cache/zsh/compdump*
 if [[ $1 = "all" ]];then
 	find -L $HOME/.cache/zsh $HOME/.zsh -type f -name '*.zwc' -delete 2>&3
