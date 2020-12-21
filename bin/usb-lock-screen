@@ -1,6 +1,6 @@
 #!/bin/bash
 screen-toggle off
 trap 'exit 0' USR1
-while lsusb -d 1908: &> /dev/null && [ -n "$1" ]; do true; done
-until lsusb -d 1908: &> /dev/null; do true; done
+while lsusb -d 1908: 2>&1 > /dev/null && [ -n "$1" ]; do true; done
+until lsusb -d 1908: 2>&1 > /dev/null; do true; done
 screen-toggle on

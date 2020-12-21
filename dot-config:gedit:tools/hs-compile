@@ -13,7 +13,7 @@ case $dext in
 	[h,H][s,S])
 		compiler=ghc
 		lang=Haskell
-		name=$(                        echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[h,H][s,S]$//)
+		name=$(                      echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.[h,H][s,S]$//)
 		;;
 	*) cc=ghc ;;
 esac
@@ -42,24 +42,24 @@ arg=$(zenity --name=Gedit --entry --title=$compiler --text="Any extra argument?\
 $cc $arg -Wall -o "$name.$target/$name.$target.$ext" "$GEDIT_CURRENT_DOCUMENT_NAME"
 if [ "$?" != 0 ]; then
 	err=$?
-	echo -e "Resolve the errors" &> /dev/stderr
+	echo -e "Resolve the errors" 2>&1 > /dev/stderr
 	cd $GEDIT_CURRENT_DOCUMENT_DIR
 	zenity --name=Gedit --error --title=$compiler --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
 	rm -rf "$name.$target" 2> /dev/null
 	exit $err
 else
 	cd "$name.$target"
-	$cc -E src-$name.$target.$dext -o $name.$target.pre.$dext &> /dev/null
-	$cc -c src-$name.$target.$dext -o $name.$target.o &> /dev/null
-	$cc -C src-$name.$target.$dext -o $name.$target.hc &> /dev/null
-	$cc -S src-$name.$target.$dext -o $name.$target.$dext.s &> /dev/null
+	$cc -E src-$name.$target.$dext -o $name.$target.pre.$dext 2>&1 > /dev/null
+	$cc -c src-$name.$target.$dext -o $name.$target.o 2>&1 > /dev/null
+	$cc -C src-$name.$target.$dext -o $name.$target.hc 2>&1 > /dev/null
+	$cc -S src-$name.$target.$dext -o $name.$target.$dext.s 2>&1 > /dev/null
 	clear 2> /dev/null
 	cd ..
 	tar -cf "z.$name.$target.tar" "$name.$target" 2> /dev/null
 	rm -rf "$name.$target" 2> /dev/null
-	rm -f "z.$name.$target.tgz" &> /dev/null
+	rm -f "z.$name.$target.tgz" 2>&1 > /dev/null
 	gzip "z.$name.$target.tar" 2> /dev/null
 	mv ./z.$name.$target.tar.gz ./z.$name.$target.tgz 2> /dev/null
-	$cc $arg -Wall -o "z.$name.$target.$ext" "$name.$dext" &> /dev/null
+	$cc $arg -Wall -o "z.$name.$target.$ext" "$name.$dext" 2>&1 > /dev/null
 	exit 0 2> /dev/null
 fi

@@ -8,7 +8,7 @@
 # Save-files=document
 # Shortcut=F3
 
-if type -tf shfmt &> /dev/null; then
+if type -tf shfmt 2>&1 > /dev/null; then
 	shfmt -bn -ci -sr "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
 else
 	echo shfmt not installed 1>&2

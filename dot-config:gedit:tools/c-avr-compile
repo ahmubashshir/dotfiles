@@ -61,9 +61,9 @@ mmcu=$(
 if [ "$mmcu" != "" ]; then
 	name=$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.c$//)
 	if [ -e "$GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz" ]; then
-		rm $GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz &> /dev/null
+		rm $GEDIT_CURRENT_DOCUMENT_DIR/z.$name-$mmcu.tgz 2>&1 > /dev/null
 	fi
-	rm -rf $name-$mmcu &> /dev/null
+	rm -rf $name-$mmcu 2>&1 > /dev/null
 	mkdir $name-$mmcu
 	mkdir $name-$mmcu/hex $name-$mmcu/bin $name-$mmcu/srec $name-$mmcu/debug
 	cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name-$mmcu/$name.c"

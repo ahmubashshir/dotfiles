@@ -8,7 +8,7 @@
 # Save-files=document
 # Shortcut=F4
 
-if command -V shellcheck &> /dev/null; then
+if command -V shellcheck 2>&1 > /dev/null; then
 	shellcheck -Calways -x -f gcc "$GEDIT_CURRENT_DOCUMENT_NAME" && echo "No error reported."
 	exit 0
 fi

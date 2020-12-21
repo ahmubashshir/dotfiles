@@ -1,5 +1,5 @@
 #!/bin/bash
-if ! pidof nginx &> /dev/null; then
+if ! pidof nginx 2>&1 > /dev/null; then
 	printf '<txt></txt><tool>Server Down</tool>'
 elif fping -qt 25 1.0.0.1; then
 	printf '<txt></txt><tool>Online</tool>'

@@ -122,7 +122,7 @@ else
 		fi
 		if [ "$?" != 0 ]; then
 			err=$?
-			echo -e "Resolve the errors" &> /dev/stderr
+			echo -e "Resolve the errors" 2>&1 > /dev/stderr
 			cd "$GEDIT_CURRENT_DOCUMENT_DIR"
 			zenity --name=Gedit --error --title="$cc" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
 			rm -rf "$name.$target" 2> /dev/null
@@ -130,13 +130,13 @@ else
 		else
 			cd "$name.$target"
 			g++ -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" "$name.$target.o" -o "$name.$target.$ext" $arg
-			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -E "$name.$dext" -o "$name.$target.i" &> /dev/null
-			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -S "$name.$dext" -o "$name.$target.s" &> /dev/null
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -E "$name.$dext" -o "$name.$target.i" 2>&1 > /dev/null
+			$cc -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -S "$name.$dext" -o "$name.$target.s" 2>&1 > /dev/null
 			clear 2> /dev/null
 			cd ..
 			cp ./$name.$target/$name.$target.$ext z.$name.$target.$ext
 			tar -cf "z.$name.$target.tar" "$name.$target" 2> /dev/null
-			rm -f "z.$name.$target.tgz" &> /dev/null
+			rm -f "z.$name.$target.tgz" 2>&1 > /dev/null
 			gzip "z.$name.$target.tar" 2> /dev/null
 			mv ./z.$name.$target.tar.gz ./z.$name.$target.tgz 2> /dev/null
 			rm -r -f "$name.$target"
