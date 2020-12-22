@@ -1,6 +1,15 @@
 #!/bin/zsh
-rm -f $HOME/.cache/zsh/compdump*
 if [[ $1 = "all" ]];then
 	find -L $HOME/.cache/zsh $HOME/.zsh -type f -name '*.zwc' -delete 2>&3
+elif (($#>0));then
+	typeset -a args
+	for n in "$@";do
+		args+=('-name' "*$n*.zwc" '-')
+	done
+	unset "args[${#args}]"
+	find -L $HOME/.cache/zsh $HOME/.zsh -type f \( $args \) -delete 2>&3
+fi
+if (($#==0)) || [[ $1 = "all" ]];then
+	rm -f $HOME/.cache/zsh/compdump*
 fi
 exec zsh
