@@ -34,7 +34,11 @@ if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 = ln ]]; then
 		ln -Tfs "$s" "$HOME/.$t"
 	done
 
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = ps ]] && [[ $2 =~ ^[[:punct:]]$ ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 = ps ]]; then
+	[[ $2 =~ ^[[:punct:]]$ ]] || {
+		echo "Invalid arg: $2" >&2
+		exit 1
+	}
 	sed -i 's/^PATHSEP=.*$/PATHSEP='"$2"'/' "$0"
 	for n in *; do
 		if [[ $n != "${n//$PATHSEP/$2}" ]]; then
@@ -154,12 +158,12 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 		elif [ -e "$n" ]; then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete'; do
 				unset REPLY
-				until       [[ $REPLY =~ [YyNn$'\n'] ]]; do
+				until     [[ $REPLY =~ [YyNn$'\n'] ]]; do
 					read -i y -N 1 -rp"$p $n"'? [y/N]:'
 					case "$REPLY" in
 						n | N | $'\n')
-							[[ "$REPLY" != $'\n'      ]] && echo
-							continue                                      3
+							[[ "$REPLY" != $'\n'    ]] && echo
+							continue                                    3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -167,7 +171,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput            el
+							tput          el
 							;;
 					esac
 				done
