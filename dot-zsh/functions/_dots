@@ -16,12 +16,12 @@ _list_dotfiles()
 {
 	local dotdir="$(dirname "$(realpath "$(which dots)")")"
 	local -a dotfiles
-	dotfiles=( "$dotdir"/dot-* )
-	dotfiles=( ${dotfiles[@]##*/} )
+	dotfiles=( "$dotdir"/dot-*(:t) )
 	if ((${#dotfiles}+1<${#line}));then
 		_message 'no more arguments'
 	else
-		_values -w "dotfiles" "${dotfiles[@]}"
+		_message 'dotfiles'
+		_multi_parts '\0' dotfiles
 	fi
 }
 _command_args()
