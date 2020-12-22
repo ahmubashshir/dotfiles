@@ -158,12 +158,12 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 		elif [ -e "$n" ]; then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete'; do
 				unset REPLY
-				until     [[ $REPLY =~ [YyNn$'\n'] ]]; do
+				until   [[ $REPLY =~ [YyNn$'\n'] ]]; do
 					read -i y -N 1 -rp"$p $n"'? [y/N]:'
 					case "$REPLY" in
 						n | N | $'\n')
-							[[ "$REPLY" != $'\n'    ]] && echo
-							continue                                    3
+							[[ "$REPLY" != $'\n'  ]] && echo
+							continue                                  3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -171,12 +171,12 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput          el
+							tput        el
 							;;
 					esac
 				done
 			done
-			echo "Deleting $t"
+			echo "Deleting $n"
 			t="${n#dot-}"
 			t="${t//$PATHSEP//}"
 			if [ ! -L "$HOME/.$t" ]; then
@@ -184,6 +184,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 			else
 				rm -f "$HOME/.$t"
 			fi
+			cp -a "$n" "$HOME/.$t"
 			rm -rf "$n"
 		else
 			echo "'$n' doesn't exist" >&2
