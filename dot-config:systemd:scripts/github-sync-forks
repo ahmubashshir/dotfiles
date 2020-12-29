@@ -6,6 +6,7 @@ query='{
 			edges {
 				node {
 					name,
+					nameWithOwner,
 					parent {
 						nameWithOwner
 					}
@@ -15,29 +16,28 @@ query='{
 	}
 }'
 REPOS_DIR=~/Documents/git
-filter='.data.viewer.repositories.edges[]|.node| .name+":"+.parent.nameWithOwner'
-while IFS=': ' read -r repo src; do
-	if git -C "$REPOS_DIR/$repo" rev-parse 2>&3; then
-		pushd "$REPOS_DIR/$repo" || continue
-		current=$(git rev-parse --abbrev-ref HEAD)
-		default=$(git symbolic-ref --short HEAD)
+filter='.data.viewer.repositories.edges[]|.node| .name+":"+.parent.nameWithOwner +":"+.nameWithOwner'
+while IFS=': ' read -r repo src fork; do
+	if [ -d "$REPOS_DIR/$repo" ] && git -C "$REPOS_DIR/$repo" rev-parse 2>&1 >&3; then
+		cd "$REPOS_DIR/$repo" || continue
+		current=$(git rev-parse --abbrev-ref HEAD 2>&3)
+		default=$(git remote show origin 2>&3 | grep "HEAD branch" | awk '{print $3}')
 		if [[ $current != "$default" ]]; then
 			git checkout "$default"
 		fi
-		if ! [[ "$(git remote get-url origin)" != "https://github.com/$src.git" ]]; then
-			git remote set-url origin "https://github.com/$src.git"
+		if ! git config remote.upstream.url 2>&1 >&3; then
+			git remote rename origin upstream
+			git remote add origin "https://github.com/$fork.git"
 		fi
-		if ! git config remote.ahmubashshir.url > /dev/null; then
-			git remote add ahmubashshir "https://github.com/ahmubashshir/$repo.git"
-			git config remote.pushDefault ahmubashshir
+		if [[ $(git config branch.$default.pushremote) != "origin" ]]; then
+			git config branch.$default.pushRemote origin
 		fi
-		git stash
-		git pull
-		git push
-		git stash pop
+		git pull --rebase upstream $default
+		git pull --rebase origin $default
+		git push -f origin $default
 		if [[ $current != "$default" ]]; then
 			git checkout "$current"
 		fi
-		popd || true
+		cd /
 	fi
 done <<< "$(curl -s --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql | jq -r "$filter")"
