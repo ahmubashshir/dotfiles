@@ -6,6 +6,7 @@
 # Output=output-panel
 # Applicability=titled
 # Save-files=nothing
+# Shortcut=<Alt>F5
 
 tool=""
 BUILDDIR=""
@@ -23,7 +24,7 @@ try()
 		CMakeLists.txt)
 			cd "$(dirname "$target")" || exit
 			mkdir builddir
-			pushd     builddir || exit
+			pushd   builddir || exit
 			BUILDDIR="$PWD"
 			tool='make'
 			cmake ..
