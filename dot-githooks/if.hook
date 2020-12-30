@@ -1,16 +1,17 @@
 #!/bin/bash -e
-[ "$(git config --bool "hook.$2")" != "false" ]
+[[ \
+"$( git config --bool "hook.$2")" != "false" && ! \
+":$GIT_DISABLED_HOOKS:" =~ :$2: ]]
+
 case "$3" in
-	(pre-commit) [ -n "$(git status --porcelain)" ];;
-	(*)	true;;
+	pre-commit) [ -n "$(git status --porcelain)" ] ;;
+	*) true ;;
 esac
-if [ -f "${0%/*}/check/$3/${1##*/}" ]
-then
+if [ -f "${0%/*}/check/$3/${1##*/}" ]; then
 	source "${0%/*}/$3.c/${1##*/}" "$@"
 else
-	awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");printf $0"\0"}' "$1" | \
-	while IFS= read -r -d $'\0'
-	do
-		eval "$REPLY" &>/dev/null
-	done
+	awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");printf $0"\0"}' "$1" |
+		while IFS= read -r -d $'\0'; do
+			eval "$REPLY" &> /dev/null
+		done
 fi
