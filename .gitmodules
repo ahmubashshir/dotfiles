@@ -57,3 +57,6 @@
 [submodule "dot-local:share:gedit:plugins/gedit-crypto"]
 	path = dot-local:share:gedit:plugins/gedit-crypto
 	url = https://github.com/toobaz/gedit_crypto.git
+[submodule "dot-local:share:gedit:plugins/restore-minimap"]
+	path = dot-local:share:gedit:plugins/restore-minimap
+	url = https://github.com/johnfactotum/gedit-restore-minimap.git
