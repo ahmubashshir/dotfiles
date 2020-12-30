@@ -72,3 +72,6 @@
 [submodule "dot-local:share:gedit:plugins/discord-rpc"]
 	path = dot-local:share:gedit:plugins/discord-rpc
 	url = https://github.com/M4xi1m3/gedit-discord-rpc
+[submodule "dot-local:share:gedit:plugins/smart-home"]
+	path = dot-local:share:gedit:plugins/smart-home
+	url = https://github.com/hardpixel/gedit-smart-home
