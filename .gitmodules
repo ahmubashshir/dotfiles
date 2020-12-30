@@ -54,3 +54,6 @@
 [submodule "dot-local:share:gedit:plugins/gedi"]
 	path = dot-local:share:gedit:plugins/gedi
 	url = https://github.com/isamert/gedi.git
+[submodule "dot-local:share:gedit:plugins/gedit-crypto"]
+	path = dot-local:share:gedit:plugins/gedit-crypto
+	url = https://github.com/toobaz/gedit_crypto.git
