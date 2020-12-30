@@ -60,3 +60,6 @@
 [submodule "dot-local:share:gedit:plugins/restore-minimap"]
 	path = dot-local:share:gedit:plugins/restore-minimap
 	url = https://github.com/johnfactotum/gedit-restore-minimap.git
+[submodule "dot-local:share:gedit:plugins/wakatime"]
+	path = dot-local:share:gedit:plugins/wakatime
+	url = https://github.com/wakatime/gedit-wakatime
