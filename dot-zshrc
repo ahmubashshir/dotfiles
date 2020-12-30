@@ -11,6 +11,19 @@ fi
 
 ## variables
 fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
+zsh_options=(
+	extended_glob prompt_subst rematchpcre
+	hist_fcntl_lock inc_append_history
+	extended_history hist_no_store no_nomatch
+	hist_reduce_blanks share_history
+	hist_expire_dups_first hist_ignore_dups
+	hist_ignore_all_dups hist_ignore_space
+	hist_find_no_dups hist_save_no_dups c_bases
+	hist_no_functions no_flow_control auto_continue
+	hist_verify auto_cd auto_pushd pushd_silent
+	pushd_to_home pushd_ignore_dups pushd_minus
+	auto_list glob_complete list_packed 
+)
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 typeset -A ENV
 
@@ -88,13 +101,8 @@ zplug history-substring-search && {
 	bindkey "$terminfo[kcud1]" history-substring-search-down
 }
 ## options
-setopt extended_glob prompt_subst
-setopt +o nomatch
-setopt hist_fcntl_lock inc_append_history extended_history
-setopt hist_no_store hist_reduce_blanks share_history
-setopt hist_expire_dups_first hist_ignore_dups hist_ignore_all_dups
-setopt hist_ignore_space hist_find_no_dups hist_save_no_dups hist_verify
-setopt auto_cd auto_pushd pushd_silent pushd_to_home pushd_ignore_dups pushd_minus
+setopt $zsh_options
+unset zsh_options
 bindkey -e
 
 ## Zstyle Config
