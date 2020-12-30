@@ -69,3 +69,6 @@
 [submodule "dot-local:share:gedit:plugins/panel-toggler"]
 	path = dot-local:share:gedit:plugins/panel-toggler
 	url = https://github.com/hardpixel/gedit-panel-toggler
+[submodule "dot-local:share:gedit:plugins/discord-rpc"]
+	path = dot-local:share:gedit:plugins/discord-rpc
+	url = https://github.com/M4xi1m3/gedit-discord-rpc
