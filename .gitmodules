@@ -51,3 +51,6 @@
 [submodule "dot-zsh/plugins/completions"]
 	path = dot-zsh/plugins/completions
 	url = https://github.com/zsh-users/zsh-completions.git
+[submodule "dot-local:share:gedit:plugins/gedi"]
+	path = dot-local:share:gedit:plugins/gedi
+	url = https://github.com/isamert/gedi.git
