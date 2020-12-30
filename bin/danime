@@ -39,18 +39,18 @@ if [[ -z $ANIME_PATH ]]; then
 	readonly ANIME_PATH="$MEDIA_ROOT/Anime"
 fi
 if [[ ! -d $ANIME_PATH ]]; then
-	mkdir -p "$ANIME_PATH" 2>&1 > /dev/null || exit 1
+	mkdir -p "$ANIME_PATH" &> /dev/null || exit 1
 fi
 check_deps()
 {
 	check_deps_py3()
 	{
-		python3 -c "import $1" 2>&1 > /dev/null || (echo "Please install 'python3-$1'." && return 1)
+		python3 -c "import $1" &> /dev/null || (echo "Please install 'python3-$1'." && return 1)
 	}
 	check_deps_x11()
 	{
 		if [[ -n $DISPLAY ]]; then
-			type $1 2>&1 > /dev/null || (echo "Please install '$1' or make sure it is in your path." && return 1)
+			type $1 &> /dev/null || (echo "Please install '$1' or make sure it is in your path." && return 1)
 		else
 			return 0
 		fi
@@ -58,14 +58,14 @@ check_deps()
 	check_deps_lib()
 	{
 		if echo "$1" | grep -q ':'; then
-			type ${1##*:} 2>&1 > /dev/null || (echo "Please install 'lib${1%%:*}' or make sure '${1##*:}' is in your path." && return 1)
+			type ${1##*:} &> /dev/null || (echo "Please install 'lib${1%%:*}' or make sure '${1##*:}' is in your path." && return 1)
 		else
-			find /lib{,64} /usr/lib{,64} /usr/local/lib{,64} -name "lib${1%%:*}*.so*" 2>&1 > /dev/null || (echo "Please install 'lib${1%%:*}'." && return 1)
+			find /lib{,64} /usr/lib{,64} /usr/local/lib{,64} -name "lib${1%%:*}*.so*" &> /dev/null || (echo "Please install 'lib${1%%:*}'." && return 1)
 		fi
 	}
 	check_deps_bin()
 	{
-		type $1 2>&1 > /dev/null || (echo "Please install '$1' or make sure it is in your path." && return 1)
+		type $1 &> /dev/null || (echo "Please install '$1' or make sure it is in your path." && return 1)
 	}
 	a=0
 	for n in "$@"; do
@@ -225,7 +225,7 @@ validate_limit()
 					((ret++))
 				fi
 			elif ! {
-				[[ $n =~ ^[[:digit:]]+-$     ]] || [[ $n =~ ^[[:digit:]]+$ ]]
+				[[ $n =~ ^[[:digit:]]+-$       ]] || [[ $n =~ ^[[:digit:]]+$ ]]
 			}; then
 				((ret++))
 			fi
@@ -274,10 +274,10 @@ anime_cover()
 	if [ ! -e folder.jpg ]; then
 		{
 			curl -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                                       2>&1 > /dev/null
+		}                                                                                                         &> /dev/null
 		if {
-			! grep -q cover.jpg .hidden 2>&1 > /dev/null
-		}                                             && [ -f cover.jpg ]; then
+			!   grep -q cover.jpg .hidden &> /dev/null
+		}                                               && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
@@ -416,11 +416,11 @@ da_db_get()
 {
 	{
 		jq -re ".$TYPE.\"$id\".$*" "$CACHE_FILE" || echo 0
-	}                                            | tail -1
+	}                                              | tail -1
 }
 da_db_has()
 {
-	jq -e '.'"$TYPE"'."'"$id"'"' "$CACHE_FILE" 2>&1 > /dev/null
+	jq -e '.'"$TYPE"'."'"$id"'"' "$CACHE_FILE" &> /dev/null
 }
 da_db_del()
 {
@@ -715,8 +715,8 @@ da_get()
 	fi
 	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
 	if ! {
-		da_db   has && ${FILE_LIST:-false}
-	}                                      && [ -z "$FILE_LIST_RANGE" ]; then
+		da_db     has && ${FILE_LIST:-false}
+	}                                        && [ -z "$FILE_LIST_RANGE" ]; then
 		da_db add
 	fi
 	da_db set path "\"$PWD\""
@@ -825,7 +825,7 @@ da_get()
 	${DEBUG:-false} && set -x
 	for k in $ep; do
 		((ep_progress += 1))
-		gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" 2>&1 > /dev/null
+		gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" &> /dev/null
 		da_get_episede "$(echo "$url" | head -n "$k" | tail -1)" "$k" "$epc" "$ep_progress" "$total_pw"
 		if ! (exit $?); then
 			echo "Failed to download $k"
@@ -1017,7 +1017,7 @@ da_get_episede()
 				fi
 				ep_file_name="${ep_file_name//---/--}"
 				if ! {
-					[[ $tr = dubbed ]] || [[ $tr = subbed ]]
+					[[ $tr = dubbed   ]] || [[ $tr = subbed ]]
 				}; then
 					tr=$(echo "$n" | jq -r '.type')
 				fi
@@ -1060,9 +1060,9 @@ download()
 			elif ((tried <= ${MAX_TRY:-5})); then
 				tput cuu 2
 				((tried > 1)) && (
-					tput          el1
-					tput                   el
-					tput                           cuu1
+					tput            el1
+					tput                     el
+					tput                             cuu1
 				)
 				tput el1
 				tput el
@@ -1102,7 +1102,7 @@ compare_episode()
 		BS=524288
 	fi
 	if [ ! -e "$1" ] || {
-		[                -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
+		[                  -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
 	}; then
 		return 0
 	elif [ "$CHECK_FILE" == "error" ]; then
@@ -1122,7 +1122,7 @@ compare_episode()
 	if ! (dd if="$1" of=/dev/null bs=1 count=1 status=none 2> /dev/null && exit "$(ffprobe -hide_banner -loglevel 14 "$1" 2>&1 | wc -l)"); then
 		return 5
 	fi
-	if command -v mediainfo 2>&1 > /dev/null; then
+	if command -v mediainfo &> /dev/null; then
 		asize=$(mediainfo "$1" 2> /dev/null | tr -s '[:blank:]' \  | grep -i '^stream size' | sed 's|: |:|g' | cut -d: -f2 | cut -d\  -f1 | awk '{printf $0"*1048576+"};END {printf "0\n"}' | bc | cut -d\. -f1)
 	else
 		asize=$size
@@ -1149,7 +1149,7 @@ compare_episode()
 	return 0
 }
 SUPPORTED_HOSTS='mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
-if curl -s "${CURL_OPTIONS[@]}" 'https://ww5.dubbedanime.net/user/info' -X 'POST' | jq --exit-status '. != null' 2>&1 > /dev/null; then
+if curl -s "${CURL_OPTIONS[@]}" 'https://ww5.dubbedanime.net/user/info' -X 'POST' | jq --exit-status '. != null' &> /dev/null; then
 	SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
 	export LOGGED_IN=true
 fi
@@ -1164,7 +1164,7 @@ get_url()
 	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
 	ep_id=$(echo "$@" | jq -r '.ep' | grep -wv 'null')
 	if ! {
-		echo   "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
+		echo     "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
 	}; then
 		echo "unimplemented:$ep_file_host"
 		return 1
@@ -1629,7 +1629,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		shift
 	done
 	if [[ -n $TYPE_ANIME ]] && {
-		[[ $TYPE_ANIME = subbed                       ]] || [[ $TYPE_ANIME = dubbed ]]
+		[[ $TYPE_ANIME = subbed                         ]] || [[ $TYPE_ANIME = dubbed ]]
 	}; then
 		tr=$TYPE_ANIME
 	else
@@ -1637,7 +1637,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	fi
 	if {
 		[[ -n "$FILE_LIST_RANGE" ]] || [[ -n "$RES_LIST" ]]
-	}                                                      && $DOWNLOAD_ALL; then
+	}                                                        && $DOWNLOAD_ALL; then
 		DOWNLOAD_ALL=false
 		echo -e "Warning: --all/-a option can only be used when no\n\tselection or episode limit specified.\n\tDisabling autodownload mode"
 	fi
@@ -1669,7 +1669,7 @@ except:
 				close_bus()
 				{
 					ret=$?
-					gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.quit 2>&1 > /dev/null
+					gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.quit &> /dev/null
 					exit $ret
 				}
 			fi
