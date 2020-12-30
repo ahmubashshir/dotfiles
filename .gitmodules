@@ -66,3 +66,6 @@
 [submodule "dot-local:share:gedit:plugins/open-uri-context-menu"]
 	path = dot-local:share:gedit:plugins/open-uri-context-menu
 	url = https://github.com/jpfleury/open-uri-context-menu
+[submodule "dot-local:share:gedit:plugins/panel-toggler"]
+	path = dot-local:share:gedit:plugins/panel-toggler
+	url = https://github.com/hardpixel/gedit-panel-toggler
