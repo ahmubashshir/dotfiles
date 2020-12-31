@@ -29,7 +29,7 @@ __dots_command_args()
 	case $line[1] in
 		(ln|ls|help)	_message 'no more arguments';;
 		(ps)	_arguments '2:seperator:';;
-		(cp)	_files;;
+		(cp)	_files -g '.*';;
 		(rm)	__dots_list_dotfiles;;
 	esac
 }
