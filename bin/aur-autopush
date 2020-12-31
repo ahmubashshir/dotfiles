@@ -53,7 +53,7 @@ for n in "$@"; do
 			if grep -m 1 -q '^# pkg:' PKGBUILD; then
 				type=$(awk '/^# pkg: /{print $3}' PKGBUILD)
 				src=$(awk '/^# pkg: /{print $4}' PKGBUILD)
-				provider=$(awk '/^# pkg: / && NF > 5 {print $5}' PKGBUILD)
+				provider=$(awk '/^# pkg: / && NF > 4 {print $5}' PKGBUILD)
 				case $type in
 					bzr | git | hg | svn)
 						makepkg -o -d --skipchecksums
@@ -74,7 +74,7 @@ for n in "$@"; do
 			fi
 			echo updating checksums
 			updpkgsums -m
-			if [ -n "$(git status --porcelain)" ]; then
+			if [ -n "$(git status --porcelain)" ] || [ "$FORCE_REL_BUMP" = "true" ]; then
 				if [ -z "$PKGVER" ] || [ "$(vercmp $PKGVER $pkgver)" = "0" ]; then
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
 					msg='pkgrel bump.'
