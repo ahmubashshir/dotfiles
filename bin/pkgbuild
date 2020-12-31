@@ -15,6 +15,10 @@ if [ -f PKGBUILD ]; then
 else
 	echo run this script inside a directory with a PKGBUILD.
 fi
+if [ -f WIP ]; then
+	echo This is a Work-in-Progress PKGBUILD.
+	exit 0
+fi
 source /etc/makepkg.conf
 source /etc/pkgrepo.conf
 src ~/.pkgrepo.conf
@@ -37,7 +41,7 @@ EOF
 fi
 sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
 if [ "$FORCEREBUILD" != "true" ] || {
-	echo                                  "$*" | grep -q '\-f'
+	echo                                "$*" | grep -q '\-f'
 }; then
 	makepkg --packagelist | while read -r pkg; do
 		if [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
