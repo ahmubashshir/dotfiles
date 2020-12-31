@@ -1,9 +1,11 @@
-[include]
-	path = ~/.git-auth
 [user]
 	email = ahmubashshir@gmail.com
 	name = Mubashshir
 	signingkey = 56DB0538F60D951C
+[sendemail]
+	smtpEncryption = tls
+	smtpServer = smtp.gmail.com
+	smtpUser = ahmubashshir@gmail.com
 [credential]
 	helper = /usr/lib/git-core/git-credential-libsecret
 [filter "lfs"]
