@@ -14,6 +14,7 @@ FORMATTERS=(
 	# sass
 	[scss]=sass-convert
 	[sass]=sass-convert
+	[css]=css-beautify
 	# astyle
 	[c]=astyle
 	[cpp]=astyle
@@ -45,10 +46,11 @@ format_file()
 					style=gnu
 					;;
 			esac
-			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab < "$2" > "$2~"
-			mv "$2~" "$2"
+			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab "$2"
+			rm -f "$2.orig"
 			;;
 		js) js-beautify -itPjakxnr "$2" 2>&1 > /dev/null ;;
+		css) css-beautify --replace --space-around-combinator --end-with-newline --indent-with-tabs "$2" ;;
 		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
 		*) return 1 ;;
 	esac
