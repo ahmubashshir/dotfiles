@@ -1,17 +1,34 @@
+@define-color fg #fff;
+@define-color bg rgba(27, 34, 36, 1.0);
+@define-color crit @fg;
+@define-color crit_bg rgb(255, 0, 50);
+@define-color close #171D1F;
+@define-color close_normal #BF555B;
+@define-color close_hover #E25B63;
+@define-color close_active #DF3038;
+
 .blurredBG, #main_window, .blurredBG.low, .blurredBG.normal {
-    background: rgba(27, 34, 36, 0.95);
+    background: @bg;
 }
 
 .blurredBG.notification {
-    background: rgba(31, 40, 42, 0.58);
+    background: rgba(31, 40, 42, 0.75);
+    border-radius: 5px;
+}
+
+.blurredBG.notification:hover {
+    background: rgba(31, 40, 42, 1.0);
 }
 
 .blurredBG.notification.critical {
     background: rgba(255, 0, 50, 0.5);
 }
 
+.notificationInCenter {
+	border-radius: 3px;
+}
 .notificationInCenter.critical {
-    background: rgba(155, 0, 20, 0.5);
+    background: rgb(155, 0, 20);
 }
 
 .undershoot.top, .undershoot.right, .undershoot.bottom,
@@ -20,13 +37,35 @@
 }
 
 
-button {
+/* button {
     background: #263034;
     color: #eae2e0;
     border-radius: 0;
     border-width: 0;
     background-position: 0 0;
-    text-shadow: none;
+    text-shadow: none; 
+} */
+
+button.button-close {
+	background: @close_normal center;
+	margin-right: 5px;
+	padding: 01pt 0.5pt 0pt 02pt;
+	border-radius: 50%;
+}
+
+button.button-close > label {
+    font-weight: bolder;
+    font-family: monospace;
+    font-size: 1.2em;
+    color: @close;
+}
+
+button.button-close:hover {
+	background: @close_hover;
+}
+
+button.button-close:active {
+	background: @close_active;
 }
 
 label {
@@ -44,14 +83,14 @@ label.critical {
     color: #FFF;
 }
 
-button:hover {
+/*button:hover {
     border-radius: 0px;
     background: rgba(34, 43, 46, 0.2);
     border-width: 0;
     border-top: transparent;
     border-color: #f00;
     color: #eae2e0;
-}
+} */
 
 .userbutton {
     background: #263034;
