@@ -8,6 +8,7 @@ __dots_list_commands()
 		'ps:use chr as seperator.'
 		'cp:track path.'
 		'rm:unlink and delete dotfile.'
+		'systemd:update/sync systemd user config.'
 		'help:show this help.'
 	)
 	_describe 'command' commands
@@ -24,12 +25,22 @@ __dots_list_dotfiles()
 		_multi_parts '\0' dotfiles
 	fi
 }
+__dots_systemd_cmds()
+{
+	local -a actions
+	actions=(
+		'sync:sync systemd user config.'
+		'update:update systemd user config.'
+	)
+	_describe 'action' actions
+}
 __dots_command_args()
 {
 	case $line[1] in
 		(ln|ls|help)	_message 'no more arguments';;
 		(ps)	_arguments '2:seperator:';;
 		(cp)	_files -g '.*';;
+		(systemd) _arguments "2:action:__dots_systemd_cmds";;
 		(rm)	__dots_list_dotfiles;;
 	esac
 }
