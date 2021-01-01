@@ -158,12 +158,12 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 		elif [ -e "$n" ]; then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete'; do
 				unset REPLY
-				until   [[ $REPLY =~ [YyNn$'\n'] ]]; do
+				until [[ $REPLY =~ [YyNn$'\n'] ]]; do
 					read -i y -N 1 -rp"$p $n"'? [y/N]:'
 					case "$REPLY" in
 						n | N | $'\n')
-							[[ "$REPLY" != $'\n'  ]] && echo
-							continue                                  3
+							[[ "$REPLY" != $'\n' ]] && echo
+							continue                                3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -171,7 +171,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput        el
+							tput      el
 							;;
 					esac
 				done
@@ -227,23 +227,26 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = cp ]]; then
 	done
 elif [[ $1 = ls ]]; then
 	if [[ -n $(env which columns 2> /dev/null) ]]; then
-		cmd=columns
+		cmd='columns -s'
 	elif [[ -n $(env which column 2> /dev/null) ]]; then
 		cmd='column -x'
 	else
 		cmd='cat'
 	fi
-	find . -maxdepth 1 -name 'dot-*' -print | cut -d/ -f2 | eval "$cmd"
+	find . -maxdepth 1 -name 'dot-*' -print | cut -d/ -f2 |
+		sed 's@^dot-@.@;s@\(.*\)@~/\1@;s@'"$PATHSEP"'@/@g' | eval "$cmd"
 elif (($# == 0)) || [[ $1 = help ]]; then
 	(
 		exec >&2
 		echo "${0##*/} help:"
-		echo "   ln         link dotfiles."
-		echo "   ls         list dotfiles."
-		echo "   ps [chr]   use chr as seperator."
-		echo "   cp [path]  track path."
-		echo "   rm [dot]   unlink and delete dotfile."
-		echo "   help       show this help."
+		echo "   ln               link dotfiles."
+		echo "   ls               list dotfiles."
+		echo "   ps [chr]         use chr as seperator."
+		echo "   cp [path]        track path."
+		echo "   systemd update   update systemd config."
+		echo "   systemd sync     sync systemd config."
+		echo "   rm [dot]         unlink and delete dotfile."
+		echo "   help             show this help."
 	)
 elif (($# > 0)); then
 	echo "Invalid subcommand $1"
