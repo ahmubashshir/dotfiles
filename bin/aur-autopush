@@ -74,7 +74,7 @@ for n in "$@"; do
 			fi
 			echo updating checksums
 			updpkgsums -m
-			if [ -n "$(git status --porcelain)" ] || [ "$FORCE_REL_BUMP" = "true" ]; then
+			if [ -n "$(git status --porcelain)" ] || [ "${FORCE_REL_BUMP+defined}" ] && [ "$FORCE_REL_BUMP" != "false" ]; then
 				if [ -z "$PKGVER" ] || [ "$(vercmp $PKGVER $pkgver)" = "0" ]; then
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
 					msg='pkgrel bump.'
@@ -84,7 +84,9 @@ for n in "$@"; do
 				git add .
 				git commit -m "${msg:-automatic push.}"
 			fi
-			if git status --porcelain --branch | grep -q ahead && [ ! -f ../.nopush ]; then
+			if git status --porcelain --branch | grep -q ahead && {
+				[                                                      ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
+			}; then
 				use_vpn c
 				git push
 				use_vpn d
