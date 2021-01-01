@@ -1,0 +1,7 @@
+[Unit]
+Description=Update available genshin impact redeem code
+
+[Service]
+ExecStart=/bin/bash -c 'curl -s https://www.gensh.in/events/promotion-codes | xmllint --html --xpath "//table/tbody/tr/td[contains(text(),\"No\")]/parent::node()" - 2>/dev/null | sed -En "s@<tr><td> (.*) </td><td> No </td><td> (.*) </td><td> (.*) </td><td> (.*) </td></tr>@\\1\\n\\tEU: \\2\\n\\tNA: \\3\\n\\tSEA: \\4\\n@p"|tee %h/genshin-redeem'
+StandardOutput=syslog+console
+StandardError=syslog+console
