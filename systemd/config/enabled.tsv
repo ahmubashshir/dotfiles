@@ -13,6 +13,7 @@ service	vino-server
 timer	aur-autobuild
 timer	aur-autopush
 timer	epic-claim
+timer	genshin-redeem
 timer	github-sync-forks
 timer	systemd-tmpfiles-clean
 timer	transmission-trackers

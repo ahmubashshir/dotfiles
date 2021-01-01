@@ -1,0 +1,10 @@
+[Unit]
+Description=Update genshin redeem code daily
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
