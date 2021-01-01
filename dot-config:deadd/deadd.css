@@ -43,14 +43,10 @@
 }
 
 
-/* button {
-    background: #263034;
-    color: #eae2e0;
-    border-radius: 0;
-    border-width: 0;
-    background-position: 0 0;
-    text-shadow: none; 
-} */
+button.userbutton:not(:hover):not(:active),
+button.delete-all:not(:hover):not(:active) {
+	border: 0.1em #1A1A1A solid;
+}
 
 button.button-close {
 	background: @close_normal center;
@@ -99,22 +95,22 @@ label.critical {
     color: #eae2e0;
 } */
 
-.userbutton {
-	background: #263034;
-}
+/*.userbutton {*/
+/*	background: #263034;*/
+/*}*/
 
-.userbutton:hover {
-	background: #fee;
-}
+/*.userbutton:hover {*/
+/*	background: #fee;*/
+/*}*/
 
-.userbuttonlabel {
-	color: #eae2e0;
-	font-size: 14px;
-}
+/*.userbuttonlabel {*/
+/*	color: #eae2e0;*/
+/*	font-size: 14px;*/
+/*}*/
 
-.userbuttonlabel:hover {
-	color: #fee;
-}
+/*.userbuttonlabel:hover {*/
+/*	color: #fee;*/
+/*}*/
 
 button.buttonState1 {
 	background: rgba(46, 179, 152, 0.5);
