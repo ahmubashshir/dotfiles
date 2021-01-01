@@ -7,33 +7,39 @@
 @define-color close_hover #E25B63;
 @define-color close_active #DF3038;
 
-.blurredBG, #main_window, .blurredBG.low, .blurredBG.normal {
-    background: @bg;
+.blurredBG,
+#main_window,
+.blurredBG.low,
+.blurredBG.normal {
+	background: @bg;
 }
 
 .blurredBG.notification {
-    background: rgba(31, 40, 42, 0.75);
-    border-radius: 5px;
+	background: rgba(31, 40, 42, 0.75);
+	border-radius: 5px;
 }
 
 .blurredBG.notification:hover {
-    background: rgba(31, 40, 42, 1.0);
+	background: rgba(31, 40, 42, 1.0);
 }
 
 .blurredBG.notification.critical {
-    background: rgba(255, 0, 50, 0.5);
+	background: rgba(255, 0, 50, 0.5);
 }
 
 .notificationInCenter {
 	border-radius: 3px;
 }
+
 .notificationInCenter.critical {
-    background: rgb(155, 0, 20);
+	background: rgb(155, 0, 20);
 }
 
-.undershoot.top, .undershoot.right, .undershoot.bottom,
+.undershoot.top,
+.undershoot.right,
+.undershoot.bottom,
 .undershoot.left {
-    background-image: none;
+	background-image: none;
 }
 
 
@@ -54,10 +60,10 @@ button.button-close {
 }
 
 button.button-close > label {
-    font-weight: bolder;
-    font-family: monospace;
-    font-size: 1.2em;
-    color: @close;
+	font-weight: bolder;
+	font-family: monospace;
+	font-size: 1.2em;
+	color: @close;
 }
 
 button.button-close:hover {
@@ -69,18 +75,19 @@ button.button-close:active {
 }
 
 label {
-    color: #eae2e0;
+	color: #eae2e0;
 }
 
 label.notification {
-    color: #fef3f6;
+	color: #fef3f6;
 }
 
 label.critical {
-    color: #FFF;
+	color: #FFF;
 }
+
 .notificationInCenter label.critical {
-    color: #FFF;
+	color: #FFF;
 }
 
 /*button:hover {
@@ -93,67 +100,67 @@ label.critical {
 } */
 
 .userbutton {
-    background: #263034;
+	background: #263034;
 }
 
 .userbutton:hover {
-    background: #fee;
+	background: #fee;
 }
 
 .userbuttonlabel {
-    color: #eae2e0;
-    font-size: 14px;
+	color: #eae2e0;
+	font-size: 14px;
 }
 
 .userbuttonlabel:hover {
-    color: #fee;
+	color: #fee;
 }
 
 button.buttonState1 {
-    background: rgba(46,179,152,0.5);
+	background: rgba(46, 179, 152, 0.5);
 }
 
 button.buttonState2 {
-    background: rgba(255,255,255,0.3);
+	background: rgba(255, 255, 255, 0.3);
 }
 
 .userbuttonlabel.buttonState1 {
-    color: #fff;
+	color: #fff;
 }
 
 .userbuttonlabel.buttonState2 {
-    color: #fff;
+	color: #fff;
 }
 
 button.buttonState1:hover {
-    background: rgba(34, 43, 46, 0.4);
+	background: rgba(34, 43, 46, 0.4);
 }
 
 button.buttonState2:hover {
-    background: rgba(34, 43, 46, 0.3);
+	background: rgba(34, 43, 46, 0.3);
 }
 
 .userbuttonlabel.buttonState1:hover {
-    color: #fee;
+	color: #fee;
 }
 
 .userbuttonlabel.buttonState2:hover {
-    color: #fee;
+	color: #fee;
 }
 
 .title {
-    font-weight: bold;
-    font-size: 16px;
+	font-weight: bold;
+	font-size: 16px;
 }
 
 .appname {
-    font-size: 12px;
+	font-size: 12px;
 }
 
 .time {
-    font-size: 12px;
+	font-size: 12px;
 }
 
 .noti-center.time {
-    font-size: 32px;
+	font-size: 32px;
 }
