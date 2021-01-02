@@ -4,8 +4,10 @@ tmpdir=$(mktemp -d /tmp/yay.$UID.XXXXXXXX)
 cd "$tmpdir" || exit 1
 curl --compressed -s https://aur.archlinux.org/packages.gz -o aurpkgs
 if ! [ -f aurpkgs ]; then
-	grep 'AUR$' ~/.cache/yay/completion.cache{,.bak} | awk '{print $1}' | sort -u | gzip > aurpkgs.gz
+	grep 'AUR$' ~/.cache/yay/completion.cache{,.bak} | awk '{print $1}' | sort -u > aurpkgs
 	mv -f ~/.cache/yay/completion.cache{,.bak}
 fi
 pacman -Sl > repopkgs
-cat repopkgs aurpkgs | grep -v '^#' | awk '$2 == "" {print $1"\tAUR"}; $2 != "" {print $2"\t"$1}' | sponge ~/.cache/yay/completion.cache
+cat repopkgs aurpkgs |
+	grep -v '^#' |
+	awk '$2 == "" {print $1"\tAUR"}; $2 != "" {print $2"\t"$1}' > ~/.cache/yay/completion.cache
