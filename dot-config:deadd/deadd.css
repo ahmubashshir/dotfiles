@@ -1,12 +1,17 @@
 @define-color fg #fff;
 @define-color bg rgba(27, 34, 36, 1.0);
 @define-color border #181C1C;
-@define-color critical rgb(255, 0, 50);
-@define-color low rgba(24, 28, 28, 0.5);
-@define-color close #171D1F;
-@define-color close_normal #BF555B;
-@define-color close_hover #E25B63;
-@define-color close_active #DF3038;
+
+@define-color critical rgb(120, 34, 36);
+@define-color low rgb(39, 41, 52);
+
+@define-color critical_popup rgba(120, 34, 36, 0.5);
+@define-color low_popup rgba(39, 41, 52, 0.5);
+
+@define-color close #282a36;
+@define-color close_normal rgba(191, 85, 91, 0.75);
+@define-color close_hover rgb(226, 91, 99);
+@define-color close_active rgb(223, 48, 56);
 
 .blurredBG,
 #main_window,
@@ -20,12 +25,12 @@
 	border-radius: 5px;
 }
 
-.blurredBG.notification:hover {
-	background: rgba(31, 40, 42, 1.0);
+.blurredBG.notification.critical {
+	background: @critical_popup;
 }
 
-.blurredBG.notification.critical {
-	background: rgba(255, 0, 50, 0.5);
+.blurredBG.notification.low {
+	background: @low_popup;
 }
 
 .notificationInCenter {
