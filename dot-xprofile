@@ -20,12 +20,12 @@ while read line; do
 done <<< $(bash -c 'env' 2> /dev/null)
 
 if [ -x ~/.shell/path.$SHELL ]; then
-	export  "PATH=$(~/.shell/path.$SHELL)"
+	export "PATH=$(~/.shell/path.$SHELL)"
 fi
 
 #xset +dpms
 #xset s blank
 for service in "${services[@]}"; do
-	systemctl  --user start $service@$DISPLAY.target
+	systemctl --user start "${service}@${DISPLAY}"
 done
 numlockx on
