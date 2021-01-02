@@ -1,13 +1,21 @@
 #!/bin/bash
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'hosts=($(fping -t 100 -i 1 -Aag 192.168.12.0/24 2>/dev/null))'
-echo -n "<txt>UP: ${#hosts[@]}</txt><tool>"
+if [[ $1 = "genmon" ]]; then
+	echo -n "<txt>UP: ${#hosts[@]}</txt><tool>"
+else
+	printf 'IP\t\tHOST\n'
+fi
 while ((i < ${#hosts[@]})); do
-	((i))  && echo
+	((i)) && echo
 	printf '%s' "${hosts[$i]}"
-	name=$( timeout 0.25 getent hosts "${hosts[$i]}" | awk '{print $2}')
-	if  [ "$name" ]; then
+	name=$(timeout 0.25 getent hosts "${hosts[$i]}" | awk '!a[$2]++{print $2}')
+	if [ "$name" ]; then
 		printf '\t%s' "$name"
 	fi
 	((i++))
 done
-echo "</tool>"
+if [[ $1 = "genmon" ]]; then
+	echo "</tool>"
+else
+	echo
+fi
