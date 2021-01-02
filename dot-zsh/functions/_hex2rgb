@@ -1,0 +1,2 @@
+#compdef hex2rgb
+_arguments -s '*::Hex Color:'
