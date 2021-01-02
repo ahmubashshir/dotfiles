@@ -1,0 +1,9 @@
+[Unit]
+Description=PiCom Compositning Manager on Display %I
+
+[Service]
+Environment=DISPLAY="%I"
+ExecStart=/usr/bin/picom
+RestartSec=3
+Restart=on-error
+
