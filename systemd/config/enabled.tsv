@@ -18,4 +18,5 @@ timer	github-sync-forks
 timer	systemd-tmpfiles-clean
 timer	transmission-trackers
 timer	update-notifier
+timer	vpnbook
 timer	yay-cache-gen
