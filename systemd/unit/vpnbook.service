@@ -1,0 +1,5 @@
+[Unit]
+Description=vpnbook.net password updater
+
+[Service]
+ExecStart=%h/.config/systemd/scripts/vpnbook
