@@ -128,8 +128,10 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = sync ]]; then
 			echo "dots-systemd: enable $type ${unit##*/}" 1>&2
 			echo -e "$type\t$unit"
 		done < <(
-			basename -a ~/.config/systemd/user/*.target.*/* | awk -F. '{print $2"\t"$1}'
-			tail +2 systemd/config/enabled.tsv
+			(
+				basename -a ~/.config/systemd/user/*.target.*/* | awk -F. '{print $2"\t"$1}'
+				tail +2 systemd/config/enabled.tsv
+			) | sort -u
 			echo -e "TYPE\tNAME" > systemd/config/enabled.tsv
 		) > >(
 			sort -u >> systemd/config/enabled.tsv
@@ -163,7 +165,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 					case "$REPLY" in
 						n | N | $'\n')
 							[[ "$REPLY" != $'\n' ]] && echo
-							continue                                3
+							continue                              3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -171,7 +173,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput      el
+							tput    el
 							;;
 					esac
 				done
