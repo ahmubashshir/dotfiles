@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r154.d9fa658
+# VERSION r158.6a8c38b
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -105,9 +105,6 @@ CURL_OPTIONS=(
 	-H 'sec-fetch-mode: cors'
 	-H 'sec-fetch-dest: empty'
 )
-if [ -e ~/.da-cookies.txt ]; then
-	CURL_OPTIONS+=(--cookie ~/.da-cookies.txt)
-fi
 langs=(
 	'০১২৩৪৫৬৭৮৯'
 	'〇一二三四五六七八九'
@@ -225,7 +222,7 @@ validate_limit()
 					((ret++))
 				fi
 			elif ! {
-				[[ $n =~ ^[[:digit:]]+-$       ]] || [[ $n =~ ^[[:digit:]]+$ ]]
+				[[ $n =~ ^[[:digit:]]+-$   ]] || [[ $n =~ ^[[:digit:]]+$ ]]
 			}; then
 				((ret++))
 			fi
@@ -274,10 +271,10 @@ anime_cover()
 	if [ ! -e folder.jpg ]; then
 		{
 			curl -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                                         &> /dev/null
+		}                                                                                                     &> /dev/null
 		if {
-			!   grep -q cover.jpg .hidden &> /dev/null
-		}                                               && [ -f cover.jpg ]; then
+			! grep -q cover.jpg .hidden &> /dev/null
+		}                                           && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
@@ -715,8 +712,8 @@ da_get()
 	fi
 	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
 	if ! {
-		da_db     has && ${FILE_LIST:-false}
-	}                                        && [ -z "$FILE_LIST_RANGE" ]; then
+		da_db has && ${FILE_LIST:-false}
+	}                                    && [ -z "$FILE_LIST_RANGE" ]; then
 		da_db add
 	fi
 	da_db set path "\"$PWD\""
@@ -825,7 +822,7 @@ da_get()
 	${DEBUG:-false} && set -x
 	for k in $ep; do
 		((ep_progress += 1))
-		gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" &> /dev/null
+		scrapper_call local.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" &> /dev/null
 		da_get_episede "$(echo "$url" | head -n "$k" | tail -1)" "$k" "$epc" "$ep_progress" "$total_pw"
 		if ! (exit $?); then
 			echo "Failed to download $k"
@@ -841,8 +838,8 @@ da_get()
 da_read_ep_json()
 {
 	cat | {
-		jq -Mc '.videos[]|del(.date)|if (.host|test("'$SUPPORTED_HOSTS'")) then .ep = "'"$2"'" else . end'
-		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$3" | jq -Mc '.[]'
+		jq -Mc '.videos[]|del(.date)'
+		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$2" | jq -Mc '.[]'
 	} | jq -Mc 'select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | eval "$1"
 }
 get_mapped()
@@ -939,22 +936,19 @@ da_get_episede()
 			fi
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
 			ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
-			ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "${1%%-*}" | xargs basename)" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
+			ep_id_list=$(
+				echo "$parse_episode_page" |
+					da_read_ep_json "$filter" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")"
+			)
 
 			if [ -z "$ep_id_list" ]; then
 				tr=subbed
-				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "${1%%-*}" | xargs basename)" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
+				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
 			fi
 			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
 				ep_title="${ep_title// ep / extra }"
 			fi
 			ep_file_name="$(echo "$ep_title" | replace_invalid)-$tr.mp4"
-		elif [ "$episode_type" = "cartoon" ]; then
-			ep_title="$TITLE"
-			ep_number="$(echo "$parse_episode_page" | jq -r '.number')"
-			ep_title="$ep_title ep $ep_number"
-			ep_id_list=$(echo "$parse_episode_page" | jq -Mc '.videos[]|del(.date)|select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | awk -e '!seen[$0]++')
-			ep_file_name="$(echo "$ep_title" | replace_invalid).mp4"
 		fi
 		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/|}"'/{print};!/'"${PREFERRED_HOSTS//,/|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
 		set +x
@@ -1017,7 +1011,7 @@ da_get_episede()
 				fi
 				ep_file_name="${ep_file_name//---/--}"
 				if ! {
-					[[ $tr = dubbed   ]] || [[ $tr = subbed ]]
+					[[ $tr = dubbed ]] || [[ $tr = subbed ]]
 				}; then
 					tr=$(echo "$n" | jq -r '.type')
 				fi
@@ -1060,9 +1054,9 @@ download()
 			elif ((tried <= ${MAX_TRY:-5})); then
 				tput cuu 2
 				((tried > 1)) && (
-					tput            el1
-					tput                     el
-					tput                             cuu1
+					tput        el1
+					tput                 el
+					tput                         cuu1
 				)
 				tput el1
 				tput el
@@ -1102,7 +1096,7 @@ compare_episode()
 		BS=524288
 	fi
 	if [ ! -e "$1" ] || {
-		[                  -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
+		[              -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
 	}; then
 		return 0
 	elif [ "$CHECK_FILE" == "error" ]; then
@@ -1149,10 +1143,6 @@ compare_episode()
 	return 0
 }
 SUPPORTED_HOSTS='mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
-if curl -s "${CURL_OPTIONS[@]}" 'https://ww5.dubbedanime.net/user/info' -X 'POST' | jq --exit-status '. != null' &> /dev/null; then
-	SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
-	export LOGGED_IN=true
-fi
 get_effective_url()
 {
 	xargs curl -ILksXGET -o /dev/null -w '%{url_effective}\n' 2> /dev/null | grep '^http'
@@ -1162,9 +1152,8 @@ get_url()
 	local ep_file_host ep_file_id n try=0 url
 	ep_file_host=$(echo "$@" | jq -r '.host')
 	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
-	ep_id=$(echo "$@" | jq -r '.ep' | grep -wv 'null')
 	if ! {
-		echo     "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
+		echo "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
 	}; then
 		echo "unimplemented:$ep_file_host"
 		return 1
@@ -1175,7 +1164,7 @@ get_url()
 			try=0
 			while [[ -z $url ]] && ((try++ < 5)); do
 				((try > 1)) && sleep 2
-				url="$(${ep_file_host// /+}:get_url "${n}" "$ep_id")"
+				url="$(${ep_file_host// /+}:get_url "${n}")"
 			done
 			echo "$url"
 		else
@@ -1202,7 +1191,20 @@ xstreamcdn:get_url()
 trollvid:get_url()
 {
 	#exec 2>/tmp/out.${CALLED_FROM_MP4_SH:-false}
-	curl -o /dev/null -w '%{url_effective}\n' -sLIXGET "${CURL_OPTIONS[@]}" "https://ww5.dubbedanime.net/download/$2/$1"
+	local token
+	token=$(
+		scrapper_call org.freedesktop.DBus.Properties.Get local.scrapper token |
+			sed "s/.*'\(.*\)'.*/\1/"
+	)
+	[ "$token" ] &&
+		token=$(curl -s "https://mp4.sh/embed/$1?x=$token" --compressed \
+			-H "Referer: https://ww5.dubbedanime.net/" | sed -n 's/.*data-token="\(.*\)" style.*/\1/p')
+
+	[ "$token" ] &&
+		curl -XPOST -s "https://mp4.sh/v/$1" --compressed \
+			-H "Referer: https://mp4.sh/embed/$1?x=$token" \
+			-H 'Origin: https://mp4.sh' \
+			--data-raw "token=$token" | jq -r 'select(.success == true).data'
 }
 
 vidstreaming:get_url()
@@ -1256,27 +1258,6 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#-option
 				da_get_license
 				exit 0
-				;;
-			--login)
-				#+option
-				#long: --login
-				#text: Log in to dubbedanime.net.
-				#args: <username> <passeword>
-				#-option
-				shift
-				(($# != 2)) && {
-					echo invalid number of arguments
-					exit
-				}
-				exec curl \
-					-H 'referer: https://ww5.dubbedanime.net/login' \
-					-H 'origin: https://ww5.dubbedanime.net' \
-					--data "username=$1" \
-					--data "password=$2" \
-					--data 'remember=yes' \
-					https://otaku.cafe/forums/connect.php \
-					-so /dev/null \
-					--cookie-jar ~/.da-cookies.txt
 				;;
 			-i | --id)
 				#+option
@@ -1629,7 +1610,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		shift
 	done
 	if [[ -n $TYPE_ANIME ]] && {
-		[[ $TYPE_ANIME = subbed                         ]] || [[ $TYPE_ANIME = dubbed ]]
+		[[ $TYPE_ANIME = subbed ]] || [[ $TYPE_ANIME = dubbed ]]
 	}; then
 		tr=$TYPE_ANIME
 	else
@@ -1637,42 +1618,37 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	fi
 	if {
 		[[ -n "$FILE_LIST_RANGE" ]] || [[ -n "$RES_LIST" ]]
-	}                                                        && $DOWNLOAD_ALL; then
+	} && $DOWNLOAD_ALL; then
 		DOWNLOAD_ALL=false
 		echo -e "Warning: --all/-a option can only be used when no\n\tselection or episode limit specified.\n\tDisabling autodownload mode"
 	fi
 	[[ -n $FORCE ]] && echo "${FORCE} enforced."
 	if [[ $SEARCHSTR != '' ]] || ${DO_UPDATE:-false} || ${DO_UPDATE_LIST:-false}; then
-		python3 -c 'from sys import argv, stdout
-import requests, os
-from http.cookiejar import MozillaCookieJar as MCJ
-from lxml import html
-
-cookiesFile = os.environ["HOME"] + "/.da-cookies.txt"
-
-try:
-	cj = MCJ(cookiesFile)
-	if os.path.exists(cookiesFile):
-		cj.load(ignore_discard=True, ignore_expires=True)
-
-	r = requests.Session()
-	r.cookies = cj
-	r.headers.update({"user-agent": "'"$USER_AGENT"'"})
-	html.fromstring(r.get("https://ww5.dubbedanime.net/").text).get_element_by_id("logo")
-except:
-	print("Update hijacked cookies in \"~/.da-cookies.txt\"")
-	exit(1)' || exit
 		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
-			if [ -x "${0%/*}/dubbedanime.scrap" ] && ${LOGGED_IN:-false}; then
-				"${0%/*}/dubbedanime.scrap"
-				trap 'close_bus' SIGINT SIGTERM ERR EXIT
-				close_bus()
-				{
-					ret=$?
-					gdbus call --session --dest local.dubbedanime --object-path /scrapper --method local.this.scrapper.quit &> /dev/null
-					exit $ret
-				}
+			if [ -x "${0%/*}/dubbedanime.scrap" ] && [ -x "$CHROMEDRIVER_PATH" ]; then
+				scrapper_bus=$(
+					export CHROMEDRIVER_PATH
+					"${0%/*}/dubbedanime.scrap"
+				)
+				if [ "$scrapper_bus" ]; then
+					SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
+					trap 'close_bus' SIGINT SIGTERM ERR EXIT
+					close_bus()
+					{
+						ret=$?
+						gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method local.scrapper.quit &> /dev/null
+						exit $ret
+					}
+				fi
 			fi
+			scrapper_call()
+			{
+				if gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method org.freedesktop.DBus.Peer.Ping > /dev/null 2>&1; then
+					method=$1
+					shift
+					gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method "$method" "$@"
+				fi
+			}
 			if ${DO_UPDATE:-false} || ${DO_UPDATE_LIST:-false}; then
 				da_update
 				exit
