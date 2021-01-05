@@ -1,0 +1,49 @@
+#compdef git-rmbr
+#description delete branch from both local and remote repository.
+
+(( $+functions[__git_describe_commit] )) ||
+__git_describe_commit () {
+	__git_describe_branch $1 $2 $3 -M 'r:|/=* r:|=*' "${(@)argv[4,-1]}"
+}
+
+(( $+functions[__git_describe_branch] )) ||
+__git_describe_branch () {
+	local __commits_in=$1
+	local __tag=$2
+	local __desc=$3
+	shift 3
+	integer maxverbose
+	if zstyle -s :completion:$curcontext: max-verbose maxverbose &&
+	(( ${compstate[nmatches]} <= maxverbose )); then
+		local __c
+		local -a __commits
+		for __c in ${(P)__commits_in}; do
+			__commits+=("${__c}:${$(_call_program describe git rev-list -1 --oneline $__c)//:/\\:}")
+		done
+		_describe -t $__tag $__desc __commits "$@"
+	else
+		local expl
+		_wanted $__tag expl $__desc compadd "$@" -a - $__commits_in
+	fi
+}
+
+(( $+functions[__git_command_successful] )) ||
+__git_command_successful () {
+	if (( ${#*:#0} > 0 )); then
+		_message 'not a git repository'
+		return 1
+	fi
+	return 0
+}
+
+(( $+functions[__git_branch_names] )) ||
+__git_branch_names () {
+	local expl
+	declare -a branch_names
+	branch_names=(${${(f)"$(_call_program branchrefs git for-each-ref --format='"%(refname)"' refs/heads 2>/dev/null)"}#refs/heads/})
+	__git_command_successful $pipestatus || return 1
+	__git_describe_commit branch_names branch-names 'branch name' "$@"
+}
+
+_arguments -s "1:branch:__git_branch_names"
+
