@@ -1,16 +1,35 @@
-#!/bin/env python3
+#!/usr/bin/env python3
+#
+# Copyright 2021 Ahmad Hasan Mubashshir <ahmubashshir@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+#
+#
 
-from os import environ, devnull, path, makedirs, symlink, remove, fork, setsid
-import logging as log
+
 import sys
-from subprocess import run, Popen
+import re
+import os
+
+from pydbus import SessionBus
+from os import environ, path
 from threading import Thread
-from pathlib import Path
-try:
-    from bs4 import BeautifulSoup
-except ModuleNotFoundError:
-    print("beautifulsoup4 not installed")
-    exit()
+from gi.repository import GLib
+from lxml.html import document_fromstring as html_fromstr
+
 try:
     from selenium import webdriver
 except ModuleNotFoundError:
@@ -18,75 +37,113 @@ except ModuleNotFoundError:
     exit()
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 
-try:
-    p = Popen(['chromedriver'], stdout=open(devnull), stderr=open(devnull))
-    p.terminate()
-    p.communicate()
-except FileNotFoundError:
-    print('chromedriver not installed')
-
-import dbus
-import dbus.service
-import dbus.mainloop.glib
-from gi.repository import GLib
-
-import lxml.html
-import time
-
-profile_path    = Path(environ['HOME']).joinpath(".config/da-scrapper")
-user_agent      = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'
-class BThread(Thread):
-    pass
 
 class BThread(Thread):
-    def __init__(self, options):
+    def __init__(self):
         Thread.__init__(self)
-        self.browser = webdriver.Chrome(options=options)
+        self.browser = None
+        self.ec = EC.presence_of_element_located(
+            (By.XPATH, '/html/body/script[contains(text(), "xToken")]'))
+
+    @property
+    def loaded(self):
+        try:
+            return self.ec(self.browser) and True
+        except:
+            return False
+
     def run(self):
-        pass
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.browser = webdriver.Chrome(
+            options=options, executable_path=environ['CHROMEDRIVER_PATH'])
 
-class HelloWorld(dbus.service.Object):
-    def __init__(self, conn=None, object_path=None, bus_name=None, start=None):
-        dbus.service.Object.__init__(self, conn, object_path, bus_name)
-        _options = webdriver.ChromeOptions()
-        _options.add_argument(f"user-data-dir={profile_path}")
-        _options.add_argument(f"user-agent={user_agent}")
-        _options.headless = True
-        self.thread = BThread(_options)
-        self.thread.start()
 
-    @dbus.service.method(dbus_interface="local.this.scrapper", in_signature="s", sender_keyword="sender", connection_keyword="conn")
-    def load(self, url, sender=None, conn=None):
+class Scrapper(object):
+    """
+    <node>
+            <interface name='local.scrapper'>
+                    <method name='load'>
+                            <arg type='s' name='url' direction='in'/>
+                    </method>
+                    <method name='quit' />
+                    <property name="token" type="s" access="read" />
+            </interface>
+    </node>
+    """
+    __token = None
+
+    def __init__(self, loop=None):
+        if not loop:
+            raise RuntimeError("Main Loop not defined")
+        else:
+            self.loop = loop
+            self.thread = BThread()
+            self.thread.start()
+
+    def load(self, url):
+        self.__token = None
         self.thread.browser.get(url)
+        return None
 
-    @dbus.service.method(dbus_interface="local.this.scrapper", sender_keyword="sender", connection_keyword="conn")
-    def quit(self, sender=None, conn=None):
+    def quit(self):
+        self.loop.quit()
         self.thread.browser.quit()
         self.thread.join()
-        sys.exit(0)
+        return None
 
-if __name__ == "__main__":
-    if fork() > 0:
-        sys.exit(0)
-    setsid()
-    if fork() > 0:
-        sys.exit(0)
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-    bus = dbus.SessionBus()
-    name = dbus.service.BusName("local.dubbedanime", bus)
-    helloworld = HelloWorld(bus, "/scrapper")
-    mainloop = GLib.MainLoop()
-    mainloop.run()
+    @property
+    def token(self):
+        if self.thread.loaded and not self.__token:
+            html = html_fromstr(self.thread.browser.page_source)
+            data = next(
+                iter(
+                    html.xpath(
+                        '/html/body/script[contains(text(), "xToken")]/text()')
+                ))
+            data = next(
+                n.strip(' ') for n in data.splitlines() if n.find('Token') >= 0
+            )
+            self.__token = re.sub(".*'?x=(.*)';", r'\1', data)
 
-#    WebDriverWait(browser, 600).until(
-#    	EC.presence_of_element_located(
-#    		(
-#				By.XPATH,
-#				'//*[@id="dieselReactWrapper"]'
-#			)
-#		)
-#	)
+        return self.__token or ""
+
+
+if __name__ == '__main__':
+    if not (
+            len(environ.get('CHROMEDRIVER_PATH', '')) > 0 and
+            path.isfile(environ['CHROMEDRIVER_PATH']) and
+            os.access(environ['CHROMEDRIVER_PATH'], os.X_OK)
+    ):
+        sys.exit(1)
+
+    bus_name = "local.scrapper.instance%d" % os.getpid()
+    print(bus_name)
+
+    try:
+        pid = os.fork()
+        if pid > 0:
+            os.waitpid(pid, 0)
+            sys.exit(0)
+    except OSError:
+        sys.exit(1)
+
+    os.setsid()
+    fd = os.open("/dev/null", os.O_RDWR)
+    os.dup2(fd, 0)
+    os.dup2(fd, 1)
+    os.dup2(fd, 2)
+    try:
+        pid = os.fork()
+        if pid > 0:
+            sys.exit(0)
+    except OSError:
+        sys.exit(1)
+
+    bus = SessionBus()
+    loop = GLib.MainLoop()
+    with bus.request_name(bus_name):
+        bus.register_object("/scrapper", Scrapper(loop=loop), Scrapper.__doc__)
+        loop.run()
