@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/env python3
 # [Gedit Tool]
 # Name=Format
 # Input=selection-document
@@ -8,14 +8,8 @@
 # Languages=html
 # Shortcut=F3
 
-check()
-{
-	for n in "$@"; do
-		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n 2>&1 > /dev/null; then
-			echo "$n is not installed" >&2
-			exit 1
-		fi
-	done
-}
-check tidy css-beautify
-tidy -iq -ashtml -utf8 --drop-empty-elements no --newline LF --repeated-attributes keep-first --sort-attributes alpha -w 0 --tidy-mark no --doctype omit --show-warnings no | css-beautify --stdin --indent-with-tabs --space-around-combinator | tidy -iq -ashtml -utf8 --add-meta-charset yes --bare yes --indent-with-tabs yes --newline LF -w 0 --tidy-mark no --drop-empty-elements no 2> /dev/null | sed -E 's/([^\t]*)[ ]{7}/\1\t/g'
+import sys
+from bs4 import BeautifulSoup
+text = sys.stdin.read()
+soup = BeautifulSoup(text, features="lxml")
+print(soup.prettify())
