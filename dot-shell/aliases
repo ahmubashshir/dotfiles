@@ -1,5 +1,6 @@
 #!/bin/bash
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC2139
+# shellcheck disable=SC2142
 if [ -e ~/bin/libbash ]; then
 	source ~/bin/libbash
 fi
@@ -89,3 +90,17 @@ alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='grep -E --color=auto'
+
+# Zsh suffix aliases
+if ((${ZSH_VERSION+1} && ${ZSH_NAME+1})); then
+	alias -s tmate.io=ssh
+	alias -s {txt,md}='less'
+	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
+	alias -s html='lynx'
+	alias -s json="function {
+		[ -z \"\$1\" ] && return
+		[ -x /usr/bin/jiq ] && jiq < \"\$1\" || {
+			jq -C '.' \"\$@\"|less
+		}
+	}"
+fi
