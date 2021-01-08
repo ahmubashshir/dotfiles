@@ -19,13 +19,13 @@ while read line; do
 	export "$line"
 done <<< $(bash -c 'env' 2> /dev/null)
 
-if [ -x ~/.shell/path.$SHELL ]; then
-	export "PATH=$(~/.shell/path.$SHELL)"
+if [ -x ~/.shell/path.${SHELL##*/} ]; then
+	export "PATH=$(~/.shell/path.${SHELL##*/})"
 fi
 
 #xset +dpms
 #xset s blank
 for service in "${services[@]}"; do
-	systemctl --user start "${service}@${DISPLAY}"
+	systemctl --user restart "${service}@${DISPLAY}"
 done
 numlockx on
