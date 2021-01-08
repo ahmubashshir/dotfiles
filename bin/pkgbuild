@@ -1,8 +1,16 @@
 #!/bin/bash -e
-src()
+getcfg()
 {
-	if [ -f "$1" ]; then
-		source "$@"
+	local ___
+	___="$1"
+	shift
+	if [ -f "/etc/$___" ]; then
+		source "/etc/$___" "$@"
+	fi
+	if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/$___" ]; then
+		source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/$___" "$@"
+	elif [ -f "$HOME/.$___" ]; then
+		source "$HOME/.$___" "$@"
 	fi
 }
 if [ -d "$1" ] && [ -f "$1/PKGBUILD" ]; then
@@ -19,29 +27,21 @@ if [ -f WIP ]; then
 	echo This is a Work-in-Progress PKGBUILD.
 	exit 0
 fi
-source /etc/makepkg.conf
-source /etc/pkgrepo.conf
-src ~/.pkgrepo.conf
-src ~/.makepkg.conf
+
+getcfg makepkg.conf
+getcfg pkgbuild.conf
 
 if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
 	unset FORCEREBUILD
 fi
-mkdir -p ~/.config/pkgbuild
+
+REPO="${REPONAME}${REPOEXT}"
 if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]; then
-	repoctl new config "${PKGREPO:-$PWD}/${REPO}"
-	cat >> ~/.config/repoctl/config.toml << EOF
-add_params = [
-  "-v",
-  "-s",
-  "-k",
-  "$GPGKEY" #GPGKEY
-]
-EOF
+	repoctl config new "${PKGREPO:-$PWD}/${REPO}"
 fi
 sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
 if [ "$FORCEREBUILD" != "true" ] || {
-	echo                                "$*" | grep -q '\-f'
+	echo                              "$*" | grep -q '\-f'
 }; then
 	makepkg --packagelist | while read -r pkg; do
 		if [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
