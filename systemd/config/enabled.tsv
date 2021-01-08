@@ -15,6 +15,7 @@ timer	aur-autopush
 timer	epic-claim
 timer	genshin-redeem
 timer	github-sync-forks
+timer	gpg-refresh
 timer	systemd-tmpfiles-clean
 timer	transmission-trackers
 timer	update-notifier

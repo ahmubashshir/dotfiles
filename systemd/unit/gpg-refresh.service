@@ -1,0 +1,6 @@
+[Unit]
+Description=Refresh local keyring
+
+[Service]
+ExecStart=/usr/bin/gpg --refresh-keys
+SuccessExitStatus=2
