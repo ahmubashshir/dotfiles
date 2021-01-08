@@ -1,9 +1,15 @@
 #!/bin/zsh
 alias compinit="compinit -d ~/.cache/zsh/compdump"
-function zcompile {
-	sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
-	builtin zcompile "$@" &!
+fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
+
+autoload -Uz zcompile zcompare 
+
+function source {
+	if [ -f "$1" ];then
+		builtin source "$@"
+	fi
 }
+
 if [ ! -d ~/.cache/zsh ];then
 	rm -f ~/.cache/zsh
 	mkdir -p ~/.cache/zsh
@@ -15,7 +21,7 @@ function TRAPUSR1 { rehash; }
 function zcompinit {
 	if [[ -o interactive ]];then
 		compinit $@
-		safe-source $HOME/.zsh/compdef
+		source $HOME/.zsh/compdef
 		[[ $* =~ -[[:alnum:]]*C ]] || {
 			local n k
 			for n in $fpath[@];do
@@ -28,36 +34,19 @@ function zcompinit {
 				fi
 			done
 			compinit -C
-			safe-source $HOME/.zsh/compdef
+			source $HOME/.zsh/compdef
 		}
 	fi
 }
 
-function safe-source {
-	if [ -f "$1" ];then
-		source "$@"
-	fi
-}
-function zrecompile_start {
-	for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef};do
-		if [ -f $n ];then
-			zcompare $n -Rz
-		fi
-	done
-}
-
-function zcompare {
-	if [[ -w $1:P:h ]] && [[ -s ${1} && ( ! -s ${1}.zwc || ${1} -nt ${1}.zwc) ]]; then
-		zcompile "${@:2}" "$1"
-	fi
-}
 if [[ -o interactive ]];then
 	autoload -Uz compinit
 	setopt extendedglob
-	safe-source "$HOME/.zinputrc"
-	safe-source $HOME'/.shell/import'
+	source "$HOME/.zinputrc"
+	source $HOME'/.shell/import'
 	[ -z "$(get_term|grep 'geany')" ] && HISTFILE=${HISTFILE:-~/.zsh_history}
 fi
-safe-source $HOME'/.shell/environment'
-safe-source /usr/share/doc/pkgfile/command-not-found.zsh
-safe-source ./.env_setup
+
+source $HOME'/.shell/environment'
+source /usr/share/doc/pkgfile/command-not-found.zsh
+source ./.env_setup

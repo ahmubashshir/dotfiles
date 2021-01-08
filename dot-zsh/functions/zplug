@@ -34,7 +34,7 @@ do
 				rm -f "$plugin.zwc"
 				zcompile "$plugin" &!
 			fi
-			source "$plugin" "$@"
+			builtin source "$plugin" "$@"
 			plugins+="$plugname"
 			return 0
 		fi
