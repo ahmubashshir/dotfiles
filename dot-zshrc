@@ -212,18 +212,6 @@ if [[ $(get_term) = octopi ]];then
 	unset PS1 PS2 PS3 PS4 HISTFILE
 fi
 
-# suffix aliases
-{
-	function jq-pager {
-		[ -z "$1" ] && return
-		[ -x /usr/bin/jiq ] && jiq < "$1" || { jq -C '.' "$@"|less;}
-	}
-	alias -s json='jq-pager'
-	alias -s {txt,md}='less'
-	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
-	alias -s html='lynx'
-}
-
 zcompinit
 if [ -e zprof ];then
 	unsetopt XTRACE
