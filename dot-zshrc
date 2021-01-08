@@ -10,7 +10,6 @@ if [ -e zprof ];then
 fi
 
 ## variables
-fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
 zsh_options=(
 	extended_glob prompt_subst rematchpcre
 	hist_fcntl_lock inc_append_history
@@ -43,10 +42,10 @@ HISTDUP=erase
 
 ## Lazy load section
 autoload -Uz add-zsh-hook
-autoload -Uz zplug
+autoload -Uz zplug zrecompile
 
 # compile this file
-zrecompile_start&!
+zrecompile
 ## Start
 case "$TERM" in
 	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;

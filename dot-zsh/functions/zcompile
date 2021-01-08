@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<$argv[-1]:t >&2
+builtin zcompile "$@" &!

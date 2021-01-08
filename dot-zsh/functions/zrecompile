@@ -1,0 +1,8 @@
+#!/bin/zsh
+
+autoload -Uz zcompare
+for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef} $fpath[1]/^*.zwc;do
+	if [ -f $n ];then
+		zcompare $n -Rz
+	fi
+done &!
