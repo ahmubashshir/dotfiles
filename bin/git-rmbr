@@ -1,16 +1,16 @@
 #!/bin/bash
 branch=$(git rev-parse --abbrev-ref HEAD)
 default=$(git remote show origin 2>&3 | grep "HEAD branch" | awk '{print $3}')
-if [ $1 != "" ] && git branch 2> /dev/null | grep -q "$1"; then
+if [ "$1" != "" ] && git branch 2> /dev/null | grep -q "$1"; then
 	branch=$1
-else
+elif (($# > 0)); then
 	echo "git-rmbr: branch '$1' doesn't exists." >&2
 	exit 1
 fi
 if [ "$branch" != "$default" ]; then
 	git checkout "$default"
 	git branch -D "$branch" 2> /dev/null
-	git push origin --delete "$br" 2> /dev/null
+	git push origin --delete "$branch" 2> /dev/null
 else
 	echo "git-rmbr: can't delete default branch: $default" >&2
 	exit 2
