@@ -1,3 +1,4 @@
+#!/bin/bash
 # ~/.profile: executed by the command interpreter for login shells.
 # This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
 # exists.
@@ -15,20 +16,20 @@ if [ -f "$HOME/.bashrc" ] && [ -n "$BASH_VERSION" ]; then
 	. "$HOME/.bashrc"
 fi
 
-if [ -x ~/.shell/path.${SHELL##*/} ];then
+if [ -x ~/.shell/path.${SHELL##*/} ]; then
 	export "PATH=$(~/.shell/path.${SHELL##*/})"
 else
 	append_path()
 	{
-		for n in "$@";do
+		for n in "$@"; do
 			case ":$PATH:" in
-				*:"$n":*)
-				;;
+				*:"$n":*) ;;
+
 				*)
-					if [ -d "$n" ];then
+					if [ -d "$n" ]; then
 						${high:-false} && PATH="$n${PATH:+:$PATH}" || PATH="${PATH:+$PATH:}$n"
 					fi
-				;;
+					;;
 			esac
 		done
 	}
@@ -36,14 +37,14 @@ else
 	high=true append_path "$HOME/.go/bin"
 	high=true append_path "$HOME/.local/bin"
 	unset -f append_path
-	for n in $(echo $PATH|tr ':' '\n');do
+	for n in $(echo $PATH | tr ':' '\n'); do
 		case ":$P:" in
-			*:"$n":*) continue;;
+			*:"$n":*) continue ;;
 			*)
-				if [ -d "$n" ];then
+				if [ -d "$n" ]; then
 					P="${P:+$P:}$n"
 				fi
-			;;
+				;;
 		esac
 	done
 	export PATH=$P
