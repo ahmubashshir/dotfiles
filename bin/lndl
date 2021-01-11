@@ -22,7 +22,7 @@ if tty -s; then
 	fi
 fi
 readonly ALL_OFF BOLD BLUE GREEN RED YELLOW
-show_help()
+function show_help
 {
 	echo "usage ${0##*/}: "
 	echo "  (h)elp           show this."
@@ -31,11 +31,13 @@ show_help()
 	echo "  (s)ync-(t)hread  Synchronize library with remote folder."
 	echo "  lib              Use functions defined here in scripts."
 }
-log_entry()
+
+function log_entry
 {
 	echo "[$(date +%s)] [lndl-$action] [$target]${etarget:+ [$etarget]}${data:+ [$data]}" >> "$LOG"
 }
-add_sync()
+
+function add_sync
 {
 	local id name response mime dir pending target etarget action data
 	pending=()
@@ -84,7 +86,8 @@ EOF
 		LNLIB="$0" "$each"
 	done
 }
-start_sync()
+
+function start_sync
 {
 	local IFS n
 	echo "$GREEN===> Synchronizing Light Novel Library...$ALL_OFF"
@@ -96,24 +99,29 @@ start_sync()
 	done
 
 }
+
 #lib
-drive_sync()
+function drive_sync
 {
 	drv_sync "$@"
 }
-download()
+
+function download
 {
 	curl -sL "$1" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s ${size:-0} > "$2"
 }
-read_header()
+
+function read_header
 {
 	awk -F: -v name="$1" 'gsub(/\r/,"") && tolower($1) == name {gsub(name":","");gsub(/^[ \t]+/,"");gsub(/[ \t]+$/,"");val=$0} END{print val}'
 }
-http_code()
+
+function http_code
 {
 	awk '/^HTTP/{code=$2} END{print code}'
 }
-cleanup()
+
+function cleanup
 {
 	if (($# > 0 && $# % 3 == 0)); then
 		echo " $BLUE==>$GREEN Tidying up...$ALL_OFF"
@@ -125,7 +133,8 @@ cleanup()
 		find -maxdepth 1 -type f "$@" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
 	fi
 }
-lock()
+
+function lock
 {
 	local FD
 	trap no_more_locking EXIT
@@ -134,9 +143,9 @@ lock()
 	eval "_lock()             { flock -\$1 $FD; }"
 	no_more_locking()
 	{
-		_lock     u
-		_lock              xn && rm -f ./lock.lck
-		unset                                           _lock
+		_lock   u
+		_lock            xn && rm -f ./lock.lck
+		unset                                         _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
@@ -159,7 +168,7 @@ function byte_hr()
 	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
 }
 
-ellipsis()
+function ellipsis
 {
 	python3 -c "try:
 	from sys import argv
@@ -173,13 +182,14 @@ except KeyboardInterrupt:
 }
 
 # Google Drive
-drv_ls()
+function drv_ls
 {
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
 	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2> /dev/null
 	return $?
 }
-drv_get()
+
+function drv_get
 {
 	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
 	local size JSON md5sums try target etarget action data COND
@@ -210,7 +220,8 @@ drv_get()
 		log_entry
 	fi
 }
-drv_sync()
+
+function drv_sync
 {
 	local files n name id mime
 	lock || return 1
@@ -220,7 +231,7 @@ drv_sync()
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo    " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo  " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
 		for n in $(drv_ls $1); do
@@ -247,7 +258,7 @@ drv_sync()
 }
 
 # Armaell Library
-al_get()
+function al_get
 {
 	local size HEADER try target etarget action data COND
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
@@ -277,13 +288,15 @@ al_get()
 		log_entry
 	fi
 }
-al_ls()
+
+function al_ls
 {
 	local line
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
 	curl -s "https://armaell-library.net/novel/$1" | awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
 }
-al_sync()
+
+function al_sync
 {
 	local files n name urls
 	lock || return 1
@@ -293,7 +306,7 @@ al_sync()
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo    " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo  " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
 		read -rsa urls < <(al_ls $1)
@@ -330,7 +343,7 @@ else
 		add | a)
 			shift
 			unset byte_hr drv_ls drv_get drv_sync start_sync
-			add_sync                                                "$@"
+			add_sync                                              "$@"
 			;;
 		sync | s)
 			shift
@@ -380,9 +393,9 @@ else
 			;;
 		*)
 			unset byte_hr drv_ls drv_get drv_sync start_sync add_sync
-			echo                                                "ERROR: Unsupported command '$1'"
+			echo                                              "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                                 1
+			exit                                                                                               1
 			;;
 	esac
 fi
