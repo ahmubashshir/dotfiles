@@ -1,7 +1,7 @@
 #!/bin/bash
 if ! {
 	hash jq && hash curl && hash pv
-}                                        2> /dev/null; then
+} 2> /dev/null; then
 	exit 1
 fi
 if tty -s; then
@@ -134,9 +134,9 @@ lock()
 	eval "_lock()             { flock -\$1 $FD; }"
 	no_more_locking()
 	{
-		_lock       u
-		_lock                xn && rm -f ./lock.lck
-		unset                                             _lock
+		_lock     u
+		_lock              xn && rm -f ./lock.lck
+		unset                                           _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
@@ -190,14 +190,14 @@ drv_get()
 		size="$(echo "$JSON" | jq -r .size)"
 	done
 	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
-	if echo "$md5sums" | md5sum -c --quiet 2>&1 > /dev/null; then
+	if echo "$md5sums" | md5sum -c --status --ignore-missing; then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
 		sleep 2
 		return 0
 	else
 		echo
 		try=0
-		until echo "$md5sums" | md5sum -c --quiet 2>&1 > /dev/null || ((try == 5)); do
+		until echo "$md5sums" | md5sum -c --status --ignore-missing || ((try == 5)); do
 			tput cuu1
 			download "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY" "$1"
 			((try += 1))
@@ -220,7 +220,7 @@ drv_sync()
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo      " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo    " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
 		for n in $(drv_ls $1); do
@@ -293,7 +293,7 @@ al_sync()
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo      " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo    " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
 		read -rsa urls < <(al_ls $1)
@@ -330,7 +330,7 @@ else
 		add | a)
 			shift
 			unset byte_hr drv_ls drv_get drv_sync start_sync
-			add_sync                                                  "$@"
+			add_sync                                                "$@"
 			;;
 		sync | s)
 			shift
@@ -380,9 +380,9 @@ else
 			;;
 		*)
 			unset byte_hr drv_ls drv_get drv_sync start_sync add_sync
-			echo                                                  "ERROR: Unsupported command '$1'"
+			echo                                                "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                                   1
+			exit                                                                                                 1
 			;;
 	esac
 fi
