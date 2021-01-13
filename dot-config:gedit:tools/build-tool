@@ -18,13 +18,13 @@ try()
 	case $1 in
 		autogen.sh | configure)
 			tool='make'
-			BUILDDIR"=$(dirname "$target")"
+			BUILDDIR="$(dirname "$target")"
 			$target
 			;;
 		CMakeLists.txt)
 			cd "$(dirname "$target")" || exit
 			mkdir builddir
-			pushd   builddir || exit
+			pushd builddir || exit
 			BUILDDIR="$PWD"
 			tool='make'
 			cmake ..
