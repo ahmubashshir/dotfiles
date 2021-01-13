@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r158.6a8c38b
+# VERSION r159.8a69985
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -839,7 +839,7 @@ da_read_ep_json()
 {
 	cat | {
 		jq -Mc '.videos[]|del(.date)'
-		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$2" | jq -Mc '.[]'
+		curl -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$2" 2> /dev/null | jq -Mc '.[]' 2> /dev/null
 	} | jq -Mc 'select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | eval "$1"
 }
 get_mapped()
@@ -936,14 +936,22 @@ da_get_episede()
 			fi
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
 			ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
+			slug=$(
+				echo "$parse_episode_page" |
+					jq -r '.slug' |
+					sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
+			)
 			ep_id_list=$(
 				echo "$parse_episode_page" |
-					da_read_ep_json "$filter" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")"
+					da_read_ep_json "$filter" "$slug"
 			)
-
 			if [ -z "$ep_id_list" ]; then
 				tr=subbed
-				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$(echo "$parse_episode_page" | jq -r '.slug' | sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/")")
+				slug=$(
+					echo "$parse_episode_page" |
+						jq -r '.slug'
+				)
+				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$slug")
 			fi
 			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
 				ep_title="${ep_title// ep / extra }"
@@ -1054,9 +1062,9 @@ download()
 			elif ((tried <= ${MAX_TRY:-5})); then
 				tput cuu 2
 				((tried > 1)) && (
-					tput        el1
-					tput                 el
-					tput                         cuu1
+					tput      el1
+					tput               el
+					tput                       cuu1
 				)
 				tput el1
 				tput el
@@ -1096,7 +1104,7 @@ compare_episode()
 		BS=524288
 	fi
 	if [ ! -e "$1" ] || {
-		[              -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
+		[            -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
 	}; then
 		return 0
 	elif [ "$CHECK_FILE" == "error" ]; then
@@ -1348,6 +1356,9 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#text: enable debug mode
 				#-option
 				DEBUG=true
+				alias start_spinner=echo
+				alias vbar=echo
+				alias stop_spinner=true
 				;;
 			-A)
 				#+option
