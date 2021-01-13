@@ -8,10 +8,10 @@
 @define-color critical_popup rgba(120, 34, 36, 0.5);
 @define-color low_popup rgba(39, 41, 52, 0.5);
 
-@define-color close #282a36;
-@define-color close_normal rgba(191, 85, 91, 0.75);
-@define-color close_hover rgb(226, 91, 99);
-@define-color close_active rgb(223, 48, 56);
+@define-color close rgb(20, 26, 27);
+@define-color close_normal rgba(145, 90, 94, 0.75);
+@define-color close_hover rgb(244, 96, 103);
+@define-color close_active rgb(241, 48, 57);
 
 .blurredBG,
 #main_window,
@@ -81,6 +81,7 @@ button.button-close > label {
 	font-weight: bolder;
 	font-family: monospace;
 	padding: 0em;
+	margin: -1.4em;
 	font-size: 1.4em;
 	color: @close;
 }
