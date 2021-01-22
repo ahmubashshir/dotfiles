@@ -7,9 +7,9 @@ function displaytime
 	local M=$(((T / 60) % 60))
 	local S=$((T % 60))
 	printf '<txt>'
-	((D > 0)) && printf '%dd ' $D
+	((D > 0)) && printf '%dd\n' $D
 	((H > 0)) && printf '%dh\n' $H
-	((M > 0)) && printf '%dm ' $M
+	((M > 0)) && printf '%dm\n' $M
 	printf '%ds</txt>\n' $S
 }
 displaytime "$(datediff -f%S "$(uptime -s)$(date +%z)" now)"
