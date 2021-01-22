@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# shellcheck disable=SC1090,SC1091
 getcfg()
 {
 	local ___
@@ -44,20 +45,23 @@ if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]
 	repoctl config new "${PKGREPO:-$PWD}/${REPO}"
 fi
 sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
-if [ "$FORCEREBUILD" != "true" ] || {
-	echo                            "$*" | grep -q '\-f'
-}; then
-	makepkg --packagelist | while read -r pkg; do
-		if [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
-			FORCEREBUILD=true
-		fi
-	done
-fi
-set -- -cC -s ${FORCEREBUILD:+-f} "$@"
+
+while read -r pkg; do
+	if [ -f "${PKGREPO:-$PWD}/${pkg##*/}" ] && [[ $FORCEREBUILD != "true" ]]; then
+		echo "Already built in repo."
+		exit 0
+	elif (! echo "$*" | grep -q '\-f') && [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
+		FORCEREBUILD=true
+		break
+	fi
+done < <(makepkg --packagelist)
+
+set -- -cC -s "${FORCEREBUILD:+-f}" "$@"
+
 if [ -z "$CHROOT" ]; then
 	makepkg "$@"
-elif command -v makechrootpkg 2>&1 > /dev/null; then
-	makechrootpkg -c -r $CHROOT -- "$@"
+elif command -v makechrootpkg > /dev/null 2>&1; then
+	makechrootpkg -c -r "$CHROOT" -- "$@"
 	makepkg --packagelist | while read -r pkg; do
 		gpg -u "$GPGKEY" --detach-sign "$pkg"
 	done
