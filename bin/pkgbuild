@@ -35,13 +35,17 @@ if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
 	unset FORCEREBUILD
 fi
 
+if [ -d "$CHROOT/root" ]; then
+	arch-nspawn "$CHROOT/root" pacman -Syu
+fi
+
 REPO="${REPONAME}${REPOEXT}"
 if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]; then
 	repoctl config new "${PKGREPO:-$PWD}/${REPO}"
 fi
 sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
 if [ "$FORCEREBUILD" != "true" ] || {
-	echo                              "$*" | grep -q '\-f'
+	echo                            "$*" | grep -q '\-f'
 }; then
 	makepkg --packagelist | while read -r pkg; do
 		if [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
