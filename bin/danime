@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r159.8a69985
+# VERSION r162.8be3e18
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -688,7 +688,7 @@ da_get_len()
 }
 da_get()
 {
-	local series TITLE TYPE id
+	local series TITLE TYPE id ep_slug
 	unset null_ep_count da_page da_page_json baseurl url epc ep
 	series="$1"
 	TITLE="$2"
@@ -713,7 +713,7 @@ da_get()
 	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
 	if ! {
 		da_db has && ${FILE_LIST:-false}
-	}                                    && [ -z "$FILE_LIST_RANGE" ]; then
+	}                              && [ -z "$FILE_LIST_RANGE" ]; then
 		da_db add
 	fi
 	da_db set path "\"$PWD\""
@@ -821,9 +821,25 @@ da_get()
 	total_pw=$(echo "$ep" | tr \  \\n | wc -l)
 	${DEBUG:-false} && set -x
 	for k in $ep; do
+		ep_slug="$(
+			echo "$url" |
+				head -n "$k" |
+				tail -1
+		)"
 		((ep_progress += 1))
-		scrapper_call local.scrapper.load "https://ww5.dubbedanime.net/$(echo "$url" | head -n "$k" | tail -1)" &> /dev/null
-		da_get_episede "$(echo "$url" | head -n "$k" | tail -1)" "$k" "$epc" "$ep_progress" "$total_pw"
+		(
+			echo ":$DA_IGNORE_EP:" |
+				grep -q ":$(
+					echo "$ep_slug" |
+						cut -d- -f1 |
+						xargs basename
+				):"
+		) && {
+			vbar "skipping $(echo "$ep_slug" | cut -d- -f1)"
+			continue
+		}
+		scrapper_call local.scrapper.load "https://ww5.dubbedanime.net/$ep_slug" &> /dev/null
+		da_get_episede "$ep_slug" "$k" "$epc" "$ep_progress" "$total_pw"
 		if ! (exit $?); then
 			echo "Failed to download $k"
 			[[ $DISPLAY != '' ]] && notify-send --urgency=normal -a DubbedAnime --expire-time=1000000 --icon=emblem-downloads --category=transfer.error "Download Failed" "Failed to download <a href=\"$(echo "$url" | head -n "$k" | tail -1)\">file $k</a>"
