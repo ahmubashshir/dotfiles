@@ -57,8 +57,8 @@ if hash gcp 1>&3 2>&1; then
 	alias cp='gcp'
 fi
 alias failunlock='faillock --reset --user $USER'
-alias panbackup='xfpanel-switch save $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
-alias panload='xfpanel-switch load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias panbackup='xfce4-panel-profiles save $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
+alias panload='xfce4-panel-profiles load $HOME/.local/share/xfpanel-switch/Default.tar.bz2'
 alias tree='tree --dirsfirst'
 alias prime='env DRI_PRIME=1'
 if [ -x /usr/bin/wormhole ]; then
