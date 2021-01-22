@@ -1,11 +1,43 @@
 #!/bin/bash
+lib_funcs=(
+	download
+	read_header
+	http_code
+	cleanup
+	lock
+	byte_hr
+	ellipsis
+	log_entry
+	drv_api_call
+)
+nonlib_funcs=(
+	add_sync
+	start_sync
+)
+source_funcs=(
+	# google drive
+	drive_sync
+	drv_ls
+	drv_get
+	drv_sync
+	# armaell's library
+	al_get
+	al_ls
+	al_sync
+)
+all_funcs=(
+	"${lib_funcs[@]}"
+	"${source_funcs[@]}"
+	"${nonlib_funcs[@]}"
+)
+
 if ! {
 	hash jq && hash curl && hash pv
 } 2> /dev/null; then
 	exit 1
 fi
 if tty -s; then
-	if tput setaf 0 2>&1 > /dev/null; then
+	if tput setaf 0 > /dev/null 2>&1; then
 		ALL_OFF="$(tput sgr0)"
 		BOLD="$(tput bold)"
 		BLUE="${BOLD}$(tput setaf 4)"
@@ -48,14 +80,14 @@ function add_sync
 			[[ -n $name ]] && mime='inode/dir-novel.folder'
 		else
 			src=drv
-			response="$(curl -s "https://www.googleapis.com/drive/v3/files/$id?key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g' | head -n -1 | tail -n +3)"
+			response="$(drv_api_call "files/$id" | sed 's|^[[:space:]]*||g;s|: |:|g;s|,$||g;s|":"|:|g;s|^"||g;s|"$||g' | head -n -1 | tail -n +3)"
 			name="$(echo "$response" | grep ^name | cut -d: -f2-)"
 			mime="$(echo "$response" | grep ^mime | cut -d: -f2-)"
 		fi
 		if [[ ${mime##*.} == folder ]]; then
 			dir="$LNDIR/$name"
 			if [ -d "$dir" ]; then
-				echo "$GREEN===> Updating '"$src:$(ellipsis $(($(tput cols) - 20)) "$name")"'...$ALL_OFF"
+				echo "$GREEN===> Updating '$src:$(ellipsis "$(($(tput cols) - 20))" "$name")'...$ALL_OFF"
 				action=old
 				target="$name"
 				etarget='{re-sync:'$src'}'
@@ -65,7 +97,7 @@ function add_sync
 				target="$name"
 				etarget='{new-sync:'$src'}'
 				data="ID=$id"
-				echo "$GREEN===> Adding '"$src:$(ellipsis $(($(tput cols) - 20)) "$name")"'...$ALL_OFF"
+				echo "$GREEN===> Adding '$src:$(ellipsis "$(($(tput cols) - 20))" "$name")'...$ALL_OFF"
 				mkdir -p "$dir"
 			fi
 			log_entry
@@ -108,7 +140,11 @@ function drive_sync
 
 function download
 {
-	curl -sL "$1" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s ${size:-0} > "$2"
+	local url name
+	url="$1"
+	name="$2"
+	shift "$( (($# <= 2)) && echo $# || echo 2)"
+	curl "$@" -sL "$url" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s "${size:-0}" > "$name"
 }
 
 function read_header
@@ -130,7 +166,7 @@ function cleanup
 				set -- -not -samefile "$name" "$@"
 			fi
 		done
-		find -maxdepth 1 -type f "$@" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
+		find . -maxdepth 1 -type f "$@" -printf "  $YELLOW->$GREEN Purging %f.$ALL_OFF\n" -delete
 	fi
 }
 
@@ -143,16 +179,17 @@ function lock
 	eval "_lock()             { flock -\$1 $FD; }"
 	no_more_locking()
 	{
-		_lock   u
-		_lock            xn && rm -f ./lock.lck
-		unset                                         _lock
+		_lock u
+		_lock          xn && rm -f ./lock.lck
+		unset                                       _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
 		return 1
 	}
 }
-function byte_hr()
+
+function byte_hr
 {
 	local size_670b2dbb unit_670b2dbb n_670b2dbb
 	size_670b2dbb=$1
@@ -182,26 +219,29 @@ except KeyboardInterrupt:
 }
 
 # Google Drive
+function drv_api_call
+{
+	curl -s "https://www.googleapis.com/drive/v3/$1?key=$DRIVE_API_KEY${2:+&$2}"
+}
 function drv_ls
 {
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
-	curl -s "https://www.googleapis.com/drive/v3/files?q=%27$1%27+in+parents&orderBy=folder,name&key=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2> /dev/null
+	drv_api_call "files" "q=%27$1%27+in+parents&orderBy=folder,name" | jq -r '.files[]|"name:"+(.name|@uri)+"|id:"+.id+"|mimeType:"+.mimeType' 2> /dev/null
 	return $?
 }
 
 function drv_get
 {
-	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
-	local size JSON md5sums try target etarget action data COND
+	local size JSON md5sums try target etarget action data
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ]; do
-		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		JSON=$(drv_api_call "files/$2" "fields=md5Checksum,size")
 		size="$(echo "$JSON" | jq -r .size)"
 	done
 	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
 	if echo "$md5sums" | md5sum -c --status --ignore-missing; then
-		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr "$size")].$ALL_OFF"
 		sleep 2
 		return 0
 	else
@@ -209,11 +249,11 @@ function drv_get
 		try=0
 		until echo "$md5sums" | md5sum -c --status --ignore-missing || ((try == 5)); do
 			tput cuu1
-			download "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY" "$1"
+			download "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&alt=media" "$1"
 			((try += 1))
 			sleep 5
 		done
-		action=get
+		action="get"
 		target="$(basename "$PWD")"
 		etarget="$1"
 		data="ID=$2;MD5SUM=$(echo "$JSON" | jq -r .md5Checksum)"
@@ -226,24 +266,24 @@ function drv_sync
 	local files n name id mime
 	lock || return 1
 	files=()
-	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
-	let try=0
+	${EPUBONLY:-true} && find . -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
+	try=0
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo  " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
-		for n in $(drv_ls $1); do
-			name=$(echo $n | cut -d\| -f1 | cut -d: -f2 | sed 's@+@ @g;s@%@\\x@g' | xargs -0 echo -ne)
-			id=$(echo $n | cut -d\| -f2 | cut -d: -f2)
-			mime=$(echo $n | cut -d\| -f3 | cut -d: -f2)
+		for n in $(drv_ls "$1"); do
+			name=$(echo "$n" | cut -d\| -f1 | cut -d: -f2 | sed 's@+@ @g;s@%@\\x@g' | xargs -0 echo -ne)
+			id=$(echo "$n" | cut -d\| -f2 | cut -d: -f2)
+			mime=$(echo "$n" | cut -d\| -f3 | cut -d: -f2)
 			if [[ $mime != 'application/vnd.google-apps.folder' ]]; then
 				drv_get "$name" "$id"
 				files+=('-not' '-samefile' "$name")
 			else
 				mkdir -p "$name" 2> /dev/null && (
-					cd "$name" && drv_sync $id && cd ..
+					cd "$name" && drv_sync "$id" && cd ..
 				) || echo "Invalid name \"$name\"" >&2
 			fi
 		done
@@ -260,15 +300,15 @@ function drv_sync
 # Armaell Library
 function al_get
 {
-	local size HEADER try target etarget action data COND
+	local size HEADER try target etarget action data
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
 	until [ "$(echo "$HEADER" | http_code)" = "200" ]; do
 		HEADER=$(curl -kLsIXGET "$2")
 	done
 	size="$(echo "$HEADER" | read_header content-length)"
 	date="$(echo "$HEADER" | read_header last-modified | xargs --null date +%s -d)"
-	if [ -f "$(echo $1 | tr -d $'\r')" ] && ((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))); then
-		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+	if [ -f "$(echo "$1" | tr -d $'\r')" ] && ((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))); then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr "$size")].$ALL_OFF"
 		sleep 2
 		return 0
 	else
@@ -276,12 +316,12 @@ function al_get
 		until ((try == 5)); do
 			tput cuu1
 			download "$2" "$1"
-			touch -t "$(date +%y%m%d%H%M.%S -d @$date)" "$1"
-			((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))) 2>&1 > /dev/null && break
+			touch -t "$(date +%y%m%d%H%M.%S -d "@$date")" "$1"
+			((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))) > /dev/null 2>&1 && break
 			((try += 1))
 			sleep 5
 		done
-		action=get
+		action="get"
 		target="$(basename "$PWD")"
 		etarget="$1"
 		data="ID=$(echo "$2" | xargs dirname | xargs basename);EPOC=$(echo "$2" | xargs basename)"
@@ -291,7 +331,6 @@ function al_get
 
 function al_ls
 {
-	local line
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
 	curl -s "https://armaell-library.net/novel/$1" | awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
 }
@@ -301,15 +340,15 @@ function al_sync
 	local files n name urls
 	lock || return 1
 	files=()
-	${EPUBONLY:-true} && find -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
-	let try=0
+	${EPUBONLY:-true} && find . -name '*.epub' -exec file '{}' \; | grep -v 'EPUB document$' | cut -d: -f1 | (while read -rs a; do rm "$a"; done)
+	try=0
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
 		((++try < 10)) || {
-			echo  " $BLUE==>$RED Skipping... $ALL_OFF"
+			echo " $BLUE==>$RED Skipping... $ALL_OFF"
 			return
 		}
-		read -rsa urls < <(al_ls $1)
+		read -rsa urls < <(al_ls "$1")
 		for n in "${urls[@]}"; do
 			name=$(curl -XGET -kLsI "$n" | read_header content-disposition)
 			if [ -z "$(echo "$name" | awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ]; then
@@ -337,38 +376,39 @@ else
 	case $1 in
 		help | h)
 			shift
-			unset byte_hr drv_ls drv_get drv_sync start_sync add_sync
+			unset "${all_funcs[@]}"
 			show_help
 			;;
 		add | a)
 			shift
-			unset byte_hr drv_ls drv_get drv_sync start_sync
-			add_sync                                              "$@"
+			unset "${source_funcs[@]}"
+			add_sync "$@"
 			;;
 		sync | s)
 			shift
-			unset byte_hr drv_ls drv_get drv_sync add_sync
+			unset "${source_funcs[@]}" show_help add_sync
 			start_sync
 			;;
 		log)
+			unset "${all_funcs[@]}" show_help
 			shift
 			if [[ $1 == help ]]; then
 				echo Filters: old new get all
 				exit 0
 			fi
-			if [ -n "$1" ] && ! echo $1 | grep -wq 'old\|new\|get\|all'; then
-				echo Unsupported filter: $1
+			if [ -n "$1" ] && ! echo "$1" | grep -wq 'old\|new\|get\|all'; then
+				echo "Unsupported filter: $1"
 				exit 1
 			fi
-			if [ -n "$2" ] && ! echo $2 | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
-				echo Invalid date: $2
-			elif echo $2 | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
+			if [ -n "$2" ] && ! echo "$2" | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
+				echo "Invalid date: $2"
+			elif echo "$2" | grep -Eq 'today|[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}'; then
 				case $2 in
 					today)
 						date=$(date --iso-8601 | xargs date +%s -d)
 						;;
 					*)
-						date=$(date +%s -d $2)
+						date=$(date +%s -d "$2")
 						;;
 				esac
 			fi
@@ -376,26 +416,26 @@ else
 			;;
 		sync-thread | st)
 			shift
-			unset byte_hr drv_ls drv_get drv_sync add_sync start_sync
-			p=$([[ $1 =~ [[:digit:]] ]] && (($1 > 0)) && (($1 < 5)) && echo $1 || echo 2)
+			unset "${all_funcs[@]}"
+			p=$([[ $1 =~ [[:digit:]] ]] && (($1 > 0)) && (($1 < 5)) && echo "$1" || echo 2)
 			[[ $1 =~ [[:digit:]] ]] && (($1 > 0)) && (($1 < 5)) && shift
 			if [ -x /usr/bin/tmux-xpanes ] || [ -x /usr/local/bin/tmux-xpanes ]; then
 				exec tmux-xpanes -l ev -e "$(for ((i = 0; i < p; i++)); do echo "$0 sync;exit"; done)"
 			else
-				echo $RED=== tmux-xpanes not installed...$ALL_OFF > $BLUE 1>&2
-				echo $YELLOW=== using single threaded sync...$ALL_OFF > $GREEN 1>&2
-				exec $0 sync
+				echo "$RED===>$BLUE tmux-xpanes not installed...$ALL_OFF" 1>&2
+				echo "$YELLOW===>$GREEN using single threaded sync...$ALL_OFF" 1>&2
+				exec "$0" sync
 			fi
 			;;
 		lib)
 			shift
-			unset start_sync add_sync show_help
+			unset "${nonlib_funcs[@]}" show_help
 			;;
 		*)
-			unset byte_hr drv_ls drv_get drv_sync start_sync add_sync
-			echo                                              "ERROR: Unsupported command '$1'"
+			unset "${all_funcs[@]}"
+			echo "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                               1
+			exit                                                                                             1
 			;;
 	esac
 fi
