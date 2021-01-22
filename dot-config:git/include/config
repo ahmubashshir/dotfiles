@@ -1,0 +1,26 @@
+[init]
+	defaultBranch = master
+[commit]
+	gpgsign = true
+[color]
+	ui = auto
+[core]
+	askPass = /usr/lib/seahorse/ssh-askpass
+	hooksPath = ~/.githooks
+	editor = nano
+[fetch]
+	prune = true
+[push]
+	default = current
+[pull]
+	rebase = true
+[log]
+	decorate = short
+	date = iso
+[rebase]
+	autoStash = true
+[checkout]
+	defaultRemote = origin
+[branch]
+	autosetupmerge = true
+

@@ -1,0 +1,15 @@
+[credential]
+	helper = /usr/lib/git-core/git-credential-libsecret
+[diff]
+	guitool = meld
+[instaweb]
+	browser = chromium-browser
+[web]
+	browser = chromium-browser
+[cola]
+	spellcheck = false
+[gpg]
+	program = gpg2
+[tag]
+	forceSignAnnotated = true
+

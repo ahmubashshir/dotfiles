@@ -1,0 +1,13 @@
+[merge]
+	guitool = meld
+	tool = nano
+	summary = true
+	log = true
+[mergetool "nano"]
+	trustExitCode = false
+	cmd = nano '+r/^=======$' $MERGED
+[difftool]
+	prompt = false
+[mergetool]
+	prompt = false
+
