@@ -1,6 +1,7 @@
 [Unit]
 Description=Intelligent Input Bus
 Documentation=man:ibus-daemon(1)
+BindsTo=ibus@%I.service
 
 [Service]
 Slice=ibus.slice
