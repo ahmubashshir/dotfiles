@@ -1,0 +1,11 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Lint
+# Languages=python
+# Input=nothing
+# Output=output-panel
+# Applicability=local
+# Save-files=document
+# Shortcut=F6
+
+pylint "$GEDIT_CURRENT_DOCUMENT_NAME"
