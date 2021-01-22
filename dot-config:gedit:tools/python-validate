@@ -8,5 +8,4 @@
 # Languages=python,python3
 # Name=Check
 
-v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
 pyflakes "$GEDIT_CURRENT_DOCUMENT_NAME"
