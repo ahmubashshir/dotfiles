@@ -48,7 +48,7 @@ format()
 	done
 	return $err
 }
-export stage="${0##*/}"
+stage="${0##*/}"
 if [ -x "$GIT_DIR/hooks/$stage" ];then
 	echo "${color[green]}==> Running local ${color[blue]}$stage${color[green]}...${color[-]}"
 	"$GIT_DIR/hooks/$stage" "$@"
@@ -57,13 +57,11 @@ checker="${0%/*}/if.hook"
 hookdir="${0%/*}/hooks.d/$stage"
 if [ -d "$hookdir" ];then
 	for subhook in "$hookdir"/*;do
-		if [ -x "$subhook" ];then
-			hooks+=("$subhook")
-		fi
-	done
-	for subhook in "${hooks[@]}";do
 		id="$stage.${subhook##*/}"
-		if "$checker" "$subhook" "$id" "$stage";then
+		if \
+			[[ -x "$subhook" ]] \
+			&& "$checker" "${subhook##*/}" "$id" "$stage"
+		then
 			echo "${color[green]}==> Running ${color[blue]}$id${color[green]}...${color[-]}"
 			"$subhook" "$@" 2>&1|format
 			if [[ ${PIPESTATUS[0]} -gt 0 ]];then
