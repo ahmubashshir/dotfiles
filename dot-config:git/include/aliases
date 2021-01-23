@@ -3,6 +3,7 @@
 	tree = !tig
 	stat = !tig status
 	fsclr = !git reflog expire --expire=now --all&&git gc --prune=now
+	chbr = checkout -b
 	tlog = !tig log
 	dt = diff
 	mt = mergetool
