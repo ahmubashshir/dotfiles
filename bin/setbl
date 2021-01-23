@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from os import fork,environ as env
+from os import fork, environ as env
 from os.path import join
 from time import sleep
 from sys import argv, exit
@@ -7,19 +7,19 @@ from dbus import SystemBus, Interface
 bus = SystemBus()
 ddc = bus.get_object('ddccontrol.DDCControl', '/ddccontrol/DDCControl')
 ddc = Interface(
-	bus.get_object(
-		'ddccontrol.DDCControl',
-		'/ddccontrol/DDCControl'
-	),
-	dbus_interface='ddccontrol.DDCControl'
+    bus.get_object(
+        'ddccontrol.DDCControl',
+        '/ddccontrol/DDCControl'
+    ),
+    dbus_interface='ddccontrol.DDCControl'
 )
-if len(argv) == 2 and int(argv[1])>=0 and int(argv[1])<=100:
-	with open(join(env['HOME'],'.config','backlight'), 'wb') as f:
-		f.write(bytearray([int(argv[1])]))
-	if fork():
-		exit(0)
-	for n in ddc.GetMonitors()[0]:
-		ddc.SetControl(n, 0x10, int(argv[1]))
+if len(argv) == 2 and int(argv[1]) >= 0 and int(argv[1]) <= 100:
+    with open(join(env['HOME'], '.config', 'backlight'), 'wb') as f:
+        f.write(bytearray([int(argv[1])]))
+#	if fork():
+#		exit(0)
+    for n in ddc.GetMonitors()[0]:
+        ddc.SetControl(n, 0x10, int(argv[1]))
 else:
-	with open(join(env['HOME'],'.config','backlight'), 'rb') as f:
-		print(int.from_bytes(f.read(), byteorder='little'))
+    with open(join(env['HOME'], '.config', 'backlight'), 'rb') as f:
+        print(int.from_bytes(f.read(), byteorder='little'))
