@@ -1,0 +1,6 @@
+[sendemail]
+	smtpEncryption = tls
+	smtpServer = smtp.gmail.com
+	smtpServerPort = 587
+	confirm = auto
+
