@@ -4,5 +4,6 @@
 	path = ./include/diff-merge
 	path = ./include/lfs
 	path = ./include/misc
+	path = ./include/smtp
 	path = ./include/url
 	path = ./include/user
