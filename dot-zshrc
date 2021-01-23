@@ -1,4 +1,4 @@
-#!/bin/zsh -x
+#!/bin/zsh
 if [ -e zprof ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
