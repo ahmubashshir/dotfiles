@@ -72,11 +72,6 @@ sql2db()
 	mv "data.sqlite" "${1%.*}.db"
 	rm .tmp.zip
 }
-urldecode()
-{
-	: "${*//+/ }"
-	echo -e "${_//%/\\x}"
-}
 embed()
 {
 	bash -c "set -x;echo -e \"\$(cat \"$1\")\">/dev/null" 2>&1 | tail -n +2 | sed 's|^+ echo -e |embeddable:\n|g'
