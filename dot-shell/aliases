@@ -92,7 +92,7 @@ alias fgrep='fgrep --color=auto'
 alias egrep='grep -E --color=auto'
 
 # Zsh suffix aliases
-if ((${ZSH_VERSION+1} && ${ZSH_NAME+1})); then
+if [[ ${ZSH_VERSION} && ${ZSH_NAME} ]]; then
 	alias -s tmate.io=ssh
 	alias -s {txt,md}='less'
 	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
