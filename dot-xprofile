@@ -29,4 +29,3 @@ fi
 for service in "${services[@]}"; do
 	systemctl --user restart "${service}@${DISPLAY}"
 done
-numlockx on
