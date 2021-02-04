@@ -37,7 +37,7 @@ if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
 fi
 
 if [ -d "$CHROOT/root" ]; then
-	arch-nspawn "$CHROOT/root" pacman -Syu
+	arch-nspawn "$CHROOT/root" pacman -Syu --noconfirm
 fi
 
 REPO="${REPONAME}${REPOEXT}"
