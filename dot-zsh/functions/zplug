@@ -5,8 +5,8 @@ local plugname plug plugpath plugin
 if (( ! ${+zplugdirs} )); then
 	typeset -ga zplugdirs
 fi
-if (( ! ${+plugins} )); then
-	typeset -ga plugins
+if (( ! ${+zsh_loaded_plugins} )); then
+	typeset -ga zsh_loaded_plugins
 fi
 
 for plugpath in "$HOME/.zsh/plugins" "/usr/share/zsh/plugins";do
@@ -35,7 +35,7 @@ do
 				zcompile "$plugin" &!
 			fi
 			builtin source "$plugin" "$@"
-			plugins+="$plugname"
+			zsh_loaded_plugins+="$plugname"
 			return 0
 		fi
 	done
