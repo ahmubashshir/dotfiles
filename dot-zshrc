@@ -193,7 +193,10 @@ if [[ $ENV[color_prompt] = yes ]];then
 			fi
 			[[ ${PWD} = ^${ENV[vfs_root]} ]] && ENV[vfs_pwd]=/
 		else
-			unset ENV[in_vfs] ENV[vfs] ENV[vfs_url]	ENV[vfs_root] ENV[vfs_pwd]
+			local key
+			for key in in_vfs vfs vfs_url vfs_root vfs_pwd;do
+				((${+ENV[$key]})) && unset ENV[$key]
+			done
 		fi
 	}
 	for n in $chpwd_functions chpwd;do
