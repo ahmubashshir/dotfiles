@@ -75,7 +75,10 @@ zplug auto-notify && {
 }
 zplug systemd
 zplug autopair
-zplug fast-syntax-highlighting
+zplug fast-syntax-highlighting && {
+	((${+aliases[fsh-alias]})) && \
+		unalias fsh-alias
+}
 zplug you-should-use && {
 	YSU_MESSAGE_POSITION=after
 #	YSU_HARDCORE=1
