@@ -42,9 +42,6 @@
 [submodule "dot-zsh/plugins/autopair"]
 	path = dot-zsh/plugins/autopair
 	url = https://github.com/hlissner/zsh-autopair.git
-[submodule "dot-zsh/plugins/syntax-highlighting"]
-	path = dot-zsh/plugins/syntax-highlighting
-	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
 [submodule "dot-zsh/plugins/history-substring-search"]
 	path = dot-zsh/plugins/history-substring-search
 	url = https://github.com/zsh-users/zsh-history-substring-search.git
@@ -75,3 +72,6 @@
 [submodule "dot-local:share:gedit/plugins/smart-home"]
 	path = dot-local:share:gedit/plugins/smart-home
 	url = https://github.com/hardpixel/gedit-smart-home
+[submodule "dot-zsh/plugins/fast-syntax-highlighting"]
+	path = dot-zsh/plugins/fast-syntax-highlighting
+	url = gh:zdharma/fast-syntax-highlighting
