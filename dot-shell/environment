@@ -23,8 +23,8 @@ if [ -n "${ZSH_VERSION:-}" ]; then
 fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
-		[[ -r ~/.shell/dircolors  ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                                  | sed -nE "s@.*='(.*)';@\1@p")
+		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
+	}                                                                                | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -32,6 +32,10 @@ export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quo
 export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
 if [ -z "$XDG_DATA_HOME" ]; then
 	export XDG_DATA_HOME=$HOME/.local/share
+fi
+# less
+if [[ -x /usr/bin/lesspipe.sh && -x /usr/bin/source-highlight ]]; then
+	LESSOPEN='|file=%s; /usr/bin/source-highlight -q --infer-lang -f esc --style-file=esc.style -i "$file" 2>/dev/null | /usr/bin/ifne -n /usr/bin/lesspipe.sh "$file" '
 fi
 #colors
 if tty -s; then
