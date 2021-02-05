@@ -18,14 +18,12 @@
 	pullmod = submodule foreach git pull
 	rf = !git pull --all && git pull origin master && git push --all
 	up = "![ \"$(git config \"branch.$(git rev-parse --abbrev-ref HEAD).merge\")\" = '' ] && git push -u || git push"
-	rmbr = "!f() { br=$(git rev-parse --abbrev-ref HEAD);git checkout master;git branch -D \"$br\" 2>/dev/null;git push $(git remote|grep -Em 1 '(ahmubashshir|origin)') --delete \"$br\" 2>/dev/null; };f"
 	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
 	ch = checkout
 	root = rev-parse --show-toplevel
 	run = "!exec "
-	rmmod = "!f(){ dir=$(git rev-parse --show-toplevel);git rm --cached \"$1\";git config --file \"$dir/.gitmodules\" --remove-section \"submodule.$1\";git config --remove-section \"submodule.$1\"; };f"
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
 	crbs = rebase --continue
