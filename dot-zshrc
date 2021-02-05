@@ -42,7 +42,6 @@ HISTDUP=erase
 
 ## Lazy load section
 autoload -Uz add-zsh-hook
-autoload -Uz zplug zrecompile
 
 # compile this file
 zrecompile
@@ -76,7 +75,7 @@ zplug auto-notify && {
 }
 zplug systemd
 zplug autopair
-zplug syntax-highlighting
+zplug fast-syntax-highlighting
 zplug you-should-use && {
 	YSU_MESSAGE_POSITION=after
 #	YSU_HARDCORE=1

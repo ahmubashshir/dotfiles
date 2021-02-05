@@ -2,7 +2,7 @@
 alias compinit="compinit -d ~/.cache/zsh/compdump"
 fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
 
-autoload -Uz zcompile zcompare 
+autoload -Uz zcompile zcompare
 
 function source {
 	if [ -f "$1" ];then
@@ -16,28 +16,6 @@ if [ ! -d ~/.cache/zsh ];then
 fi
 # Traps
 function TRAPUSR1 { rehash; }
-
-# misc functions
-function zcompinit {
-	if [[ -o interactive ]];then
-		compinit $@
-		source $HOME/.zsh/compdef
-		[[ $* =~ -[[:alnum:]]*C ]] || {
-			local n k
-			for n in $fpath[@];do
-				if [[ -f $n ]] && [[ -w $n:P:h ]];then
-					zcompare "$n"
-				elif [[ -d $n ]] && [[ -w $n ]];then
-					for k in "$n"/^*.zwc(^/);do
-						zcompare "$k"
-					done
-				fi
-			done
-			compinit -C
-			source $HOME/.zsh/compdef
-		}
-	fi
-}
 
 if [[ -o interactive ]];then
 	autoload -Uz compinit
