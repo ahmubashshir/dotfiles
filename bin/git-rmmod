@@ -1,6 +1,11 @@
 #!/bin/bash -e
-dir=$(git rev-parse --show-toplevel)
-echo "Removing submodule $1"
-git rm --cached "$1"
-git config --file "$dir/.gitmodules" --remove-section "submodule.$1"
-git config --remove-section "submodule.$1"
+if [[ "$(git rev-parse --is-bare-repository)" = "false" ]]; then
+	dir=$(git rev-parse --show-toplevel)
+	echo "Removing submodule $1"
+	git rm --cached "$1"
+	git config --file "$dir/.gitmodules" --remove-section "submodule.$1"
+	rm -rf "$dir/.git/modules/$1" "$dir/$1"
+	git config --remove-section "submodule.$1"
+else
+	echo this only supports repo with a work tree.
+fi
