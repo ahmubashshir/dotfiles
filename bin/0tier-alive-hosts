@@ -1,19 +1,31 @@
-#!/bin/bash
-IFS=$'\r\n' GLOBIGNORE='*' command eval 'hosts=($(fping -t 100 -i 1 -Aag 192.168.12.0/24 2>/dev/null))'
+#!/bin/zsh
+if [[ $1 = "genmon" ]] && [[ $2 != "nohup" ]]; then
+	setopt NO_HUP
+	"$0" genmon nohup &!
+	exit
+fi
+hosts=(${(@f)"$(
+	while read line;do
+		{
+			timeout 1s ping -c 1 $line &>/dev/null && {
+				name=$(timeout 0.5 getent hosts $line | awk '!a[$2]++{print $2}' )
+				echo "$line:$name"
+			}
+		} &
+	done < <(seq -f '192.168.12.%0.0f' 1 254)
+)"})
+
 if [[ $1 = "genmon" ]]; then
 	echo -n "<txt>UP: ${#hosts[@]}</txt><tool>"
 else
 	printf 'IP\t\tHOST\n'
 fi
-while ((i < ${#hosts[@]})); do
-	((i)) && echo
-	printf '%s' "${hosts[$i]}"
-	name=$(timeout 0.25 getent hosts "${hosts[$i]}" | awk '!a[$2]++{print $2}')
-	if [ "$name" ]; then
-		printf '\t%s' "$name"
-	fi
-	((i++))
+
+for ((i=1;i<=${#hosts[@]};i++));do
+	printf '%s\t%s' "${hosts[i]%:*}" "${hosts[i]#*:}"
+	((i<${#hosts[@]})) && echo
 done
+
 if [[ $1 = "genmon" ]]; then
 	echo "</tool>"
 else
