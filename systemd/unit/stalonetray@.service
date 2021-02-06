@@ -5,5 +5,5 @@ Description=Stand Alone Tray on Display %I
 Environment=DISPLAY="%I"
 ExecStart=/usr/bin/stalonetray --config %h/.config/stalonetray/stalonetray.conf
 RestartSec=3
-Restart=on-error
+Restart=on-failure
 

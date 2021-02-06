@@ -5,5 +5,5 @@ Description=PiCom Compositning Manager on Display %I
 Environment=DISPLAY="%I"
 ExecStart=/usr/bin/picom
 RestartSec=3
-Restart=on-error
+Restart=on-failure
 
