@@ -1,5 +1,6 @@
 [Unit]
 Description=sync github forks
+OnFailure=notify-fail@%n.service
 
 [Service]
 MemoryMax=100M
