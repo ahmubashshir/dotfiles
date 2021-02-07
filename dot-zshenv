@@ -19,7 +19,7 @@ function TRAPUSR1 { rehash; }
 
 if [[ -o interactive ]];then
 	autoload -Uz compinit
-	setopt extendedglob
+	setopt extendedglob nullglob
 	source "$HOME/.zinputrc"
 	source $HOME'/.shell/import'
 	[ -z "$(get_term|grep 'geany')" ] && HISTFILE=${HISTFILE:-~/.zsh_history}
