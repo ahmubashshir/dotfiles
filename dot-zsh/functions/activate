@@ -1,0 +1,8 @@
+if [ -f $1/bin/activate ];then
+	(
+		source "$1/bin/activate"
+		zsh
+	)
+else
+	echo "ERROR: $1 is not a valid virtual env" >&2
+fi
