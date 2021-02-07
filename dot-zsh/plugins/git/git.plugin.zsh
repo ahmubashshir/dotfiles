@@ -16,6 +16,7 @@ GIT_STATUS[modified]='%F{blue}'  	# yellow foreground
 GIT_STATUS[seperator]='%F{magenta}'	# seperator
 GIT_STATUS[untracked]='%F{cyan}'   	# blue foreground
 GIT_STATUS[conflicted]='%F{red}'  	# red foreground
+GIT_STATUS[seperator]='-'
 
 function _git_prompt_update() {
 	emulate -L zsh
@@ -76,7 +77,7 @@ function _git_prompt_update() {
 		+ VCS_STATUS_PUSH_COMMITS_BEHIND
 		+ VCS_STATUS_PUSH_COMMITS_AHEAD
 	)) && {
-		stat+="%B${GIT_STATUS[seperator]}:%b${GIT_STATUS[clean]}"
+		stat+="%B:%b${GIT_STATUS[clean]}"
 	}
 	# *42 if have stashes.
 	(( VCS_STATUS_STASHES        	  )) && stat+="${GIT_STATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
@@ -101,7 +102,7 @@ function _git_prompt_update() {
 		# 'merge' if the repo is in an unusual state.
 		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GIT_STATUS[conflicted]}:✘"
 	} || head+=":✔"
-	GITSTATUS_PROMPT="-[${head}${stat:+:$stat}%F{red}]"
+	GITSTATUS_PROMPT="${GIT_STATUS[seperator]}[${head}${stat:+:$stat}%F{red}]"
 	# The length of GITSTATUS_PROMPT after removing %f and %F.
 	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
 }
