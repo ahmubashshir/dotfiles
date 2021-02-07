@@ -49,4 +49,5 @@
 	head = rev-parse --abbrev-ref HEAD
 	fork = "!git remote|grep -xqw upstream && (git config branch.master.remote upstream;git config branch.master.pushremote origin) || true"
 	dtc = dt --cached
+	drop = reset --hard
 
