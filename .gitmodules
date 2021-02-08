@@ -87,3 +87,6 @@
 [submodule "dot-zsh/plugins/zsh-command-time"]
 	path = dot-zsh/plugins/zsh-command-time
 	url = https://github.com/popstas/zsh-command-time
+[submodule "dot-zsh/plugins/linus-rants"]
+	path = dot-zsh/plugins/linus-rants
+	url = https://github.com/bhayward93/Linus-rants-ZSH
