@@ -75,6 +75,7 @@ zplug auto-notify && {
 	)
 }
 zplug systemd
+zplug auto-ls
 zplug autopair
 zplug fast-syntax-highlighting && {
 	((${+aliases[fsh-alias]})) && \
