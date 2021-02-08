@@ -102,6 +102,10 @@ zplug history-substring-search && {
 	bindkey "$terminfo[kcuu1]" history-substring-search-up
 	bindkey "$terminfo[kcud1]" history-substring-search-down
 }
+zplug command-time && {
+	ZSH_COMMAND_TIME_MSG="Execution time: %s"
+	ZSH_COMMAND_TIME_COLOR=cyan
+}
 zplug auto-ls
 zplug autoswitch_virtualenv
 ## options
