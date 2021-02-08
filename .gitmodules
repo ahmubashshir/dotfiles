@@ -84,3 +84,6 @@
 [submodule "dot-zsh/plugins/autoswitch_virtualenv"]
 	path = dot-zsh/plugins/autoswitch_virtualenv
 	url = https://github.com/MichaelAquilina/zsh-autoswitch-virtualenv
+[submodule "dot-zsh/plugins/zsh-command-time"]
+	path = dot-zsh/plugins/zsh-command-time
+	url = https://github.com/popstas/zsh-command-time
