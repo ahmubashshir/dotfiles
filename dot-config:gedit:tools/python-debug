@@ -1,7 +1,7 @@
 #!/bin/sh
 # [Gedit Tool]
 # Name=Debug
-# Languages=python
+# Languages=python,python3
 # Input=nothing
 # Output=nothing
 # Applicability=titled
