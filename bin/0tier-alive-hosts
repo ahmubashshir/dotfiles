@@ -4,14 +4,24 @@ if [[ $1 = "genmon" ]] && [[ $2 != "nohup" ]]; then
 	"$0" genmon nohup &!
 	exit
 fi
+trap 'die' TERM EXIT QUIT ABRT
+function die
+{
+	kill $(jobs -p) 2> /dev/null
+}
+
 hosts=(${(@f)"$(
 	while read line;do
-		{
+		((jobs++))
+		(
 			timeout 1s ping -c 1 $line &>/dev/null && {
 				name=$(timeout 0.5 getent hosts $line | awk '!a[$2]++{print $2}' )
 				echo "$line:$name"
 			}
-		} &
+		) &
+		until ((jobs <= 100)); do
+			jobs=$(jobs -r -p | wc -l)
+		done
 	done < <(seq -f '192.168.12.%0.0f' 1 254)
 )"})
 
