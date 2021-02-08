@@ -192,7 +192,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 		GIO_VFS_PROMPT_CONFIG[seperator]=$'\n├───'
 	}
 
-	PROMPT=$'%F{red}╭───[%F{green} %F{cyan}%B${__GIO_VFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}]${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}─[%Btty:%F{cyan}%y%b%F{red}]─[%B%F{blue}%D{%l}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S} %F{green}%D{%p}%b%F{red}]${GIO_VFS_PROMPT}
+	PROMPT=$'%F{red}╭───[%F{green} %F{cyan}%B${__GIO_VFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}]${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}─[%Btty:%F{cyan}%y%b%F{red}]─[%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}]${GIO_VFS_PROMPT}
 ╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
 	RPROMPT='%(?..%F{red}%?%f)'
 else
