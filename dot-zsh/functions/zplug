@@ -35,7 +35,9 @@ do
 				zcompile "$plugin" &!
 			fi
 			builtin source "$plugin" "$@"
-			zsh_loaded_plugins+="$plugname"
+			if ((!${zsh_loaded_plugins[(Ie)$plugname]}));then
+				zsh_loaded_plugins+="$plugname"
+			fi
 			return 0
 		fi
 	done
