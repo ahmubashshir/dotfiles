@@ -12,6 +12,9 @@ export QT_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
 #ibus-daemon -drx --panel /usr/lib/ibus/ibus-ui-gtk3
 export XSECURELOCK_DATETIME_FORMAT="%A, %B %d, %Y %l:%M %P"
+export XSECURELOCK_NO_COMPOSITE=1
+export XSECURELOCK_SAVER=$HOME/.local/lib/xsecbg.sh
+export XSECURELOCK_SHOW_DATETIME=1
 export XSECURELOCK_BLANK_DPMS_STATE=off
 export XSECURELOCK_FONT="Hack:style=Regular"
 export XSECURELOCK_AUTHPROTO=authproto_htpasswd
