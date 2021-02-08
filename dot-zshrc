@@ -75,7 +75,6 @@ zplug auto-notify && {
 	)
 }
 zplug systemd
-zplug auto-ls
 zplug autopair
 zplug fast-syntax-highlighting && {
 	((${+aliases[fsh-alias]})) && \
@@ -103,6 +102,8 @@ zplug history-substring-search && {
 	bindkey "$terminfo[kcuu1]" history-substring-search-up
 	bindkey "$terminfo[kcud1]" history-substring-search-down
 }
+zplug auto-ls
+zplug autoswitch_virtualenv
 ## options
 setopt $zsh_options
 unset zsh_options
