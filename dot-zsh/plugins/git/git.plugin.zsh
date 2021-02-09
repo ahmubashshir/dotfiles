@@ -8,15 +8,19 @@ setopt PROMPT_SUBST
 autoload -U add-zsh-hook
 
 add-zsh-hook precmd _git_prompt_update
-typeset -gA GIT_STATUS
+typeset -gA GITSTATUS
 
-GIT_STATUS[clean]='%F{green}' 	# green foreground
-GIT_STATUS[changed]='%F{cyan}'		# cyan forground
-GIT_STATUS[modified]='%F{blue}'  	# yellow foreground
-GIT_STATUS[seperator]='%F{magenta}'	# seperator
-GIT_STATUS[untracked]='%F{cyan}'   	# blue foreground
-GIT_STATUS[conflicted]='%F{red}'  	# red foreground
-GIT_STATUS[seperator]='-'
+GITSTATUS[clean]='%F{green}' 	# green foreground
+GITSTATUS[changed]='%F{cyan}'		# cyan forground
+GITSTATUS[modified]='%F{blue}'  	# yellow foreground
+GITSTATUS[seperator]='%F{magenta}'	# seperator
+GITSTATUS[untracked]='%F{cyan}'   	# blue foreground
+GITSTATUS[conflicted]='%F{red}'  	# red foreground
+
+GITSTATUS[default]='%F{red}'
+GITSTATUS[seperator]='-'
+GITSTATUS[prefix]='['
+GITSTATUS[suffix]=']'
 
 function _git_prompt_update() {
 	emulate -L zsh
@@ -46,9 +50,13 @@ function _git_prompt_update() {
 	[[ $VCS_STATUS_RESULT == 'ok-sync' ]] || return 0  # not a git repo
 	local head stat where  # branch name, tag or commit
 
-	head="%B${GIT_STATUS[clean]}"
+	head="%B${GITSTATUS[clean]}"
 	if [[ -n $VCS_STATUS_LOCAL_BRANCH ]]; then
-	    head+=' '
+		case $VCS_STATUS_LOCAL_BRANCH in
+			(pr/*) head+='';;
+			(*) head+='';;
+		esac
+	    head+=' '
 		where=$VCS_STATUS_LOCAL_BRANCH
 	elif [[ -n $VCS_STATUS_TAG ]]; then
 		head+=' '
@@ -62,25 +70,25 @@ function _git_prompt_update() {
 	head+="${where//\%/%%}%b"             # escape %
 
 	# ⇣42 if behind the remote.
-	(( VCS_STATUS_COMMITS_BEHIND )) && stat+="${GIT_STATUS[changed]}%B⇣%b${VCS_STATUS_COMMITS_BEHIND}"
+	(( VCS_STATUS_COMMITS_BEHIND )) && stat+="${GITSTATUS[changed]}%B⇣%b${VCS_STATUS_COMMITS_BEHIND}"
 
 	# ⇡42 if ahead of the remote; no leading space if also behind the remote: ⇣42⇡42.
-	(( VCS_STATUS_COMMITS_AHEAD  )) && stat+="${GIT_STATUS[changed]}%B⇡%b${VCS_STATUS_COMMITS_AHEAD}"
+	(( VCS_STATUS_COMMITS_AHEAD  )) && stat+="${GITSTATUS[changed]}%B⇡%b${VCS_STATUS_COMMITS_AHEAD}"
 
 	# ⇠42 if behind the push remote.
-	(( VCS_STATUS_PUSH_COMMITS_BEHIND )) && stat+="${GIT_STATUS[changed]}%B⇠%b${VCS_STATUS_PUSH_COMMITS_BEHIND}"
+	(( VCS_STATUS_PUSH_COMMITS_BEHIND )) && stat+="${GITSTATUS[changed]}%B⇠%b${VCS_STATUS_PUSH_COMMITS_BEHIND}"
 	# ⇢42 if ahead of the push remote; no leading space if also behind: ⇠42⇢42.
-	(( VCS_STATUS_PUSH_COMMITS_AHEAD  )) && stat+="${GIT_STATUS[changed]}%B⇢%b${VCS_STATUS_PUSH_COMMITS_AHEAD}"
+	(( VCS_STATUS_PUSH_COMMITS_AHEAD  )) && stat+="${GITSTATUS[changed]}%B⇢%b${VCS_STATUS_PUSH_COMMITS_AHEAD}"
 	((
 		  VCS_STATUS_COMMITS_BEHIND
 		+ VCS_STATUS_COMMITS_AHEAD
 		+ VCS_STATUS_PUSH_COMMITS_BEHIND
 		+ VCS_STATUS_PUSH_COMMITS_AHEAD
 	)) && {
-		stat+="%B:%b${GIT_STATUS[clean]}"
+		stat+="%B:%b${GITSTATUS[clean]}"
 	}
 	# *42 if have stashes.
-	(( VCS_STATUS_STASHES        	  )) && stat+="${GIT_STATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
+	(( VCS_STATUS_STASHES        	  )) && stat+="${GITSTATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
 	((
 			VCS_STATUS_NUM_CONFLICTED
 		+	VCS_STATUS_NUM_STAGED
@@ -88,21 +96,21 @@ function _git_prompt_update() {
 		+	VCS_STATUS_NUM_UNTRACKED
 	)) && {
 		# ~42 if have merge conflicts.
-		(( VCS_STATUS_NUM_CONFLICTED )) && stat+="${GIT_STATUS[conflicted]}%B~%b${VCS_STATUS_NUM_CONFLICTED}%f"
+		(( VCS_STATUS_NUM_CONFLICTED )) && stat+="${GITSTATUS[conflicted]}%B~%b${VCS_STATUS_NUM_CONFLICTED}%f"
 
 		# +42 if have staged changes.
-		(( VCS_STATUS_NUM_STAGED     )) && stat+="${GIT_STATUS[modified]}%B+%b${VCS_STATUS_NUM_STAGED}%f"
+		(( VCS_STATUS_NUM_STAGED     )) && stat+="${GITSTATUS[modified]}%B+%b${VCS_STATUS_NUM_STAGED}%f"
 
 		# !42 if have unstaged changes.
-		(( VCS_STATUS_NUM_UNSTAGED   )) && stat+="${GIT_STATUS[modified]}%B!%b${VCS_STATUS_NUM_UNSTAGED}%f"
+		(( VCS_STATUS_NUM_UNSTAGED   )) && stat+="${GITSTATUS[modified]}%B!%b${VCS_STATUS_NUM_UNSTAGED}%f"
 
 		# ?42 if have untracked files. It's really a question mark, your font isn't broken.
-		(( VCS_STATUS_NUM_UNTRACKED  )) && stat+="${GIT_STATUS[untracked]}%B?%b${VCS_STATUS_NUM_UNTRACKED}%f"
+		(( VCS_STATUS_NUM_UNTRACKED  )) && stat+="${GITSTATUS[untracked]}%B?%b${VCS_STATUS_NUM_UNTRACKED}%f"
 
 		# 'merge' if the repo is in an unusual state.
-		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GIT_STATUS[conflicted]}:✘"
-	} || head+=":✔"
-	GITSTATUS_PROMPT="${GIT_STATUS[seperator]}[${head}${stat:+:$stat}%F{red}]"
+		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GITSTATUS[conflicted]}:✘"
+	}
+	GITSTATUS_PROMPT="${GITSTATUS[seperator]}${GITSTATUS[prefix]}${head}${stat:+:$stat}${GITSTATUS[default]}${GITSTATUS[suffix]}"
 	# The length of GITSTATUS_PROMPT after removing %f and %F.
 	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
 }
