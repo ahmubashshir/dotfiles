@@ -25,6 +25,9 @@ zsh_options=(
 )
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 typeset -A ENV
+ENV[prompt_suffix]='┠'
+ENV[prompt_prefix]='┨'
+ENV[prompt_seperator]=''
 
 ## modules
 zmodload -ab zsh/datetime strftime
@@ -191,16 +194,24 @@ fi
 # Prompt Setup
 if [[ $ENV[color_prompt] = yes ]];then
 	zplug git && {
-		GIT_STATUS[seperator]='─'
+		GITSTATUS[seperator]="${ENV[prompt_seperator]}"
+		GITSTATUS[prefix]="${ENV[prompt_prefix]}"
+		GITSTATUS[suffix]="${ENV[prompt_suffix]}"
 	}
-	zplug devprompt
+	zplug devprompt && {
+		DEVPROMPT[seperator]="${ENV[prompt_seperator]}"
+		DEVPROMPT[prefix]="${ENV[prompt_prefix]}"
+		DEVPROMPT[suffix]="${ENV[prompt_suffix]}"
+	}
 	zplug gio-vfs-prompt && {
-		GIO_VFS_PROMPT_CONFIG[seperator]=$'\n├───'
+		GIOVFS[seperator]=$'\n├───'
+		GIOVFS[prefix]="${ENV[prompt_prefix]}"
+		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 	}
 
-	PROMPT=$'%F{red}╭───[%F{green} %F{cyan}%B${__GIO_VFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}]${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}─[%Btty:%F{cyan}%y%b%F{red}]─[%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}]${GIO_VFS_PROMPT}
-╰─%(?.>>.%F{cyan}>>)%F{lightgreen} '
-	RPROMPT='%(?..%F{red}%?%f)'
+	PROMPT=$'%F{red}╭───${ENV[prompt_prefix]}%F{green} %F{cyan}%B${__GIOVFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}${ENV[prompt_suffix]}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${ENV[prompt_seperator]}${ENV[prompt_prefix]}%Btty:%F{cyan}%y%b%F{red}${ENV[prompt_suffix]}${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}${GIO_VFS_PROMPT}\b┃
+╰─%(?..%F{cyan})>>%F{lightgreen} '
+	RPROMPT='%(?.🙂.%F{red}%?%f😑)'
 else
 	PROMPT='[%m::%n %1~]$ '
 fi
