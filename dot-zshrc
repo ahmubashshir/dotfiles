@@ -109,7 +109,9 @@ zplug command-time && {
 	ZSH_COMMAND_TIME_MSG="Execution time: %s"
 	ZSH_COMMAND_TIME_COLOR=cyan
 }
-zplug auto-ls
+zplug auto-ls && {
+	AUTO_LS_NEWLINE=false
+}
 zplug autoswitch_virtualenv
 ## options
 setopt $zsh_options
