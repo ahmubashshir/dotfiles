@@ -1,9 +1,24 @@
 #!/usr/bin/python3
-from os import fork, environ as env
+import fcntl
+from os import environ as env, fork, path, geteuid
 from os.path import join
 from time import sleep
 from sys import argv, exit
 from dbus import SystemBus, Interface
+
+
+def lock(lock):
+    ''' acquire exclusive lock file access '''
+    locked_file_descriptor = open(lock, 'w+')
+    fcntl.lockf(locked_file_descriptor, fcntl.LOCK_EX)
+    return locked_file_descriptor
+
+
+def unlock(locked_file_descriptor):
+    ''' release exclusive lock file access '''
+    locked_file_descriptor.close()
+
+
 bus = SystemBus()
 ddc = bus.get_object('ddccontrol.DDCControl', '/ddccontrol/DDCControl')
 ddc = Interface(
@@ -13,13 +28,43 @@ ddc = Interface(
     ),
     dbus_interface='ddccontrol.DDCControl'
 )
-if len(argv) == 2 and int(argv[1]) >= 0 and int(argv[1]) <= 100:
+
+try:
+    if len(argv) > 1:
+        int(argv[1])
+except ValueError:
+    print("invalid argument")
+
+if len(argv) > 1 and int(argv[1]) >= 0 and int(argv[1]) <= 100:
+    try:
+        lockfile = lock(
+            path.join('/run/user', str(geteuid()), 'setbl.lck')
+        )
+    except IOError:
+        exit(1)
+
+    now = int(argv[1])
+    with open(join(env['HOME'], '.config', 'backlight'), 'rb') as f:
+        prev = int.from_bytes(f.read(), byteorder='little')
     with open(join(env['HOME'], '.config', 'backlight'), 'wb') as f:
-        f.write(bytearray([int(argv[1])]))
-#	if fork():
-#		exit(0)
+        f.write(bytearray([now]))
+    if now == prev:
+        unlock(lockfile)
+        exit(0)
+    if len(argv) > 2:
+        if fork():
+            exit(0)
+    else:
+        print('')
+
     for n in ddc.GetMonitors()[0]:
-        ddc.SetControl(n, 0x10, int(argv[1]))
+        for i in range(prev, now + (1 if prev < now else -1), 1 if prev < now else -1):
+            for k in range(1, 2):
+                sleep(0.2)
+                ddc.SetControl(n, 0x10, i)
+        if len(argv) < 3:
+            print('\r%03d' % (i), end='')
+    unlock(lockfile)
 else:
     with open(join(env['HOME'], '.config', 'backlight'), 'rb') as f:
         print(int.from_bytes(f.read(), byteorder='little'))
