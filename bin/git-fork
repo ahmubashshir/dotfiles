@@ -1,0 +1,33 @@
+#!/bin/bash
+function fork_setup
+{
+	default=$(
+		git remote show upstream 2>&3 |
+			grep "HEAD branch" |
+			awk '{print	$3}'
+	)
+
+	git config branch.$default.remote upstream
+	git config branch.$default.pushRemote origin
+	git config remote.pushDefault origin
+	echo "configured the fork" >&2
+}
+
+if ! git remote | grep -xqw upstream; then
+	git remote rename origin upstream
+	if git config remote.upstream.url |
+		grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
+		gh repo fork --remote --remote-name origin
+	fi
+	if ! git remote | grep -xqw origin; then
+		git remote rename upstream origin
+		echo "Failed to fork" >&2
+		exit
+	fi
+	fork_setup
+elif git remote | grep -xqw upstream; then
+	echo "Already has upstream" >&2
+	fork_setup
+else
+	echo "No upstream remote available" >&2
+fi
