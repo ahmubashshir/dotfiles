@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r168.71c83a7
+# VERSION r169.0f98931
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1221,7 +1221,7 @@ mp4upload:get_url()
 
 xstreamcdn:get_url()
 {
-	curl --config /dev/null -sX POST "https://www.xstreamcdn.com/api/source/$1" --data "r=https://www.xstreamcdn.com/f/$1" --data 'd=www.xstreamcdn.com' | jq -r 'select(.success == true).data[0].file' 2> /dev/null | get_effective_url
+	curl --config /dev/null -sX POST "https://fcdn.stream/api/source/$1" --data "r=https://fcdn.stream/f/$1" --data 'd=fcdn.stream' | jq -r 'select(.success == true).data|[ reverse[]|select(.label == "720p" or .label == "480p")][0].file' 2> /dev/null | get_effective_url
 }
 
 trollvid:get_url()
@@ -1250,7 +1250,7 @@ vidstreaming:get_url()
 
 gogo+server:get_url()
 {
-	curl --config /dev/null -s "https://vid.xngine.com/api/gogo/$1" | jq -r 'if has("backup") then .backup.file else .source.file end' | get_effective_url
+	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1" | jq -r 'if has("source_bk") and ( .source_bk[]|length >0 ) then .source_bk else .source end|.[0]|.file' | get_effective_url
 }
 
 mixdrop:get_url()

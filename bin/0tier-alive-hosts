@@ -19,7 +19,7 @@ hosts=(${(@f)"$(
 				echo "$line:$name"
 			}
 		) &
-		until ((jobs <= 100)); do
+		until ((jobs <= 60)); do
 			jobs=$(jobs -r -p | wc -l)
 		done
 	done < <(seq -f '192.168.12.%0.0f' 1 254)
