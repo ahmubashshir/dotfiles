@@ -1,11 +1,27 @@
 #!/bin/bash
-trap 'die' TERM EXIT QUIT ABRT
+# lock to a single process.
+lockfile="${XDG_RUNTIME_DIR:-/run/user/$UID}/pa-share.lck"
+exec 99> "$lockfile"
+lock()
+{
+	flock     -$1 99
+}
+lock xn || {
+	echo "Another process is running."
+	exit
+}
 
 # Special thanks to https://askubuntu.com/a/421056
 # This script was implemented from aforementioned answer :3
+trap 'die' TERM EXIT QUIT ABRT
 
 die()
 {
+	# unlock
+	lock u
+	lock xn && rm -f "$lockfile"
+
+	# restore defaults
 	pactl set-default-source "$default_src"
 	pactl set-default-sink "$default_sink"
 
