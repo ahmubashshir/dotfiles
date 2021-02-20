@@ -220,11 +220,6 @@ function server_responce()
 	esac
 	return 0
 }
-function urldecode()
-{
-	: "${*//+/ }"
-	echo -e "${_//%/\\x}"
-}
 function vbar()
 {
 	w=$(tput cols)

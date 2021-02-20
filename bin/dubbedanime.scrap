@@ -50,12 +50,15 @@ class BThread(Thread):
     @property
     def loaded(self):
         try:
-            return self.ec(self.browser) and True
+            return bool(self.ec(self.browser))
         except:
             return False
 
     def run(self):
         options = webdriver.ChromeOptions()
+        options.add_argument("start-maximized")
+        options.add_argument("user-agent={}".format(os.environ.get('USER_AGENT',
+                                                                   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36')))
         options.headless = True
         self.browser = webdriver.Chrome(
             options=options, executable_path=environ['CHROMEDRIVER_PATH'])
@@ -70,6 +73,8 @@ class Scrapper(object):
                     </method>
                     <method name='quit' />
                     <property name="token" type="s" access="read" />
+                    <property name="page" type="s" access="read" />
+                    <property name="loaded" type="b" access="read" />
             </interface>
     </node>
     """
@@ -93,6 +98,16 @@ class Scrapper(object):
         self.thread.browser.quit()
         self.thread.join()
         return None
+
+    @property
+    def page(self):
+        if self.thread.loaded:
+            return self.thread.browser.page_source
+        return ""
+
+    @property
+    def loaded(self):
+        return self.thread.loaded
 
     @property
     def token(self):
@@ -139,6 +154,7 @@ if __name__ == '__main__':
         pid = os.fork()
         if pid > 0:
             sys.exit(0)
+        # pass
     except OSError:
         sys.exit(1)
 
