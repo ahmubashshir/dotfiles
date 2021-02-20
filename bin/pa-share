@@ -1,0 +1,41 @@
+#!/bin/bash
+trap 'die' TERM EXIT QUIT ABRT
+
+die()
+{
+	pactl set-default-source "$default_src"
+	pactl set-default-sink "$default_sink"
+
+	for mod in $local_sink $share_sink "${loopback[@]}"; do
+		pactl unload-module "$mod"
+	done
+}
+
+loopback=()
+default_src=$(pacmd info | grep Default | awk '/source name/{print $4}')
+default_sink=$(pacmd info | grep Default | awk '/sink name/{print $4}')
+
+local_sink=$(pactl load-module module-null-sink "sink_name=local" "sink_properties=device.description=LocalSink")
+share_sink=$(pactl load-module module-null-sink "sink_name=share" "sink_properties=device.description=ShareSink")
+
+if ((share_sink && local_sink)); then
+	loopback=(
+		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 sink=share)
+		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 sink=share source=local.monitor)
+		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 source=local.monitor)
+	)
+	pactl set-default-source share.monitor
+	pactl set-default-sink "$default_sink"
+
+	echo "Set App input to \"Monitor of ShareSink\""
+	echo "and Player output to \"LocalSink\" in pavucontrol."
+	echo ""
+
+	(
+		exec &> /dev/null
+		pavucontrol &                
+	)
+
+	echo "Press CTRL+C when done."
+	read -s -r -d '' _
+fi
