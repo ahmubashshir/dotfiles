@@ -78,9 +78,6 @@
 [submodule "submodules/tldr"]
 	path = submodules/tldr
 	url = https://github.com/raylee/tldr-sh-client
-[submodule "dot-zsh/plugins/auto-ls"]
-	path = dot-zsh/plugins/auto-ls
-	url = https://github.com/desyncr/auto-ls
 [submodule "dot-zsh/plugins/autoswitch_virtualenv"]
 	path = dot-zsh/plugins/autoswitch_virtualenv
 	url = https://github.com/MichaelAquilina/zsh-autoswitch-virtualenv
