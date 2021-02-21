@@ -1,12 +1,14 @@
 #!/bin/bash
+TPM_DIR=~/.config/tmux/plugins/tpm
 if (($# == 0)); then
 	echo -e "Usage:\n  install\tInstall plugins."
 	echo -e "  clean\t\tClean unused plugins."
 	echo -e "  update\tUpdate plugins."
-elif [ -x ~/.tmux/plugins/tpm/bin/"${1}_plugins" ]; then
+elif [ -x "$TPM_DIR/bin/${1}_plugins" ]; then
 	cmd="$1"
 	shift
-	exec ~/.tmux/plugins/tpm/bin/"${cmd}_plugins" "$@"
+	BASH_ARGV0="tpm $cmd"
+	source "$TPM_DIR/bin/${cmd}_plugins" "$@"
 else
 	echo "Invalid command: $1"
 fi
