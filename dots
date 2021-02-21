@@ -25,8 +25,8 @@ if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 = ln ]]; then
 	for n in dot-*; do
 		t="${n#dot-}"
 		t="${t//$PATHSEP//}"
-		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		mkdir -p "$(dirname "$HOME/.$t")"
+		s=$(realpath --relative-to="$(dirname "$HOME/.$t")" "$n")
 		echo Linking "$n" '->' "~/.$t"
 		if [ ! -L "$HOME/.$t" ]; then
 			rm -fr "$HOME/.$t"
@@ -165,7 +165,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 					case "$REPLY" in
 						n | N | $'\n')
 							[[ "$REPLY" != $'\n' ]] && echo
-							continue                              3
+							continue                            3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -173,7 +173,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput    el
+							tput  el
 							;;
 					esac
 				done
