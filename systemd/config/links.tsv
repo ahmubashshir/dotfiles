@@ -1,2 +1,1 @@
 TARGET	INSTALL	NAME	PATH
-default.target	wants	deadd-notification-center.service	/usr/lib/systemd/user/deadd-notification-center.service
