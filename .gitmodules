@@ -84,3 +84,6 @@
 [submodule "dot-zsh/plugins/linus-rants"]
 	path = dot-zsh/plugins/linus-rants
 	url = https://github.com/bhayward93/Linus-rants-ZSH
+[submodule "dot-tmux:plugins:tpm"]
+	path = dot-tmux:plugins:tpm
+	url = https://github.com/tmux-plugins/tpm
