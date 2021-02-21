@@ -25,6 +25,10 @@
 	border-radius: 5px;
 }
 
+#img_img {
+	border-radius: 10px;
+}
+
 .blurredBG.notification.critical {
 	background: @critical_popup;
 }
@@ -170,7 +174,7 @@ button.buttonState2:hover {
 }
 
 .appname {
-	font-size: 12px;
+	font-size: 10px;
 }
 
 .time {
