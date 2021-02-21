@@ -10,14 +10,16 @@ service	tachiweb
 service	trakt-scrobbler
 service	transmission-trackers
 service	vino-server
+socket	dirmngr
+socket	gpg-agent
 timer	aur-autobuild
 timer	aur-autopush
+timer	eos-update-notifier
 timer	epic-claim
 timer	genshin-redeem
 timer	github-sync-forks
 timer	gpg-refresh
 timer	systemd-tmpfiles-clean
 timer	transmission-trackers
-timer	update-notifier
 timer	vpnbook
 timer	yay-cache-gen
