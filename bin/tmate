@@ -1,0 +1,12 @@
+#!/bin/bash
+if [[ $TMUX =~ ^/.*/tmux-[[:digit:]]*/.*$ ]]; then
+	unset $(typeset -x | cut -d= -f1 | grep TMUX | awk '{printf $3" "}')
+fi
+echo $TMUX
+TMATE=$(which -a tmate | grep -v "^$HOME" | head -n 1)
+if [ -n "$TMATE" ]; then
+	exec "$TMATE" "$@"
+else
+	echo "tmate: command not found"
+	exit 1
+fi
