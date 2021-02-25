@@ -1,5 +1,6 @@
 [Unit]
 Description=Xfce4 Panel on Display %I
+After=xfwm4@.service
 
 [Service]
 Environment=DISPLAY="%I"
@@ -8,3 +9,5 @@ ExecStop=/usr/bin/xfce4-panel -q
 RestartSec=3
 Restart=on-failure
 
+[Install]
+RequiredBy=stalonetray@.service
