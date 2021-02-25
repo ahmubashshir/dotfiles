@@ -1,3 +1,9 @@
 [Unit]
 Before=anbox-launchers.service anbox-launchers.timer
 Requires=anbox-launchers.service anbox-launchers.timer
+
+[Service]
+ExecStart=
+ExecStart=/usr/bin/anbox session-manager --server-side-decoration --no-touch-emulation
+Restart=on-abort
+RestartSec=3
