@@ -1,4 +1,5 @@
 TYPE	NAME
+service	anbox-session-manager
 service	aria2@6801
 service	broadwayd
 service	deadd-notification-center
