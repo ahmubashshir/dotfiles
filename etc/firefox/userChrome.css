@@ -1,0 +1,76 @@
+/* Frank edited file - you are good to go...*/
+
+/*
+ * Do not remove the @namespace line -- it's required for correct functioning
+ */
+
+/* Hide main tabs toolbar */
+#main-window[tabsintitlebar="true"]:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
+	opacity: 0;
+	pointer-events: none;
+}
+
+#main-window:not([tabsintitlebar="true"]) #TabsToolbar {
+	visibility: collapse !important;
+}
+
+/* Sidebar min and max width removal */
+#sidebar {
+	max-width: none !important;
+	min-width: 0px !important;
+}
+
+/* Hide splitter, when using Tree Style Tab. */
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] + #sidebar-splitter {
+	display: none !important;
+}
+
+/* Hide sidebar header, when using Tree Style Tab. */
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] #sidebar-header {
+	visibility: collapse;
+}
+
+/* Shrink sidebar until hovered, when using Tree Style Tab. */
+:root {
+	--thin-tab-width: 8px;
+	--wide-tab-width: 250px;
+	--tab-surface-regular: var(--theme-colors-tab);
+	--tab-surface-active: var(--theme-colors-tab_selected, var(--theme-colors-toolbar, var(--browser-bg-for-header-image, var(--tab-like-surface))));
+	--tab-surface-active-hover: var(--theme-colors-tab_selected, var(--theme-colors-toolbar, var(--browser-bg-for-header-image, var(--tab-like-surface))));
+	--tab-surface-hover: rgba(255, 255, 255, .1)
+		/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/browser/themes/shared/tabs.inc.css#590 */
+	;
+	--tab-border: var(--theme-colors-tab_background_separator, var(--theme-colors-tab_background_text-30, hsl(240, 9%, 32%)
+				/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/browser/themes/shared/tabs.inc.css#684 : --tab-text-regular * 0.3 opacity */
+			));
+	--tab-text-regular: var(--theme-colors-tab_background_text, hsl(240, 9%, 98%)
+			/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/toolkit/themes/windows/global/tabbox.css#27 */
+		);
+	--tab-text-active: var(--theme-colors-toolbar_text, -moz-DialogText
+			/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/toolkit/themes/windows/global/tabbox.css#27 */
+		);
+	--tabbar-bg: var(--theme-colors-frame, hsl(235, 33%, 19%)
+			/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/browser/themes/windows/browser-aero.css#59 */
+		);
+}
+
+#sidebar-box:not([sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"]) {
+	min-width: var(--wide-tab-width) !important;
+	max-width: none !important;
+}
+
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+	position: relative !important;
+	transition: all 200ms !important;
+	min-width: var(--thin-tab-width) !important;
+	max-width: var(--thin-tab-width) !important;
+	z-index: 1;
+}
+
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"]:hover {
+	position: relative !important;
+	transition: all 300ms !important;
+	min-width: var(--wide-tab-width) !important;
+	max-width: var(--wide-tab-width) !important;
+	margin-right: calc((var(--wide-tab-width) - var(--thin-tab-width)) * -1) !important;
+}

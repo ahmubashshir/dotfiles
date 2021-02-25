@@ -1,0 +1,131 @@
+.contextual-identity-marker {
+	top: auto !important;
+	left: 0.5em !important;
+	right: 0.5em !important;
+	bottom: 0 !important;
+	width: auto !important;
+	margin: 0 !important;
+	max-width: none !important;
+	height: calc(var(--favicon-size) / 10) !important;
+}
+
+/* change the base box to layout position:absolute box, from the root container box to the tab item */
+:root.group-tab li {
+	position: relative;
+}
+
+/* autohide css  */
+
+#tabbar {
+	border: 0;
+	overflow-y: scroll !important;
+	scrollbar-width: auto;
+}
+
+/* Hide close buttons on tabs. */
+tab-item .closebox {
+	visibility: collapse;
+}
+
+tab-item:hover .closebox {
+	visibility: initial;
+}
+
+/* Hide sound playing/muted button. */
+.sound-button::before {
+	display: none !important;
+}
+
+/* ################################################ */
+/* ##### COLOR THEME ############################## */
+/* ################################################ */
+
+tab-item {
+	box-shadow: none !important;
+}
+
+tab-item:hover {
+	filter: opacity(80%) drop-shadow(0px 0px 0px #3498DB);
+}
+
+
+/* Adjust style for tab that is muted. */
+tab-item.muted {
+	opacity: 0.5;
+}
+
+/* personal customizations */
+tab-item:hover tab-closebox {
+	border-radius: 1em;
+	height: 1.75em;
+	weight: 2.25em;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: 0.25em;
+	background: rgb(244, 96, 103);
+}
+
+#tabbar {
+	background: var(--browser-background);
+}
+
+#tabbar > div.after-tabs {
+	position: fixed;
+	bottom: 0em;
+}
+
+#tabbar > div.after-tabs > div.newtab-button-box {
+	width: calc(100vw - 0.8em);
+	align-self: end;
+	margin-left: 1vw !important;
+}
+
+
+#tabbar-container {
+	background: var(--browser-bg-base);
+}
+
+#tabbar-container > div.after-tabs > div.newtab-button-box {
+	width: calc(100vw - 1rem);
+	align-self: end;
+}
+
+
+tab-item.discarded {
+	opacity: 0.75;
+}
+
+tab-item.discarded tab-favicon {
+	opacity: 0.5 !important;
+}
+
+tab-item.active {
+	background: var(--theme-colors-toolbar);
+}
+
+tab-item.active .label-content {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+tab-item.active tab-twisty,
+tab-item.active .label-content,
+tab-item.active tab-counter {
+	color: var(--theme-colors-tab_text);
+}
+
+tab-item.unread .label-content {
+	font-style: italic;
+}
+
+tab-item:hover {
+	background: var(--theme-colors-popup_highlight) !important;
+	forground: var(--theme-colors-popup_highlight_text) !important;
+	font-style: bold;
+	background-opacity: 0.3;
+}
+
+tab-item {
+	border-left: 1px solid;
+}
