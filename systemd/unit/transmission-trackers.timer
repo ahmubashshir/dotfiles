@@ -3,6 +3,6 @@ Description=Transmission trackers update timer.
 
 [Timer]
 OnBootSec=1min
-OnUnitActiveSec=30
+OnUnitActiveSec=3
 [Install]
 WantedBy=timers.target
