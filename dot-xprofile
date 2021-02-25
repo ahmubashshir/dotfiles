@@ -5,6 +5,8 @@ fi
 services=(
 	ibus
 	picom
+	xfwm4
+	xfce4-panel
 	stalonetray
 )
 export GTK_IM_MODULE=ibus
@@ -27,6 +29,7 @@ if [ -x ~/.shell/path.${SHELL##*/} ]; then
 	export "PATH=$(~/.shell/path.${SHELL##*/})"
 fi
 
+dbus-update-activation-environment --all --systemd
 #xset +dpms
 #xset s blank
 for service in "${services[@]}"; do

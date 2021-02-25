@@ -1,0 +1,10 @@
+[Unit]
+Description=Xfce4 Panel on Display %I
+
+[Service]
+Environment=DISPLAY="%I"
+ExecStart=/usr/bin/xfce4-panel -d
+ExecStop=/usr/bin/xfce4-panel -q
+RestartSec=3
+Restart=on-failure
+

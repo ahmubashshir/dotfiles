@@ -1,0 +1,12 @@
+[Unit]
+Description=Xfce4 Window Manager on Display %I
+
+[Service]
+Environment=DISPLAY="%I"
+ExecStart=/usr/bin/xfwm4 -r --compositor=off --sm-client-disable
+RestartSec=3
+Restart=on-failure
+
+[Install]
+RequiredBy=xfce4-panel@.service
+
