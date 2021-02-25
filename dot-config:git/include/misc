@@ -1,7 +1,5 @@
 [credential]
 	helper = /usr/lib/git-core/git-credential-libsecret
-[diff]
-	guitool = meld
 [instaweb]
 	browser = chromium-browser
 [web]
