@@ -1,5 +1,6 @@
 [Unit]
 Description=Stand Alone Tray on Display %I
+After=xfce4-panel@.service
 
 [Service]
 Environment=DISPLAY="%I"
