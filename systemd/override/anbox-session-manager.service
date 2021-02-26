@@ -1,5 +1,8 @@
 [Service]
 ExecStart=
-ExecStart=/usr/bin/anbox session-manager --server-side-decoration --no-touch-emulation
+ExecStart=/usr/bin/anbox session-manager --server-side-decoration
 Restart=on-failure
 RestartSec=3
+
+[Install]
+Alias=anbox.service
