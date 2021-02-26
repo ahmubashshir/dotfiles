@@ -44,7 +44,6 @@ REPO="${REPONAME}${REPOEXT}"
 if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]; then
 	repoctl config new "${PKGREPO:-$PWD}/${REPO}"
 fi
-sed -i "s/^  \".*\" #GPGKEY$/  \"$GPGKEY\" #GPGKEY/g" ~/.config/repoctl/config.toml
 
 while read -r pkg; do
 	if [ -f "${PKGREPO:-$PWD}/${pkg##*/}" ] && [[ $FORCEREBUILD != "true" ]]; then
@@ -56,15 +55,16 @@ while read -r pkg; do
 	fi
 done < <(makepkg --packagelist)
 
-set -- -cC -s "${FORCEREBUILD:+-f}" "$@"
+set -- -cC -s ${FORCEREBUILD:+-f} "$@"
 
 if [ -z "$CHROOT" ]; then
 	makepkg "$@"
 elif command -v makechrootpkg > /dev/null 2>&1; then
-	makechrootpkg -c -r "$CHROOT" -- "$@"
-	makepkg --packagelist | while read -r pkg; do
-		gpg -u "$GPGKEY" --detach-sign "$pkg"
-	done
+	echo "$@"
+	makechrootpkg -c -T -r "$CHROOT" -- --nosign "$@" &&
+		makepkg --packagelist | while read -r pkg; do
+			gpg -u "$GPGKEY" --detach-sign "$pkg"
+		done || exit 1
 fi
 
 makepkg --packagelist | while read -r pkg; do
