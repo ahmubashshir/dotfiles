@@ -7,13 +7,13 @@ function displaytime
 	local M=$(((T / 60) % 60))
 	local S=$((T % 60))
 	printf '<txt>'
-	((D > 0)) && printf '%dd\n' $D
+	((D > 0)) && printf '%dd ' $D
 	((H > 0)) && printf '%dh\n' $H
-	((M > 0)) && printf '%dm\n' $M
+	((M > 0)) && printf '%dm ' $M
 	printf '%ds</txt>\n' $S
 }
 displaytime "$(datediff -f%S "$(uptime -s)$(date +%z)" now)"
 printf '<tool>'
 uptime -p
-uptime | sed s/',  '/'\n'/g | tail -n -2
+uptime | tr -d '\n' | sed -E 's/,  /\n/g;s/^ *//g' | tail -n 2
 printf '</tool>'
