@@ -68,6 +68,7 @@ tab-item:hover tab-closebox {
 
 #tabbar {
 	background: var(--browser-background);
+	height: calc(100vh - 1.4rem);
 }
 
 #tabbar > div.after-tabs {
@@ -76,9 +77,8 @@ tab-item:hover tab-closebox {
 }
 
 #tabbar > div.after-tabs > div.newtab-button-box {
-	width: calc(100vw - 0.8em);
+	width: calc(100vw - 0.99rem);
 	align-self: end;
-	margin-left: 1vw !important;
 }
 
 
@@ -87,7 +87,7 @@ tab-item:hover tab-closebox {
 }
 
 #tabbar-container > div.after-tabs > div.newtab-button-box {
-	width: calc(100vw - 1rem);
+	width: calc(100vw - 0.99rem);
 	align-self: end;
 }
 
@@ -121,9 +121,12 @@ tab-item.unread .label-content {
 
 tab-item:hover {
 	background: var(--theme-colors-popup_highlight) !important;
-	forground: var(--theme-colors-popup_highlight_text) !important;
-	font-style: bold;
 	background-opacity: 0.3;
+}
+
+tab-item:hover tab-label {
+	color: var(--theme-colors-popup_highlight_text) !important;
+	font-weight: bold;
 }
 
 tab-item {
