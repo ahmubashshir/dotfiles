@@ -68,6 +68,7 @@ elif [ -x /usr/bin/wormhole-william ]; then
 	alias send='wormhole-william send'
 	alias recv='wormhole-william recv'
 fi
+alias pytrace='python -m trace --trace --ignore-dir /usr --ignore-dir '$HOME'/.local'
 alias mprime='mprime -s'
 if hash git 2> /dev/null; then
 	for n in g gut giy hut; do
