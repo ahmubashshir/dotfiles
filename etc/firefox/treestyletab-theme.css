@@ -66,29 +66,10 @@ tab-item:hover tab-closebox {
 	background: rgb(244, 96, 103);
 }
 
-#tabbar {
-	background: var(--browser-background);
-	height: calc(100vh - 1.4rem);
-}
-
-#tabbar > div.after-tabs {
-	position: fixed;
-	bottom: 0em;
-}
-
-#tabbar > div.after-tabs > div.newtab-button-box {
-	width: calc(100vw - 0.99rem);
-	align-self: end;
-}
 
 
-#tabbar-container {
-	background: var(--browser-bg-base);
-}
-
-#tabbar-container > div.after-tabs > div.newtab-button-box {
-	width: calc(100vw - 0.99rem);
-	align-self: end;
+div.after-tabs {
+	display: none;
 }
 
 
