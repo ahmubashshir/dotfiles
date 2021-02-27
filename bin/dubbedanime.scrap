@@ -31,6 +31,14 @@ from gi.repository import GLib
 from lxml.html import document_fromstring as html_fromstr
 
 try:
+    import undetected_chromedriver as uc
+except ImportError:
+    pass
+else:
+    print("Monkeypatching webdriver.")
+    uc.install()
+
+try:
     from selenium import webdriver
 except ModuleNotFoundError:
     print("selenium not installed")
