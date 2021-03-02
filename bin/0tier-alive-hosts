@@ -15,7 +15,11 @@ hosts=(${(@f)"$(
 		((jobs++))
 		(
 			timeout 1s ping -c 1 $line &>/dev/null && {
-				name=$(timeout 0.5 getent hosts $line | awk '!a[$2]++{print $2}' )
+				name=$(
+					timeout 1s resolvectl query "$line" |
+					grep "^$line" |
+					awk '!a[$2]++{print $2}'
+				)
 				echo "$line:$name"
 			}
 		) &
