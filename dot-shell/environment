@@ -26,6 +26,11 @@ export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
 export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
 export TESSERACT_API_KEY=5a64d478-9c89-43d8-88e3-c65de9999580
 export GPGID=56DB0538F60D951C
+export QT_QPA_PLATFORMTHEME=qt5ct
+export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
+export EDITOR=nano
+
+export DESKTOP_APP_I_KNOW_ABOUT_GTK_INCOMPATIBILITY=1
 if [ -z "$WINEARCH" ]; then
 	export WINEARCH=win64
 fi
@@ -35,7 +40,7 @@ fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
 		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                        | sed -nE "s@.*='(.*)';@\1@p")
+	}                                                                      | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -66,7 +71,7 @@ if tty -s; then
 	fi
 fi
 if [ -n "$DISPLAY" ]; then
-	export  BROWSER=firefox
+	export BROWSER=firefox
 else
-	export  BROWSER=links
+	export BROWSER=links
 fi
