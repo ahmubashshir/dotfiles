@@ -50,7 +50,7 @@ autoload -Uz add-zsh-hook
 zrecompile
 ## Start
 case "$TERM" in
-	xterm|xterm-color|*-256color) ENV[color_prompt]=yes;;
+	xterm|xterm-color|*-256color|*-kitty) ENV[color_prompt]=yes;;
 esac
 ## local plugins
 # zplug async
