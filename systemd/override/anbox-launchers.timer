@@ -1,0 +1,3 @@
+[Install]
+RequiredBy=
+WantedBy=anbox-session-manager.service timers.target

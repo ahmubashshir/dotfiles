@@ -7,12 +7,12 @@ service	gamemoded
 service	mpris-proxy
 service	redshift-gtk
 service	systembus-notify
-service	tachiweb
 service	trakt-scrobbler
 service	transmission-trackers
 service	vino-server
 socket	dirmngr
 socket	gpg-agent
+timer	anbox-launchers
 timer	aur-autobuild
 timer	aur-autopush
 timer	eos-update-notifier
