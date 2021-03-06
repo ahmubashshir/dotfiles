@@ -2,4 +2,4 @@
 Description=Notify on failure for %i
 
 [Service]
-ExecStart=/usr/bin/gdbus call --session --dest org.freedesktop.Notifications --object-path /org/freedesktop/Notifications --method org.freedesktop.Notifications.Notify systemd-user 0 dialog-error "Task failed" "'%i' encountered an error" '[]' '{"urgency": <byte 2>,"sound-name":<"dialog-error">}' 0
+ExecStart=busctl --user call org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.Notifications Notify susssasa{sv}i systemd-user 0 dialog-error "Task failed" "'%i' encountered an error" 0 2 urgency y 2 sound-name s dialog-error 0
