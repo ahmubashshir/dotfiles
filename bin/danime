@@ -9,7 +9,7 @@
 # shellcheck disable=SC2015
 # shellcheck disable=SC2143
 ((def_header)) && return 0 || def_header=1
-# VERSION r178.a3babf5-1
+# VERSION r180.b627284-2
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -126,6 +126,7 @@ langs=(
 	'〇一二三四五六七八九'
 	'０１２３４５６７８９'
 )
+
 ellipsis()
 {
 	python3 -c "try:
@@ -139,114 +140,121 @@ except KeyboardInterrupt:
 	pass" "$@"
 
 }
+
 clear_line()
 {
+	local line
 	tput sc
-	for ((i = 0; i <= $1; i++)); do
+	for ((line = 0; line <= $1; line++)); do
 		printf "\r%-${COLUMNS}s"
 	done
 	tput rc
 }
+
 expand_limit()
 {
+	local start end rest range="$1" max="$2" count=0
+	# debug flag
 	${DEBUG:-false} && set -x
-	local i j n
-	if [[ $1 =~ ^[[:digit:]]+-$ ]]; then
-		n=${1%%-*}
-		for ((i = n; i <= $2; i++)); do
-			((i <= $2)) && printf "%d " "$i"
+	# code
+	if [[ $range =~ ^[[:digit:]]+-$ ]]; then
+		rest=${range%%-*}
+		for ((start = rest; start <= max; start++)); do
+			((count++)) && printf ' '
+			((start <= max)) && printf "%d" "$start"
 		done
 	else
-		for n in $(echo "$1" | cut -d, -f1- --output-delimiter=' '); do
-			if [[ $n =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
-				i=${n%%-*}
-				j=${n##*-}
-				if ((j <= $2)); then
-					expand_limit "$i-" "$j"
-				else
-					expand_limit "$i-" "$2"
+		for rest in $(echo "$range" | cut -d, -f1- --output-delimiter=' '); do
+			((count++)) && printf ' '
+			if [[ $rest =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
+				start=${rest%%-*}
+				end=${rest##*-}
+				if ((end > max)); then
+					end=$max
 				fi
-			elif [[ $n =~ ^[[:digit:]]+$ ]]; then
-				((n <= $2)) && printf "%d " "$n"
+				expand_limit "$start-" "$end"
+			elif [[ $rest =~ ^[[:digit:]]+$ ]]; then
+				((rest <= max)) && printf "%d" "$rest"
 			else
-				expand_limit "$n" "$2"
+				expand_limit "$rest" "$max"
 			fi
 		done
-	fi | tr \  \\n | sort -nu | tr \\n \  | sed 's| $|\n|g'
+	fi
+	# unset debug
 	${DEBUG:-false} && set +x
 	return 0
 }
 contract_limit()
 {
-	local k
-	read -ra k < <(echo "$@" | tr , ' ')
-	set "${k[@]}"
-	unset k
+	# arrays
+	local -a args
+	# variables
+	local max="$1" next_curr=0 curr_prev=0 prev curr next
+	# debug
 	${DEBUG:-false} && set -x
-	local max k m n o
-	max=$1
-	k=0
 	shift
-	for ((i = 2; i <= $#; i++)); do
-		m=${*:i-2:1}
-		n=${*:i-1:1}
-		o=${*:i:1}
-		k=$((${o:-0} - ${n:-0}))
-		if ((k >= 2)) && ((n - m < 2)) && ((m != n)) && ((o < max)); then
-			printf -- '-%d,%d' "$n" "$o"
-		elif ((i == 2)); then
-			printf '%d' "$n"
-		elif (((n - m) > 1)) && (((o - n) > 1)) || ((m == n)); then
-			printf ',%d' "$o"
-		elif ((i == $#)) && ((o >= max)); then
+	# code
+	readarray -t args < <(echo "$@" | tr -s ', ' \\n | sort -un)
+	for ((ind = 2; ind < ${#args[@]}; ind++)); do
+		prev=${args[ind - 2]}
+		curr=${args[ind - 1]}
+		next=${args[ind]}
+		next_curr=$((next - curr))
+		curr_prev=$((curr - prev))
+		if ((ind == 2)); then
+			printf '%d' "$prev"
+		elif ((next_curr >= 2)) && ((curr_prev < 2)); then
+			printf -- '-%d,%d' "$curr" "$next"
+		elif ((curr_prev > 1)) && ((next_curr > 1)); then
+			printf ',%d' "$next"
+		elif ((next >= max)); then
 			printf -- '-\n'
 			break
-		elif ((i == $#)) && ((o < max)); then
-			printf -- '-%d\n' "$o"
-			break
-		fi
-		if ((o > max)); then
+		elif ((ind + 1 == ${#args[@]})); then
+			printf -- '-%d\n' "$next"
 			break
 		fi
 	done
+
+	# unset debug
 	${DEBUG:-false} && set +x
 	return 0
 }
 byte_mr()
 {
-	sed '
-	s/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[kK]/\1*1000/g;
-	s/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[mM]/\1*1000000/g
-	' < /dev/stdin | bc | sed 's/\..*$//'
+	sed \
+		-e 's/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[kK]/\1*1000/g' \
+		-e 's/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[mM]/\1*1000000/g' |
+		bc |
+		sed \
+			-e 's/\..*$//'
 }
 validate_limit()
 {
 	${DEBUG:-false} && set -x
-	if ! [[ $1 =~ ^[[:digit:],-]+$ ]]; then
-		return 1
-	fi
-	if [[ $1 =~ ^[[:digit:]]+-$ ]]; then
-		return 0
-	else
-		local ret
+	local range="$1" ret=0 each start end
+	if ! [[ $range =~ ^[[:digit:],-]+$ ]]; then
+		ret=1
+	elif [[ $range =~ ^[[:digit:]]+-$ ]]; then
 		ret=0
-		for n in $(echo "$1" | cut -d, -f1- --output-delimiter=' '); do
-			if [[ $n =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
-				i=${n%%-*}
-				j=${n#*-}
-				if ((j <= i)); then
+	else
+		for each in $(echo "$range" | cut -d, -f1- --output-delimiter=' '); do
+			if [[ $each =~ ^[[:digit:]]+-[[:digit:]]+$ ]]; then
+				start=${each%%-*}
+				end=${each#*-}
+				if ((end <= start)); then
 					((ret++))
 				fi
 			elif ! {
-				[[ $n =~ ^[[:digit:]]+-$ ]] || [[ $n =~ ^[[:digit:]]+$ ]]
+				[[ $each =~ ^[[:digit:]]+-$ ]] ||
+					[[ $each =~ ^[[:digit:]]+$ ]]
 			}; then
 				((ret++))
 			fi
 		done
-		return "$ret"
 	fi
 	${DEBUG:-false} && set +x
-	return 0
+	return "$ret"
 }
 num_unicode2ascii()
 {
@@ -287,22 +295,36 @@ anime_cover()
 	if [ ! -e folder.jpg ]; then
 		{
 			curl --config /dev/null -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                               &> /dev/null
+		}                                                                                             &> /dev/null
 		if {
 			! grep -q cover.jpg .hidden &> /dev/null
-		}                                     && [ -f cover.jpg ]; then
+		}                                   && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
 }
 replace_invalid()
 {
+	local -a args
+	args=(
+		-e 's|<|＜|g'
+		-e 's|>|＞|g'
+		-e 's|:|꞉|g'
+		-e 's|\"|＂|g'
+		-e 's|/|⧸|g'
+		-e 's|\\|⧹|g'
+		-e 's|?|？|g'
+		-e 's|\||ǀ|g'
+		-e 's|\*|🞵|g'
+	)
 	if [[ $1 == dir ]]; then
-		sed 's|<|＜|g;s|>|＞|g;s|:|꞉|g;s|\"|＂|g;s|/|⧸|g;s|\\|⧹|g;s|?|？|g;s|\||ǀ|g;s|\*|🞵|g;s|\.$|.'$'\342\200\213|g'
+		args+=(-e 's|\.$|.'$'\342\200\213|g')
 	else
-		sed 's|<|＜|g;s|>|＞|g;s|:|꞉|g;s|\"|＂|g;s|/|⧸|g;s|\\|⧹|g;s|?|？|g;s|\||ǀ|g;s|\*|🞵|g;s| |-|g'
+		args+=(-e 's| |-|g')
 	fi
+	sed "${args[@]}"
 }
+
 remote_exist()
 {
 	if echo "$@" | grep -q http; then
@@ -328,6 +350,7 @@ danime_help()
 }
 danime_help_options()
 {
+	local line TAB i
 	echo Options:
 	sed -n '/#+option/,/#-option/{s/^[[:blank:]]*//p}' "$0" | while read -r line; do
 		if [[ $line = \#+option ]]; then
@@ -386,13 +409,13 @@ da_get_license()
 }
 da_db()
 {
+	local CACHE_FILE act=$1
+	shift
 	if [ -n "$AP" ]; then
 		CACHE_FILE="$ANIME_PATH/.danime_db.json"
 	else
 		CACHE_FILE="$MEDIA_ROOT/.danime_db.json"
 	fi
-	local act=$1
-	shift
 	if ! {
 		jq 'keys' "$CACHE_FILE" 2> /dev/null | grep -q '\['
 	}; then
