@@ -1,0 +1,5 @@
+#!/bin/sh
+export QT_SCALE_FACTOR=
+export DO_NOT_SET_DESKTOP_SETTINGS_UNAWARE=1
+export DO_NOT_UNSET_QT_QPA_PLATFORMTHEME=1
+exec /usr/bin/megasync "$@"
