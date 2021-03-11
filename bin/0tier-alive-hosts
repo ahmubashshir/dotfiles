@@ -16,6 +16,7 @@ hosts=(${(@f)"$(
 		(
 			timeout 1s ping -c 1 $line &>/dev/null && {
 				name=$(
+					exec 2>/dev/null
 					timeout 1s resolvectl query "$line" |
 					grep "^$line" |
 					awk '!a[$2]++{print $2}'

@@ -1,15 +1,17 @@
 #!/bin/bash
-# shellcheck disable=SC2086
-# shellcheck disable=SC1091
-# shellcheck disable=SC1090
-# shellcheck disable=SC1003
-# shellcheck disable=SC2034
-# shellcheck disable=SC2154
-# shellcheck disable=SC2016
-# shellcheck disable=SC2015
-# shellcheck disable=SC2143
-((def_header)) && return 0 || def_header=1
-# VERSION r180.b627284-2
+declare -a exit_traps
+trap 'on_exit' INT ERR TERM EXIT QUIT ABRT
+function on_exit
+{
+	local ret=$?
+	for each in "${exit_traps[@]}"; do
+		if [ "$(type -t "$each")" = "function" ]; then
+			"$each"
+		fi
+	done
+	exit $ret
+}
+# VERSION r182.457e3f1-2
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1253,13 +1255,14 @@ trollvid:get_url()
 	#exec 2>/tmp/out.${CALLED_FROM_MP4_SH:-false}
 	local token
 	token=$(
-		scrapper_call org.freedesktop.DBus.Properties.Get local.scrapper token |
+		scrapper_call org.freedesktop.DBus.Properties.Get local.scrapper token 2> /dev/null |
 			sed "s/.*'\(.*\)'.*/\1/"
 	)
+	[ -z "$token" ] && return
 	[ "$token" ] &&
 		token=$(curl --config /dev/null -s "https://mp4.sh/embed/$1?x=$token" --compressed \
 			-H "Referer: https://ww5.dubbedanime.net/" | sed -n 's/.*data-token="\(.*\)" style.*/\1/p')
-
+	[ -z "$token" ] && return
 	[ "$token" ] &&
 		curl --config /dev/null -XPOST -s "https://mp4.sh/v/$1" --compressed \
 			-H "Referer: https://mp4.sh/embed/$1?x=$token" \
@@ -1686,12 +1689,10 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				)
 				if [ "$scrapper_bus" ]; then
 					SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
-					trap 'close_bus' SIGINT SIGTERM ERR EXIT
-					close_bus()
+					exit_traps+=(close_bus)
+					function close_bus
 					{
-						ret=$?
 						gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method local.scrapper.quit &> /dev/null
-						exit $ret
 					}
 				fi
 			fi

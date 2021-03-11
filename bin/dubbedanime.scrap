@@ -35,7 +35,6 @@ try:
 except ImportError:
     pass
 else:
-    print("Monkeypatching webdriver.")
     uc.install()
 
 try:
