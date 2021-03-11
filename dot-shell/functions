@@ -105,24 +105,24 @@ get_drive()
 {
 	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
 	local size JSON md5sums try
-	echo -e " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	echo -e " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$2")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ]; do
-		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$2?key=$DRIVE_API_KEY&fields=md5Checksum,size")
-		python -mjson.tool - 2>&1 > /dev/null || continue
+		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$1?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		echo $JSON | python -mjson.tool - 2>&1 > /dev/null || continue
 		size="$(echo "$JSON" | jq -r .size)"
 	done
-	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
-	if echo "$md5sums" | md5sum -c --quiet 2>&1 > /dev/null; then
-		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr $size)].$ALL_OFF"
+	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $2"
+	if echo "$md5sums" | env md5sum -c --quiet > /dev/null 2>&1 ; then
+		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$2") [$(byte_hr $size)].$ALL_OFF"
 		sleep 2
 		return 0
 	else
 		echo
 		try=0
-		until echo "$md5sums" | md5sum -c --quiet 2>&1 > /dev/null || ((try == 5)); do
+		until echo "$md5sums" | env md5sum -c --quiet > /dev/null 2>&1 || ((try == 5)); do
 			tput cuu1
-			curl -sL "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s $size > "$1"
+			curl -sL "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=$DRIVE_API_KEY" | pv --format "  $(echo -ne "$YELLOW->$GREEN") %b %r %p %e$(echo -ne $ALL_OFF)" -CWi0.001 -s $size > "$1"
 			((try += 1))
 			sleep 5
 		done
