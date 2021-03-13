@@ -1,0 +1,6 @@
+*
+!script-opts/
+!scripts/
+!input.conf
+!mpv.conf
+!.gitignore
