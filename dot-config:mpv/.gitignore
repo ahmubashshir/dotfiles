@@ -1,6 +1,6 @@
-*
-!script-opts/
-!scripts/
+/*
+!script-opts
+!scripts
 !input.conf
 !mpv.conf
 !.gitignore
