@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r182.457e3f1-2
+# VERSION r184.8a7c34e-2
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -606,19 +606,22 @@ da_rebuild_db()
 	DO_UPDATE_ONLY=()
 	for id in $(da_db list); do
 		query=$(da_db get query)
+		printf '\rChecking [%s]' "$id"
 		if [[ $query == 0 ]]; then
 			query=$(da_db get title)
 		fi
 		url=$(da_api_search $query | grep ":$id:" | cut -d: -f1 | tr -d '[:space:]')
 		prev_url=$(da_db get url)
-		if [[ -n $url ]] && [[ $url != "$prev_url" ]]; then
-			echo "Fixing $(da_db get title) [$id]"
+		if [[ -z $url ]]; then
+			echo -e "\nFailed to fix $(da_db get title) [$id]"
+		elif ! [[ $url == "$prev_url" ]]; then
+			echo -e "\nFixing $(da_db get title) [$id]"
 			da_db set url "\"$url\""
 			DO_UPDATE_ONLY+=("$id")
-		elif [[ -z $url ]]; then
-			echo "Failed to fix $(da_db get title) [$id]"
 		fi
 	done
+	echo
+	da_update
 }
 da_list_queue()
 {
