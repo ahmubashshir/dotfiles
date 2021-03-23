@@ -1,10 +1,16 @@
 #!/bin/bash
-if ! pidof nginx 2>&1 > /dev/null; then
-	printf '<txt></txt><tool>Server Down</tool>'
-elif fping -qt 25 1.0.0.1; then
-	printf '<txt></txt><tool>Online</tool>'
+if fping -qt 25 1.0.0.1; then
+	icon=''
+	msg=Online
 elif [[ $(nmcli general | awk 'END{print $1}') == connected ]]; then
-	printf '<txt></txt><tool>Local</tool>'
+	icon=''
+	msg=Local
 else
-	printf '<txt></txt><tool>Disconnected</tool>'
+	icon=''
+	msg=Disconnected
 fi
+if ! pidof nginx 2>&1 > /dev/null; then
+	icon=''
+	msg="$msg"$'\nServer Down'
+fi
+printf '<txt>%s</txt><tool>%s</tool>' "$icon" "$msg"
