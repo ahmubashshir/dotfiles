@@ -94,6 +94,10 @@ ellipsis()
 except KeyboardInterrupt:
 	pass" "$@"
 }
+mkcd() {
+	mkdir -p "$1"
+	cd "$1"
+}
 #gdrive
 ls_drive()
 {
@@ -122,7 +126,7 @@ get_drive()
 		try=0
 		until echo "$md5sums" | env md5sum -c --quiet > /dev/null 2>&1 || ((try == 5)); do
 			tput cuu1
-			curl -sL "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=$DRIVE_API_KEY" | pv --format "  $(echo -ne "$YELLOW->$GREEN") %b %r %p %e$(echo -ne $ALL_OFF)" -CWi0.001 -s $size > "$1"
+			curl -sL "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=$DRIVE_API_KEY" | pv --format "  $(echo -ne "$YELLOW->$GREEN") %b %r %p %e$(echo -ne $ALL_OFF)" -CWi0.001 -s $size > "$2"
 			((try += 1))
 			sleep 5
 		done
