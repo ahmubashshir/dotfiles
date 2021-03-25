@@ -8,7 +8,7 @@
 	ui = auto
 [core]
 	askPass = /usr/lib/seahorse/ssh-askpass
-	hooksPath = ../hooks
+	hooksPath = ~/.config/git/hooks
 	editor = nano
 [fetch]
 	prune = true
