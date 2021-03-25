@@ -58,7 +58,7 @@ format_file()
 
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
 for file in "${STAGED[@]}"; do
-	if ! [ -f "$file" ]; then
+	if ! [ -f "$file" ] || [ -L "$file" ]; then
 		continue
 	fi
 	if [ "$(head -c2 "$file")" = "#!" ]; then
