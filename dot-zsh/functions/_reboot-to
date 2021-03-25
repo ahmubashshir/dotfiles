@@ -1,0 +1,14 @@
+#compdef reboot-to
+__list_reboot_targets() {
+	local -a targets
+	targets=(${(f)"$(bootctl list|sed -nE '/^[[:blank:]]*id: /{s/^.*id: (.*)/\1/;s/\.conf$//g;s/^(endeavouros|auto)-//g;s/efi-(shell)/\1/;s/reboot-to-(firmware)-setup/\1/;p}'|sort)"})
+	_values "targets" "${targets[@]}"
+}
+
+local args state
+args=(
+	 "1:target:__list_reboot_targets"
+)
+_arguments -s "${args[@]}"
+
+# vim:ts=4:ft=sh:noet:
