@@ -1,0 +1,25 @@
+#!/bin/sh
+if [[ $1 ]]; then
+	case $1 in
+		linux-*)    entry=endeavouros-$1.conf ;;
+		windows | efi-shell) entry=auto-windows ;;
+		shell | efi-shell) entry=auto-efi-shell ;;
+		firmware | efi | setup) entry=auto-reboot-to-firmware-setup ;;
+		*)     entry="$1.conf" ;;
+	esac
+	if bootctl list | grep -q '^[[:blank:]]*id: '"$entry"; then
+		echo Rebooting to $1
+		exec systemctl reboot --boot-loader-entry="$entry"
+	fi
+else
+	echo "Reboot targets:"
+	bootctl list | sed -nE '/^[[:blank:]]*id: /{
+		s/^.*id: (.*)/\1/
+		s/\.conf$//g
+		s/^(endeavouros|auto)-//g
+		s/efi-(shell)/\1/
+		s/reboot-to-(firmware)-setup/\1/
+		s/(.*)/\t\1/
+		p
+	}' | sort
+fi
