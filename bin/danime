@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r184.8a7c34e-2
+# VERSION r188.56172ba
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -878,7 +878,6 @@ da_get()
 			vbar "skipping $(echo "$ep_slug" | cut -d- -f1)"
 			continue
 		}
-		scrapper_call local.scrapper.load "https://ww5.dubbedanime.net/$ep_slug" &> /dev/null
 		da_get_episede "$ep_slug" "$k" "$epc" "$ep_progress" "$total_pw"
 		if ! (exit $?); then
 			echo "Failed to download $k"
@@ -1044,7 +1043,7 @@ da_get_episede()
 			set +x
 			start_spinner "Getting url from provider[$ep_file_host:$(ellipsis 15 "$ep_file_id")]"
 			${DEBUG:-false} && set -x
-			ep_file_url=$(get_url "$n")
+			ep_file_url=$(get_url "$n" "$1")
 			if [ -z "$ep_file_url" ] && [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -f maps.yml ]; then
 				ep_file_url=$(get_mapped "$ep_number")
 			fi
@@ -1120,8 +1119,8 @@ download()
 				tput cuu 2
 				((tried > 1)) && (
 					tput el1
-					tput         el
-					tput                 cuu1
+					tput       el
+					tput               cuu1
 				)
 				tput el1
 				tput el
@@ -1161,7 +1160,7 @@ compare_episode()
 		BS=524288
 	fi
 	if [ ! -e "$1" ] || {
-		[      -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
+		[    -n "$CHECK_FILE" ] && [ "$CHECK_FILE" == "false" ]
 	}; then
 		return 0
 	elif [ "$CHECK_FILE" == "error" ]; then
@@ -1207,7 +1206,7 @@ compare_episode()
 	echo -e "\rComparing episode[test:1-${TOTAL_CHECKS:-${#offsets}}:pass]"
 	return 0
 }
-SUPPORTED_HOSTS='mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
+SUPPORTED_HOSTS='trollvid|mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
 get_effective_url()
 {
 	xargs curl --config /dev/null -ILksXGET -o /dev/null -w '%{url_effective}\n' 2> /dev/null | grep '^http'
@@ -1215,8 +1214,8 @@ get_effective_url()
 get_url()
 {
 	local ep_file_host ep_file_id n try=0 url
-	ep_file_host=$(echo "$@" | jq -r '.host')
-	ep_file_id=$(echo "$@" | jq -r '.id' | xargs basename -a)
+	ep_file_host=$(echo "$1" | jq -r '.host')
+	ep_file_id=$(echo "$1" | jq -r '.id' | xargs basename -a)
 	if ! {
 		echo "$SUPPORTED_HOSTS" | grep -q "$ep_file_host"
 	}; then
@@ -1229,7 +1228,7 @@ get_url()
 			try=0
 			while [[ -z $url ]] && ((try++ < 5)); do
 				((try > 1)) && sleep 2
-				url="$(${ep_file_host// /+}:get_url "${n}")"
+				url="$(${ep_file_host// /+}:get_url "${n}" "$2")"
 			done
 			echo "$url"
 		else
@@ -1255,22 +1254,26 @@ xstreamcdn:get_url()
 
 trollvid:get_url()
 {
-	#exec 2>/tmp/out.${CALLED_FROM_MP4_SH:-false}
 	local token
 	token=$(
-		scrapper_call org.freedesktop.DBus.Properties.Get local.scrapper token 2> /dev/null |
-			sed "s/.*'\(.*\)'.*/\1/"
+		curl --silent --fail --config /dev/null -s "$2" |
+			sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 	)
 	[ -z "$token" ] && return
 	[ "$token" ] &&
-		token=$(curl --config /dev/null -s "https://mp4.sh/embed/$1?x=$token" --compressed \
-			-H "Referer: https://ww5.dubbedanime.net/" | sed -n 's/.*data-token="\(.*\)" style.*/\1/p')
+		token=$(
+			curl "https://mp4.sh/embed/${1}${token}" \
+				--config /dev/null -s \
+				-H 'Referer: https://ww5.dubbedanime.net/' |
+				sed -nE "/token: /s/.*'(.*)'.*/\1/p"
+		)
 	[ -z "$token" ] && return
 	[ "$token" ] &&
-		curl --config /dev/null -XPOST -s "https://mp4.sh/v/$1" --compressed \
-			-H "Referer: https://mp4.sh/embed/$1?x=$token" \
+		curl "https://mp4.sh/v/$1" \
 			-H 'Origin: https://mp4.sh' \
-			--data-raw "token=$token" | jq -r 'select(.success == true).data'
+			--config /dev/null -s \
+			--data-raw "token=$token" |
+		jq -r 'select(.success == true).file' 2> /dev/null
 }
 
 vidstreaming:get_url()
@@ -1685,28 +1688,6 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	[[ -n $FORCE ]] && echo "${FORCE} enforced."
 	if [[ $SEARCHSTR != '' ]] || [[ -n $DO_ALT ]]; then
 		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
-			if [ -x "${0%/*}/dubbedanime.scrap" ] && [ -x "$CHROMEDRIVER_PATH" ]; then
-				scrapper_bus=$(
-					export CHROMEDRIVER_PATH
-					"${0%/*}/dubbedanime.scrap"
-				)
-				if [ "$scrapper_bus" ]; then
-					SUPPORTED_HOSTS="trollvid${SUPPORTED_HOSTS:+|}${SUPPORTED_HOSTS}"
-					exit_traps+=(close_bus)
-					function close_bus
-					{
-						gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method local.scrapper.quit &> /dev/null
-					}
-				fi
-			fi
-			scrapper_call()
-			{
-				if gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method org.freedesktop.DBus.Peer.Ping > /dev/null 2>&1; then
-					method=$1
-					shift
-					gdbus call --session --dest "$scrapper_bus" --object-path /scrapper --method "$method" "$@"
-				fi
-			}
 			case $DO_ALT in
 				update)
 					da_update
