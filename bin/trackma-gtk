@@ -1,2 +1,2 @@
 #!/bin/bash
-unbuffer /usr/bin/trackma-gtk "$@" | tee ~/logs/trackma.log
+unbuffer /usr/bin/trackma-gtk -d "$@" | tee ~/logs/trackma.log
