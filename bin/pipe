@@ -1,0 +1,18 @@
+#!/bin/bash
+trap die TERM EXIT QUIT ABRT INT
+die()
+{
+	_lock u
+	_lock xn && rm -f ~/pipe "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe.lck"
+	exit
+}
+_lock()
+{
+	flock -$1 99
+}
+
+exec 99> "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe.lck"
+_lock xn || exit
+rm -f ~/pipe
+mkfifo ~/pipe 2> /dev/null
+tail -f ~/pipe
