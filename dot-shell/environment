@@ -19,6 +19,7 @@ export TERMINAL="xfce4-terminal"
 export GOPATH="$XDG_DATA_HOME/go"
 export MANGOHUD=1
 export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
+export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
 export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
 export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
 export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
@@ -39,7 +40,7 @@ fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
 		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                    | sed -nE "s@.*='(.*)';@\1@p")
+	}                                                                  | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
