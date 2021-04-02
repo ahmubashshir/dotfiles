@@ -5,6 +5,7 @@
 	fsclr = !git reflog expire --expire=now --all&&git gc --prune=now
 	chbr = checkout -b
 	tlog = !tig log
+	clear = clean -fd
 	dt = diff
 	mt = mergetool
 	unstage = reset HEAD
