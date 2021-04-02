@@ -1,0 +1,14 @@
+[Unit]
+Description=aria2 on port %I for PersepolisDM
+
+[Service]
+ExecCondition=/usr/bin/test -x /usr/bin/aria2c
+ExecStartPre=bash -c "pid=$(lsof -n -i :%I | grep LISTEN|awk '_[$2]++ {print $2}'); [[ $pid ]] && kill -TERM $pid || true"
+ExecStart=/usr/bin/aria2c --no-conf --enable-rpc --rpc-listen-port=%I --rpc-max-request-size=2M --rpc-listen-all --quiet=false --rpc-allow-origin-all=true
+RestartSec=1
+Restart=always
+MemoryHigh=50M
+MemoryMax=100M
+
+[Install]
+WantedBy=default.target

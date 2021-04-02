@@ -8,5 +8,3 @@ MemoryHigh=100M
 MemoryMax=300M
 WorkingDirectory=%h/Documents/aur
 ExecStart=/bin/bash -ec 'shopt -s extglob;shopt -s nullglob;for pkg in ??-*/*/PKGBUILD;do %h/bin/pkgbuild $pkg|tee %h/logs/autobuild.log;done'
-StandardOutput=syslog+console
-StandardError=syslog+console
