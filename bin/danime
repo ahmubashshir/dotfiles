@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r188.56172ba
+# VERSION r191.18a94db
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1278,12 +1278,14 @@ trollvid:get_url()
 
 vidstreaming:get_url()
 {
-	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" | jq -r 'if has("source_bk") and ( .source_bk[]|length >0 ) then .source_bk else .source end|.[0]|.file' | get_effective_url
+	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" |
+		jq '.source + .source_bk|[.[]|select(.type == "mp4")][0]|.file' |
+		get_effective_url
 }
 
 gogo+server:get_url()
 {
-	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1" | jq -r 'if has("source_bk") and ( .source_bk[]|length >0 ) then .source_bk else .source end|.[0]|.file' | get_effective_url
+	vidstreaming:get_url $1
 }
 
 mixdrop:get_url()
