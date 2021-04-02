@@ -4,6 +4,7 @@ service	aria2@6801
 service	broadwayd
 service	deadd-notification-center
 service	gamemoded
+service	geary-vacuum-sqlite
 service	mpris-proxy
 service	redshift-gtk
 service	systembus-notify
