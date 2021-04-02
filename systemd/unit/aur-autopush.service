@@ -6,6 +6,3 @@ OnFailure=notify-fail@%n.service
 Slice=aur.slice
 WorkingDirectory=%h/Documents/aur
 ExecStart=/bin/bash -c 'shopt -s extglob;shopt -s nullglob;for pkg in ??-maintaining/*/PKGBUILD;do dirname $pkg;done | %h/bin/aur-autopush --stdin'
-StandardOutput=syslog+console
-StandardError=syslog+console
-
