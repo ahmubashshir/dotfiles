@@ -24,6 +24,7 @@ FORMATTERS=(
 	# misc
 	[js]=js-beautify
 	[xml]=xmllint
+	[lua]=lua-format
 )
 
 format_file()
@@ -52,6 +53,7 @@ format_file()
 		js) js-beautify -itPjakxnr "$2" 2>&1 > /dev/null ;;
 		css) css-beautify --replace --space-around-combinator --end-with-newline --indent-with-tabs "$2" ;;
 		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
+		lua) lua-format -i "$2" 2>&1 > /dev/null ;;
 		*) return 1 ;;
 	esac
 }
