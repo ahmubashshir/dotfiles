@@ -2,12 +2,11 @@
 local utils = require "mp.utils"
 local msg = require "mp.msg"
 
-local opts = {
-    properties = "volume,sub-scale",
-}
+local opts = {properties = "volume,sub-scale"}
 (require 'mp.options').read_options(opts, "persist_properties")
 
-local CONFIG_ROOT = (os.getenv('APPDATA') or os.getenv('HOME')..'/.config')..'/mpv/'
+local CONFIG_ROOT = (os.getenv('APPDATA') or os.getenv('HOME') .. '/.config') ..
+                        '/mpv/'
 if not utils.file_info(CONFIG_ROOT) then
     -- On Windows if using portable_config dir, APPDATA mpv folder isn't auto-created
     -- In more recent mpv versions there's a mp.get_script_directory function, but i'm not using it for compatiblity
@@ -15,13 +14,11 @@ if not utils.file_info(CONFIG_ROOT) then
     local mpv_conf_dir = utils.split_path(mpv_conf_path)
     CONFIG_ROOT = mpv_conf_dir
 end
-local PCONFIG = CONFIG_ROOT..'saved.json';
+local PCONFIG = CONFIG_ROOT .. 'saved.json';
 
 local function split(input)
     local ret = {}
-    for str in string.gmatch(input, "([^,]+)") do
-        table.insert(ret, str)
-    end
+    for str in string.gmatch(input, "([^,]+)") do table.insert(ret, str) end
     return ret
 end
 local persisted_properties = split(opts.properties)
@@ -42,14 +39,10 @@ local function load_config(file)
         local jsonString = f:read()
         f:close()
 
-        if jsonString == nil then
-            return {}
-        end
+        if jsonString == nil then return {} end
 
         local props = utils.parse_json(jsonString)
-        if props then
-            return props
-        end
+        if props then return props end
     end
     return {}
 end
@@ -75,9 +68,7 @@ local function onInitialLoad()
     for i, property in ipairs(persisted_properties) do
         local name = property
         local value = properties[name]
-        if value ~= nil then
-            mp.set_property_native(name, value)
-        end
+        if value ~= nil then mp.set_property_native(name, value) end
     end
 
     for i, property in ipairs(persisted_properties) do
@@ -108,7 +99,5 @@ end
 
 onInitialLoad()
 mp.register_event("shutdown", function()
-    if got_unsaved_changed then
-        save_config(PCONFIG, properties)
-    end
+    if got_unsaved_changed then save_config(PCONFIG, properties) end
 end)

@@ -1,7 +1,6 @@
 -- This script pauses playback when minimizing the window, and resumes playback
 -- if it's brought back again. If the player was already paused when minimizing,
 -- then try not to mess with the pause state.
-
 local did_minimize = false
 
 mp.observe_property("window-minimized", "bool", function(name, value)
