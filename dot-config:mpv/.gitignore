@@ -1,6 +1,9 @@
 /*
 !script-opts
 !scripts
+!fonts
 !input.conf
 !mpv.conf
+!fonts.conf
+!subfont.ttf
 !.gitignore
