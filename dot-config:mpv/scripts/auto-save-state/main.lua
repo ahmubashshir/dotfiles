@@ -2,6 +2,8 @@
 
 local utils = require 'mp.utils'
 local options = require 'mp.options'
+local md5 = require 'md5'
+
 local o = { save_interval = 60 }
 options.read_options(o)
 
@@ -49,12 +51,7 @@ local function clean_watch_later(event)
 	end
 
 	local abs_path = utils.join_path(cwd, path)
-	local tmpname = os.tmpname()
-	local tmp = io.open(tmpname, "w")
-	tmp:write(abs_path)
-	tmp:flush()
-	local hash = io.popen("md5sum "..tmpname):read():match("^%w+"):upper()
-	os.remove(tmpname)
+	local hash = md5.sumhexa(abs_path):upper()
 
 	local watch_later = mp.find_config_file("watch_later")
 	if hash == nil or watch_later == nil then
