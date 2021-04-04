@@ -2,6 +2,7 @@
 !script-opts
 !scripts
 !fonts
+!shaders
 !input.conf
 !mpv.conf
 !fonts.conf
