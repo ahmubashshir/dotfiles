@@ -32,8 +32,9 @@ local function load_shaders(...)
         msg.info('Loaded Shaders: ' .. shader)
         ::continue::
     end
-    mp.commandv("change-list", "glsl-shaders", "set",
-                table.concat(list, listsep))
+    mp.command_native {
+        "change-list", "glsl-shaders", "set", table.concat(list, listsep)
+    }
 end
 
 local function load_shader()
