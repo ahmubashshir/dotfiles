@@ -1,7 +1,7 @@
-window#XfcePanelWindow.xfce4-panel.horizontal {
+/* window#XfcePanelWindow.xfce4-panel.horizontal {
 	border-radius: 30px;
 }
-
+*/
 window#XfcePanelWindow widget widget button#showdesktop-button {
 	-gtk-icon-source: none;
 }
