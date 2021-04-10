@@ -3,10 +3,11 @@ local msg = require "mp.msg"
 local options = require "mp.options"
 local shaders = require "shaders"
 local o = {
-    enable = false,
+    enable = true,
     mode = 'faithful',
+    lqmode = 'perceptual',
     uhd = false,
-    force = false
+    hd = false
     -- Modes:
     -- faithful: Upscale video while being faithful to the original video
     -- deblur: Improve perceptual quality and deblur
@@ -42,8 +43,10 @@ local function load_shader()
     msg.info("Res: " .. height .. "p")
     if height > 720 and o.uhd then
         load_shaders(shaders["hd_" .. o.mode])
-    elseif height <= 720 and (height >= 480 or o.force) then
+    elseif height <= 720 and height > 480 and o.hd then
         load_shaders(shaders["default_" .. o.mode])
+    elseif height <= 480 then
+        load_shaders(shaders["lq_" .. o.lqmode])
     else
         load_shaders(shaders["none"])
     end
@@ -57,6 +60,15 @@ end)({'faithful', 'perceptual', 'deblur'}, o.mode) then
     msg.warn('Invalid mode: ' .. o.mode)
     o.mode = 'faithful'
     msg.info('Fallback mode: ' .. o.mode)
+end
+
+if (function(tab, val)
+    for index, value in ipairs(tab) do if value == val then return false end end
+    return true
+end)({'faithful', 'perceptual', 'deblur'}, o.lqmode) then
+    msg.warn('Invalid mode: ' .. o.lqmode)
+    o.lqmode = 'faithful'
+    msg.info('Fallback mode: ' .. o.lqmode)
 end
 
 if o.enable then mp.register_event("file-loaded", load_shader) end
