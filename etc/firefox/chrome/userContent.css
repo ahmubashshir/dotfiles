@@ -1,0 +1,12 @@
+/* /* Frank edited file - you are good to go...*/
+
+
+@namespace url(http://www.w3.org/1999/xhtml);
+
+@-moz-document url-prefix(about:home),
+url-prefix(about:newtab) {
+	body {
+		background: url(bungou-stray-dogs-1.png) no-repeat center center fixed !important;
+		background-size: cover !important;
+	}
+}
