@@ -45,12 +45,6 @@
 [submodule "dot-zsh/plugins/completions"]
 	path = dot-zsh/plugins/completions
 	url = https://github.com/zsh-users/zsh-completions.git
-[submodule "dot-local:share:gedit/plugins/gedi"]
-	path = dot-local:share:gedit/plugins/gedi
-	url = https://github.com/isamert/gedi.git
-[submodule "dot-local:share:gedit/plugins/gedit-crypto"]
-	path = dot-local:share:gedit/plugins/gedit-crypto
-	url = https://github.com/toobaz/gedit_crypto.git
 [submodule "dot-local:share:gedit/plugins/restore-minimap"]
 	path = dot-local:share:gedit/plugins/restore-minimap
 	url = https://github.com/johnfactotum/gedit-restore-minimap.git
@@ -60,9 +54,6 @@
 [submodule "dot-local:share:gedit/plugins/open-uri-context-menu"]
 	path = dot-local:share:gedit/plugins/open-uri-context-menu
 	url = https://github.com/jpfleury/open-uri-context-menu
-[submodule "dot-local:share:gedit/plugins/panel-toggler"]
-	path = dot-local:share:gedit/plugins/panel-toggler
-	url = https://github.com/hardpixel/gedit-panel-toggler
 [submodule "dot-local:share:gedit/plugins/discord-rpc"]
 	path = dot-local:share:gedit/plugins/discord-rpc
 	url = https://github.com/M4xi1m3/gedit-discord-rpc
