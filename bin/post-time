@@ -1,0 +1,8 @@
+#!/bin/sh
+[ -f "$1" ] || {
+	echo no such file >&2
+	exit 1
+}
+date +"%Y-%m-%d %H:%M:%S %z" -d @$(
+	stat -c%Y "$1"
+)
