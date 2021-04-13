@@ -24,4 +24,4 @@ for ep in maps["eps"].keys():
                 break
         if src:
             print(f"Downloading {name}")
-            call(['wget', '-cO', name, src])
+            call(['wget', '--show-progress', '-qcO', name, src])
