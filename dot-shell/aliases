@@ -27,10 +27,6 @@ if [ -x /usr/bin/yay ]; then
 	alias add='yay -S --needed'
 	alias del='yay -Rcsn'
 fi
-if [ -x /usr/bin/pacman ]; then
-	alias pm='pacman'
-	alias spm='sudo pacman'
-fi
 if [ -x /usr/bin/time ]; then
 	alias time="/usr/bin/time"
 fi
