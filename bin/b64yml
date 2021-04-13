@@ -1,0 +1,6 @@
+#!/bin/sh
+base64 | awk '{print "- "$0}' | (
+	[ "$1" = "clip" ] &&
+		xclip -selection clipboard ||
+		cat
+)
