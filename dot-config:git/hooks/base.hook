@@ -49,10 +49,7 @@ format()
 	return $err
 }
 stage="${0##*/}"
-if [ -x "$GIT_DIR/hooks/$stage" ];then
-	echo "${color[green]}==> Running local ${color[blue]}$stage${color[green]}...${color[-]}"
-	"$GIT_DIR/hooks/$stage" "$@"
-fi
+export HOOKSDIR="${0%/*}"
 checker="${0%/*}/if.hook"
 hookdir="${0%/*}/hooks.d/$stage"
 if [ -d "$hookdir" ];then
@@ -70,4 +67,8 @@ if [ -d "$hookdir" ];then
 			fi
 		fi
 	done
+fi
+if [ -x "$GIT_DIR/hooks/$stage" ];then
+	echo "${color[green]}==> Running local ${color[blue]}$stage${color[green]}...${color[-]}"
+	"$GIT_DIR/hooks/$stage" "$@"
 fi
