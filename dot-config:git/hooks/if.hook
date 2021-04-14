@@ -4,21 +4,27 @@ id="$2"
 stage="$3"
 
 shift 3
-
-[[ \
-"$( git config --bool "hook.$id")" != "false" && ! \
-":$GIT_DISABLED_HOOKS:" =~ :$id: ]]
-
-case "$stage" in
-	pre-commit) [ -n "$(git status --porcelain)" ] ;;
-	*) true ;;
-esac
-
-if [ -f "${0%/*}/if.d/$stage/$subhook" ]; then
-	source "${0%/*}/if.d/$stage/$subhook" "$@"
+if ((CHECKPIPE)); then
+	! {
+		grep -qE '#\s+HOOK-NOPIPE' "${0%/*}/if.d/$stage/$subhook" ||
+			grep -qE '#\s+HOOK-NOPIPE' "${0%/*}/hooks.d/$stage/$subhook"
+	} 2> /dev/null
 else
-	awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");printf $0"\0"}' \
-		"${0%/*}/hooks.d/$stage/$subhook" | while IFS= read -r -d $'\0'; do
-		eval "$REPLY" &> /dev/null
-	done
+	[[ \
+	"$(git config --bool "hook.$id")" != "false" && ! \
+	":$GIT_DISABLED_HOOKS:" =~ :$id: ]]
+
+	case "$stage" in
+		pre-commit) [ -n "$(git status --porcelain)" ] ;;
+		*) true ;;
+	esac
+
+	if [ -f "${0%/*}/if.d/$stage/$subhook" ]; then
+		source "${0%/*}/if.d/$stage/$subhook" "$@"
+	else
+		awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");print}' \
+			"${0%/*}/hooks.d/$stage/$subhook" | while IFS= read -r; do
+			eval "$REPLY" &> /dev/null
+		done
+	fi
 fi

@@ -60,10 +60,17 @@ if [ -d "$hookdir" ];then
 			&& "$checker" "${subhook##*/}" "$id" "$stage"
 		then
 			echo "${color[green]}==> Running ${color[blue]}$id${color[green]}...${color[-]}"
-			"$subhook" "$@" 2>&1|format
-			if [[ ${PIPESTATUS[0]} -gt 0 ]];then
-				echo "E: $id failed"|format
-				exit 1
+			if \
+				[[ -x "$subhook" ]] \
+				&& env CHECKPIPE=1 "$checker" "${subhook##*/}" "$id" "$stage"
+			then
+				"$subhook" "$@" 2>&1|format
+				if [[ ${PIPESTATUS[0]} -gt 0 ]];then
+					echo "E: $id failed"|format
+					exit 1
+				fi
+			else
+				"$subhook" "$@"
 			fi
 		fi
 	done
