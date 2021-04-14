@@ -9,7 +9,7 @@
 [core]
 	askPass = /usr/lib/seahorse/ssh-askpass
 	hooksPath = ~/.config/git/hooks
-	editor = nano
+	editor = nano -r 72
 [fetch]
 	prune = true
 [push]
