@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 # Encoding: utf-8
+# HOOK-CONDITION: [[ ! $(git remote get-url origin) =~ ^(https?://|ssh://aur@)aur.archlinux.org/ ]]
+# HOOK-NOPIPE
 
 editor = ENV['EDITOR'] != 'none' ? ENV['EDITOR'] : 'vim'
 message_file = ARGV[0]
@@ -24,14 +26,14 @@ while try+=1
 		commit_msg.push line
 		e = check_format_rules line_number, line.strip
 		errors.push e if e
-		lines += 1 unless line[0,1]  == '#' 
+		lines += 1 unless line[0,1]  == '#'
 	end
 	if lines < 3 then
-		errors.push "  error:#{lines}: No summery written."
+		errors.insert 0, "  error:#{lines}: No summery written."
 	end
 
 	unless errors.empty?
-		if try > 1 then
+		if try > 1 and STDIN.isatty then
 			(0 .. len + 3).each do |idx|
 				print "\e[1;F\e[0;K"
 			end
@@ -41,16 +43,20 @@ while try+=1
 			puts "  #{error}"
 		end
 		puts "\nInvalid git commit message format."
-		print 'Fix this commit? [Y/n]  '
-		choice = ''
-		until %w[y n].include? choice.downcase
-			print "\e[1;D"
-			chc = $stdin.gets
-			chc = chc == nil ? 'n' : chc.chomp
-			choice = chc.length == 0 ? 'y' : chc
-			print "\e[1;A"
+		if STDIN.isatty then
+			print 'Fix this commit? [Y/n]  '
+			choice = ''
+			until %w[y n].include? choice.downcase
+				print "\e[1;D"
+				chc = $stdin.gets
+				chc = chc == nil ? 'n' : chc.chomp
+				choice = chc.length == 0 ? 'y' : chc
+				print "\e[1;A"
+			end
+			len = errors.length
+		else
+			choice = 'n'
 		end
-		len = errors.length
 		exit 1 if choice.downcase == 'n'
 			next if system("#{editor} '#{message_file}'")
 		end
