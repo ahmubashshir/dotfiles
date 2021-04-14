@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r193.67f8445
+# VERSION r194.cd1fd2b
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1285,26 +1285,37 @@ xstreamcdn:get_url()
 
 trollvid:get_url()
 {
-	local token
-	token=$(
-		curl --silent --config /dev/null -s "$2" |
-			sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
-	)
-	[ -z "$token" ] && return
-	[ "$token" ] &&
+	local token try=0 url
+	while [[ -z $url ]] && ((try++ < 5)); do
+		((try > 1)) && sleep 2
 		token=$(
-			curl "https://mp4.sh/embed/${1}${token}" \
-				--config /dev/null -s \
-				-H 'Referer: https://ww5.dubbedanime.net/' |
-				sed -nE "/token: /s/.*'(.*)'.*/\1/p"
+			curl --silent --config /dev/null -s "$2" |
+				sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
-	[ -z "$token" ] && return
-	[ "$token" ] &&
-		curl "https://mp4.sh/v/$1" \
-			-H 'Origin: https://mp4.sh' \
-			--config /dev/null -s \
-			--data-raw "token=$token" |
-		jq -r 'select(.success == true).file' 2> /dev/null
+		[ -z "$token" ] && continue
+		[ "$token" ] &&
+			token=$(
+				curl "https://mp4.sh/embed/${1}${token}" \
+					--config /dev/null -s \
+					-H 'Referer: https://ww5.dubbedanime.net/' |
+					sed -nE "/token: /s/.*'(.*)'.*/\1/p"
+			)
+		[ -z "$token" ] && continue
+		[ "$token" ] &&
+			url=$(
+				curl "https://mp4.sh/v/$1" \
+					-H 'Origin: https://mp4.sh' \
+					--config /dev/null -s \
+					--data-raw "token=$token" |
+					jq -r 'select(.success == true).file' 2> /dev/null
+			)
+		[ "$url" ] &&
+			curl -s "$(echo "$url" | cut -d/ -f1-3)/video.php" --data-raw "token=$token" 2> /dev/null &&
+			{
+				echo "$url"
+				break
+			}
+	done
 }
 
 vidstreaming:get_url()
