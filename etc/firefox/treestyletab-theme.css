@@ -15,11 +15,12 @@
 }
 
 /* autohide css  */
-
 #tabbar {
-	border: 0;
-	overflow-y: scroll !important;
-	scrollbar-width: auto;
+	scrollbar-color: transparent var(--theme-colors-sidebar) !important;
+}
+
+#tabbar:hover {
+	scrollbar-color: var(--theme-colors-tab_background_text) var(--theme-colors-sidebar) !important;
 }
 
 /* Hide close buttons on tabs. */
@@ -39,7 +40,6 @@ tab-item:hover .closebox {
 /* ################################################ */
 /* ##### COLOR THEME ############################## */
 /* ################################################ */
-
 tab-item {
 	box-shadow: none !important;
 }
@@ -47,7 +47,6 @@ tab-item {
 tab-item:hover {
 	filter: opacity(80%) drop-shadow(0px 0px 0px #3498DB);
 }
-
 
 /* Adjust style for tab that is muted. */
 tab-item.muted {
@@ -66,12 +65,9 @@ tab-item:hover tab-closebox {
 	background: rgb(244, 96, 103);
 }
 
-
-
 div.after-tabs {
 	display: none;
 }
-
 
 tab-item.discarded {
 	opacity: 0.75;
