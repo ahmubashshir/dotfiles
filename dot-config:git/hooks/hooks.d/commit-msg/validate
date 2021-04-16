@@ -8,57 +8,72 @@ message_file = ARGV[0]
 try = 0
 return if message_file.nil?
 
-def check_format_rules(line_number, line)
-	real_line_number = line_number + 1
-  	return "  error:#{real_line_number}: First line should be less than 50 characters in length." if line_number == 0 && line.length > 50
-  	return "  error:#{real_line_number}: Second line should be empty." if line_number == 1 && line.length > 0
-  	(return "  error:#{real_line_number}: No line should be over 72 characters long." if line.length > 72) unless line[0,1]  == '#'
-  	false
+def rules(line_number, line)
+    real_line_number = line_number + 1
+    if line_number == 0 then
+        yield "  error:#{real_line_number}: First line should be less than 50 characters in length." if line.length > 50
+        yield "  error:#{real_line_number}: First line should be capitalized." unless /[[:upper:]]/.match(line[0,1])
+        yield "  error:#{real_line_number}: First line shouldn't end with a period." if /\.$/.match(line)
+
+    elsif not line[0,1]  == '#' then
+        if line_number == 1 then
+            yield "  error:#{real_line_number}: Second line should be empty." if line.length > 0
+        else
+            yield "  error:#{real_line_number}: No line should be over 72 characters long." if line.length > 72
+        end
+    else
+        yield false
+    end
 end
-print "\e[s"
+
+
 while try+=1
-	len = 0
-	lines = 0
-	commit_msg = []
-	errors = []
+    len = 0
+    commit_msg = []
+    errors = []
 
-	File.open(message_file, 'r').each_with_index do |line, line_number|
-		commit_msg.push line
-		e = check_format_rules line_number, line.strip
-		errors.push e if e
-		lines += 1 unless line[0,1]  == '#'
-	end
-	if lines < 3 then
-		errors.insert 0, "  error:#{lines}: No summery written."
-	end
+    File.open(message_file, 'r').each_with_index do |line, line_number|
+        commit_msg.push line
+        rules line_number, line.strip do |e|
+            errors.push e if e
+        end
+    end
 
-	unless errors.empty?
-		if try > 1 and STDIN.isatty then
-			(0 .. len + 3).each do |idx|
-				print "\e[1;F\e[0;K"
-			end
-		end
-		print "[commit-msg] Invalid format\n\n"
-		errors.each do |error|
-			puts "  #{error}"
-		end
-		puts "\nInvalid git commit message format."
-		if STDIN.isatty then
-			print 'Fix this commit? [Y/n]  '
-			choice = ''
-			until %w[y n].include? choice.downcase
-				print "\e[1;D"
-				chc = $stdin.gets
-				chc = chc == nil ? 'n' : chc.chomp
-				choice = chc.length == 0 ? 'y' : chc
-				print "\e[1;A"
-			end
-			len = errors.length
-		else
-			choice = 'n'
-		end
-		exit 1 if choice.downcase == 'n'
-			next if system("#{editor} '#{message_file}'")
-		end
+    unless errors.empty?
+        if try > 1 and STDIN.isatty then
+            (0 .. len + 3).each do |idx|
+                print "\e[1;F\e[0;K"
+            end
+        end
+
+        print "[commit-msg] Invalid format\n\n"
+        errors.each do |error|
+            puts "  #{error}"
+        end
+
+        puts "\nInvalid git commit message format."
+
+        if STDIN.isatty then
+            print 'Fix this commit? [Y/n]  '
+            choice = ''
+
+            until %w[y n].include? choice.downcase
+                print "\e[1;D"
+                chc = $stdin.gets
+                chc = chc == nil ? 'n' : chc.chomp
+                choice = chc.length == 0 ? 'y' : chc
+                print "\e[1;A"
+            end
+
+            len = errors.length
+        else
+            choice = 'n'
+        end
+        if choice.downcase == 'n'
+        	File.write("#{message_file}~", File.read(message_file))
+        	exit 1
+        end
+        next if system("#{editor} '#{message_file}'")
+    end
 	break
 end
