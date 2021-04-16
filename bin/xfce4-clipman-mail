@@ -7,7 +7,7 @@ if (($# != 2)); then
 	echo invalid number of args: $# \!= 2
 	exit 2
 fi
-set $1 "$(echo $2 | sed 's/\[at\]/@/gI;s/\[dot\]/\./gI')"
+set $1 "$(echo $2 | sed -E 's/\s*(\[at\]|at)\s*/@/gI;s/\s*(\[dot\]|dot)\s*/\./gI')"
 case $1 in
 	copy) echo "$2" | xsel -b ;;
 	send) exo-open "mailto:$2" ;;
