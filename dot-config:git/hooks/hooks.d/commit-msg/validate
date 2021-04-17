@@ -5,6 +5,7 @@
 
 editor = ENV['EDITOR'] != 'none' ? ENV['EDITOR'] : 'vim'
 message_file = ARGV[0]
+name = ENV['GIT_DIR'] != 'none' ? '[commit-msg.validate]' : 'Git commit message:'
 try = 0
 return if message_file.nil?
 
@@ -45,26 +46,24 @@ while try+=1
         end
     end
 
-    unless errors.empty?
-        if try > 1 and $stdin.isatty then
-            (0 .. len + 4).each do |idx|
-                print "\e[1;F\e[0;K"
-            end
+    if try + len > 1 and $stdin.isatty then
+        (0 .. len + 3).each do |idx|
+            print "\e[1;F\e[0;K"
         end
+    end
 
-        print "[commit-msg] Invalid format\n\n"
+    unless errors.empty?
+        print "#{name} Invalid format\n\n"
         errors.each do |error|
             puts "  #{error}"
         end
-
-        puts "\nInvalid git commit message format."
+        puts ""
 
         if $stdin.isatty then
-            print 'Fix this commit? [Y/n]  '
             choice = ''
 
             until %w[y n].include? choice.downcase
-                print "\e[1;D"
+            	print "\rFix this commit message? [Y/n] "
                 chc = $stdin.gets
                 chc = chc == nil ? 'n' : chc.chomp
                 choice = chc.length == 0 ? 'y' : chc
