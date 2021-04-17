@@ -8,6 +8,12 @@ message_file = ARGV[0]
 try = 0
 return if message_file.nil?
 
+unless $stdin.isatty
+	tmp = File::open('/dev/tty', 'r')
+	$stdin.reopen(tmp)
+	tmp.close
+end
+
 def rules(line_number, line)
     real_line_number = line_number + 1
     if line_number == 0 then
@@ -40,8 +46,8 @@ while try+=1
     end
 
     unless errors.empty?
-        if try > 1 and STDIN.isatty then
-            (0 .. len + 3).each do |idx|
+        if try > 1 and $stdin.isatty then
+            (0 .. len + 4).each do |idx|
                 print "\e[1;F\e[0;K"
             end
         end
@@ -53,7 +59,7 @@ while try+=1
 
         puts "\nInvalid git commit message format."
 
-        if STDIN.isatty then
+        if $stdin.isatty then
             print 'Fix this commit? [Y/n]  '
             choice = ''
 
