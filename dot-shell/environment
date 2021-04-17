@@ -18,8 +18,6 @@ export LNDIR="/mnt/Books/Light Novels"
 export TERMINAL="xfce4-terminal"
 export GOPATH="$XDG_DATA_HOME/go"
 export MANGOHUD=1
-export DESKTOP_APP_I_KNOW_ABOUT_GTK_INCOMPATIBILITY=1
-export DESKTOP_APP_DISABLE_GTK_INTEGRATION=1
 export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
 export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
 export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
@@ -42,7 +40,7 @@ fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
 		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                | sed -nE "s@.*='(.*)';@\1@p")
+	}                                                                  | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
