@@ -9,4 +9,56 @@ url-prefix(about:newtab) {
 		background: url(bungou-stray-dogs-1.png) no-repeat center center fixed !important;
 		background-size: cover !important;
 	}
+
+	a.top-site-button div.tile,
+	a.top-site-button div.top-site-icon {
+		border-radius: 50% !important;
+		background-color: rgba(38, 48, 52, 0.7) !important;
+	}
+
+	a.top-site-button div.top-site-icon {
+		opacity: 0.7;
+	}
+
+	ul.top-sites-list {
+		display: inline-grid;
+		grid-template-columns: auto auto auto auto;
+		grid-gap: 1em;
+		position: relative;
+		left: 50%;
+		transform: translate(-50%, 25%);
+	}
+
+	a.top-site-button div.tile:is(.active, :focus, :hover) {
+		background-color: rgba(56, 70, 75, 0.7) !important;
+	}
+
+	button.personalize-button {
+		opacity: 0.1;
+	}
+
+	button.personalize-button:hover {
+		opacity: 0.5;
+	}
+
+	a.top-site-button div.title {
+		display: none;
+	}
+
+	li.top-site-outer:is(.active, :focus, :hover) {
+		background: none !important;
+	}
+
+	li.top-site-outer:is(.active, :focus, :hover) button.context-menu-button {
+		opacity: 0.5 !important;
+	}
+
+	input#newtab-search-text {
+		background-color: rgba(34, 43, 46, 0.6) !important;
+	}
+
+	input#newtab-search-text:focus {
+		border: 1px solid rgba(46, 179, 152, 0.6) !important;
+		box-shadow: 0 0 0 2px solid rgba(46, 179, 152, 0.6) !important;
+	}
 }
