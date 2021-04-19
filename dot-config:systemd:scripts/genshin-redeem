@@ -1,0 +1,5 @@
+#!/bin/bash
+curl -s https://www.gensh.in/events/promotion-codes |
+	xmllint --html --xpath "//table/tbody/tr/td[3][contains(text(),\"No\")]/parent::node()" - 2> /dev/null |
+	sed -En "s@<tr><td> (.*) </td><td> (.*) </td><td> No [[:alnum:][:punct:]]* </td><td> (.*) </td><td> (.*) </td><td> (.*) </td></tr>@\1: \2\n\tEU: \3\n\tNA: \4\n\tSEA: \5\n@p" |
+	tee "${1:-$HOME/genshin-redeem}"
