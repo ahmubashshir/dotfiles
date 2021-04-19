@@ -14,6 +14,10 @@
 	visibility: collapse !important;
 }
 
+#main-window #nav-bar > hbox {
+	margin-top: 5px;
+}
+
 /* Sidebar min and max width removal */
 #sidebar {
 	max-width: none !important;
