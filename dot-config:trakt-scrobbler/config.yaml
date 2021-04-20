@@ -1,0 +1,9 @@
+players:
+    vlc:
+        poll_interval: 0.25
+    mpv:
+        poll_interval: 0.25
+    monitored: [vlc, mpv]
+fileinfo:
+    whitelist: [/mnt/Multimedia/Anime, /mnt/Multimedia/Animation, /mnt/Multimedia/Movie, /mnt/Torrents]
+version: '1.0'
