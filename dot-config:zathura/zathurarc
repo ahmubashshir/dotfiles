@@ -1,0 +1,24 @@
+set guioptions "shvc"
+#set adjust_window "width"
+
+set continuous-hist-save true
+set statusbar-basename true
+set n-completion-items 7
+
+set recolor true
+set recolor-reverse-video true
+set recolor-lightcolor "#1B2224"
+set render-loading-bg "#1B2224"
+set default-bg "#1B2224"
+set index-bg "#1B2224"
+set statusbar-bg "#141A1B"
+set notification-bg "#263034"
+set highlight-color "#2EB398"
+set render-loading-fg "#FFFFFF"
+set default-fg "#FFFFFF"
+set notification-fg "#FFFFFF"
+
+set completion-highlight-bg "#2EB398"
+set index-active-bg "#2EB398"
+
+set inputbar-bg "#222B2E"
