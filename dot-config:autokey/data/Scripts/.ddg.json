@@ -1,0 +1,31 @@
+{
+    "type": "script",
+    "description": "ddg",
+    "store": {},
+    "modes": [
+        1
+    ],
+    "usageCount": 17,
+    "prompt": false,
+    "omitTrigger": true,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [
+            "lmgtfy",
+            "lmddgtfy"
+        ],
+        "backspace": true,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[\\w]"
+    },
+    "hotkey": {
+        "modifiers": [],
+        "hotKey": null
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    }
+}

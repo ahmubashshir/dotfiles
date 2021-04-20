@@ -1,0 +1,30 @@
+{
+    "type": "script",
+    "description": "esh",
+    "store": {},
+    "modes": [
+        1
+    ],
+    "usageCount": 2,
+    "prompt": false,
+    "omitTrigger": true,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [
+            "esh"
+        ],
+        "backspace": true,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[^\\t]"
+    },
+    "hotkey": {
+        "modifiers": [],
+        "hotKey": null
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    }
+}
