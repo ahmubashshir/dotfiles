@@ -1,0 +1,101 @@
+{
+    "keymap": {
+        "addsearch": "a",
+        "altname": "A",
+        "delete": "d",
+        "details": "enter",
+        "details_exit": "esc",
+        "down": "j",
+        "help": "?",
+        "left": "h",
+        "neweps": "N",
+        "next_filter": "right",
+        "open_web": "O",
+        "openfolder": "o",
+        "page_down": "J",
+        "page_up": "K",
+        "play": "p",
+        "play_random": "&",
+        "prev_filter": "left",
+        "quit": "q",
+        "reload": "c",
+        "retrieve": "R",
+        "right": "l",
+        "score": "z",
+        "search": "/",
+        "send": "s",
+        "sort": "f3",
+        "sort_order": "r",
+        "status": "f6",
+        "switch_account": "f9",
+        "up": "k",
+        "update": "u"
+    },
+    "palette": {
+        "body": [
+            "",
+            ""
+        ],
+        "button": [
+            "black",
+            "light gray"
+        ],
+        "button hilight": [
+            "white",
+            "dark red"
+        ],
+        "error": [
+            "light red",
+            "dark blue"
+        ],
+        "focus": [
+            "standout",
+            ""
+        ],
+        "head": [
+            "light red",
+            "black"
+        ],
+        "header": [
+            "bold",
+            ""
+        ],
+        "info_section": [
+            "dark blue",
+            ""
+        ],
+        "info_title": [
+            "light red",
+            ""
+        ],
+        "item_airing": [
+            "dark blue",
+            ""
+        ],
+        "item_neweps": [
+            "white",
+            "brown"
+        ],
+        "item_notaired": [
+            "yellow",
+            ""
+        ],
+        "item_playing": [
+            "white",
+            "dark blue"
+        ],
+        "item_updated": [
+            "white",
+            "dark green"
+        ],
+        "status": [
+            "white",
+            "dark blue"
+        ],
+        "window": [
+            "white",
+            "dark blue"
+        ]
+    },
+    "show_help": true
+}

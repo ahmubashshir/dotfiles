@@ -1,0 +1,61 @@
+{
+    "api": {
+        "anilist": {
+            "columns_state": "AAAA/wAAAAAAAAABAAAAAQAAAAEAAAAAAAAAAAAAAAAM4Q8AAAAIAAAACgAAAGQAAAALAAAAZAAAAAgAAABkAAAACQAAAGQAAAAGAAAAZAAAAAcAAABkAAAABQAAAGQAAAAAAAAAZAAAAYsAAAAMAQEAAAAAAAABAAAAAAAAAGT/////AAAAhAAAAAAAAAAMAAAAAAAAAAEAAAAAAAAAqgAAAAEAAAABAAAARgAAAAEAAAACAAAANwAAAAEAAAACAAAAZAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAD6AAAAAAA",
+            "visible_columns": [
+                "Title",
+                "Progress",
+                "Score",
+                "Percent"
+            ]
+        },
+        "kitsu": {
+            "columns_state": "AAAA/wAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAAAAAAMwQ8AAAAHAAAAAAAAAGQAAAAHAAAAZAAAAAYAAABkAAAACwAAAGQAAAAKAAAAZAAAAAkAAABkAAAACAAAAGQAAAG8AAAADAEBAAAAAAAAAQAAAAAAAABk/////wAAAIQAAAAAAAAADAAAAAAAAAABAAAAAAAAAHcAAAABAAAAAQAAAEYAAAABAAAAAgAAADcAAAABAAAAAgAAAGQAAAABAAAAAAAAAGQAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAA+gAAAAAAA==",
+            "visible_columns": [
+                "Title",
+                "Progress",
+                "Score",
+                "Percent",
+                "Next Episode"
+            ]
+        }
+    },
+    "close_to_tray": true,
+    "colors": {
+        "is_airing": "#0099cc",
+        "is_playing": "#6c2dc7",
+        "is_queued": "#54c571",
+        "new_episode": "#fbb917",
+        "not_aired": "#999900",
+        "progress_bg": "0,1",
+        "progress_complete": "2,12",
+        "progress_fg": "#2d8953",
+        "progress_sub_bg": "#d76969",
+        "progress_sub_fg": "#134e2c"
+    },
+    "columns_per_api": true,
+    "columns_state": "AAAA/wAAAAAAAAABAAAAAAAAAAEBAAAAAAAAAAAAAAAM4Q8AAAAIAAAAAAAAAGQAAAAGAAAAZAAAAAcAAABkAAAABQAAAGQAAAAKAAAAZAAAAAsAAABkAAAACAAAAGQAAAAJAAAAZAAAAf0AAAAMAQEAAAAAAAABAAAAAAAAAGT/////AAAAhAAAAAAAAAAMAAAAAAAAAAEAAAAAAAABHAAAAAEAAAABAAAARgAAAAEAAAACAAAANwAAAAEAAAACAAAAZAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAD6AAAAAAA",
+    "episodebar_style": 1,
+    "episodebar_text": false,
+    "filter_bar_position": 1,
+    "filter_global": false,
+    "inline_edit": true,
+    "last_height": 665,
+    "last_width": 679,
+    "last_x": 671,
+    "last_y": 24,
+    "notifications": true,
+    "remember_columns": true,
+    "remember_geometry": true,
+    "show_tray": true,
+    "sort_index": 1,
+    "sort_order": 0,
+    "start_in_tray": true,
+    "tray_api_icon": true,
+    "visible_columns": [
+        "Title",
+        "Progress",
+        "Score",
+        "Percent"
+    ]
+}
