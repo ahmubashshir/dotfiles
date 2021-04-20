@@ -30,7 +30,7 @@ FORMATTERS=(
 format_file()
 {
 	case $1 in
-		bash | bats | mksh) shfmt -w -i 0 -ci -sr -ln "$1" -kp -fn "$2" ;;
+		bash | bats | mksh) shfmt -w -i 0 -ci -sr -bn -ln "$1" -kp -fn "$2" ;;
 		sh) shfmt -w -i 0 -ci -sr -p -kp -fn "$2" ;;
 		python | python3) autopep8 -i "$2" ;;
 		python2) autopep8-python2 -i "$2" ;;
@@ -65,10 +65,10 @@ for file in "${STAGED[@]}"; do
 	fi
 	if [ "$(head -c2 "$file")" = "#!" ]; then
 		fmt=$(
-			head -1 "$file" |
-				tr ' ' '\n' |
-				grep -Ev '^-|^(.*)=(.*)$' |
-				awk '
+			head -1 "$file" \
+				| tr ' ' '\n' \
+				| grep -Ev '^-|^(.*)=(.*)$' \
+				| awk '
 				$1 ~ /bin\/env/	{
 					enved="true";
 				}; {
