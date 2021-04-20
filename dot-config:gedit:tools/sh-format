@@ -3,7 +3,7 @@
 # Name=Format
 # Languages=pkgbuild,sh
 # Input=nothing
-# Output=nothing
+# Output=replace-document
 # Applicability=titled
 # Save-files=document
 # Shortcut=F3
