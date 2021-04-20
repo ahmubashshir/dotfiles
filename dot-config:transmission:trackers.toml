@@ -1,0 +1,17 @@
+[client]
+host = "localhost"
+port = 9091
+# user = ''
+# password = ''
+
+[config]
+status_filter = []
+remote_lists = [
+	"https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_all.txt",
+	"https://raw.githubusercontent.com/zcq100/transmission-trackers/master/tracker_ipv6.txt",
+]
+update_freq = 86400
+local_lists = []
+err_on_connect = false
+silent = false
+debug = false
