@@ -1,0 +1,121 @@
+#!/bin/bash
+if tty -s; then
+	if
+		tput setaf 0 > /dev/null 2>&1
+	then
+		ALL_OFF="$(tput sgr0)"
+		BOLD="$(tput bold)"
+		BLUE="${BOLD}$(tput setaf 4)"
+		GREEN="${BOLD}$(tput setaf 2)"
+	else
+		ALL_OFF="\e[0m"
+		BOLD="\e[1m"
+		BLUE="${BOLD}\e[34m"
+		GREEN="${BOLD}\e[32m"
+	fi
+fi
+if [[ $BASH_ARGS_ENV ]]; then
+	# shellcheck disable=SC2086
+	set $BASH_ARGS_ENV
+fi
+# main
+deps=(
+	ipcalc kill netcat ping
+)
+for dep in "${deps[@]}"; do
+	which --skip-dot --skip-tilde --skip-alias --skip-functions "$dep" &> /dev/null || {
+		echo "Couldn't find '$dep' in path."
+		NFT=$((NFT + 1))
+	}
+done
+((NFT == 0)) || exit
+unset NFT deps
+
+if [[ $1 == "expand" ]]; then
+	shift
+	read -r a b c d e f g h < <(
+		ipcalc -n "$1" \
+			| awk '/^HostM/{print $2}' \
+			| awk -F. '{printf $1" "$2" "$3" "$4" "};END{printf "\n"}' \
+			| sed -E 's/^\s+//g;s/\s+$//g'
+	)
+	eval "printf '%s\n' {$a..$e}.{$b..$f}.{$c..$g}.{$d..$h}"
+elif [[ $1 == "@scan" ]]; then
+	trap '/bin/kill -TERM -$$ 2>/dev/null' EXIT QUIT ABRT USR1
+	shift
+	ip=$1
+	shift
+	ports=()
+	set -e
+	timeout 3 ping -c1 "$ip" 2> /dev/null 1>&2
+	set +e
+	if (($# > 0)); then
+		while (($# > 0)); do
+			netcat -zw10 "$ip" "$1" 2> /dev/null 1>&2 && ports+=("$1")
+			shift
+		done
+		if ((${#ports[@]} > 0)); then
+			printf '%s%s\t%s%d'"$(
+				for ((i = 1; i < ${#ports[@]}; i++)); do
+					printf ' %%d'
+				done
+			)"'%s\n' "$GREEN" "$ip" "$BLUE" "${ports[@]}" "$ALL_OFF"
+		fi
+	else
+		printf '%s%s%s\n' "$GREEN" "$ip" "$ALL_OFF"
+	fi
+elif [[ $1 == "scan" ]]; then
+	shift
+	trap 'die' TERM EXIT QUIT ABRT
+	trap 'exit' INT
+	function die
+	{
+		# shellcheck disable=SC2046
+		jobs -r -p | xargs /bin/kill -USR1 2> /dev/null
+	}
+	if ! (($# > 0)); then
+		printf "Specify a subnet in cidr notation to scan."
+		exit
+	fi
+	if tty -s; then exec 3>&1; else exec 3>&2; fi
+	subnet="$1"
+	shift
+	mapfile -t iplist < <(
+		"$0" expand "$subnet"
+	)
+	if tty -s && ((${#iplist[@]})); then
+		printf '%sHOST' "$GREEN"
+		if (($#)); then
+			printf '\t\t%sPORTS' "$BLUE"
+		fi
+		printf '\n%s' "$ALL_OFF"
+	fi
+	for ((idx = 0; idx < ${#iplist[@]}; idx++)); do
+		"$0" @scan "${iplist[idx]}" "$@" &
+		((jobs++))
+		until ((jobs < ${MAX:-100})); do
+			jobs=$(jobs -r -p | wc -l)
+			if ((idx > jobs)); then done=$((idx - jobs)); fi
+			tty -s && printf '\e]0;SUBNET: ' || printf '\r' 1>&2
+			printf 'Scanned %d/%d (%d%%)' \
+				"$((done))" \
+				"${#iplist[@]}" \
+				"$(((done * 100) / ${#iplist[@]}))"   >&3
+			tty -s && printf '\a'
+		done
+	done
+	while ((jobs > 0)); do
+		jobs=$(jobs -r -p | wc -l)
+		if ((idx > jobs)); then done=$((idx - jobs)); fi
+		tty -s && printf '\e]0;' || printf '\r' 1>&2
+		printf 'Scanned %d/%d (%d%%)' \
+			"$((done))" \
+			"${#iplist[@]}" \
+			"$(((done * 100) / ${#iplist[@]}))"   >&3
+		tty -s && printf '\a'
+	done
+else
+	printf '%s usage:\n' "${0##*/}"
+	printf '\t %s scan <subnet> [port1 [port2 ...]]' "${0##*/}"
+	printf '\t %s expand <subnet>' "${0##*/}"
+fi
