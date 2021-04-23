@@ -41,13 +41,13 @@ if [[ $1 == "expand" ]]; then
 	)
 	eval "printf '%s\n' {$a..$e}.{$b..$f}.{$c..$g}.{$d..$h}"
 elif [[ $1 == "@scan" ]]; then
-	trap '/bin/kill -TERM -$$ 2>/dev/null' EXIT QUIT ABRT USR1
+	trap '/bin/kill -TERM -$$ 2>/dev/null' QUIT INT
 	shift
 	ip=$1
 	shift
 	ports=()
 	set -e
-	timeout 3 ping -c1 "$ip" 2> /dev/null 1>&2
+	ping -c 5 -w 5 "$ip" 2> /dev/null 1>&2
 	set +e
 	if (($# > 0)); then
 		while (($# > 0)); do
@@ -71,7 +71,7 @@ elif [[ $1 == "scan" ]]; then
 	function die
 	{
 		# shellcheck disable=SC2046
-		jobs -r -p | xargs /bin/kill -USR1 2> /dev/null
+		jobs -r -p | xargs /bin/kill -INT 2> /dev/null
 	}
 	if ! (($# > 0)); then
 		printf "Specify a subnet in cidr notation to scan."
@@ -100,7 +100,7 @@ elif [[ $1 == "scan" ]]; then
 			printf 'Scanned %d/%d (%d%%)' \
 				"$((done))" \
 				"${#iplist[@]}" \
-				"$(((done * 100) / ${#iplist[@]}))"   >&3
+				"$(((done * 100) / ${#iplist[@]}))" >&3
 			tty -s && printf '\a'
 		done
 	done
@@ -111,7 +111,7 @@ elif [[ $1 == "scan" ]]; then
 		printf 'Scanned %d/%d (%d%%)' \
 			"$((done))" \
 			"${#iplist[@]}" \
-			"$(((done * 100) / ${#iplist[@]}))"   >&3
+			"$(((done * 100) / ${#iplist[@]}))" >&3
 		tty -s && printf '\a'
 	done
 else
