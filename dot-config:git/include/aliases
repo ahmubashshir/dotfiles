@@ -27,13 +27,17 @@
 	run = "!exec "
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
-	crbs = rebase --continue
 	rbs = rebase
 	mrg = merge
+	rev = revert
+	crbs = rebase --continue
+	crev = revert --continue
 	cmrg = merge --continue
 	amrg = merge --abort
+	arev = revert --abort
 	arbs = rebase --abort
 	srbs = rebase --skip
+	srev = revert --skip
 	log = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
 	br = branch
 	type = cat-file -t
