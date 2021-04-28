@@ -1,15 +1,15 @@
 #!/bin/bash
-if fping -qt 25 1.0.0.1; then
+if timeout 0.3 ping -c 1 1.0.0.1 2> /dev/null >&2; then
 	icon=''
 	msg=Online
-elif [[ $(nmcli general | awk 'END{print $1}') == connected ]]; then
+elif ip route | awk '/^default/ && ! _[$3]++ {print $3}' | xargs timeout 0.3 ping -c1 2> /dev/null >&2; then
 	icon=''
 	msg=Local
 else
 	icon=''
 	msg=Disconnected
 fi
-if ! curl -s localhost -o /dev/null; then
+if ! systemctl is-active -q nginx.service; then
 	icon=''
 	msg="$msg"$'\nServer Down'
 fi
