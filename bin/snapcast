@@ -1,0 +1,81 @@
+#!/bin/bash
+# lock to a single process.
+lockfile="${XDG_RUNTIME_DIR:-/run/user/$UID}/share.lck"
+exec 99> "$lockfile"
+lock()
+{
+	flock   -$1 99
+}
+lock xn || {
+	echo "Another process is running."
+	exit
+}
+
+# Special thanks to https://askubuntu.com/a/421056
+# This script was implemented from aforementioned answer :3
+
+if ! systemctl is-active -q snapserver.service; then
+	cat << EOF >&2
+Snapcast Server is not running.
+ > Run 'systemctl start snapserver.service'
+to start server then run this script.
+EOF
+	exit 1
+fi
+
+trap 'die' TERM EXIT QUIT ABRT
+
+die()
+{
+	# unlock
+	lock u
+	lock xn && rm -f "$lockfile"
+
+	for mod in $local_sink $pipe_sink "${loopback[@]}"; do
+		pactl unload-module "$mod"
+	done
+	exit 0
+}
+
+loopback=()
+
+pipe_sink=$(
+	pactl load-module \
+		"module-pipe-sink" \
+		"file=$(sed -nE '/^source/s@.*pipe://(.*)\?.*@\1@p' "/etc/snapserver.conf")" \
+		"sink_name=Snapcast" \
+		"sink_properties=device.description=Snapcast" \
+		"$@"
+)
+local_sink=$(
+	pactl load-module \
+		"module-null-sink" \
+		"sink_name=local" \
+		"sink_properties=device.description=LocalSink"
+)
+
+if ((pipe_sink && local_sink)); then
+	loopback=(
+		$(
+			pactl load-module \
+				"module-loopback" \
+				"adjust_time=0" \
+				"latency_msec=65" \
+				"sink=Snapcast" \
+				"source=local.monitor"
+		)
+		$(
+			pactl load-module \
+				"module-loopback" \
+				"adjust_time=0" \
+				"latency_msec=65" \
+				"source=local.monitor"
+		)
+	)
+
+	echo "Streaming to Snapcast pipe"
+	echo ""
+
+	echo "Press CTRL+C when done."
+	read -s -r -d '' _
+fi
