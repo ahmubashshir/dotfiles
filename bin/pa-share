@@ -1,10 +1,10 @@
 #!/bin/bash
 # lock to a single process.
-lockfile="${XDG_RUNTIME_DIR:-/run/user/$UID}/pa-share.lck"
+lockfile="${XDG_RUNTIME_DIR:-/run/user/$UID}/share.lck"
 exec 99> "$lockfile"
 lock()
 {
-	flock     -$1 99
+	flock   -$1 99
 }
 lock xn || {
 	echo "Another process is running."
@@ -23,7 +23,6 @@ die()
 
 	# restore defaults
 	pactl set-default-source "$default_src"
-	pactl set-default-sink "$default_sink"
 
 	for mod in $local_sink $share_sink "${loopback[@]}"; do
 		pactl unload-module "$mod"
@@ -31,20 +30,51 @@ die()
 }
 
 loopback=()
-default_src=$(pacmd info | grep Default | awk '/source name/{print $4}')
-default_sink=$(pacmd info | grep Default | awk '/sink name/{print $4}')
+default_src=$(
+	pacmd info \
+		| grep Default \
+		| awk '/source name/{print $4}'
+)
 
-local_sink=$(pactl load-module module-null-sink "sink_name=local" "sink_properties=device.description=LocalSink")
-share_sink=$(pactl load-module module-null-sink "sink_name=share" "sink_properties=device.description=ShareSink")
+local_sink=$(
+	pactl load-module \
+		module-null-sink \
+		"sink_name=local" \
+		"sink_properties=device.description=LocalSink"
+)
+share_sink=$(
+	pactl load-module \
+		module-null-sink \
+		"sink_name=share" \
+		"sink_properties=device.description=ShareSink"
+)
 
 if ((share_sink && local_sink)); then
 	loopback=(
-		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 sink=share)
-		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 sink=share source=local.monitor)
-		$(pactl load-module module-loopback adjust_time=1 latency_msec=1 source=local.monitor)
+		$(
+			pactl load-module \
+				"module-loopback" \
+				"adjust_time=1" \
+				"latency_msec=1" \
+				"sink=share"
+		)
+		$(
+			pactl load-module \
+				"module-loopback" \
+				"adjust_time=1" \
+				"latency_msec=1" \
+				"sink=share" \
+				source=local.monitor
+		)
+		$(
+			pactl load-module \
+				"module-loopback" \
+				"adjust_time=1" \
+				"latency_msec=1" \
+				source=local.monitor
+		)
 	)
 	pactl set-default-source share.monitor
-	pactl set-default-sink "$default_sink"
 
 	echo "Set App input to \"Monitor of ShareSink\""
 	echo "and Player output to \"LocalSink\" in pavucontrol."
