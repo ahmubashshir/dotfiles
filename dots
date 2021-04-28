@@ -12,7 +12,7 @@ dotdir="$(
 cd "$dotdir" || exit
 custom_dirs=(bin)
 
-if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 = ln ]]; then
+if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 == ln ]]; then
 	## non hidden dirs
 	for n in "${custom_dirs[@]}"; do
 		echo Linking "$n" '->' "~/$n"
@@ -34,7 +34,7 @@ if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 = ln ]]; then
 		ln -Tfs "$s" "$HOME/.$t"
 	done
 
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = ps ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == ps ]]; then
 	[[ $2 =~ ^[[:punct:]]$ ]] || {
 		echo "Invalid arg: $2" >&2
 		exit 1
@@ -46,34 +46,44 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = ps ]]; then
 			mv "$n" "${n//$PATHSEP/$2}"
 		fi
 	done
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == systemd ]] && [[ $2 == restore ]]; then
 	mod=0
 	mkdir -p ~/.config/systemd/user
 	for unit in systemd/unit/*; do
+		unit_t=~/".config/systemd/user/${unit##*/}"
 		if ! {
-			[ -f ~/.config/systemd/user/"${unit##*/}" ] && cmp --silent "$unit" ~/.config/systemd/user/"${unit##*/}"
+			[ -f "$unit_t" ] && cmp --silent "$unit" "$unit_t"
 		}; then
 			echo "systemd-user: installing ${unit##*/}"
-			cp "$unit" ~/.config/systemd/user/"${unit##*/}"
+			cp "$unit" "$unit_t"
 			((mod++))
 		fi
 	done
-	for override in systemd/override/*; do
-		mkdir -p ~/.config/systemd/user/"${override##*/}.d"
-		if ! {
-			[ -f ~/.config/systemd/user/"${override##*/}.d"/override.conf ] && cmp --silent "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
-		}; then
-			echo "systemd-user: overriding ${override##*/}"
-			cp "$override" ~/.config/systemd/user/"${override##*/}.d"/override.conf
-			((mod++))
-		fi
+	for override_s in systemd/override/*; do
+		override_d=~/.config/systemd/user/"$(
+			echo "$override_s" \
+				| xargs basename
+		).d"
+		mkdir -p "$override_d"
+		for override in "$override_s"/*.conf; do
+			override=$(
+				echo "$override" \
+					| xargs basename
+			)
+			if ! [ -f "$override_d/$override" ] \
+				|| ! cmp --silent "$override_s/$override" "$override_d/$override"; then
+				echo "systemd-user: overriding '${override_s##*/}' with '$override'"
+				cp "$override_s/$override" "$override_d/$override"
+				((mod++))
+			fi
+		done
 	done
 	((mod > 0)) && systemctl --user daemon-reload || true
 
 	if [[ -f systemd/config/enabled.tsv ]]; then
 		while IFS=$'\t' read -r type unit; do
-			[[ $type$unit = TYPENAME ]] && continue
-			[[ $(systemctl --user is-enabled "$unit.$type") = enabled ]] && continue
+			[[ $type$unit == TYPENAME ]] && continue
+			[[ $(systemctl --user is-enabled "$unit.$type") == enabled ]] && continue
 			echo "systemd-user: enabling $type ${unit##*/}"
 			systemctl --user enable "$unit.$type"
 			case $type in
@@ -87,9 +97,9 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
 	if [[ -f systemd/config/links.tsv ]]; then
 		mod=0
 		while IFS=$'\t' read -r target install name path; do
-			[[ $target$install$name$path = TARGETINSTALLNAMEPATH ]] && continue
+			[[ $target$install$name$path == TARGETINSTALLNAMEPATH ]] && continue
 			[[ $(readlink ~/.config/systemd/user/"$target.$install/$name") == "$path" ]] && continue
-			[[ -f "$path" ]] || continue
+			[[ -f $path ]] || continue
 			echo "systemd-user: enabling $name in $target"
 			mkdir -p ~/.config/systemd/user/"$target.$install"
 			ln -Tfs "$path" ~/.config/systemd/user/"$target.$install/$name"
@@ -97,34 +107,47 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = update ]]; then
 		done <<< "$(grep -vE '^([[:blank:]]*#|$)' systemd/config/links.tsv)"
 		((mod > 0)) && systemctl --user daemon-reload || true
 	fi
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = sync ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == systemd ]] && [[ $2 == backup ]]; then
 	mkdir -p systemd/unit
 	for unit in ~/.config/systemd/user/*; do
-		if [[ -f "$unit" ]] && ! [ -L "$unit" ]; then
-			if [ -f systemd/unit/"${unit##*/}" ] && ! cmp --silent "$unit" systemd/unit/"${unit##*/}"; then
+		unit_t="systemd/unit/${unit##*/}"
+		if [[ -f $unit ]] && ! [ -L "$unit" ]; then
+			if [ -f "$unit_t" ] && ! cmp --silent "$unit" "$unit_t"; then
 				echo "dots-systemd: update unit ${unit##*/}"
 				cp -f "$unit" systemd/unit/"${unit##*/}"
-			elif ! [ -f systemd/unit/"${unit##*/}" ]; then
+			elif ! [ -f "$unit_t" ]; then
 				echo "dots-systemd: backup unit ${unit##*/}"
-				cp "$unit" systemd/unit/"${unit##*/}"
+				cp "$unit" "$unit_t"
 			fi
 		fi
 	done
-	for override in ~/.config/systemd/user/*.d/override.conf; do
-		override=$(echo "$override" | xargs dirname | xargs basename | sed 's/\(.*\)\.d/\1/')
-		if [[ -f ~/.config/systemd/user/"$override.d"/override.conf ]]; then
-			if [ -f systemd/override/"$override" ] && ! cmp --silent ~/.config/systemd/user/"$override.d"/override.conf systemd/override/"$override"; then
-				echo "dots-systemd: backup override ${unit##*/}"
-				cp -f ~/.config/systemd/user/"$override.d"/override.conf systemd/override/"$override"
-			elif ! [ -f systemd/override/"$override" ]; then
-				echo "dots-systemd: update override  ${unit##*/}"
-				cp ~/.config/systemd/user/"$override.d"/override.conf systemd/override/"$override"
+	for override_s in ~/.config/systemd/user/*.d; do
+		override_d="systemd/override/$(
+			echo "$override_s" \
+				| xargs basename \
+				| sed -nE 's/^(.*)\.d$/\1/p'
+		)"
+		mkdir -p "$override_d"
+		for override in "$override_s"/*.conf; do
+			override=$(
+				echo "$override" \
+					| xargs basename
+			)
+			if [[ -f "$override_s/$override" ]]; then
+				if [ -f "$override_d/$override" ] \
+					&& ! cmp --silent "$override_s/$override" "$override_d/$override"; then
+					echo "dots-systemd: update override '$override' for '${override_d##*/}'"
+					cp -f "$override_s/$override" "$override_d/$override"
+				elif ! [ -f "$override_d/$override" ]; then
+					echo "dots-systemd: backup override $override for '${override_d##*/}'"
+					cp "$override_s/$override" "$override_d/$override"
+				fi
 			fi
-		fi
+		done
 	done
 	if [[ -f systemd/config/enabled.tsv ]]; then
 		while IFS=$'\t' read -r type unit; do
-			[[ $(systemctl --user is-enabled "$unit.$type") = enabled ]] || continue
+			[[ $(systemctl --user is-enabled "$unit.$type") == enabled ]] || continue
 			echo "dots-systemd: enable $type ${unit##*/}" 1>&2
 			echo -e "$type\t$unit"
 		done < <(
@@ -146,16 +169,16 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]] && [[ $2 = sync ]]; then
 #			((mod++))
 #		done <<<"$(grep -vE '^([[:blank:]]*#|$)' systemd/config/links.tsv)"
 #	fi
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = systemd ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == systemd ]]; then
 	echo usage:
 	echo -e "  sync\t\tsync systemd user config"
 	echo -e "  update\tupdate systemd user config"
 	exit
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == rm ]]; then
 	shift
 	[[ $1 =~ ^(-f|--force)$ ]] && shift && FORCE=true
 	for n in "$@"; do
-		if [[ $n = "${0##*/}" ]]; then
+		if [[ $n == "${0##*/}" ]]; then
 			echo Can\'t remove dotfiles manager >&2
 		elif [ -e "$n" ]; then
 			${FORCE:-false} || for p in 'Delete' 'Really delete' 'Really really delete'; do
@@ -164,8 +187,8 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 					read -i y -N 1 -rp"$p $n"'? [y/N]:'
 					case "$REPLY" in
 						n | N | $'\n')
-							[[ "$REPLY" != $'\n' ]] && echo
-							continue                            3
+							[[ $REPLY != $'\n' ]] && echo
+							continue 3
 							;;
 						y | Y) [[ $p != 'Really really delete' ]] && {
 							printf '\r'
@@ -173,7 +196,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 						} || echo ;;
 						*)
 							printf '\r'
-							tput  el
+							tput el
 							;;
 					esac
 				done
@@ -192,7 +215,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = rm ]]; then
 			echo "'$n' doesn't exist" >&2
 		fi
 	done
-elif [[ $PWD == "$dotdir" ]] && [[ $1 = cp ]]; then
+elif [[ $PWD == "$dotdir" ]] && [[ $1 == cp ]]; then
 	shift
 	cd "$OLDPWD" || exit
 	for n in "$@"; do
@@ -227,7 +250,7 @@ elif [[ $PWD == "$dotdir" ]] && [[ $1 = cp ]]; then
 			echo "$n is niether under '$HOME' nor a symlink." >&2
 		fi
 	done
-elif [[ $1 = ls ]]; then
+elif [[ $1 == ls ]]; then
 	if [[ -n $(env which columns 2> /dev/null) ]]; then
 		cmd='columns -s'
 	elif [[ -n $(env which column 2> /dev/null) ]]; then
@@ -235,9 +258,9 @@ elif [[ $1 = ls ]]; then
 	else
 		cmd='cat'
 	fi
-	find . -maxdepth 1 -name 'dot-*' -print | cut -d/ -f2 |
-		sed 's@^dot-@.@;s@\(.*\)@~/\1@;s@'"$PATHSEP"'@/@g' | eval "$cmd"
-elif (($# == 0)) || [[ $1 = help ]]; then
+	find . -maxdepth 1 -name 'dot-*' -print | cut -d/ -f2 \
+		| sed 's@^dot-@.@;s@\(.*\)@~/\1@;s@'"$PATHSEP"'@/@g' | eval "$cmd"
+elif (($# == 0)) || [[ $1 == help ]]; then
 	(
 		exec >&2
 		echo "${0##*/} help:"
