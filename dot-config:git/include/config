@@ -7,7 +7,7 @@
 [color]
 	ui = auto
 [core]
-	askPass = /usr/lib/seahorse/ssh-askpass
+	askPass = ~/.config/git/askpass
 	hooksPath = ~/.config/git/hooks
 	editor = nano -r 72
 [fetch]
