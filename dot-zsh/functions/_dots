@@ -1,6 +1,5 @@
 #compdef dots
-__dots_list_commands()
-{
+__dots_list_commands() {
 	local -a commands
 	commands=(
 		'ln:link dotfiles.'
@@ -13,40 +12,42 @@ __dots_list_commands()
 	)
 	_describe 'command' commands
 }
-__dots_list_dotfiles()
-{
+
+__dots_list_dotfiles() {
 	local dotdir="$(dirname "$(realpath "$(which dots)")")"
 	local -a dotfiles
-	dotfiles=( "$dotdir"/dot-*(:t) )
-	if ((${#dotfiles}+1<${#line}));then
+	dotfiles=("$dotdir"/dot-*(:t))
+	if ((${#dotfiles} + 1 < ${#line})); then
 		_message 'no more arguments'
 	else
 		_message 'dotfiles'
 		_multi_parts '\0' dotfiles
 	fi
 }
-__dots_systemd_cmds()
-{
+
+__dots_systemd_cmds() {
 	local -a actions
 	actions=(
-		'sync:sync systemd user config.'
-		'update:update systemd user config.'
+		'backup:backup systemd user config.'
+		'restore:restore systemd user config.'
 	)
 	_describe 'action' actions
 }
-__dots_command_args()
-{
+
+__dots_command_args() {
 	case $line[1] in
-		(ln|ls|help)	_message 'no more arguments';;
-		(ps)	_arguments '2:seperator:';;
-		(cp)	_files -g '.*';;
-		(systemd) _arguments "2:action:__dots_systemd_cmds";;
-		(rm)	__dots_list_dotfiles;;
+		ln | ls | help) _message 'no more arguments' ;;
+		ps) _arguments '2:seperator:' ;;
+		cp) _files -g '.*' ;;
+		systemd) _arguments "2:action:__dots_systemd_cmds" ;;
+		rm) __dots_list_dotfiles ;;
 	esac
 }
+
 local args state
 args=(
-	 "1:command:__dots_list_commands"
-	 "*:args:__dots_command_args"
+	"1:command:__dots_list_commands"
+	"*:args:__dots_command_args"
 )
 _arguments -s "${args[@]}"
+
