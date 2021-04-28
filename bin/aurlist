@@ -1,0 +1,57 @@
+#!/bin/awk -f
+function date(d) {
+	split(d,D," ")
+	return sprintf(D[4]"%02d"D[2],(index("JanFebMarAprMayJunJulAugSepOctNovDec",D[3])+2)/3)
+}
+
+function argind(val)
+{
+	for ( k in ARGV )
+	{
+		print val
+		if ( ARGV[k] == val )
+			return k
+	}
+	return -1
+}
+
+BEGIN {
+	FS=":"
+	lines="name version out-of-date\n"
+	while("pacman -Qqm|yay -Sia -"|getline line)
+	{
+		$0=line
+		if ($0 != "")
+		{
+			gsub(/^[[:space:]]+|[[:space:]]+$/,"",$1)
+			gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2)
+			if ($1 == "Repository" || $1 == "Name"  || $1 == "Version"|| $1 == "Out-of-date")
+			{
+				switch ($1)
+				{
+					case "Repository":
+						lines = lines $2"/"
+						break
+					case "Version":
+					case "Name":
+						lines = lines $2" "
+						break
+					case "Out-of-date":
+						switch($2)
+						{
+							case "No":
+								lines = lines "no\n"
+								break
+							default:
+								lines = lines "yes("date($2)")\n"
+								break
+						}
+					default:
+						break
+				}
+			}
+		}
+	}
+	close(line)
+	printf lines | "column -t"
+}
