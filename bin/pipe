@@ -15,4 +15,8 @@ exec 99> "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe.lck"
 _lock xn || exit
 rm -f ~/pipe
 mkfifo ~/pipe 2> /dev/null
+(
+	sleep 0.001
+	echo           "Watching PIPE" > ~/pipe
+) &
 tail -f ~/pipe
