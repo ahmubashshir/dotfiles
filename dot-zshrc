@@ -1,9 +1,13 @@
 #!/bin/zsh
-if [ -e zprof ];then
+if [ -e ~/zprof ] || [ -p ~/pipe ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
 	PS4='+$EPOCHREALTIME %N:%i> '
-	logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
+	if [ -p ~/pipe ];then
+		logfile=~/pipe
+	else
+		logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
+	fi
 	echo "Logging to $logfile"
 	exec 3>&2 2>$logfile
 	setopt XTRACE
