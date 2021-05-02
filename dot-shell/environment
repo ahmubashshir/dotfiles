@@ -34,13 +34,16 @@ export EDITOR=nano
 if [ -z "$WINEARCH" ]; then
 	export WINEARCH=win64
 fi
+if [ -d /mnt/Games/wine ]; then
+	export WINEPREFIX=/mnt/Games/wine
+fi
 if [ -n "${ZSH_VERSION:-}" ]; then
 	export VIRTUAL_ENV_DISABLE_PROMPT=1
 fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
 		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                  | sed -nE "s@.*='(.*)';@\1@p")
+	}                                                                | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
