@@ -1,6 +1,6 @@
 {
 	"aururl": "https://aur.archlinux.org",
-	"buildDir": "/var/tmp/pamac-build-mubashshir",
+	"buildDir": "/var/tmp/yay-build-$USER",
 	"absdir": "$HOME/.cache/yay/abs",
 	"editor": "nano",
 	"editorflags": "",
