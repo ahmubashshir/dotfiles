@@ -14,14 +14,10 @@
 	visibility: collapse !important;
 }
 
-#main-window #nav-bar > hbox {
-	margin-top: 5px;
-}
-
 /* Sidebar min and max width removal */
 #sidebar {
 	max-width: none !important;
-	min-width: 0px !important;
+	min-width: var(--thin-tab-width) !important;
 }
 
 /* Hide splitter, when using Tree Style Tab. */
@@ -36,7 +32,7 @@
 
 /* Shrink sidebar until hovered, when using Tree Style Tab. */
 :root {
-	--thin-tab-width: 8px;
+	--thin-tab-width: 24px;
 	--wide-tab-width: 250px;
 	--tab-surface-regular: var(--theme-colors-tab);
 	--tab-surface-active: var(--theme-colors-tab_selected, var(--theme-colors-toolbar, var(--browser-bg-for-header-image, var(--tab-like-surface))));
