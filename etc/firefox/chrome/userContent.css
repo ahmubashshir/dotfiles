@@ -1,7 +1,6 @@
 /* /* Frank edited file - you are good to go...*/
-
-
 @namespace url(http://www.w3.org/1999/xhtml);
+
 
 @-moz-document url-prefix(about:home),
 url-prefix(about:newtab) {
@@ -10,22 +9,24 @@ url-prefix(about:newtab) {
 		background-size: cover !important;
 	}
 
-	a.top-site-button div.tile,
-	a.top-site-button div.top-site-icon {
+	a.top-site-button div.tile {
 		border-radius: 50% !important;
 		background-color: rgba(38, 48, 52, 0.7) !important;
 	}
 
 	a.top-site-button div.top-site-icon {
-		opacity: 0.7;
+		border-radius: 50% !important;
+		width: 100% !important;
+		height: 100% !important;
+		background-color: transparent !important;
 	}
 
 	ul.top-sites-list {
-		display: inline-grid;
+		display: inline-grid !important;
 		grid-template-columns: auto auto auto auto;
 		grid-gap: 1em;
-		position: relative;
-		left: 50%;
+		position: relative !important;
+		left: 50% !important;
 		transform: translate(-50%, 25%);
 	}
 
@@ -34,15 +35,17 @@ url-prefix(about:newtab) {
 	}
 
 	button.personalize-button {
-		opacity: 0.1;
+		opacity: 0.1 !important;
 	}
 
 	button.personalize-button:hover {
-		opacity: 0.5;
+		opacity: 0.5 !important;
 	}
 
-	a.top-site-button div.title {
-		display: none;
+	a.top-site-button div.title,
+	a.top-site-button div.screenshot.active {
+		display: none !important;
+		visibility: collapse !important;
 	}
 
 	li.top-site-outer:is(.active, :focus, :hover) {
@@ -53,8 +56,32 @@ url-prefix(about:newtab) {
 		opacity: 0.5 !important;
 	}
 
+	table#searchSuggestionTable,
+	table#searchSuggestionTable td.contentSearchHeader,
+	table#searchSuggestionTable .contentSearchSuggestionsContainer,
+	table#searchSuggestionTable td.contentSearchDefaultEngineHeader,
+	table#searchSuggestionTable button#contentSearchSettingsButton {
+		background-color: rgba(34, 43, 46, 0.6) !important;
+	}
+
+	table#searchSuggestionTable > tr.contentSearchHeaderRow:nth-child(1) {
+		height: 32px !important;
+	}
+
+	table#searchSuggestionTable {
+		border-radius: 20px !important;
+	}
+
 	input#newtab-search-text {
 		background-color: rgba(34, 43, 46, 0.6) !important;
+		border-radius: 2.5em !important;
+		outline: none !important;
+	}
+
+	button#searchSubmit {
+		border-top-right-radius: 2.5em !important;
+		border-bottom-right-radius: 2.5em !important;
+		background: url("chrome://global/skin/icons/search-glass.svg") no-repeat center center;
 	}
 
 	input#newtab-search-text:focus {
