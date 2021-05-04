@@ -16,6 +16,7 @@
 
 /* autohide css  */
 #tabbar {
+	scrollbar-width: none;
 	scrollbar-color: transparent var(--theme-colors-sidebar) !important;
 }
 
