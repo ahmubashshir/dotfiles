@@ -81,7 +81,7 @@ url-prefix(about:newtab) {
 	button#searchSubmit {
 		border-top-right-radius: 2.5em !important;
 		border-bottom-right-radius: 2.5em !important;
-		background: url("chrome://global/skin/icons/search-glass.svg") no-repeat center center;
+		background: url("chrome://global/skin/icons/search-glass.svg") no-repeat center center !important;
 	}
 
 	input#newtab-search-text:focus {
