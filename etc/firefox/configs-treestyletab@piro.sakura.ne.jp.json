@@ -1,0 +1,79 @@
+{
+  "animationForce": true,
+  "applyThemeColorToIcon": true,
+  "autoAttachOnNewTabCommand": 0,
+  "autoAttachOnOpenedFromExternal": 0,
+  "avoidDiscardedTabToBeActivatedIfPossible": true,
+  "cachedExternalAddons": [
+    "tst-bookmarks-subpanel@piro.sakura.ne.jp",
+    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp",
+    "{731bf636-c808-4c86-b02f-af462eccc963}",
+    "tst-colored-tabs@murz"
+  ],
+  "chunkedSyncData0": "W10=",
+  "chunkedSyncDataLocal0": "W10=",
+  "chunkedUserStyleRules0": "LmNvbnRleHR1YWwtaWRlbnRpdHktbWFya2VyIHsKCXRvcDogYXV0byAhaW1wb3J0YW50OwoJbGVmdDogMC41ZW0gIWltcG9ydGFudDsKCXJpZ2h0OiAwLjVlbSAhaW1wb3J0YW50OwoJYm90dG9tOiAwICFpbXBvcnRhbnQ7Cgl3aWR0aDogYXV0byAhaW1wb3J0YW50OwoJbWFyZ2luOiAwICFpbXBvcnRhbnQ7CgltYXgtd2lkdGg6IG5vbmUgIWltcG9ydGFudDsKCWhlaWdodDogY2FsYyh2YXIoLS1mYXZpY29uLXNpemUpIC8gMTApICFpbXBvcnRhbnQ7Cn0KCi8qIGNoYW5nZSB0aGUgYmFzZSBib3ggdG8gbGF5b3V0IHBvc2l0aW9uOmFic29sdXRlIGJveCwgZnJvbSB0aGUgcm9vdCBjb250YWluZXIgYm94IHRvIHRoZSB0YWIgaXRlbSAqLwo6cm9vdC5ncm91cC10YWIgbGkgewoJcG9zaXRpb246IHJlbGF0aXZlOwp9CgovKiBhdXRvaGlkZSBjc3MgICovCiN0YWJiYXIgewoJc2Nyb2xsYmFyLXdpZHRoOiBub25lOwp9CgovKiBIaWRlIGNsb3NlIGJ1dHRvbnMgb24gdGFicy4gKi8KdGFiLWl0ZW0gLmNsb3NlYm94IHsKCXZpc2liaWxpdHk6IGNvbGxhcHNlOwp9Cgp0YWItaXRlbTpob3ZlciAuY2xvc2Vib3ggewoJdmlzaWJpbGl0eTogaW5pdGlhbDsKfQoKLyogSGlkZSBzb3VuZCBwbGF5aW5nL211dGVkIGJ1dHRvbi4gKi8KLnNvdW5kLWJ1dHRvbjo6YmVmb3JlIHsKCWRpc3BsYXk6IG5vbmUgIWltcG9ydGFudDsKfQoKZGl2I3N1YnBhbmVsLWhlYWRlciB7CgloZWlnaHQ6IDI0cHggIWltcG9ydGFudDsKfQoKLyogIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjICovCi8qICMjIyMjIENPTE9SIFRIRU1FICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyAqLwovKiAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMgKi8KdGFiLWl0ZW0gewoJYm94LXNoYWRvdzogbm9uZSAhaW1wb3J0YW50Owp9Cgp0YWItaXRlbTpob3ZlciB7CglmaWx0ZXI6IG9wYWNpdHkoODAlKSBkcm9wLXNoYWRvdygwcHggMHB4IDBweCAjMzQ5OERCKTsKfQoKLyogQWRqdXN0IHN0eWxlIGZvciB0YWIgdGhhdCBpcyBtdXRlZC4gKi8KdGFiLWl0ZW0ubXV0ZWQgewoJb3BhY2l0eTogMC41Owp9CgovKiBwZXJzb25hbCBjdXN0b21pemF0aW9ucyAqLwp0YWItaXRlbTpob3ZlciB0YWItY2xvc2Vib3ggewoJYm9yZGVyLXJhZGl1czogMWVtOwoJaGVpZ2h0OiAxLjc1ZW07Cgl3ZWlnaHQ6IDIuMjVlbTsKCWRpc3BsYXk6IGZsZXg7CglhbGlnbi1pdGVtczogY2VudGVyOwoJanVzdGlmeS1jb250ZW50OiBjZW50ZXI7CgltYXJnaW4tbGVmdDogMC4yNWVtOwoJYmFja2dyb3VuZDogcmdiKDI0NCwgOTYsIDEwMyk7Cn0KCmRpdi5hZnRlci10YWJzIHsKCWRpc3BsYXk6IG5vbmU7Cn0KCnRhYi1pdGVtLmRpc2NhcmRlZCB7CglvcGFjaXR5OiAwLjc1Owp9Cgp0YWItaXRlbS5kaXNjYXJkZWQgdGFiLWZhdmljb24gewoJb3BhY2l0eTogMC41ICFpbXBvcnRhbnQ7Cn0KCnRhYi1pdGVtLmFjdGl2ZSB7CgliYWNrZ3JvdW5kOiB2YXIoLS10aGVtZS1jb2xvcnMtdG9vbGJhcik7Cn0KCnRhYi1pdGVtLmFjdGl2ZSAubGFiZWwtY29udGVudCB7Cglmb250LXdlaWdodDogYm9sZDsKCWZvbnQtc2l6ZTogMTRweDsKfQoKdGFiLWl0ZW0uYWN0aXZlIHRhYi10d2lzdHksCnRhYi1pdGVtLmFjdGl2ZSAubGFiZWwtY29udGVudCwKdGFiLWl0ZW0uYWN0aXZlIHRhYi1jb3VudGVyIHsKCWNvbG9yOiB2YXIoLS10aGVtZS1jb2xvcnMtdGFiX3RleHQpOwp9Cgp0YWItaXRlbS51bnJlYWQgLmxhYmVsLWNvbnRlbnQgewoJZm9udC1zdHlsZTogaXRhbGljOwp9Cgp0YWItaXRlbTpob3ZlciB7CgliYWNrZ3JvdW5kOiB2YXIoLS10aGVtZS1jb2xvcnMtcG9wdXBfaGlnaGxpZ2h0KSAhaW1wb3J0YW50OwoJYmFja2dyb3VuZC1vcGFjaXR5OiAwLjM7Cn0KCnRhYi1pdGVtOmhvdmVyIHRhYi1sYWJlbCB7Cgljb2xvcjogdmFyKC0tdGhlbWUtY29sb3JzLXBvcHVwX2hpZ2hsaWdodF90ZXh0KSAhaW1wb3J0YW50OwoJZm9udC13ZWlnaHQ6IGJvbGQ7Cn0KCnRhYi1pdGVtIHsKCWJvcmRlci1sZWZ0OiAxcHggc29saWQ7Cn0=",
+  "configsVersion": 22,
+  "enableLinuxBehaviors": true,
+  "inheritContextualIdentityToChildTabMode": 1,
+  "lastConfirmedToCloseTabs": 1619889948506,
+  "lastDraggedTabs": {
+    "tabIds": [
+      77
+    ],
+    "urlsDigest": "0deb3545a073f9eab5e60f6773046ae55c779e15"
+  },
+  "lastSelectedSubPanelProviderId": "tst-bookmarks-subpanel@piro.sakura.ne.jp",
+  "migratedBookmarkUrls": [
+    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/sidebar/sidebar.html",
+    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/resources/group-tab.html",
+    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/options/options.html",
+    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/resources/startup.html",
+    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/tests/runner.html"
+  ],
+  "notifiedFeaturesVersion": 7,
+  "optionsExpandedGroups": [
+    "group-allConfigs"
+  ],
+  "optionsExpandedSections": [
+    "section-appearance",
+    "section-debug",
+    "section-newTab",
+    "section-addons",
+    "section-contextMenu",
+    "section-advanced",
+    "section-drag",
+    "section-treeBehavior"
+  ],
+  "showAutoGroupOptionHint": false,
+  "skipCollapsedTabsForTabSwitchingShortcuts": true,
+  "syncAvailableNotified": true,
+  "syncDeviceInfo": {
+    "id": "device-1612347651800-29416",
+    "name": "Firefox on Linux",
+    "icon": "device-desktop",
+    "timestamp": 1620108594351
+  },
+  "syncDevices": {
+    "device-1612347651800-29416": {
+      "id": "device-1612347651800-29416",
+      "name": "Firefox on Linux",
+      "icon": "device-desktop",
+      "timestamp": 1620108594351
+    }
+  },
+  "syncDevicesLocalCache": {
+    "device-1612347651800-29416": {
+      "id": "device-1612347651800-29416",
+      "name": "Firefox on Linux",
+      "icon": "device-desktop",
+      "timestamp": 1620108594351
+    }
+  },
+  "syncLastMessageTimestamp": 1619874916403,
+  "syncOtherDevicesDetected": true,
+  "userStyleRules": "",
+  "userStyleRulesFieldHeight": "386px",
+  "userStyleRulesFieldTheme": "dracula",
+  "workaroundForBug1548949DroppedTabs": "1620108585508-16326/77"
+}

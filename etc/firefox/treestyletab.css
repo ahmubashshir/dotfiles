@@ -17,11 +17,6 @@
 /* autohide css  */
 #tabbar {
 	scrollbar-width: none;
-	scrollbar-color: transparent var(--theme-colors-sidebar) !important;
-}
-
-#tabbar:hover {
-	scrollbar-color: var(--theme-colors-tab_background_text) var(--theme-colors-sidebar) !important;
 }
 
 /* Hide close buttons on tabs. */
@@ -36,6 +31,10 @@ tab-item:hover .closebox {
 /* Hide sound playing/muted button. */
 .sound-button::before {
 	display: none !important;
+}
+
+div#subpanel-header {
+	height: 24px !important;
 }
 
 /* ################################################ */
