@@ -1,0 +1,2 @@
+#!/bin/sh
+exec gpg --no-default-keyring --keyring=yay.gpg --keyserver hkps://keyserver.ubuntu.com:443 "$@"
