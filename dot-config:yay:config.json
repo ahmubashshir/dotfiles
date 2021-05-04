@@ -16,7 +16,7 @@
 	"answeredit": "",
 	"answerupgrade": "",
 	"gitbin": "git",
-	"gpgbin": "gpg",
+	"gpgbin": "$HOME/bin/gpg-yay",
 	"gpgflags": "",
 	"mflags": "",
 	"sortby": "votes",
