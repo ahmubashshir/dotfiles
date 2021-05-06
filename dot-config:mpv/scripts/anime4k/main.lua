@@ -40,6 +40,7 @@ end
 
 local function load_shader()
     height = mp.get_property_native("height")
+    if not height then return false end
     msg.info("Res: " .. height .. "p")
     if height > 720 and o.uhd then
         load_shaders(shaders["hd_" .. o.mode])
@@ -50,6 +51,7 @@ local function load_shader()
     else
         load_shaders(shaders["none"])
     end
+    return true
 end
 if (function(tab, val)
 
