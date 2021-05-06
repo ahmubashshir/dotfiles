@@ -1,13 +1,14 @@
 from subprocess import call, getoutput as get
 from os import path
 from trackma import utils
+from gi import require_version  # nopep8
+
+require_version('Notify', '0.7')  # nopep8
+require_version('GdkPixbuf', '2.0')  # nopep8
+require_version('GLib', '2.0')  # nopep8
+
 from gi.repository import Notify, GdkPixbuf, GLib, Gio
 from trackma.utils import EngineError
-import gi
-
-gi.require_version('Notify', '0.7')
-gi.require_version('GdkPixbuf', '2.0')
-gi.require_version('GLib', '2.0')
 
 
 notif = None
