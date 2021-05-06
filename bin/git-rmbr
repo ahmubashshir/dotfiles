@@ -1,13 +1,20 @@
 #!/bin/bash
 branch=$(git rev-parse --abbrev-ref HEAD)
 default=$(git remote show origin 2>&3 | grep "HEAD branch" | awk '{print $3}')
+for each in "$@"; do
+	case $each in
+		--force | -f) force=1 ;;
+		*) set "$@" "$each" ;;
+	esac
+	shift
+done
 if [ "$1" != "" ] && git branch 2> /dev/null | grep -q "$1"; then
 	branch=$1
 elif (($# > 0)); then
 	echo "git-rmbr: branch '$1' doesn't exists." >&2
 	exit 1
 fi
-if [ "$branch" != "$default" ]; then
+if [ "$branch" != "$default" ] || ((force)); then
 	git checkout "$default"
 	git branch -D "$branch" 2> /dev/null
 	git push origin --delete "$branch" 2> /dev/null
