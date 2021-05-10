@@ -7,10 +7,10 @@
  use images from pypresence-assets dir
  when creating discord application
 """
-import time
 import os
 
 from threading import Thread
+from time import time
 from asyncio import (
     new_event_loop as new_loop,
     set_event_loop as set_loop)
@@ -68,10 +68,15 @@ class DiscordRPC(Thread):
 
     def run(self):
         set_loop(new_loop())
+        self._last_run = 0
         while True:
             try:
                 self._reconnect()
                 if self._enabled:
+                    if time() - self._last_run <= 0.25:
+                        continue
+                    self._last_run = time()
+
                     if self._details['details'] == "Regretting..." \
                             and not self.regret:
                         self._rpc.clear_activity(pid=self._pid)
@@ -84,10 +89,9 @@ class DiscordRPC(Thread):
                             small_text=self._details['txt'],
                             details=self._details['details'],
                             state=self._details['state'],
-                            start=time.time() * 1000 - self._details['pos']
+                            start=time() * 1000 - self._details['pos']
                             if self._details['pos'] else None
                         )
-                time.sleep(0.3)
             except self._errors:
                 self._enabled = False
                 try:
@@ -132,8 +136,8 @@ def tracker_state(engine, status):
         if status["paused"]:
             rpc.present(engine,
                         status["viewOffset"],
-                        "Paused {}".format(title),
-                        "Episode {} of {}".format(
+                        "{}".format(title),
+                        "Paused episode {} of {}".format(
                             episode,
                             total
                         )
@@ -141,8 +145,8 @@ def tracker_state(engine, status):
         else:
             rpc.present(engine,
                         status["viewOffset"],
-                        "Watching {}".format(title),
-                        "Episode {} of {}".format(
+                        "{}".format(title),
+                        "Watching episode {} of {}".format(
                             episode,
                             total
                         )
