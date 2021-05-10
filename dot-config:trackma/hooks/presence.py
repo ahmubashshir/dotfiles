@@ -27,7 +27,6 @@ class DiscordRPC(Thread):
     """
     _client_id = "777075127266705408"  # set discord application id here
     _enabled = False
-    _update = False
     regret = True
 
     _rpc = None
@@ -47,33 +46,32 @@ class DiscordRPC(Thread):
         self._details = {
             'details': "Regretting...",
             'state': None,
-            'start': None,
+            'pos': None,
             'img': None,
             'txt': None
         }
 
-    def present(self, engine, start=None, details="Regretting...", state=None):
+    def present(self, engine, pos=None, details="Regretting...", state=None):
         """
         Set status for DiscordRPC.
         """
         self._details = {
             'details': details,
             'state': state,
-            'start': time.time()*1000 - start if start else None,
+            'pos': pos,
             'img': engine.account["api"],
             'txt': "{} at {}".format(
                 engine.account["username"],
                 engine.account["api"]
             )
         }
-        self._update = True
 
     def run(self):
         set_loop(new_loop())
         while True:
             try:
                 self._reconnect()
-                if self._enabled and self._update:
+                if self._enabled:
                     if self._details['details'] == "Regretting..." \
                             and not self.regret:
                         self._rpc.clear_activity(pid=self._pid)
@@ -86,10 +84,10 @@ class DiscordRPC(Thread):
                             small_text=self._details['txt'],
                             details=self._details['details'],
                             state=self._details['state'],
-                            start=self._details['start']
+                            start=time.time() * 1000 - self._details['pos']
+                            if self._details['pos'] else None
                         )
-                    self._update = False
-                time.sleep(1)
+                time.sleep(0.3)
             except self._errors:
                 self._enabled = False
                 try:
@@ -103,7 +101,6 @@ class DiscordRPC(Thread):
                 self._rpc = Client(self._client_id)
                 self._rpc.start()
                 self._enabled = True
-
             except self._errors:
                 self._enabled = False
 
