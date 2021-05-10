@@ -19,7 +19,7 @@ def rules(line_number, line)
     real_line_number = line_number + 1
     if line_number == 0 then
         yield "  error:#{real_line_number}: First line should be less than 50 characters in length." if line.length > 50
-        yield "  error:#{real_line_number}: First line should be capitalized." unless /[[:upper:]]/.match(line[0,1])
+        yield "  error:#{real_line_number}: First line should be capitalized." unless /[[:upper:]\[\{\(]/.match(line[0,1])
         yield "  error:#{real_line_number}: First line shouldn't end with a period." if /\.$/.match(line)
 
     elsif not line[0,1]  == '#' then
