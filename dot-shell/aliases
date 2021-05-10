@@ -91,7 +91,7 @@ alias egrep='grep -E --color=auto'
 
 # Zsh suffix aliases
 if [[ ${ZSH_VERSION} && ${ZSH_NAME} ]]; then
-	alias -s tmate.io=ssh
+	alias -s tmate=ssh
 	alias -s {txt,md}='less'
 	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
 	alias -s html='lynx'
