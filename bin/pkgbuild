@@ -40,6 +40,10 @@ if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
 	unset FORCEREBUILD
 fi
 
+if ! [[ -n $FORCEREBUILD ]] && [[ -e .no-build ]]; then
+	exit
+fi
+
 if [ -d "$CHROOT/root" ]; then
 	arch-nspawn "$CHROOT/root" pacman -Syu --noconfirm
 fi

@@ -137,12 +137,12 @@ for n in "$@"; do
 			exclude+=(
 				-e '*.log'
 				-e 'PKGBUILD.bak'
+				-e '.no*'
 			)
 			for src in "${source[@]}"; do
 				if [[ \
 					$src =~ ^[[:alnum:].-]+::[[:lower:]]+:// || \
-					$src =~ ^[[:alnum:].-]+::[[:lower:]]+\+[[:lower:]+]+:// ]] \
-						; then
+					$src =~ ^[[:alnum:].-]+::[[:lower:]]+\+[[:lower:]+]+:// ]]; then
 					exclude+=('-e' "${src%%::*}")
 				fi
 			done
