@@ -9,8 +9,8 @@ s/^python-pygobject/python-gobject/g
 dephell deps convert \
 	--from pyproject.toml \
 	--to-format=pip \
-	--to-path=stdout 2> /dev/null |
-	sed -En "s/^([[:alnum:]]+)==([[:digit:].]+)\.\*,>=([[:digit:].]+)(|; sys_platform == \"linux\")$/python-\1<\2\npython-\1>=\3/p" |
-	awk -F '<|\\.' '$0 ~ /<.*[[:digit:]]$/{print $1"<"$NF+1};$0 !~ /<.*[[:digit:]]$/' |
-	sed -E "$overrides" |
-	awk '{lines[i++]= $0};END{print "depends=(";for(i in lines) print "\t\""lines[i]"\"";print ")"}'
+	--to-path=stdout 2> /dev/null \
+	| sed -En "s/^([[:alnum:]]+)==([[:digit:].]+)\.\*,>=([[:digit:].]+)(; sys_platform == \"linux\"|.*)$/python-\1<\2\npython-\1>=\3/p" \
+	| awk -F '<|\\.' '$0 ~ /<.*[[:digit:]]$/{print $1"<"$NF+1".0.0"};$0 !~ /<.*[[:digit:]]$/' \
+	| sed -E "$overrides" \
+	| awk '{lines[i++]= $0};END{print "depends=(";for(i in lines) print "\t\""lines[i]"\"";print ")"}'
