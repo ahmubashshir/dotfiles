@@ -12,6 +12,23 @@ gitlab:pkgver()
 {
 	curl -s "https://${2:-gitlab.com}/api/v4/projects/${1//\//%2F}/repository/tags" | jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
 }
+pip:deps()
+{
+	local -a overrides
+	overrides=(
+		-e 's/pygobject/gobject/'
+	)
+	sed -En "s/^([[:alnum:]]+)==([[:digit:].]+)\.\*,>=([[:digit:].]+)(|; sys_platform == \"linux\")$/python-\1<\2\npython-\1>=\3/p" \
+		| awk -F '<|\\.' '$0 ~ /<.*[[:digit:]]$/{print $1"<"$NF+1".0.0"};$0 !~ /<.*[[:digit:]]$/' \
+		| sed -E "${overrides[@]}"
+}
+poetry:deps()
+{
+	dephell deps convert \
+		--from pyproject.toml \
+		--to-format=pip \
+		--to-path=stdout 2> /dev/null | pip:deps
+}
 use_vpn()
 {
 	local p
@@ -71,6 +88,32 @@ for n in "$@"; do
 					sed -Ei "s/^(pkgver=)(\"|'|)$pkgver(\"|'|)$/\1\2$PKGVER\3/g;s/^(pkgrel)=.*/\1=1/g" PKGBUILD
 					msg="Updated to $PKGVER-1"
 				fi
+				for dep in ${type} ${src} ${provider}; do
+					if
+						type -t ${dep}:deps 2> /dev/null \
+							| grep -wq function
+					then
+						depfunc=$dep
+						unset dep
+						break
+					fi
+				done
+				if [[ -n "$depfunc" ]]; then
+					makepkg --nobuild
+					sed -Ei.bak '/^depends=\(/,/\)/{/#auto-deps$/d}' PKGBUILD
+					(
+						for dir in ${pkgname}-${pkgver} ${_name} ${pkgname%*-git}; do
+							if test -d "src/$dir"; then
+								cd "src/$dir"
+								break
+							fi
+						done
+						"${depfunc}:deps"
+					) | while read -r line; do
+						sed -Ei.bak "/^depends=\(/,/\)/{s@^\)\$@\t'$line' #auto-deps\n\)@}" PKGBUILD
+					done
+					unset depfunc
+				fi
 			fi
 			echo updating checksums
 			updpkgsums -m
@@ -85,13 +128,16 @@ for n in "$@"; do
 				git commit -m "${msg:-automatic push.}"
 			fi
 			if git status --porcelain --branch | grep -q ahead && {
-				[                                                    ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
+				[                                                  ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
 			}; then
 				use_vpn c
 				git push
 				use_vpn d
 			fi
-			exclude+=('-e' '*.log')
+			exclude+=(
+				-e '*.log'
+				-e 'PKGBUILD.bak'
+			)
 			for src in "${source[@]}"; do
 				if [[ \
 					$src =~ ^[[:alnum:].-]+::[[:lower:]]+:// || \
