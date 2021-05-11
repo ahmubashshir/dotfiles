@@ -98,7 +98,7 @@ for n in "$@"; do
 						break
 					fi
 				done
-				if [[ -n "$depfunc" ]]; then
+				if [[ -n $depfunc ]]; then
 					makepkg --nobuild
 					sed -Ei.bak '/^depends=\(/,/\)/{/#auto-deps$/d}' PKGBUILD
 					(
@@ -128,7 +128,7 @@ for n in "$@"; do
 				git commit -m "${msg:-automatic push.}"
 			fi
 			if git status --porcelain --branch | grep -q ahead && {
-				[                                                  ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
+				[ ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
 			}; then
 				use_vpn c
 				git push
