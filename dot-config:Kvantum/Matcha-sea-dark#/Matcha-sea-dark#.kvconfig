@@ -46,12 +46,12 @@ combo_menu=true
 hide_combo_checkboxes=true
 combo_focus_rect=true
 groupbox_top_label=true
-inline_spin_indicators=true
+inline_spin_indicators=false
 joined_inactive_tabs=false
 layout_spacing=6
 layout_margin=9
 scrollbar_in_view=false
-transient_scrollbar=true
+transient_scrollbar=false
 transient_groove=true
 submenu_overlap=3
 tooltip_delay=-1
@@ -228,7 +228,7 @@ text.focus.color=#ffffff
 
 [Focus]
 inherits=PanelButtonCommand
-frame=true
+frame=false
 frame.element=focus
 frame.top=1
 frame.bottom=1
