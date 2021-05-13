@@ -21,6 +21,7 @@ local shader_path = mp.find_config_file("shaders")
 local pathsep = package.config:sub(1, 1)
 local listsep = not pathsep == '/' and ';' or ':'
 -- no-osd change-list glsl-shaders set
+local function async_cb(...) msg.info(...) end
 
 local function load_shaders(...)
     local list = {}
@@ -33,9 +34,9 @@ local function load_shaders(...)
         msg.info('Loaded Shaders: ' .. shader)
         ::continue::
     end
-    mp.command_native {
+    mp.command_native_async({
         "change-list", "glsl-shaders", "set", table.concat(list, listsep)
-    }
+    }, async_cb)
 end
 
 local function load_shader()
