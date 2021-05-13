@@ -1,10 +1,14 @@
 .include /etc/pulse/default.pa
 set-card-profile alsa_card.pci-0000_00_1b.0 output:analog-stereo+input:analog-stereo
 
-.ifexists module-echo-cancel.so
-	load-module module-echo-cancel use_master_format=1 aec_method=webrtc aec_args="analog_gain_control=0 digital_gain_control=0" source_name=noecho-source sink_name=noecho-sink
-	update-sink-proplist noecho-sink device.description=EchoCancel
-	update-source-proplist noecho-source device.description=EchoCancel
-	set-default-source noecho-source
-	set-default-sink noecho-sink
-.endif
+.nofail
+load-module module-switch-on-connect
+.fail
+#.ifexists module-echo-cancel.so
+#	load-module module-echo-cancel use_master_format=1 aec_method=webrtc
+#	aec_args="analog_gain_control=0 digital_gain_control=0" source_name=noecho-source sink_name=noecho-sink
+#	update-sink-proplist noecho-sink device.description=EchoCancel
+#	update-source-proplist noecho-source device.description=EchoCancel
+#	set-default-source noecho-source
+#	set-default-sink noecho-sink
+#.endif
