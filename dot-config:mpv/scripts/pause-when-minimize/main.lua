@@ -3,15 +3,13 @@
 -- then try not to mess with the pause state.
 local did_minimize = false
 
-mp.observe_property("window-minimized", "bool", function(name, value)
+mp.observe_property("window-minimized", "bool", function(name, minimize)
     local pause = mp.get_property_native("pause")
-    if value == true then
-        if pause == false then
-            mp.set_property_native("pause", true)
-            did_minimize = true
-        end
-    elseif value == false then
-        if did_minimize and (pause == true) then
+    if minimize and not pause then
+        mp.set_property_native("pause", true)
+        did_minimize = true
+    elseif not minimize then
+        if did_minimize and pause then
             mp.set_property_native("pause", false)
         end
         did_minimize = false
