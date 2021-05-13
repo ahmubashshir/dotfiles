@@ -4,7 +4,7 @@ lockfile="${XDG_RUNTIME_DIR:-/run/user/$UID}/share.lck"
 exec 99> "$lockfile"
 lock()
 {
-	flock   -$1 99
+	flock -$1 99
 }
 lock xn || {
 	echo "Another process is running."
@@ -31,9 +31,9 @@ die()
 
 loopback=()
 default_src=$(
-	pacmd info \
+	pactl info \
 		| grep Default \
-		| awk '/source name/{print $4}'
+		| awk '/Source/{print $3}'
 )
 
 local_sink=$(
