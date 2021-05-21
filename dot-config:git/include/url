@@ -4,8 +4,12 @@
 	insteadOf = "pkg:"
 [url "https://github.com/"]
 	insteadOf = "gh:"
+[url "https://github.com/"]
+	insteadOf = "github:"
+[url "https://gist.github.com/"]
+	insteadOf = "gist:"
 [url "https://gitlab.com/"]
-	insteadOf = "gl:"
+	insteadOf = "gitlab:"
 [url "https://gitlab.gnome.org/"]
 	insteadOf = "gnome:"
 [url "https://gitlab.xfce.org/"]
