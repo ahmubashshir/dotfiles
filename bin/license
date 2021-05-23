@@ -1,0 +1,15 @@
+#!/bin/bash
+if ! [ "$1" ]; then
+	echo "error: no license specified." >&2
+	exit 1
+fi
+if [ "$2" = "init" ]; then
+	out=LICENSE
+fi
+if [[ -f "/usr/share/licenses/common/$1/license.txt" ]]; then
+	cat "/usr/share/licenses/common/$1/license.txt" > ${out:-/dev/stdout}
+elif [[ -f "/usr/share/licenses/common/CCPL/$1" ]]; then
+	cat "/usr/share/licenses/common/CCPL/$1" > ${out:-/dev/stdout}
+else
+	echo "$1 is not a valid common license." >&2
+fi
