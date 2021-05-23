@@ -1,0 +1,20 @@
+#compdef license
+
+__actions() {
+  local -a actions
+  actions=(
+    'show:Show selected license text'
+    'init:Copy License to $PWD/LICENSE'
+  )
+  _describe action actions
+}
+
+__licenses() {
+  local -a arguments
+  arguments=(
+    /usr/share/licenses/common/^CCPL(:t)
+    /usr/share/licenses/common/CCPL/^cc-readme.txt(:t)
+  )
+  _values License $arguments
+}
+_arguments -s '1: :__licenses' '2: :__actions'
