@@ -21,7 +21,7 @@ __dots_list_dotfiles() {
 		_message 'no more arguments'
 	else
 		_message 'dotfiles'
-		_multi_parts '\0' dotfiles
+		_multi_parts $(grep '^PATHSEP' "$dotdir/dots"|cut -d= -f2) dotfiles
 	fi
 }
 
