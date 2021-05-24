@@ -1,10 +1,12 @@
 #compdef reboot-to
 __list_reboot_targets() {
 	[[ $(bootctl is-installed) == "yes" ]] || return
-	local -a targets ids
-	local each bootdir file source ID ids2
+	local -A targets
+	local -a ids
+	local each bootdir espdir file source ID ids2 fsroot
 	ID=$(awk -v FS== '/^ID=/{print $2}' /etc/os-release)
 	bootdir=$(bootctl -x)
+	espdir=$(bootctl -p)
 	_retrieve_cache reboot_to_cache
 	ids2="${ids[*]}"
 
@@ -33,10 +35,10 @@ __list_reboot_targets() {
 		_cache_invalid reboot_to_cache
 		for each in ${ids[@]}; do
 			case $each in
-				windows | efi-shell) targets+=("$each:Windows Boot Manager");;
-				shell | efi-shell) targets+=("$each:EFI Shell") ;;
-				firmware | efi | setup) targets+=("$each:EFI Settings");;
-				*)
+				(windows | efi-shell) targets+=(["$each"]="$each:Windows Boot Manager");;
+				(shell | efi-shell) targets+=(["$each"]="$each:EFI Shell") ;;
+				(firmware | efi | setup) targets+=(["$each"]="$each:EFI Settings");;
+				(*)
 					source=$(
 						bootctl list \
 							| if [[ $each =~ linux-* ]]; then
@@ -45,15 +47,21 @@ __list_reboot_targets() {
 								awk '/^\s+id: '"$each.conf"'/,/^$/ { if($1 == "source:") print $2}'
 							fi
 					)
+					case $source in
+						(${bootdir}*) fsroot="$bootdir";;
+						(${espdir}*) fsroot="$espdir";;
+						(/sys/*)	continue;;
+						(*)	fsroot='';;
+					esac
 					while read -r file; do
-						if [ ! -f "$bootdir$file" ]; then
+						if [ ! -f "$fsroot$file" ]; then
 							continue 2
 						fi
 					done < <(
 						awk '/^(initrd|linux|efi)/ {print $2}' "$source"
 					)
 					title=$(awk '/^title/ {for (i=2; i<NF; i++) printf $i " "; print $NF}' "$source")
-					targets+=("$each:$title")
+					targets+=(["$each"]="$each:$title")
 					;;
 			esac
 		done
