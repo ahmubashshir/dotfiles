@@ -4,8 +4,9 @@ service	aria2@6801
 service	broadwayd
 service	deadd-notification-center
 service	gamemoded
-service	geary-vacuum-sqlite
+service	geary
 service	mpris-proxy
+service	phonesim
 service	redshift-gtk
 service	systembus-notify
 service	trakt-scrobbler
@@ -13,7 +14,6 @@ service	transmission-trackers
 service	vino-server
 socket	dirmngr
 socket	gpg-agent
-timer	anbox-launchers
 timer	aur-autobuild
 timer	aur-autopush
 timer	eos-update-notifier
