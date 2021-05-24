@@ -1,0 +1,9 @@
+[Unit]
+Description=Phonesim Service
+
+[Service]
+ExecStart=phonesim -p 12345 /usr/share/phonesim/default.xml
+ExecStartPost=bash -c "sleep 5;dbus-send --print-reply --system --dest=org.ofono /phonesim org.ofono.Modem.SetProperty string:Powered variant:boolean:true;dbus-send --print-reply --system --dest=org.ofono /phonesim org.ofono.Modem.SetProperty string:Online variant:boolean:true"
+
+[Install]
+WantedBy=default.target
