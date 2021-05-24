@@ -32,7 +32,7 @@ do
 			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
 			then
 				rm -f "$plugin.zwc"
-				zcompile "$plugin" &!
+				zcompile "$plugin"
 			fi
 			builtin source "$plugin" "$@"
 			if ((!${zsh_loaded_plugins[(Ie)$plugname]}));then

@@ -3,16 +3,8 @@ if [[ -o interactive ]];then
 	compinit $@
 	source $HOME/.zsh/compdef
 	[[ $* =~ -[[:alnum:]]*C ]] || {
-		local n k
-		for n in $fpath[@];do
-			if [[ -f $n ]] && [[ -w $n:P:h ]];then
-				zcompare "$n"
-			elif [[ -d $n ]] && [[ -w $n ]];then
-				for k in "$n"/^*(.(zwc|md|adoc)|(LICENSE|CHANGELOG))(^/);do
-					zcompare "$k"
-				done
-			fi
-		done
+		autoload -Uz zrecompile
+		zrecompile
 		compinit -C
 		source $HOME/.zsh/compdef
 	}

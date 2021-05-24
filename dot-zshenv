@@ -1,6 +1,6 @@
 #!/bin/zsh
 alias compinit="compinit -d ~/.cache/zsh/compdump"
-fpath=(~/.zsh/functions $fpath ~/.cache/zsh/compdump)
+fpath=(~/.zsh/functions $fpath)
 
 autoload -Uz zcompile zcompare
 
