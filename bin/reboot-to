@@ -50,6 +50,7 @@ else
 			| awk '!/^(shell|firmware)$/;/^(shell|firmware)$/ {d[i++]=$1};END{for(i in d)print d[i]}'
 	)
 	bootdir=$(bootctl -x)
+	espdir=$(bootctl -p)
 	for each in ${targets[@]}; do
 		case $each in
 			windows | efi-shell)
@@ -76,8 +77,14 @@ else
 							awk '/^\s+id: '"$each.conf"'/,/^$/ { if($1 == "source:") print $2}'
 						fi
 				)
+				case $source in
+					${bootdir}*) fsroot="$bootdir" ;;
+					${espdir}*) fsroot="$espdir" ;;
+					/sys/*) continue ;;
+					*) fsroot='' ;;
+				esac
 				while read -r file; do
-					if [ ! -f "$bootdir$file" ]; then
+					if [ ! -f "$fsroot$file" ]; then
 						continue 2
 					fi
 				done < <(
