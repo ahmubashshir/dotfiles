@@ -1,8 +1,18 @@
 #!/bin/zsh
 
 autoload -Uz zcompare
-for n in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef} $fpath[1]/^*.zwc ~/.cache/zsh/compcache/^*.zwc;do
-	if [ -f $n ];then
-		zcompare $n -Rz
+local target dir file
+for target in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef} $fpath[@]/^*.zwc;do
+	if [[ -f $target ]] && [[ -w $target:P:h ]];then
+		zcompare "$target" -Rz
+	elif [[ -d $target ]] && [[ -w $target ]];then
+		for dir in "$target" "$target"/**/*(/);do
+			for file in "$dir"/^*(.(zwc|md|adoc|png|gif)|(LICENSE|CHANGELOG))(^/);do
+				zcompare "$file" -R
+			done
+		done
 	fi
-done &!
+done
+for target in $HOME/.cache/zsh/compdump ~/.cache/zsh/compcache/^*.zwc;do
+	zcompare "$target" -M
+done
