@@ -1,10 +1,7 @@
 [Unit]
 Description=Run VACUUM on sqlite db of geary
-Before=default.target
 
 [Service]
-WorkingDirectory=%h/.local/share/geary
-ExecStart=find . -mindepth 2 -maxdepth 2 -name '*.db' -exec sqlite3 '{}' VACUUM \;
-
-[Install]
-WantedBy=default.target
+Type=oneshot
+ExecStart=find %h/.local/share/geary -mindepth 2 -maxdepth 2 -name '*.db' -exec sqlite3 '{}' VACUUM \;
+RemainAfterExit=true
