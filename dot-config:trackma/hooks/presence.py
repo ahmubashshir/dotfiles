@@ -11,12 +11,13 @@ import os
 
 from threading import Thread
 from time import time
-from asyncio import (
-    new_event_loop as new_loop,
-    set_event_loop as set_loop)
+from asyncio import (new_event_loop as new_loop,
+                     set_event_loop as set_loop)
 from pypresence.client import Client
 from pypresence.exceptions import InvalidID, InvalidPipe
-from trackma.utils import estimate_aired_episodes
+from trackma.utils import (estimate_aired_episodes,
+                           TRACKER_PLAYING as PLAYING,
+                           TRACKER_IGNORED as IGNORED)
 
 
 class DiscordRPC(Thread):
@@ -125,7 +126,8 @@ def tracker_state(engine, status):
     """
     Update status in thread.
     """
-    if status["state"] == 1:
+    print(status)
+    if status["state"] in [PLAYING, IGNORED]:
         show = status["show"][0]
         title = show["titles"][0]
         episode = status["show"][-1]
