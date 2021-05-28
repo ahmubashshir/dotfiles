@@ -10,7 +10,7 @@ local function async_cb(...) return true end
 
 local function save(...)
     remaining = mp.get_property_native("playtime-remaining")
-    if remaining and remaining > 10 then
+    if remaining and remaining > save_interval then
         mp.command_native_async({"write-watch-later-config"}, async_cb)
     end
 end
@@ -35,7 +35,7 @@ end
 -- the next file in the playlist would likely be loaded by the time the
 -- end-file event runs.
 local function delete(_, remaining)
-    if remaining and remaining < 10 then
+    if remaining and remaining < save_interval then
         mp.command_native_async({"delete-watch-later-config"}, async_cb)
     end
 end
