@@ -20,8 +20,8 @@ if not ACCESS_KEY or not ACCESS_SECRET:
     raise Exception(
         "You must provide the Twitter access token in the hook file.")
 
-CONSUMER_KEY = "9Hb6ZdMmvuAWxi4GCkfhToRiH"
-CONSUMER_SECRET = "86kx9Mv9wJ5UTkDEw2jRBFYstpkDK2iP7ZAo12fhf0WooMln5w"
+CONSUMER_KEY = "9GZsCbqzjOrsPWlIlysvg"
+CONSUMER_SECRET = "ebjXyymbuLtjDvoxle9Ldj8YYIMoleORapIOoqBrjRw"
 
 try:
     import twitter
