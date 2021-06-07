@@ -56,6 +56,7 @@ call plug#begin()
 	Plug 'ludovicchabant/vim-gutentags'
 	Plug 'guru245/gutentags_plus'
 	Plug 'wakatime/vim-wakatime'
+	Plug 'vim-scripts/gccsingle.vim'
 call plug#end()
 
 set visualbell
@@ -298,4 +299,5 @@ fu! TogglePaste()
     let &paste = 1 - &paste
 endf
 map <leader>p :call TogglePaste()<CR>
-
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * NERDTree | if argc() > 0 || exists("s:std_in") | wincmd p | endif
