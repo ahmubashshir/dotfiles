@@ -15,6 +15,7 @@ from asyncio import (new_event_loop as new_loop,
                      set_event_loop as set_loop)
 from pypresence.client import Client
 from pypresence.exceptions import InvalidID, InvalidPipe
+from trackma.engine import Engine
 from trackma.utils import (estimate_aired_episodes,
                            TRACKER_PLAYING as PLAYING,
                            TRACKER_IGNORED as IGNORED)
@@ -26,21 +27,27 @@ class DiscordRPC(Thread):
 
     Updates discord rich presence status periodically.
     """
-    _client_id = "777075127266705408"  # set discord application id here
-    _enabled = False
-    regret = True
+    regret: bool = True
 
     _rpc = None
+    _client_id = "777075127266705408"  # set discord application id here
+    _enabled = False
     _pid = None
+    _last_run = 0
     _errors = (
         ConnectionRefusedError,
         InvalidID,
         InvalidPipe,
         FileNotFoundError,
-        ConnectionResetError
+        ConnectionResetError,
     )
 
     def __init__(self, *args, **kwargs):
+        for attr in ['regret']:
+            if attr in kwargs:
+                setattr(self, attr, kwargs[attr])
+                del kwargs[attr]
+
         super().__init__(*args, **kwargs)
         self._pid = os.getpid()
 
@@ -52,7 +59,10 @@ class DiscordRPC(Thread):
             'txt': None
         }
 
-    def present(self, engine, pos=None, details="Regretting...", state=None):
+    def present(
+        self, engine: Engine, pos: int = None,
+        details: str = "Regretting...", state: str = None
+    ):
         """
         Set status for DiscordRPC.
         """
@@ -69,7 +79,6 @@ class DiscordRPC(Thread):
 
     def run(self):
         set_loop(new_loop())
-        self._last_run = 0
         while True:
             try:
                 self._reconnect()
@@ -110,8 +119,7 @@ class DiscordRPC(Thread):
                 self._enabled = False
 
 
-rpc = DiscordRPC(daemon=True)
-rpc.regret = False
+rpc = DiscordRPC(daemon=True, regret=False)
 
 
 def init(engine):
@@ -120,6 +128,10 @@ def init(engine):
     """
     rpc.start()
     rpc.present(engine)
+
+
+def destroy(engine):
+    engine.msg.debug("presence", "Destroyed")
 
 
 def tracker_state(engine, status):
