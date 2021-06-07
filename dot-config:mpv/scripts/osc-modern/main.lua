@@ -5,6 +5,8 @@ local assdraw = require 'mp.assdraw'
 local msg = require 'mp.msg'
 local opt = require 'mp.options'
 local utils = require 'mp.utils'
+-- Localization
+local language = require('langs')
 
 --
 -- Parameters
@@ -39,40 +41,6 @@ local user_opts = {
     visibility = 'auto', -- only used at init to set visibility_mode(...)
     windowcontrols = 'auto', -- whether to show window controls
     language = 'eng' -- eng=English, chs=Chinese
-}
-
--- Localization
-local language = {
-    ['eng'] = {
-        welcome = '{\\fs24\\1c&H0&\\3c&HFFFFFF&}Drop files or URLs to play here.', -- this text appears when mpv starts
-        off = 'OFF',
-        na = 'n/a',
-        none = 'none',
-        video = 'Video',
-        audio = 'Audio',
-        subtitle = 'Subtitle',
-        available = 'Available ',
-        track = ' Tracks:',
-        playlist = 'Playlist',
-        nolist = 'Empty playlist.',
-        chapter = 'Chapter',
-        nochapter = 'No chapters.'
-    },
-    ['chs'] = {
-        welcome = '{\\1c&H00\\bord0\\fs30\\fn微软雅黑 light\\fscx125}MPV{\\fscx100} 播放器', -- this text appears when mpv starts
-        off = '关闭',
-        na = 'n/a',
-        none = '无',
-        video = '视频',
-        audio = '音频',
-        subtitle = '字幕',
-        available = '可选',
-        track = '：',
-        playlist = '播放列表',
-        nolist = '无列表信息',
-        chapter = '章节',
-        nochapter = '无章节信息'
-    }
 }
 -- read options from config and command-line
 opt.read_options(user_opts, 'osc', function(list) update_options(list) end)
@@ -474,10 +442,10 @@ function prepare_elements()
             element.slider.min.ele_pos =
                 user_opts.seekbarhandlesize * elem_geo.h / 2
             element.slider.max.ele_pos = elem_geo.w - element.slider.min.ele_pos
-            element.slider.min.glob_pos =
-                element.hitbox.x1 + element.slider.min.ele_pos
-            element.slider.max.glob_pos =
-                element.hitbox.x1 + element.slider.max.ele_pos
+            element.slider.min.glob_pos = element.hitbox.x1 +
+                                              element.slider.min.ele_pos
+            element.slider.max.glob_pos = element.hitbox.x1 +
+                                              element.slider.max.ele_pos
 
             static_ass:draw_start()
             -- a hack which prepares the whole slider area to allow center placements such like an=5
@@ -863,17 +831,16 @@ function add_layout(name)
             elements[name].layout.button = {maxchars = nil}
         elseif (elements[name].type == 'slider') then
             -- slider defaults
-            elements[name].layout.slider =
-                {
-                    border = 1,
-                    gap = 1,
-                    nibbles_top = true,
-                    nibbles_bottom = true,
-                    adjust_tooltip = true,
-                    tooltip_style = '',
-                    tooltip_an = 2,
-                    alpha = {[1] = 0, [2] = 255, [3] = 88, [4] = 255}
-                }
+            elements[name].layout.slider = {
+                border = 1,
+                gap = 1,
+                nibbles_top = true,
+                nibbles_bottom = true,
+                adjust_tooltip = true,
+                tooltip_style = '',
+                tooltip_an = 2,
+                alpha = {[1] = 0, [2] = 255, [3] = 88, [4] = 255}
+            }
         elseif (elements[name].type == 'box') then
             elements[name].layout.box = {radius = 0, hexagon = false}
         end
@@ -1039,6 +1006,10 @@ layouts = function()
     lo.slider.tooltip_an = 2
 
     -- buttons
+    lo = add_layout('unskipoped')
+    lo.geometry = {x = refX - 180, y = refY - 40, an = 5, w = 30, h = 24}
+    lo.style = osc_styles.Ctrl2
+
     lo = add_layout('pl_prev')
     lo.geometry = {x = refX - 120, y = refY - 40, an = 5, w = 30, h = 24}
     lo.style = osc_styles.Ctrl2
@@ -1057,6 +1028,10 @@ layouts = function()
 
     lo = add_layout('pl_next')
     lo.geometry = {x = refX + 120, y = refY - 40, an = 5, w = 30, h = 24}
+    lo.style = osc_styles.Ctrl2
+
+    lo = add_layout('skipoped')
+    lo.geometry = {x = refX + 180, y = refY - 40, an = 5, w = 30, h = 24}
     lo.style = osc_styles.Ctrl2
 
     -- Time
@@ -1158,8 +1133,9 @@ function osc_init()
     ne.eventresponder['mbtn_left_up'] = function()
         mp.commandv('playlist-prev', 'weak')
     end
-    ne.eventresponder['mbtn_right_up'] =
-        function() show_message(get_playlist()) end
+    ne.eventresponder['mbtn_right_up'] = function()
+        show_message(get_playlist())
+    end
 
     -- next
     ne = new_element('pl_next', 'button')
@@ -1169,8 +1145,9 @@ function osc_init()
     ne.eventresponder['mbtn_left_up'] = function()
         mp.commandv('playlist-next', 'weak')
     end
-    ne.eventresponder['mbtn_right_up'] =
-        function() show_message(get_playlist()) end
+    ne.eventresponder['mbtn_right_up'] = function()
+        show_message(get_playlist())
+    end
 
     -- play control buttons
     -- playpause
@@ -1196,8 +1173,9 @@ function osc_init()
     ne.content = '\xEF\x8E\xA0'
     ne.eventresponder['mbtn_left_down'] = -- function () mp.command('seek -5') end
     function() mp.commandv('seek', -5, 'relative', 'keyframes') end
-    ne.eventresponder['shift+mbtn_left_down'] =
-        function() mp.commandv('frame-back-step') end
+    ne.eventresponder['shift+mbtn_left_down'] = function()
+        mp.commandv('frame-back-step')
+    end
     ne.eventresponder['mbtn_right_down'] = -- function () mp.command('seek -60') end
     function() mp.commandv('seek', -60, 'relative', 'keyframes') end
 
@@ -1208,10 +1186,29 @@ function osc_init()
     ne.content = '\xEF\x8E\x9F'
     ne.eventresponder['mbtn_left_down'] = -- function () mp.command('seek +5') end
     function() mp.commandv('seek', 5, 'relative', 'keyframes') end
-    ne.eventresponder['shift+mbtn_left_down'] =
-        function() mp.commandv('frame-step') end
+    ne.eventresponder['shift+mbtn_left_down'] = function()
+        mp.commandv('frame-step')
+    end
     ne.eventresponder['mbtn_right_down'] = -- function () mp.command('seek +60') end
     function() mp.commandv('seek', 60, 'relative', 'keyframes') end
+
+    -- unskip op/ed
+    ne = new_element('unskipoped', 'button')
+
+    ne.softrepeat = true
+    ne.content = '\xEF\x8C\x86'
+    ne.eventresponder['mbtn_left_down'] = function()
+        mp.commandv('seek', -80, 'relative', 'keyframes')
+    end
+
+    -- skip op/ed
+    ne = new_element('skipoped', 'button')
+
+    ne.softrepeat = true
+    ne.content = '\xEF\x8C\x87'
+    ne.eventresponder['mbtn_left_down'] = function()
+        mp.commandv('seek', 80, 'relative', 'keyframes')
+    end
 
     --
     update_tracklist()

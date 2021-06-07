@@ -1,0 +1,2 @@
+#!/bin/sh
+wget https://github.com/zavoloklom/material-design-iconic-font/raw/master/dist/fonts/Material-Design-Iconic-Font.ttf
