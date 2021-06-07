@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r194.cd1fd2b
+# VERSION r197.baca371
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -119,6 +119,14 @@ CURL_OPTIONS=(
 	-H 'sec-fetch-dest: empty'
 )
 
+cookies=()
+for each in ~/.local/share/danime/cookies-*.txt; do
+	cookies+=("$each")
+done
+if ((${#cookies[@]})); then
+	cat "${cookies[@]}" > ~/.local/share/danime/cookies.txt
+fi
+unset cookies
 if [ -f ~/.local/share/danime/cookies.txt ]; then
 	CURL_OPTIONS+=(--cookie ~/.local/share/danime/cookies.txt)
 fi
@@ -226,9 +234,9 @@ byte_mr()
 {
 	sed \
 		-e 's/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[kK]/\1*1000/g' \
-		-e 's/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[mM]/\1*1000000/g' |
-		bc |
-		sed \
+		-e 's/\([0-9][0-9]*\(\.[0-9]\+\)\?\)[mM]/\1*1000000/g' \
+		| bc \
+		| sed \
 			-e 's/\..*$//'
 }
 validate_limit()
@@ -248,8 +256,8 @@ validate_limit()
 					((ret++))
 				fi
 			elif ! {
-				[[ $each =~ ^[[:digit:]]+-$ ]] ||
-					[[ $each =~ ^[[:digit:]]+$ ]]
+				[[ $each =~ ^[[:digit:]]+-$ ]] \
+					|| [[ $each =~ ^[[:digit:]]+$ ]]
 			}; then
 				((ret++))
 			fi
@@ -297,10 +305,10 @@ anime_cover()
 	if [ ! -e folder.jpg ]; then
 		{
 			curl --config /dev/null -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                             &> /dev/null
+		}                                                                                           &> /dev/null
 		if {
 			! grep -q cover.jpg .hidden &> /dev/null
-		}                                   && [ -f cover.jpg ]; then
+		}                                 && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
@@ -753,12 +761,12 @@ da_get()
 		FORCE="$(< .type)"
 	fi
 	start_spinner "Fetching \"$id\" info"
-	while [[ \
+	while [[ 
 		"$(
-			echo "$da_page" |
-				xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
-		)" != "https://ww5.dubbedanime.net/$series" ]] &&
-			((try_page++ < 5)); do
+			echo "$da_page" \
+				| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+		)" != "https://ww5.dubbedanime.net/$series" ]] \
+		&& ((try_page++ < 5)); do
 		da_page=$(curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series")
 		((try_page > 1)) && sleep 1
 	done
@@ -876,17 +884,17 @@ da_get()
 	${DEBUG:-false} && set -x
 	for k in $ep; do
 		ep_slug="$(
-			echo "$url" |
-				head -n "$k" |
-				tail -1
+			echo "$url" \
+				| head -n "$k" \
+				| tail -1
 		)"
 		((ep_progress += 1))
 		(
-			echo ":$DA_IGNORE_EP:" |
-				grep -q ":$(
-					echo "$ep_slug" |
-						cut -d- -f1 |
-						xargs basename
+			echo ":$DA_IGNORE_EP:" \
+				| grep -q ":$(
+					echo "$ep_slug" \
+						| cut -d- -f1 \
+						| xargs basename
 				):"
 		) && {
 			vbar "skipping $(echo "$ep_slug" | cut -d- -f1)"
@@ -962,23 +970,23 @@ da_get_episede()
 			page_url="https://ww5.dubbedanime.net/${d%%-*}"
 			unset d
 		fi
-		while [[ \
+		while [[ 
 			"$(
-				echo "$parse_episode_page" |
-					xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
-			)" != "$1" ]] &&
-				((try_page++ < 5)); do
+				echo "$parse_episode_page" \
+					| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+			)" != "$1" ]] \
+			&& ((try_page++ < 5)); do
 			parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$1" | grep -E '(var|let) episode')"
 			((try_page > 1)) && sleep 1
 		done
 		if [ -z "$parse_episode_page" ]; then
 			try_page=0
-			while [[ \
+			while [[ 
 				"$(
-					echo "$parse_episode_page" |
-						xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
-				)" != "$page_url" ]] &&
-					((try_page++ < 5)); do
+					echo "$parse_episode_page" \
+						| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+				)" != "$page_url" ]] \
+				&& ((try_page++ < 5)); do
 				parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$page_url" | grep -E '(var|let) episode')"
 				((try_page > 1)) && sleep 1
 			done
@@ -1023,19 +1031,19 @@ da_get_episede()
 			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
 			ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
 			slug=$(
-				echo "$parse_episode_page" |
-					jq -r '.slug' |
-					sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
+				echo "$parse_episode_page" \
+					| jq -r '.slug' \
+					| sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
 			)
 			ep_id_list=$(
-				echo "$parse_episode_page" |
-					da_read_ep_json "$filter" "$slug"
+				echo "$parse_episode_page" \
+					| da_read_ep_json "$filter" "$slug"
 			)
 			if [ -z "$ep_id_list" ]; then
 				tr=subbed
 				slug=$(
-					echo "$parse_episode_page" |
-						jq -r '.slug'
+					echo "$parse_episode_page" \
+						| jq -r '.slug'
 				)
 				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$slug")
 			fi
@@ -1079,8 +1087,8 @@ da_get_episede()
 				ep_file_url=$(get_mapped "$ep_number")
 			fi
 			for ep_file_url_current in $ep_file_url; do
-				if ! [[ $ep_file_url_current =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]] &&
-					remote_exist "$ep_file_url_current"; then
+				if ! [[ $ep_file_url_current =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]] \
+					&& remote_exist "$ep_file_url_current"; then
 					continue
 				fi
 				ep_file_url=
@@ -1118,8 +1126,8 @@ da_get_episede()
 				if ((ret == 0)); then
 					download "$ep_file_name" "$ep_file_url_current"
 				elif ( 
-					((ret == 4)) &&
-						(
+					((ret == 4)) \
+						&& (
 							${REPLACE_FAIL:-false} || ((${failed_tests:-0} <= 5))
 						) && ! ${NO_REPLACE:-false}
 				) || ((ret == 5)) || (${REPLACE_MANUAL:-false} && ((ret == 3))); then
@@ -1289,29 +1297,29 @@ trollvid:get_url()
 	while [[ -z $url ]] && ((try++ < 5)); do
 		((try > 1)) && sleep 2
 		token=$(
-			curl --silent --config /dev/null -s "$2" |
-				sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
+			curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "$2" \
+				| sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
 		[ -z "$token" ] && continue
-		[ "$token" ] &&
-			token=$(
+		[ "$token" ] \
+			&& token=$(
 				curl "https://mp4.sh/embed/${1}${token}" \
 					--config /dev/null -s \
-					-H 'Referer: https://ww5.dubbedanime.net/' |
-					sed -nE "/token: /s/.*'(.*)'.*/\1/p"
+					-H 'Referer: https://ww5.dubbedanime.net/' \
+					| sed -nE "/token: /s/.*'(.*)'.*/\1/p"
 			)
 		[ -z "$token" ] && continue
-		[ "$token" ] &&
-			url=$(
+		[ "$token" ] \
+			&& url=$(
 				curl "https://mp4.sh/v/$1" \
 					-H 'Origin: https://mp4.sh' \
 					--config /dev/null -s \
-					--data-raw "token=$token" |
-					jq -r 'select(.success == true).file' 2> /dev/null
+					--data-raw "token=$token" \
+					| jq -r 'select(.success == true).file' 2> /dev/null
 			)
-		[ "$url" ] &&
-			curl -s "$(echo "$url" | cut -d/ -f1-3)/video.php" --data-raw "token=$token" 2> /dev/null &&
-			{
+		[ "$url" ] \
+			&& curl -s "$(echo "$url" | cut -d/ -f1-3)/video.php" --data-raw "token=$token" 2> /dev/null \
+			&& {
 				echo "$url"
 				break
 			}
@@ -1320,9 +1328,9 @@ trollvid:get_url()
 
 vidstreaming:get_url()
 {
-	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" |
-		jq '.source + .source_bk|[.[]|select(.type == "mp4")][0]|.file' |
-		get_effective_url
+	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" \
+		| jq '.source + .source_bk|[.[]|select(.type == "mp4")][0]|.file' \
+		| get_effective_url
 }
 
 gogo+server:get_url()
