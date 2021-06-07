@@ -9,6 +9,19 @@ url-prefix(about:newtab) {
 		background-size: cover !important;
 	}
 
+	div.search-inner-wrapper {
+		display: none !important;
+		visibility: collapse !important;
+	}
+
+	div.non-collapsible-section,
+	div.search-wrapper,
+	div.logo-and-wordmark,
+	div.search-inner-wrapper {
+		padding: 0px !important;
+		margin: 0px !important;
+	}
+
 	a.top-site-button div.tile {
 		border-radius: 50% !important;
 		background-color: rgba(38, 48, 52, 0.7) !important;
@@ -57,36 +70,9 @@ url-prefix(about:newtab) {
 		opacity: 0.5 !important;
 	}
 
-	table#searchSuggestionTable,
-	table#searchSuggestionTable td.contentSearchHeader,
-	table#searchSuggestionTable .contentSearchSuggestionsContainer,
-	table#searchSuggestionTable td.contentSearchDefaultEngineHeader,
-	table#searchSuggestionTable button#contentSearchSettingsButton {
-		background-color: rgba(34, 43, 46, 0.6) !important;
-	}
+}
 
-	table#searchSuggestionTable > tr.contentSearchHeaderRow:nth-child(1) {
-		height: 32px !important;
-	}
-
-	table#searchSuggestionTable {
-		border-radius: 20px !important;
-	}
-
-	input#newtab-search-text {
-		background-color: rgba(34, 43, 46, 0.6) !important;
-		border-radius: 2.5em !important;
-		outline: none !important;
-	}
-
-	button#searchSubmit {
-		border-top-right-radius: 2.5em !important;
-		border-bottom-right-radius: 2.5em !important;
-		background: url("chrome://global/skin/icons/search-glass.svg") no-repeat center center !important;
-	}
-
-	input#newtab-search-text:focus {
-		border: 1px solid rgba(46, 179, 152, 0.6) !important;
-		box-shadow: 0 0 0 2px solid rgba(46, 179, 152, 0.6) !important;
-	}
+:root {
+	scrollbar-color: rgb(94, 94, 94, 0.55) rgb(255, 255, 255, .0) !important;
+	scrollbar-width: thin !important;
 }

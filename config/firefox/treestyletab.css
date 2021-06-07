@@ -1,3 +1,8 @@
+:root {
+	--tab-margin: 3px;
+	--tab-margin-bottom: var(--tab-margin);
+}
+
 .contextual-identity-marker {
 	top: auto !important;
 	left: 0.5em !important;
@@ -42,6 +47,11 @@ div#subpanel-header {
 /* ################################################ */
 tab-item {
 	box-shadow: none !important;
+}
+
+tab-item {
+	margin: var(--tab-margin);
+	border-radius: 5px 0px 0px 5px;
 }
 
 tab-item:hover {
