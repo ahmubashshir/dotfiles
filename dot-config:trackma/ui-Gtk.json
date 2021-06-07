@@ -24,6 +24,7 @@
         "Progress",
         "Score",
         "Percent",
-        "Start"
+        "Start",
+        "End"
     ]
 }
