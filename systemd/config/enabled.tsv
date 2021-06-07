@@ -2,7 +2,7 @@ TYPE	NAME
 service	anbox-session-manager
 service	aria2@6801
 service	broadwayd
-service	deadd-notification-center
+service	fetchcord
 service	gamemoded
 service	geary
 service	mpris-proxy
@@ -14,7 +14,6 @@ service	transmission-trackers
 service	vino-server
 socket	dirmngr
 socket	gpg-agent
-timer	aur-autobuild
 timer	aur-autopush
 timer	eos-update-notifier
 timer	epic-claim
