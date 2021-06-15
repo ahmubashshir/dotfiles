@@ -139,3 +139,5 @@ header = From: Ahmad Hasan Mubashshir <ahmubashshir@yahoo.com>
 continue = on
 content_disposition = off
 cookies = on
+quiet = on
+show-progress = on
