@@ -6,7 +6,7 @@ editor: !!null nano
 aliases:
     co: pr checkout
     cpr: pr create
-    fork: repo fork --remote
+    fork: repo fork --remote --org ahm-forks
     clone: repo clone
     create: repo create -y
 prompt: enabled
