@@ -5,7 +5,6 @@ fi
 services=(
 	ibus
 	picom
-	deadd
 )
 export GTK_IM_MODULE=ibus
 export QT_IM_MODULE=ibus
@@ -33,3 +32,5 @@ dbus-update-activation-environment --all --systemd
 for service in "${services[@]}"; do
 	systemctl --user restart "${service}@${DISPLAY}"
 done
+systemctl --user --quiet is-enabled deadd-notification-center.service \
+	&& systemctl --user restart deadd
