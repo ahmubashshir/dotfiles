@@ -1,5 +1,13 @@
 #!/bin/zsh
-ntfs=(${(f)"$(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1)"})
-for n in "${ntfs[@]}";udisksctl unmount -b $n
-for n in "${ntfs[@]}";ntfsfix $n
-for n in "${(Oa)ntfs[@]}";udisksctl mount -b $n
+mounts=(${(f)"$(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1)"})
+for mount in $mounts;{
+	subvols=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
+
+	for subvol in $subvols;udisksctl unmount -b $subvol
+	udisksctl unmount -b $mount
+
+	ntfsfix $mount
+
+	udisksctl mount -b $mount
+	for subvol in $subvols;udisksctl mount -b $subvol
+}
