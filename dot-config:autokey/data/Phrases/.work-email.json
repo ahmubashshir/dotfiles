@@ -1,0 +1,31 @@
+{
+    "type": "phrase",
+    "description": "work-email",
+    "modes": [
+        1
+    ],
+    "usageCount": 0,
+    "prompt": true,
+    "omitTrigger": true,
+    "matchCase": false,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [
+            "mail"
+        ],
+        "backspace": true,
+        "ignoreCase": true,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[^\\t]"
+    },
+    "hotkey": {
+        "modifiers": [],
+        "hotKey": null
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    },
+    "sendMode": "kb"
+}
