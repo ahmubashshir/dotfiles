@@ -9,10 +9,10 @@ ID=$(awk -v FS== '/^ID=/{print $2}' /etc/os-release)
 targets=()
 if [[ $1 ]]; then
 	case $1 in
+		windows) entry=auto-windows ;;
+		shell) entry=auto-efi-shell ;;
+		firmware) entry=auto-reboot-to-firmware-setup ;;
 		linux-*) entry="$ID-$1.conf" ;;
-		windows | efi-shell) entry=auto-windows ;;
-		shell | efi-shell) entry=auto-efi-shell ;;
-		firmware | efi | setup) entry=auto-reboot-to-firmware-setup ;;
 		*) entry="$1.conf" ;;
 	esac
 	if bootctl list | grep -q '^[[:blank:]]*id: '"$entry"; then
@@ -53,17 +53,17 @@ else
 	espdir=$(bootctl -p)
 	for each in ${targets[@]}; do
 		case $each in
-			windows | efi-shell)
+			windows)
 				printf '%s\t--\t%s\n' \
 					"${GREEN}${each}${ALL_OFF}" \
 					"${BLUE}Windows Boot Manager${ALL_OFF}"
 				;;
-			shell | efi-shell)
+			shell)
 				printf '%s\t--\t%s\n' \
 					"${YELLOW}${each}${ALL_OFF}" \
 					"${RED}EFI Shell${ALL_OFF}"
 				;;
-			firmware | efi | setup)
+			firmware)
 				printf '%s\t--\t%s\n' \
 					"${YELLOW}${each}${ALL_OFF}" \
 					"${RED}EFI Settings${ALL_OFF}"
@@ -71,7 +71,7 @@ else
 			*)
 				source=$(
 					bootctl list \
-						| if [[ $each =~ linux-* ]]; then
+						| if [[ $each =~ ^linux-* ]]; then
 							awk '/^\s+id: '"$ID-$each.conf"'/,/^$/ { if($1 == "source:") print $2}'
 						else
 							awk '/^\s+id: '"$each.conf"'/,/^$/ { if($1 == "source:") print $2}'
