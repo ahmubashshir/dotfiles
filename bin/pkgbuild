@@ -2,23 +2,56 @@
 # shellcheck disable=SC1090,SC1091
 getcfg()
 {
-	local ___
-	___="$1"
+	local __configfile__
+	__configfile__="$1"
 	shift
-	if [ -f "/etc/$___" ]; then
-		source "/etc/$___" "$@"
+	if [ -f "/etc/${__configfile__}" ]; then
+		source "/etc/${__configfile__}" "$@"
 	fi
-	if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/$___" ]; then
-		source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/$___" "$@"
-	elif [ -f "$HOME/.$___" ]; then
-		source "$HOME/.$___" "$@"
+	if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/${__configfile__}" ]; then
+		source "${XDG_CONFIG_HOME:-$HOME/.config}/pacman/${__configfile__}" "$@"
+	elif [ -f "$HOME/.${__configfile__}" ]; then
+		source "$HOME/.${__configfile__}" "$@"
 	fi
 }
+
+getcfg makepkg.conf
+getcfg pkgbuild.conf
+
+if [ -d "$CHROOT/root" ] && [[ "$UPTODATE_CHROOT" != "true" ]]; then
+	arch-nspawn "$CHROOT/root" pacman -Syu --noconfirm
+	export UPTODATE_CHROOT=true
+fi
+
 if [ -d "$1" ] && [ -f "$1/PKGBUILD" ]; then
 	cd "$1"
+	shift
 elif [ -f "$1" ] && [[ $1 =~ PKGBUILD$ ]]; then
 	cd "$(dirname "$1")"
+	shift
+elif [[ $1 == --list ]] && [ -f "$2" ]; then
+	exec "$0" --stdin < "$2"
+elif [[ $1 == --stdin ]]; then
+	set +e
+	mkdir -p "aur-build"
+	cd "aur-build"
+	while read -r cmd pkg; do
+		if [[ $cmd = make && -n $pkg ]]; then
+			"$0" "$pkg"
+			if [[ $? == 130 ]]; then
+				break
+			fi
+		fi
+	done
+	exit
+elif ! [ -d "$1" ]; then
+	git clone pkg:"$1" \
+		&& cd "$1" \
+		|| exit 1
+	shift
 fi
+
+unset UPTODATE_CHROOT
 if [ -d .git ]; then
 	git pull origin master
 fi
@@ -33,19 +66,12 @@ if [ -f WIP ]; then
 	exit 0
 fi
 
-getcfg makepkg.conf
-getcfg pkgbuild.conf
-
-if [ -n "$FORCEREBUILD" ] && [ "$FORCEREBUILD" != "true" ]; then
-	unset FORCEREBUILD
+if [ -n "$REBUILD" ] && [ "$REBUILD" != "true" ]; then
+	unset REBUILD
 fi
 
-if ! [[ -n $FORCEREBUILD ]] && [[ -e .no-build ]]; then
+if ! [[ -n $REBUILD ]] && [[ -e .no-build ]]; then
 	exit
-fi
-
-if [ -d "$CHROOT/root" ]; then
-	arch-nspawn "$CHROOT/root" pacman -Syu --noconfirm
 fi
 
 if type -t pkgver | grep -wq function; then
@@ -58,22 +84,22 @@ if [ ! -f "${PKGREPO:-$PWD}/${REPO}" ] || [ ! -f ~/.config/repoctl/config.toml ]
 fi
 
 while read -r pkg; do
-	if [ -f "${PKGREPO:-$PWD}/${pkg##*/}" ] && [[ $FORCEREBUILD != "true" ]]; then
+	if [ -f "${PKGREPO:-$PWD}/${pkg##*/}" ] && [[ $REBUILD != "true" ]]; then
 		echo "Already built in repo."
 		exit 0
-	elif (! echo "$*" | grep -q '\-f') && [ -f "$pkg" ] && [ -z "$FORCEREBUILD" ]; then
-		FORCEREBUILD=true
+	elif (! echo "$*" | grep -q '\-f') && [ -f "$pkg" ] && [ -z "$REBUILD" ]; then
+		REBUILD=true
 		break
 	fi
 done < <(makepkg --packagelist)
 
-set -- -cC -s ${FORCEREBUILD:+-f} "$@"
+set -- --clean --cleanbuild --syncdeps --nosign --nocheck --noconfirm ${REBUILD:+--force} "$@"
 
 if [ -z "$CHROOT" ]; then
 	makepkg "$@"
 elif command -v makechrootpkg > /dev/null 2>&1; then
 	echo "$@"
-	makechrootpkg -c -n -r "$CHROOT" -- --nosign "$@" \
+	makechrootpkg -ucnr "$CHROOT" -- "$@" \
 		&& makepkg --packagelist | while read -r pkg; do
 			gpg -u "$GPGKEY" --detach-sign "$pkg"
 		done || exit 1
@@ -82,3 +108,20 @@ fi
 makepkg --packagelist | while read -r pkg; do
 	repoctl add -mrs "$pkg"
 done
+
+source PKGBUILD
+exclude+=(
+	-e '*.log'
+	-e 'PKGBUILD.bak'
+	-e '.no*'
+)
+for src in "${source[@]}"; do
+	src=${src%%::*}
+	src=${src##*/}
+	if [ -e "$src" ]; then
+		exclude+=('-e' "${src}")
+	fi
+done
+
+fakeroot rm -rf src pkg
+git clean -fxd "${exclude[@]}"
