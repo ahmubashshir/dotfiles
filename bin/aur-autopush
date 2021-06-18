@@ -35,11 +35,10 @@ poetry:deps()
 }
 pypi:deps()
 {
-	curl -s "https://pypi.org/pypi/trakt-scrobbler/json" \
-		| jq -r '.info.requires_dist[], "python (" + .info.requires_python + ")"' \
+	curl -s "https://pypi.org/pypi/$1/json" \
+		| jq -r '.info.requires_dist[]' \
 		| sed -En \
-			's/^(python)\s*\(>=([[:digit:].]+),<([[:digit:].]+)\)$/\1>=\2\n\1<\3/p
-			s/^([[:alnum:]]+)\s*\(>=([[:digit:].]+),<([[:digit:].]+)\)(|; sys_platform == \"linux\")$/python-\1<\3\npython-\1>=\2/p' \
+			's/^([[:alnum:]]+)\s*\(>=([[:digit:].]+),<([[:digit:].]+)\)(|; sys_platform == \"linux\")$/python-\1<\3\npython-\1>=\2/p' \
 		| py:deps
 }
 use_vpn()
@@ -66,13 +65,21 @@ elif [[ $1 == --stdin ]]; then
 	done
 fi
 for n in "$@"; do
+	if readlink "$(
+		git rev-parse --show-toplevel 2> /dev/null
+	)/.git/hooks/prepare-commit-msg" 2> /dev/null \
+		| grep -q '/aurpublish/'; then
+		aurpublish=true
+	else
+		aurpublish=false
+	fi
 	if [ -f "$n/PKGBUILD" ] && [ ! -e "$n/WIP" ]; then
 		(
 			typeset -a exclude
 			pkgver=0
 			pkgrel=0
 			cd "$n" 2>&1 > /dev/null || exit
-			git stash 2>&1 > /dev/null
+			git stash -- . 2>&1 > /dev/null
 			use_vpn c
 			git pull
 			use_vpn d
@@ -99,7 +106,7 @@ for n in "$@"; do
 				esac
 				if [ "$(vercmp ${PKGVER:-0} $pkgver)" = "1" ]; then
 					sed -Ei "s/^(pkgver=)(\"|'|)$pkgver(\"|'|)$/\1\2$PKGVER\3/g;s/^(pkgrel)=.*/\1=1/g" PKGBUILD
-					msg="Updated to $PKGVER-1"
+					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] Updated to $PKGVER-1"
 				fi
 				for dep in ${type} ${src} ${provider}; do
 					if
@@ -121,7 +128,7 @@ for n in "$@"; do
 								break
 							fi
 						done
-						"${depfunc}:deps"
+						"${depfunc}:deps" "${src}"
 					) | while read -r line; do
 						sed -Ei.bak "/^depends=\(/,/\)/{s@^\)\$@\t'$line' #auto-deps\n\)@}" PKGBUILD
 					done
@@ -133,10 +140,12 @@ for n in "$@"; do
 			if [ -n "$(git status --porcelain)" ] || [ "${FORCE_REL_BUMP+defined}" ] && [ "$FORCE_REL_BUMP" != "false" ]; then
 				if [ -z "$PKGVER" ] || [ "$(vercmp $PKGVER $pkgver)" = "0" ]; then
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
-					msg='pkgrel bump.'
+					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] pkgrel bump."
 				fi
 				[ -f ../.nopush ] && msg='nopush: '"${msg:-automatic commmit.}"
-				makepkg --printsrcinfo > .SRCINFO
+				if [ "$aurpublish" = "false" ]; then
+					makepkg --printsrcinfo > .SRCINFO
+				fi
 				git add .
 				git commit -m "${msg:-automatic push.}"
 			fi
@@ -145,6 +154,9 @@ for n in "$@"; do
 			}; then
 				use_vpn c
 				git push
+				if $aurpublish; then
+					aurpublish $PWD
+				fi
 				use_vpn d
 			fi
 			exclude+=(
@@ -160,7 +172,7 @@ for n in "$@"; do
 				fi
 			done
 			fakeroot rm -rf src pkg
-			git clean -fxd "${exclude[@]}"
+			git clean -fxd "${exclude[@]}" .
 		)
 	fi
 done
