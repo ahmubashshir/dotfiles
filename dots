@@ -266,11 +266,11 @@ elif (($# == 0)) || [[ $1 == help ]]; then
 		echo "${0##*/} help:"
 		echo "   ln               link dotfiles."
 		echo "   ls               list dotfiles."
-		echo "   ps [chr]         use chr as seperator."
-		echo "   cp [path]        track path."
-		echo "   systemd update   update systemd config."
-		echo "   systemd sync     sync systemd config."
-		echo "   rm [dot]         unlink and delete dotfile."
+		echo "   ps <chr>         use chr as seperator."
+		echo "   cp <path>        track path."
+		echo "   systemd backup   backup systemd config."
+		echo "   systemd restore  restore systemd config."
+		echo "   rm <dotfile>     unlink and delete dotfile."
 		echo "   help             show this help."
 	)
 elif (($# > 0)); then
