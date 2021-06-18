@@ -6,5 +6,5 @@ OnFailure=notify-fail@%n.service
 Slice=aur.slice
 MemoryHigh=100M
 MemoryMax=300M
-WorkingDirectory=%h/Documents/aur
-ExecStart=/bin/bash -ec 'shopt -s extglob;shopt -s nullglob;for pkg in ??-*/*/PKGBUILD;do %h/bin/pkgbuild $pkg|tee %h/logs/autobuild.log;done'
+WorkingDirectory=%h/Documents
+ExecStart=%h/bin/pkgbuild --list %h/Documents/aur/autobuild
