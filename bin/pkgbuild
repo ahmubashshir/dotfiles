@@ -30,11 +30,14 @@ elif [ -f "$1" ] && [[ $1 =~ PKGBUILD$ ]]; then
 	cd "$(dirname "$1")"
 	shift
 elif [[ $1 == --list ]] && [ -f "$2" ]; then
+	BUILD_DIR="$(realpath "$(dirname "$2")/../aur-build")"
+	export BUILD_DIR
 	exec "$0" --stdin < "$2"
 elif [[ $1 == --stdin ]]; then
 	set +e
-	mkdir -p "aur-build"
-	cd "aur-build"
+	mkdir -p "${BUILD_DIR:-aur-build}"
+	cd "${BUILD_DIR:-aur-build}"
+	unset BUILD_DIR
 	while read -r cmd pkg; do
 		if [[ $cmd = make && -n $pkg ]]; then
 			"$0" "$pkg"
@@ -125,3 +128,19 @@ done
 
 fakeroot rm -rf src pkg
 git clean -fxd "${exclude[@]}"
+
+logs=(
+	-not -name "${pkgbase:-$pkgname}-${epoch:+${epoch}}${pkgver}-${pkgrel}-$(uname -m)-*.log"
+)
+if [ "$(typeset -p pkgname | awk '{print $2}')" = "-a" ]; then
+	for pkg in "${pkgname[@]}"; do
+		logs+=(
+			-not -name "${pkg}-${epoch:+${epoch}}${pkgver}-${pkgrel}*-namcap.log"
+		)
+	done
+else
+	logs+=(
+		-not -name "${pkgname}-${epoch:+${epoch}}${pkgver}-${pkgrel}*-namcap.log"
+	)
+fi
+find -mindepth 1 -maxdepth 1 -name '*.log' \( -empty -or "${logs[@]}" \)
