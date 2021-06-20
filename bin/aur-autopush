@@ -65,14 +65,15 @@ elif [[ $1 == --stdin ]]; then
 	done
 fi
 for n in "$@"; do
-	if readlink "$(
-		git rev-parse --show-toplevel 2> /dev/null
-	)/.git/hooks/prepare-commit-msg" 2> /dev/null \
-		| grep -q '/aurpublish/'; then
+	repo="$(git -C "$n" rev-parse --show-toplevel 2> /dev/null)"
+	if readlink "$repo/.git/hooks/prepare-commit-msg" 2> /dev/null \
+		| grep -q '/aurpublish/' \
+		|| test -f "$repo/.aurpublish"; then
 		aurpublish=true
 	else
 		aurpublish=false
 	fi
+	unset repo
 	if [ -f "$n/PKGBUILD" ] && [ ! -e "$n/WIP" ]; then
 		(
 			typeset -a exclude
