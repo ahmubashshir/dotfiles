@@ -1,18 +1,22 @@
 #!/bin/bash
-# shellcheck disable=SC2181,SC1091,SC2034
-pypi:pkgver()
+function pypi:pkgver
 {
 	curl -s "https://pypi.org/pypi/$1/json" | jq -r '.info.version'
 }
-github:pkgver()
+
+function github:pkgver
 {
-	curl -sH "Accept: application/vnd.github.v3+json" "https://${2:-api.github.com}/repos/$1/tags" | jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
+	curl -sH "Accept: application/vnd.github.v3+json" "https://${2:-api.github.com}/repos/$1/tags" \
+		| jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
 }
-gitlab:pkgver()
+
+function gitlab:pkgver
 {
-	curl -s "https://${2:-gitlab.com}/api/v4/projects/${1//\//%2F}/repository/tags" | jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
+	curl -s "https://${2:-gitlab.com}/api/v4/projects/${1//\//%2F}/repository/tags" \
+		| jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
 }
-py:deps()
+
+function py:deps
 {
 	local -a overrides
 	overrides=(
@@ -20,20 +24,23 @@ py:deps()
 	)
 	sed -E "${overrides[@]}"
 }
-pip:deps()
+
+function pip:deps
 {
 	sed -En "s/^([[:alnum:]]+)==([[:digit:].]+)\.\*,>=([[:digit:].]+)(|; sys_platform == \"linux\")$/python-\1<\2\npython-\1>=\3/p" \
 		| awk -F '<|\\.' '$0 ~ /<.*[[:digit:]]$/{print $1"<"$NF+1".0.0"};$0 !~ /<.*[[:digit:]]$/' \
 		| py:deps
 }
-poetry:deps()
+
+function poetry:deps
 {
 	dephell deps convert \
 		--from pyproject.toml \
 		--to-format=pip \
 		--to-path=stdout 2> /dev/null | pip:deps
 }
-pypi:deps()
+
+function pypi:deps
 {
 	curl -s "https://pypi.org/pypi/$1/json" \
 		| jq -r '.info.requires_dist[]?' \
@@ -41,18 +48,20 @@ pypi:deps()
 			's/^([[:alnum:]]+)\s*\(>=([[:digit:].]+),<([[:digit:].]+)\)(|; sys_platform == \"linux\")$/python-\1<\3\npython-\1>=\2/p' \
 		| py:deps
 }
-use_vpn()
+
+function use_vpn
 {
-	local p
+	local task
 	test -n "$USE_VPN" || return 0
-	[ "$1" = "c" ] || p="dis"
-	echo -ne "vpn: ${p}connecting   \r"
+	[ "$1" = "c" ] || task="dis"
+	echo -ne "vpn: ${task}connecting   \r"
 	false
-	until (($? == 0)); do
-		windscribe "${p}connect" 2>&1 > /dev/null
+	until windscribe "${task}connect" > /dev/null 2>&1; do
+		sleep 1
 	done
-	echo "vpn: ${p}connected   "
+	echo "vpn: ${task}connected   "
 }
+
 #if ! netcat -zw3 aur.archlinux.org ssh && test -n "$(which --skip-functions --skip-alias windscribe)";then
 #	USE_VPN=true
 #fi
@@ -64,8 +73,8 @@ elif [[ $1 == --stdin ]]; then
 		set -- "$@" "$line"
 	done
 fi
-for n in "$@"; do
-	repo="$(git -C "$n" rev-parse --show-toplevel 2> /dev/null)"
+for pkgpath in "$@"; do
+	repo="$(git -C "$pkgpath" rev-parse --show-toplevel 2> /dev/null)"
 	if readlink "$repo/.git/hooks/prepare-commit-msg" 2> /dev/null \
 		| grep -q '/aurpublish/' \
 		|| test -f "$repo/.aurpublish"; then
@@ -74,18 +83,18 @@ for n in "$@"; do
 		aurpublish=false
 	fi
 	unset repo
-	if [ -f "$n/PKGBUILD" ] && [ ! -e "$n/WIP" ]; then
+	if [ -f "$pkgpath/PKGBUILD" ] && [ ! -e "$pkgpath/WIP" ]; then
 		(
-			typeset -a exclude
+			typeset -a exclude source
 			pkgver=0
 			pkgrel=0
-			cd "$n" 2>&1 > /dev/null || exit
-			git stash -- . 2>&1 > /dev/null
+			cd "$pkgpath" > /dev/null 2>&1 || exit
+			git stash -- . > /dev/null 2>&1
 			use_vpn c
 			git pull
 			use_vpn d
-			git stash apply 2>&1 > /dev/null
-			git stash drop 2>&1 > /dev/null
+			git stash apply > /dev/null 2>&1
+			git stash drop > /dev/null 2>&1
 			source ./PKGBUILD
 			srcdir=src
 			if grep -m 1 -q '^# pkg:' PKGBUILD; then
@@ -111,7 +120,7 @@ for n in "$@"; do
 				fi
 				for dep in ${type} ${src} ${provider}; do
 					if
-						type -t ${dep}:deps 2> /dev/null \
+						type -t "${dep}:deps" 2> /dev/null \
 							| grep -wq function
 					then
 						depfunc=$dep
@@ -124,8 +133,8 @@ for n in "$@"; do
 					sed -Ei.bak '/^depends=\(/,/\)/{/#auto-deps$/d}' PKGBUILD
 					(
 						for dir in ${pkgname}-${pkgver} ${_name} ${pkgname%*-git}; do
-							if test -d "src/$dir"; then
-								cd "src/$dir"
+							if test -d "$srcdir/$dir"; then
+								cd "$srcdir/$dir" || continue
 								break
 							fi
 						done
@@ -143,7 +152,7 @@ for n in "$@"; do
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
 					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] pkgrel bump."
 				fi
-				[ -f ../.nopush ] && msg='nopush: '"${msg:-automatic commmit.}"
+				[ -f ../.nopush ] && msg='[nopush] '"${msg:-automatic commmit.}"
 				if [ "$aurpublish" = "false" ]; then
 					makepkg --printsrcinfo > .SRCINFO
 				fi
@@ -156,7 +165,7 @@ for n in "$@"; do
 				use_vpn c
 				git push
 				if $aurpublish; then
-					aurpublish $PWD
+					aurpublish "$PWD"
 				fi
 				use_vpn d
 			fi
