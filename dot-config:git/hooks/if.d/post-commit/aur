@@ -1,0 +1,3 @@
+[[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+
+# vim: ft=sh:ts=4:noet
