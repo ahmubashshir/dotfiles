@@ -1,5 +1,4 @@
 #!/bin/sh
-# HOOK-CONDITION: [[ "$( git config --bool "git.lfs")" == "true" ]]
 if command -v git-lfs > /dev/null 2>&1; then
 	git lfs post-checkout "$@"
 else
