@@ -14,6 +14,7 @@ export ENABLE_VKBASALT=1
 export mesa_glthread=true
 export WINEDEBUG=-all
 export WINEESYNC=1
+export WINEFSYNC=1
 export LNDIR="/mnt/Books/Light Novels"
 export TERMINAL="xfce4-terminal"
 export GOPATH="$XDG_DATA_HOME/go"
@@ -43,7 +44,7 @@ fi
 [[ -x /usr/bin/dircolors ]] &&
 	export LS_COLORS=$({
 		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                                | sed -nE "s@.*='(.*)';@\1@p")
+	}                                                              | sed -nE "s@.*='(.*)';@\1@p")
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export RELAY_SECRET=IX7xntnRW3CC
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
