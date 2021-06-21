@@ -1,6 +1,5 @@
 #!/usr/bin/ruby
 # Encoding: utf-8
-# HOOK-CONDITION: [[ ! $(git remote get-url origin) =~ ^(https?://|ssh://aur@)aur.archlinux.org/ ]]
 # HOOK-NOPIPE
 
 editor = ENV['EDITOR'] != 'none' ? ENV['EDITOR'] : 'vim'
