@@ -92,6 +92,9 @@ for pkgpath in "$@"; do
 			git stash -- . > /dev/null 2>&1
 			use_vpn c
 			git pull
+			if $aurpublish; then
+				aurpublish -p "$PWD"
+			fi
 			use_vpn d
 			git stash apply > /dev/null 2>&1
 			git stash drop > /dev/null 2>&1
