@@ -1,0 +1,4 @@
+[[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+[[ -x /usr/bin/namcap ]]
+
+# vim: ft=sh:ts=4:noet
