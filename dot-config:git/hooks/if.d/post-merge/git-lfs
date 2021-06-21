@@ -1,0 +1,3 @@
+[[ "$( git config --bool "git.lfs")" == "true" ]]
+
+# vim: ft=sh:ts=4:noet
