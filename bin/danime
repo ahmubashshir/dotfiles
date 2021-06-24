@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r197.baca371
+# VERSION r198.4b80063-30
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -539,10 +539,11 @@ try:
 			"size"			:	200,
 			"what"			:	"query",
 			"letter"		:	"all",
+			"page"			:	1,
 			"query"			:	"search=" + " ".join(argv[1:])
 		}
 		try:
-			for n in r.post("https://ww5.dubbedanime.net/ajax/paginate", data).json()["results"]:
+			for n in r.post("%shttps://ww5.dubbedanime.net/ajax/paginate"%os.environ.get("PUPPETEER_PROXY"), data).json()["results"]:
 				print("%s:%s:%s:%s"%(n["url"],n["id"],0 if not "total" in n else n["total"],refine(n["title"])))
 		except:
 			pass
@@ -730,7 +731,7 @@ da_get_len()
 	type=$(da_db get type)
 	(
 		try_page=0
-		until curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series" || ((try_page++ >= 5)); do
+		until curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series" || ((try_page++ >= 5)); do
 			sleep 1
 		done
 	) | case $type in
@@ -767,7 +768,7 @@ da_get()
 				| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 		)" != "https://ww5.dubbedanime.net/$series" ]] \
 		&& ((try_page++ < 5)); do
-		da_page=$(curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "https://ww5.dubbedanime.net/$series")
+		da_page=$(curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series")
 		((try_page > 1)) && sleep 1
 	done
 	da_page_json=$(echo "$da_page" | grep -E '(let|var) anime' | cut -d= -f2- | cut -d\  -f2- | sed 's/\;$//g' | jq)
@@ -976,7 +977,7 @@ da_get_episede()
 					| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 			)" != "$1" ]] \
 			&& ((try_page++ < 5)); do
-			parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$1" | grep -E '(var|let) episode')"
+			parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$1" | grep -E '(var|let) episode')"
 			((try_page > 1)) && sleep 1
 		done
 		if [ -z "$parse_episode_page" ]; then
@@ -987,7 +988,7 @@ da_get_episede()
 						| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 				)" != "$page_url" ]] \
 				&& ((try_page++ < 5)); do
-				parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "$page_url" | grep -E '(var|let) episode')"
+				parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$page_url" | grep -E '(var|let) episode')"
 				((try_page > 1)) && sleep 1
 			done
 			shift
@@ -1158,8 +1159,8 @@ download()
 				tput cuu 2
 				((tried > 1)) && (
 					tput el1
-					tput   el
-					tput           cuu1
+					tput el
+					tput         cuu1
 				)
 				tput el1
 				tput el
@@ -1297,7 +1298,7 @@ trollvid:get_url()
 	while [[ -z $url ]] && ((try++ < 5)); do
 		((try > 1)) && sleep 2
 		token=$(
-			curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "$2" \
+			curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
 				| sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
 		[ -z "$token" ] && continue
