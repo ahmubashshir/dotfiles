@@ -34,6 +34,10 @@ blockquote {
 	border-left-color: #2eb398 !important;
 }
 
+img {
+	filter: brightness(40%) drop-shadow(0 0 1rem rgb(20, 26, 27)) !important;
+}
+
 div[id*="quote"],
 div[id*="quote"] *,
 div[class*="quote"],
