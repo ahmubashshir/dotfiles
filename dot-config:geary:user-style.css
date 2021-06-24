@@ -1,0 +1,92 @@
+:root {
+	--fg: 204, 215, 212;
+	--bg: 34, 43, 46;
+	--border: 22, 27, 29;
+}
+
+html {
+	color: rgb(var(--fg)) !important;
+	background-color: rgb(var(--bg)) !important;
+	border-color: rgb(var(--border)) !important;
+	caret-color: rgb(var(--fg)) !important;
+}
+
+html[dir="auto"]:hover {
+	background-color: rgba(var(--bg), 0.985) !important;
+	border-color: rgba(var(--border), 0.985) !important;
+}
+
+* {
+	color: rgb(var(--fg)) !important;
+	background-color: transparent !important;
+	caret-color: rgb(var(--fg)) !important;
+}
+
+a {
+	color: #2eb398 !important;
+}
+
+hr {
+	background-color: #2eb398 !important;
+}
+
+blockquote {
+	border-left-color: #2eb398 !important;
+}
+
+div[id*="quote"],
+div[id*="quote"] *,
+div[class*="quote"],
+div[class*="quote"] *,
+div[id*="signature"][contenteditable="true"],
+div[id*="signature"][contenteditable="true"] * {
+	background-color: rgb(40, 42, 54) !important;
+}
+
+div[id*="quote"],
+div[id*="quote"] *,
+div[class*="quote"],
+div[class*="quote"] *,
+div[id*="signature"],
+div[id*="signature"] * {
+	color: #50FA7B !important;
+}
+
+div[id*="quote"],
+div[class*="quote"] {
+	padding: 4px;
+}
+
+div[class="gmail_attr"] {
+	padding-top: calc(1em - 4px);
+}
+
+button {
+	background-image: unset !important;
+	background-color: rgb(38, 48, 52) !important;
+	outline-color: rgb(var(--border)) !important;
+	border-color: rgb(var(--border)) !important;
+	border-bottom-color: rgb(var(--border)) !important;
+	text-shadow: unset !important;
+	box-shadow: unset !important;
+}
+
+button:hover {
+	background-color: rgb(56, 70, 75) !important;
+}
+
+@media screen {
+	button {
+		background-image: unset !important;
+		background-color: rgb(38, 48, 52) !important;
+		outline-color: rgb(var(--border)) !important;
+		border-color: rgb(var(--border)) !important;
+		border-bottom-color: rgb(var(--border)) !important;
+		text-shadow: unset !important;
+		box-shadow: unset !important;
+	}
+
+	button:hover {
+		background-color: rgb(56, 70, 75) !important;
+	}
+}
