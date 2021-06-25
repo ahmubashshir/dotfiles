@@ -6,4 +6,4 @@
 	path = ./include/misc
 	path = ./include/smtp
 	path = ./include/url
-	path = ./include/user
+	path = ~/.config/git.conf
