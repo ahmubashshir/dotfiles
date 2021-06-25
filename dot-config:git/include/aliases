@@ -49,6 +49,7 @@
 	put = push -u
 	cfg = config
 	gcfg = config --global
+	ucfg = !git config --file=$HOME/.config/git.conf
 	cl = clone
 	hash = rev-parse HEAD
 	head = rev-parse --abbrev-ref HEAD
