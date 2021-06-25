@@ -1,5 +1,6 @@
 *.zwc
 *.swp
 bin/youtube-dl
-dot-zsh/functions/_gmtool
 bin/faketty
+dot-config:zsh/functions/_gmtool
+dot-config:zsh/history

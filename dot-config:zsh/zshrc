@@ -122,7 +122,7 @@ bindkey -e
 
 ## Zstyle Config
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/mubashshir/.zshrc'
+zstyle :compinstall filename "${ZDOTDIR:-$HOME}/.zshrc"
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' completer _list _expand _complete _ignored _match _correct _approximate _prefix
 zstyle ':completion:*' completions set

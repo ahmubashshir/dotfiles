@@ -1,12 +1,13 @@
+#!/bin/zsh
 # function zcompinit
 if [[ -o interactive ]];then
 	compinit $@
-	source $HOME/.zsh/compdef
+	source ${ZDOTDIR:-$HOME/.zsh}/compdef
 	[[ $* =~ -[[:alnum:]]*C ]] || {
 		autoload -Uz zrecompile
 		zrecompile
 		compinit -C
-		source $HOME/.zsh/compdef
+		source ${ZDOTDIR:-$HOME/.zsh}/compdef
 	}
 fi
 unfunction zcompinit
