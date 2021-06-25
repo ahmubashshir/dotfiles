@@ -4,3 +4,4 @@ bin/youtube-dl
 bin/faketty
 dot-config:zsh/functions/_gmtool
 dot-config:zsh/history
+dot-config:hexchat/scrollback
