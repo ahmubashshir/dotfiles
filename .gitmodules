@@ -74,7 +74,7 @@
 	url = https://github.com/popstas/zsh-command-time
 [submodule "dot-config:zsh/plugins/linus-rants"]
 	path = dot-config:zsh/plugins/linus-rants
-	url = https://github.com/bhayward93/Linus-rants-config:zsh
+	url = https://github.com/bhayward93/Linus-rants-zsh
 [submodule "dot-config:tmux/plugins/tpm"]
 	path = dot-config:tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm

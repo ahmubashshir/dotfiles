@@ -7,7 +7,7 @@ _list_plugins()
 	if (( ${+zplugdirs} )); then
 		typeset -a zplugdirs
 	fi
-	for plugpath in "$HOME/.zsh/plugins" "/usr/share/zsh/plugins";do
+	for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 		if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
 			zplugdirs+=("$plugpath")
 		fi

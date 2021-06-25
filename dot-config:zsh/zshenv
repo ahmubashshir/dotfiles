@@ -1,0 +1,30 @@
+#!/bin/zsh
+alias compinit="compinit -d ~/.cache/zsh/compdump"
+fpath=(${ZDOTDIR:-$HOME/.zsh}/functions $fpath)
+
+autoload -Uz zcompile zcompare
+
+function source {
+	if [ -f "$1" ];then
+		builtin source "$@"
+	fi
+}
+
+if [ ! -d ~/.cache/zsh ];then
+	rm -f ~/.cache/zsh
+	mkdir -p ~/.cache/zsh
+fi
+# Traps
+function TRAPUSR1 { rehash; }
+
+if [[ -o interactive ]];then
+	autoload -Uz compinit
+	setopt extendedglob nullglob
+	source "${ZDOTDIR:-$HOME}/.zinputrc"
+	source $HOME'/.shell/import'
+	[ -z "$(get_term|grep 'geany')" ] && HISTFILE=${HISTFILE:-${ZDOTDIR:-$HOME/.zsh_}${ZDOTDIR:+/}history}
+fi
+
+source $HOME'/.shell/environment'
+source /usr/share/doc/pkgfile/command-not-found.zsh
+source ./.env_setup

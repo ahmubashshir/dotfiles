@@ -2,7 +2,7 @@
 
 autoload -Uz zcompare
 local target dir file
-for target in ~/.z{shrc,shenv,login,login,profile,inputrc,sh/compdef} $fpath[@]/^*.zwc;do
+for target in ${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} ${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} $fpath[@]/^*.zwc;do
 	if [[ -f $target ]] && [[ -w $target:P:h ]];then
 		zcompare "$target" -Rz
 	elif [[ -d $target ]] && [[ -w $target ]];then
