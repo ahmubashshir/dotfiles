@@ -12,8 +12,8 @@
 # die "error"
 die()
 {
-	echo  >&2 "$1"
-	exit  1
+	echo >&2 "$1"
+	exit 1
 }
 
 # find branch from $remote matching $commit
