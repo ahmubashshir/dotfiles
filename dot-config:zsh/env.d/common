@@ -1,0 +1,22 @@
+#!/bin/zsh
+if [ -z "$HOME" ]; then
+	export HOME=~
+fi
+if [ -z "$XDG_CONFIG_HOME" ]; then
+	export XDG_CONFIG_HOME="$HOME/.config"
+fi
+if [ -z "$XDG_DATA_HOME" ]; then
+	export XDG_DATA_HOME="$HOME/.local/share"
+fi
+
+export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
+export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
+export LNDIR="/mnt/Books/Light Novels"
+export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
+export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
+export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
+export EDITOR=nano
+export LESS='-FgiJRMSx4$z-4$~ --mouse'
+export GOPATH="$XDG_DATA_HOME/go"
+export GPGID=56DB0538F60D951C
+export GPGFP=916961EE198832DD70B628B356DB0538F60D951C

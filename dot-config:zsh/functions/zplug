@@ -8,7 +8,9 @@ fi
 if (( ! ${+zsh_loaded_plugins} )); then
 	typeset -ga zsh_loaded_plugins
 fi
-
+if (( ! ${+zsh_loaded_plugin_paths} )); then
+	typeset -ga zsh_loaded_plugin_paths
+fi
 for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 	if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
 		zplugdirs+=("$plugpath")
@@ -16,17 +18,16 @@ for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 done
 
 plugname=$1;shift
-for plugpath in $zplugdirs[@]
-do
-	for plug in "$plugpath/$plugname/$plugname.plugin" \
-				"$plugpath/$plugname/zsh-$plugname.plugin" \
-				"$plugpath/zsh-$plugname/$plugname.plugin" \
-				"$plugpath/zsh-$plugname/zsh-$plugname.plugin" \
-				"$plugpath/$plugname/$plugname" \
-				"$plugpath/zsh-$plugname/$plugname" \
-				"$plugpath/zsh-$plugname/zsh-$plugname"
+for plugpath in $zplugdirs[@];do
+	for plug in "$plugname/$plugname.plugin" \
+				"$plugname/zsh-$plugname.plugin" \
+				"zsh-$plugname/$plugname.plugin" \
+				"zsh-$plugname/zsh-$plugname.plugin" \
+				"$plugname/$plugname" \
+				"zsh-$plugname/$plugname" \
+				"zsh-$plugname/zsh-$plugname"
 	do
-		plugin="$plug.zsh"
+		plugin="$plugpath/$plug.zsh"
 		if [ -f "$plugin" ]
 		then
 			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
@@ -37,6 +38,7 @@ do
 			builtin source "$plugin" "$@"
 			if ((!${zsh_loaded_plugins[(Ie)$plugname]}));then
 				zsh_loaded_plugins+="$plugname"
+				zsh_loaded_plugin_paths+="${plugin:h}"
 			fi
 			return 0
 		fi

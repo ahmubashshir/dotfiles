@@ -1,30 +1,36 @@
 #!/bin/zsh
 alias compinit="compinit -d ~/.cache/zsh/compdump"
 fpath=(${ZDOTDIR:-$HOME/.zsh}/functions $fpath)
-
-autoload -Uz zcompile zcompare
-
 function source {
 	if [ -f "$1" ];then
 		builtin source "$@"
 	fi
 }
+if [[ -o interactive ]];then
+	autoload -Uz zcompare
+else
+	function zcompare {
+		if [[ -w $1:P:h ]] && [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
+		then
+			zcompile "${@:2}" "$1"
+		fi
+	}
+fi
 
+function loadenv {
+	local each
+	for each in "$@";do
+		zcompare "${ZDOTDIR:-$HOME/.zsh}/env.d/$each" -UMz
+		source "${ZDOTDIR:-$HOME/.zsh}/env.d/$each"
+	done
+}
 if [ ! -d ~/.cache/zsh ];then
 	rm -f ~/.cache/zsh
 	mkdir -p ~/.cache/zsh
 fi
 # Traps
 function TRAPUSR1 { rehash; }
+loadenv api-keys common cli path
+[[ -n $DISPLAY ]] && loadenv gui
 
-if [[ -o interactive ]];then
-	autoload -Uz compinit
-	setopt extendedglob nullglob
-	source "${ZDOTDIR:-$HOME}/.zinputrc"
-	source $HOME'/.shell/import'
-	[ -z "$(get_term|grep 'geany')" ] && HISTFILE=${HISTFILE:-${ZDOTDIR:-$HOME/.zsh_}${ZDOTDIR:+/}history}
-fi
-
-source $HOME'/.shell/environment'
-source /usr/share/doc/pkgfile/command-not-found.zsh
-source ./.env_setup
+unfunction zcompare loadenv
