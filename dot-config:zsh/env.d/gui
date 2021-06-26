@@ -1,0 +1,20 @@
+#!/bin/zsh
+export BROWSER=firefox
+export TERMINAL="xfce4-terminal"
+export QT_QPA_PLATFORMTHEME=qt5ct
+export QT_SCALE_FACTOR=1
+
+export ENABLE_VKBASALT=1
+export mesa_glthread=true
+export MANGOHUD=1
+
+export WINEDEBUG=-all
+export WINEESYNC=1
+export WINEFSYNC=1
+if [ -z "$WINEARCH" ]; then
+	export WINEARCH=win64
+fi
+if [ -d /mnt/Games/wine ]; then
+	export WINEPREFIX=/mnt/Games/wine
+fi
+export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store

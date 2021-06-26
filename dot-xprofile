@@ -1,11 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 if [ -f ~/.shell/environment ]; then
 	. ~/.shell/environment
 fi
-services=(
-	ibus
-	picom
-)
+
+services="ibus picom"
 export GTK_IM_MODULE=ibus
 export QT_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
@@ -18,19 +16,12 @@ export XSECURELOCK_BLANK_DPMS_STATE=off
 export XSECURELOCK_FONT="Hack:style=Regular"
 export XSECURELOCK_AUTHPROTO=authproto_htpasswd
 export XSECURELOCK_PASSWORD_PROMPT=disco
-while read line; do
-	export "$line"
-done <<< $(bash -c 'env' 2> /dev/null)
-
-if [ -x ~/.shell/path.${SHELL##*/} ]; then
-	export "PATH=$(~/.shell/path.${SHELL##*/})"
-fi
 
 dbus-update-activation-environment --all --systemd
 #xset +dpms
 #xset s blank
-for service in "${services[@]}"; do
-	systemctl --user restart "${service}@${DISPLAY}"
+for service in $services; do
+	systemctl --user restart "$service@$DISPLAY"
 done
-systemctl --user --quiet is-enabled deadd-notification-center.service \
-	&& systemctl --user restart deadd
+systemctl --user --quiet is-enabled deadd-notification-center.service &&
+	systemctl  --user restart deadd

@@ -1,18 +1,9 @@
 #!/bin/zsh
-
-autoload -Uz zcompare
-local target dir file
-for target in ${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} ${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} $fpath[@]/^*.zwc;do
-	if [[ -f $target ]] && [[ -w $target:P:h ]];then
-		zcompare "$target" -Rz
-	elif [[ -d $target ]] && [[ -w $target ]];then
-		for dir in "$target" "$target"/**/*(/);do
-			for file in "$dir"/^*(.(zwc|md|adoc|png|gif)|(LICENSE|CHANGELOG))(^/);do
-				zcompare "$file" -R
-			done
-		done
+[[ ! -f "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck" ]] && touch "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck"
+(
+	if ! zsystem flock -t 0 -f fd "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck" 2>/dev/null;then
+		echo "zrecompile running..."
+		exit 1
 	fi
-done
-for target in $HOME/.cache/zsh/compdump ~/.cache/zsh/compcache/^*.zwc;do
-	zcompare "$target" -M
-done
+	exit 0
+) && ${ZDOTDIR:-$HOME/.zsh}/zrecompile $fpath $zsh_loaded_plugin_paths &!

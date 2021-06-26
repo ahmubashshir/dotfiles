@@ -1,4 +1,0 @@
-~/.local/share/go/bin|prepend
-~/bin|prepend
-~/.local/bin|prepend
-/usr/lib/surfraw|append

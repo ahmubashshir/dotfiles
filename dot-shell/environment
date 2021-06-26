@@ -1,81 +1,19 @@
 #!/bin/sh
-if [ -z "$HOME" ]; then
-	export HOME=~
-fi
-if [ -z "$XDG_CONFIG_HOME" ]; then
-	export XDG_CONFIG_HOME="$HOME/.config"
-fi
-if [ -z "$XDG_DATA_HOME" ]; then
-	export XDG_DATA_HOME="$HOME/.local/share"
-fi
-
-export LESS='-FgiJRMSx4$z-4$~ --mouse'
-export ENABLE_VKBASALT=1
-export mesa_glthread=true
-export WINEDEBUG=-all
-export WINEESYNC=1
-export WINEFSYNC=1
-export LNDIR="/mnt/Books/Light Novels"
-export TERMINAL="xfce4-terminal"
-export GOPATH="$XDG_DATA_HOME/go"
-export MANGOHUD=1
-export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
-export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
-export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
-export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
-export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
-export RELAY_KEY=d41e30b2-ac1d-4a89-90ca-97e0be4ed4a2
-export DRIVE_API_KEY=AIzaSyD-EYQIKP9lkr38gMRrZTrISjNVV5Nf8JQ
-export TESSERACT_API_KEY=5a64d478-9c89-43d8-88e3-c65de9999580
-export GPGID=56DB0538F60D951C
-export QT_QPA_PLATFORMTHEME=qt5ct
-export QT_SCALE_FACTOR=1
-export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
-export EDITOR=nano
-if [ -z "$WINEARCH" ]; then
-	export WINEARCH=win64
-fi
-if [ -d /mnt/Games/wine ]; then
-	export WINEPREFIX=/mnt/Games/wine
-fi
-if [ -n "${ZSH_VERSION:-}" ]; then
-	export VIRTUAL_ENV_DISABLE_PROMPT=1
-fi
-[[ -x /usr/bin/dircolors ]] &&
-	export LS_COLORS=$({
-		[[ -r ~/.shell/dircolors ]] && dircolors -b ~/.shell/dircolors || dircolors -b
-	}                                                              | sed -nE "s@.*='(.*)';@\1@p")
-export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
-export RELAY_SECRET=IX7xntnRW3CC
-export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-#export PROXY=socks4://37.57.3.244:1080
-export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
-# less
-if [[ -x /usr/bin/lesspipe.sh && -x /usr/bin/source-highlight ]]; then
-	LESSOPEN='|file=%s; /usr/bin/source-highlight -q --infer-lang -f esc --style-file=esc.style -i "$file" 2>/dev/null | /usr/bin/ifne -n /usr/bin/lesspipe.sh "$file" '
-fi
-#colors
-if tty -s; then
-	if
-		tput setaf 0 2>&1 > /dev/null
-	then
-		ALL_OFF="$(tput sgr0)"
-		BOLD="$(tput bold)"
-		BLUE="${BOLD}$(tput setaf 4)"
-		GREEN="${BOLD}$(tput setaf 2)"
-		RED="${BOLD}$(tput setaf 1)"
-		YELLOW="${BOLD}$(tput setaf 3)"
-	else
-		ALL_OFF="\e[0m"
-		BOLD="\e[1m"
-		BLUE="${BOLD}\e[34m"
-		GREEN="${BOLD}\e[32m"
-		RED="${BOLD}\e[31m"
-		YELLOW="${BOLD}\e[33m"
-	fi
-fi
-if [ -n "$DISPLAY" ]; then
-	export BROWSER=firefox
+if [ -x /bin/zsh ]; then
+	eval "$(
+		zsh -c 'env' |
+			grep -Ev '^(WINDOWID|_|SHLVL|OLDPWD)=' |
+			awk '{printf "%s\0", $0}' |
+			xargs -0 printf 'export %q\n'
+	)"
 else
+	eval "$(grep ^ZDOTDIR ~/.zshenv)"
+	for each in api-keys common; do
+		source "$ZDOTDIR/env.d/$each"
+	done
+	eval "$(dircolors -b ~/.shell/dircolors 2> /dev/null || dircolors -b 2> /dev/null)"
 	export BROWSER=links
+	if [ -n "$DISPLAY" ]; then
+		source "$ZDOTDIR/env.d/gui"
+	fi
 fi
