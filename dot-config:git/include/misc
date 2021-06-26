@@ -1,5 +1,5 @@
 [credential]
-	helper = /usr/lib/git-core/git-credential-libsecret
+	helper = netrc
 [instaweb]
 	browser = chromium-browser
 [web]
