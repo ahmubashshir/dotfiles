@@ -4,6 +4,7 @@ path=(
 	~/bin
 	~/.local/share/go/bin
 	$path
+	~/bin/**(/)
 	/usr/lib/surfraw
 )
 for n in $(echo $PATH|tr ':' '\n');do
