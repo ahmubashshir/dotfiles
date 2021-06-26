@@ -198,7 +198,3 @@ geticon()
 		rm $tmp
 	fi
 }
-dd()
-{
-	/bin/dd status=progress "$@"
-}
