@@ -8,7 +8,7 @@ if [ -x /bin/zsh ]; then
 	)"
 else
 	eval "$(grep ^ZDOTDIR ~/.zshenv)"
-	for each in api-keys common; do
+	for each in api-keys common cli; do
 		source "$ZDOTDIR/env.d/$each"
 	done
 	eval "$(dircolors -b ~/.shell/dircolors 2> /dev/null || dircolors -b 2> /dev/null)"
