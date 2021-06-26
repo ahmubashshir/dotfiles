@@ -2,9 +2,9 @@
 function fork_setup
 {
 	default=$(
-		git remote show upstream 2>&3 |
-			grep "HEAD branch" |
-			awk '{print	$3}'
+		git remote show upstream 2>&3 \
+			| grep "HEAD branch" \
+			| awk '{print	$3}'
 	)
 
 	git config branch.$default.remote upstream
@@ -15,8 +15,8 @@ function fork_setup
 
 if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
-	if git config remote.upstream.url |
-		grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
+	if git config remote.upstream.url \
+		| grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
 		gh repo fork --remote --remote-name origin
 	fi
 	if ! git remote | grep -xqw origin; then
