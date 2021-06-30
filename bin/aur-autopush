@@ -61,7 +61,26 @@ function use_vpn
 	done
 	echo "vpn: ${task}connected   "
 }
-
+trap 'exit' INT
+function lock
+{
+	local FD LOCKFILE
+	trap no_more_locking EXIT TERM
+	FD=$(shuf -i 1-1000 -n 1)
+	LOCKFILE="${1:-$PWD}/lock.lck"
+	eval "exec $FD>$LOCKFILE"
+	eval "_lock()             { flock -\$1 $FD; }"
+	no_more_locking()
+	{
+		_lock u
+		_lock xn && rm -f "$LOCKFILE"
+		unset _lock
+	}
+	_lock xn || {
+		echo "Failed to lock ${1:-$PWD}"
+		return 1
+	}
+}
 #if ! netcat -zw3 aur.archlinux.org ssh && test -n "$(which --skip-functions --skip-alias windscribe)";then
 #	USE_VPN=true
 #fi
@@ -73,31 +92,49 @@ elif [[ $1 == --stdin ]]; then
 		set -- "$@" "$line"
 	done
 fi
+locked=''
 for pkgpath in "$@"; do
 	repo="$(git -C "$pkgpath" rev-parse --show-toplevel 2> /dev/null)"
 	if readlink "$repo/.git/hooks/prepare-commit-msg" 2> /dev/null \
 		| grep -q '/aurpublish/' \
 		|| test -f "$repo/.aurpublish"; then
-		aurpublish=true
-	else
-		aurpublish=false
+		aurpublish=1
+		if [ "$locked" != "$repo" ]; then
+			if [ -f "$locked/lock.lck" ]; then
+				rm -f "$locked/lock.lck"
+			fi
+			lock "$repo" || continue
+			locked="$repo"
+		fi
 	fi
-	unset repo
 	if [ -f "$pkgpath/PKGBUILD" ] && [ ! -e "$pkgpath/WIP" ]; then
+		if ((aurpublish)); then
+			cd "$repo"
+			find \
+				-mindepth 1 -maxdepth 1 \
+				-type d -not -name '.git' \
+				-not -name "$(basename "$pkgpath")" -print0 \
+				| git stash push --pathspec-from-file=- --pathspec-file-nul > /dev/null 2>&1
+			cd "$OLDPWD"
+		fi
 		(
+			lock "$pkgpath" || exit
 			typeset -a exclude source
 			pkgver=0
 			pkgrel=0
 			cd "$pkgpath" > /dev/null 2>&1 || exit
-			git stash -- . > /dev/null 2>&1
+			if git stash push -- . 2> /dev/null | grep -q '^Saved'; then
+				stashed=1
+			fi
 			use_vpn c
 			git pull
-			if $aurpublish; then
+			if ((aurpublish)); then
 				aurpublish -p "$PWD"
 			fi
 			use_vpn d
-			git stash apply > /dev/null 2>&1
-			git stash drop > /dev/null 2>&1
+			if ((stashed)); then
+				git stash pop > /dev/null 2>&1
+			fi
 			source ./PKGBUILD
 			srcdir=src
 			if grep -m 1 -q '^# pkg:' PKGBUILD; then
@@ -150,24 +187,28 @@ for pkgpath in "$@"; do
 			fi
 			echo updating checksums
 			updpkgsums -m
-			if [ -n "$(git status --porcelain)" ] || [ "${FORCE_REL_BUMP+defined}" ] && [ "$FORCE_REL_BUMP" != "false" ]; then
+			if [ -n "$(git status --porcelain .)" ] || [ "${FORCE_REL_BUMP+defined}" ] && [ "$FORCE_REL_BUMP" != "false" ]; then
 				if [ -z "$PKGVER" ] || [ "$(vercmp $PKGVER $pkgver)" = "0" ]; then
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
 					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] pkgrel bump."
 				fi
 				[ -f ../.nopush ] && msg='[nopush] '"${msg:-automatic commmit.}"
-				if [ "$aurpublish" = "false" ]; then
+				if ((aurpublish)); then
 					makepkg --printsrcinfo > .SRCINFO
 				fi
 				git add .
-				git commit -m "${msg:-automatic push.}"
+				if ((aurpublish)); then
+					git commit --no-edit
+				else
+					git commit -m "${msg:-automatic push.}"
+				fi
 			fi
 			if git status --porcelain --branch | grep -q ahead && {
 				[ ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
 			}; then
 				use_vpn c
 				git push
-				if $aurpublish; then
+				if ((aurpublish)); then
 					aurpublish "$PWD"
 				fi
 				use_vpn d
@@ -180,6 +221,7 @@ for pkgpath in "$@"; do
 			for src in "${source[@]}"; do
 				src=${src%%::*}
 				src=${src##*/}
+				src=${src%.git}
 				if [ -e "$src" ]; then
 					exclude+=('-e' "${src}")
 				fi
@@ -187,5 +229,10 @@ for pkgpath in "$@"; do
 			fakeroot rm -rf src pkg
 			git clean -fxd "${exclude[@]}" .
 		)
+		if ((aurpublish)); then
+			cd "$repo"
+			git stash pop > /dev/null 2>&1
+			cd "$OLDPWD"
+		fi
 	fi
 done
