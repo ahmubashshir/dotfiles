@@ -9,9 +9,9 @@
 
 #########################
 try:
-    from private import TwitterAccess
-    ACCESS_KEY = TwitterAccess.KEY
-    ACCESS_SECRET = TwitterAccess.SECRET
+    from private.twitter import TwitterCreds
+    ACCESS_KEY = TwitterCreds.KEY
+    ACCESS_SECRET = TwitterCreds.SECRET
 except ImportError:
     ACCESS_KEY = ""
     ACCESS_SECRET = ""
@@ -25,14 +25,12 @@ CONSUMER_SECRET = "ebjXyymbuLtjDvoxle9Ldj8YYIMoleORapIOoqBrjRw"
 
 try:
     import twitter
-    from twitter.error import TwitterError, TwitterHTTPError
-except NameError:
+except NameError as e:
     print("tweet-hook: python3-twitter is not installed.")
-except ModuleNotFoundError:
-    from twitter import TwitterError, TwitterHTTPError
-    USE_OAUTH = True
+    raise e
 
-if USE_OAUTH:
+if hasattr(twitter, 'Twitter'):
+    from twitter import TwitterError, TwitterHTTPError
     api = twitter.Twitter(
         auth=twitter.OAuth(
             ACCESS_KEY,
@@ -42,6 +40,7 @@ if USE_OAUTH:
         )
     )
 else:
+    from twitter.error import TwitterError, TwitterHTTPError
     api = twitter.Api(consumer_key=CONSUMER_KEY,
                       consumer_secret=CONSUMER_SECRET,
                       access_token_key=ACCESS_KEY,
@@ -62,8 +61,10 @@ def status_changed(engine, show, old_status):
         if len(msg) <= 280:
             engine.msg.info('Twitter', "Tweeting: %s (%d)" % (msg, len(msg)))
             try:
-                api.PostUpdate(
-                    msg) if not USE_OAUTH else api.statuses.update(status=msg)
+                if hasattr(twitter, 'Twitter'):
+                    api.statuses.update(status=msg)
+                else:
+                    api.PostUpdate(msg)
             except TwitterError as e:
                 engine.msg.warn(
                     'Twitter', "Error Code: %d, Reason: %s" % (e.e.code, e.e.reason))
