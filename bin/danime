@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r198.4b80063-30
+# VERSION r200.499c96f-30
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1740,7 +1740,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	fi
 	[[ -n $FORCE ]] && echo "${FORCE} enforced."
 	if [[ $SEARCHSTR != '' ]] || [[ -n $DO_ALT ]]; then
-		if [ -n "$NC" ] || check_up_server dubbedanime.net "${RSOLV:-1}"; then
+		if [ -n "$NC" ] || check_up_server "${PUPPETEER_PROXY}https://ww5.dubbedanime.net" "${RSOLV:-1}"; then
 			case $DO_ALT in
 				update)
 					da_update
