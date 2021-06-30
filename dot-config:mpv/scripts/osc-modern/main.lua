@@ -1,6 +1,8 @@
--- by maoiscat
+-- mpv-osc-morden by maoiscat
 -- email:valarmor@163.com
 -- https://github.com/maoiscat/mpv-osc-morden
+-- fork by cyl0
+-- https://github.com/cyl0/mpv-osc-morden
 local assdraw = require 'mp.assdraw'
 local msg = require 'mp.msg'
 local opt = require 'mp.options'
@@ -19,12 +21,12 @@ local user_opts = {
     scalewindowed = 1, -- scaling of the controller when windowed
     scalefullscreen = 1, -- scaling of the controller when fullscreen
     scaleforcedwindow = 2, -- scaling when rendered on a forced window
-    vidscale = false, -- scale the controller with the video?
+    vidscale = true, -- scale the controller with the video?
     hidetimeout = 1000, -- duration in ms until the OSC hides if no
     -- mouse movement. enforced non-negative for the
     -- user, but internally negative is 'always-on'.
-    fadeduration = 500, -- duration of fade out in ms, 0 = no fade
-    minmousemove = 3, -- minimum amount of pixels the mouse has to
+    fadeduration = 250, -- duration of fade out in ms, 0 = no fade
+    minmousemove = 2, -- minimum amount of pixels the mouse has to
     -- move between ticks to make the OSC show up
     iamaprogrammer = false, -- use native mpv values and disable OSC
     -- internal track list management (and some
@@ -32,7 +34,7 @@ local user_opts = {
     font = 'mpv-osd-symbols', -- default osc font
     seekbarhandlesize = 1.0, -- size ratio of the slider handle, range 0 ~ 1
     seekrange = true, -- show seekrange overlay
-    seekrangealpha = 128, -- transparency of seekranges
+    seekrangealpha = 64, -- transparency of seekranges
     seekbarkeyframes = true, -- use keyframes when dragging the seekbar
     title = '${media-title}', -- string compatible with property-expansion
     -- to be shown as OSC title
@@ -109,6 +111,8 @@ local state = {
 local window_control_box_width = 138
 local tick_delay = 0.03
 
+--- Automatically disable OSC
+if builtin_osc_enabled then mp.set_property_native('osc', false) end
 --
 -- Helperfunctions
 --
@@ -1084,6 +1088,11 @@ function update_options(list)
     request_init()
 end
 
+function multi_handler(case, func, default)
+    if case then return func end
+    return default
+end
+
 -- OSC INIT
 function osc_init()
     msg.debug('osc_init')
@@ -1171,26 +1180,33 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\xA0'
-    ne.eventresponder['mbtn_left_down'] = -- function () mp.command('seek -5') end
-    function() mp.commandv('seek', -5, 'relative', 'keyframes') end
-    ne.eventresponder['shift+mbtn_left_down'] = function()
-        mp.commandv('frame-back-step')
-    end
-    ne.eventresponder['mbtn_right_down'] = -- function () mp.command('seek -60') end
-    function() mp.commandv('seek', -60, 'relative', 'keyframes') end
+    ne.eventresponder['mbtn_left_down'] =
+        multi_handler(have_ch, function()
+            mp.commandv("add", "chapter", -1)
+        end, function() mp.commandv('seek', -10, 'relative', 'keyframes') end)
+    -- ne.eventresponder['shift+mbtn_left_down'] =
+    -- function () mp.commandv('frame-back-step') end
+    ne.eventresponder['mbtn_right_down'] =
+        multi_handler(have_ch, function() show_message(get_chapterlist()) end)
+
+    -- function () mp.command('seek -60') end
+    -- function () mp.commandv('seek', -60, 'relative', 'keyframes') end
 
     -- skipfrwd
     ne = new_element('skipfrwd', 'button')
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\x9F'
-    ne.eventresponder['mbtn_left_down'] = -- function () mp.command('seek +5') end
-    function() mp.commandv('seek', 5, 'relative', 'keyframes') end
-    ne.eventresponder['shift+mbtn_left_down'] = function()
-        mp.commandv('frame-step')
-    end
-    ne.eventresponder['mbtn_right_down'] = -- function () mp.command('seek +60') end
-    function() mp.commandv('seek', 60, 'relative', 'keyframes') end
+    ne.eventresponder['mbtn_left_down'] =
+        multi_handler(have_ch, function()
+            mp.commandv("add", "chapter", 1)
+        end, function() mp.commandv('seek', 10, 'relative', 'keyframes') end)
+    -- ne.eventresponder['shift+mbtn_left_down'] =
+    -- function () mp.commandv('frame-step') end
+    ne.eventresponder['mbtn_right_down'] =
+        multi_handler(have_ch, function() show_message(get_chapterlist()) end)
+    -- function () mp.command('seek +60') end
+    -- function () mp.commandv('seek', 60, 'relative', 'keyframes') end
 
     -- unskip op/ed
     ne = new_element('unskipoped', 'button')
@@ -1224,10 +1240,10 @@ function osc_init()
         if not (get_track('audio') == 0) then
             msg = (texts.audio .. ' [' .. get_track('audio') .. ' ∕ ' ..
                       #tracks_osc.audio .. '] ')
-            local prop = mp.get_property('current-tracks/audio/lang')
+            local prop = mp.get_property('current-tracks/audio/title') -- ('current-tracks/audio/lang')
             if not prop then prop = texts.na end
             msg = msg .. '[' .. prop .. ']'
-            prop = mp.get_property('current-tracks/audio/title')
+            prop = mp.get_property('current-tracks/audio/lang') -- ('current-tracks/audio/title')
             if prop then msg = msg .. ' ' .. prop end
             return msg
         end
@@ -1294,7 +1310,7 @@ function osc_init()
         if state.paused then
             title = title:gsub('\\n', ' '):gsub('\\$', ''):gsub('{', '\\{')
         else
-            title = ' '
+            title = title:gsub('\\n', ' '):gsub('\\$', ''):gsub('{', '\\{') -- title = ' '
         end
         return not (title == '') and title or ' '
     end
