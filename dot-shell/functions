@@ -125,14 +125,23 @@ ls_drive()
 get_drive()
 {
 	# "https://www.googleapis.com/drive/v3/files/$2?alt=media&key=$DRIVE_API_KEY&fields=md5Checksum,id,mimeType,size"
-	local size JSON md5sums try
+	local size JSON md5sums try DIR
 	echo -e " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$2")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ]; do
-		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$1?key=$DRIVE_API_KEY&fields=md5Checksum,size")
+		JSON=$(curl -sL "https://www.googleapis.com/drive/v3/files/$1?key=$DRIVE_API_KEY&fields=md5Checksum,size,name,mimeType")
 		echo $JSON | python -mjson.tool - 2>&1 > /dev/null || continue
 		size="$(echo "$JSON" | jq -r .size)"
 	done
+	if [ "$(echo "$JSON" | jq -r .mimeType)" = "application/vnd.google-apps.folder" ];then
+		mkdir -p "${2:-$(echo "$JSON"|jq -r .name)}" || return
+		(
+			echo "Downloading \"${2:-$(echo "$JSON"|jq -r .name)}\""
+			cd "${2:-$(echo "$JSON"|jq -r .name)}"
+			rdl_drive "$1"
+		) || return
+		return 0
+	fi
 	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $2"
 	if echo "$md5sums" | env md5sum -c --quiet > /dev/null 2>&1 ; then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$2") [$(byte_hr $size)].$ALL_OFF"
@@ -143,7 +152,7 @@ get_drive()
 		try=0
 		until echo "$md5sums" | env md5sum -c --quiet > /dev/null 2>&1 || ((try == 5)); do
 			tput cuu1
-			curl -sL "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=$DRIVE_API_KEY" | pv --format "  $(echo -ne "$YELLOW->$GREEN") %b %r %p %e$(echo -ne $ALL_OFF)" -CWi0.001 -s $size > "$2"
+			curl -sL "https://www.googleapis.com/drive/v3/files/$1?alt=media&key=$DRIVE_API_KEY" | pv --format "  $(echo -ne "$YELLOW->$GREEN") %b %r %p %e$(echo -ne $ALL_OFF)" -CWi0.001 -s $size > "${2:-$(echo "$JSON"|jq -r .name)}"
 			((try += 1))
 			sleep 5
 		done
@@ -151,10 +160,12 @@ get_drive()
 }
 rdl_drive()
 {
+	local n name id mime
+	local -a files
 	files=()
 	false
 	until [ "${PIPESTATUS[0]}" = "0" ]; do
-		for n in $(ls_drive $1); do
+		ls_drive "$1" | while read -r n; do
 			name=$(echo $n | cut -d\| -f1 | cut -d: -f2 | sed 's@+@ @g;s@%@\\x@g' | xargs -0 echo -ne)
 			id=$(echo $n | cut -d\| -f2 | cut -d: -f2)
 			mime=$(echo $n | cut -d\| -f3 | cut -d: -f2)
@@ -163,7 +174,7 @@ rdl_drive()
 				files+=('-not' '-samefile' "$name")
 			else
 				mkdir -p "$name" 2> /dev/null && (
-					cd "$name" && rdl_drive $id && cd ..
+					cd "$name" && rdl_drive $id
 				) || echo "Invalid name \"$name\"" >&2
 			fi
 			echo
