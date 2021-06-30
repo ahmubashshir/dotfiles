@@ -9,6 +9,7 @@ export mesa_glthread=true
 export MANGOHUD=1
 
 export WINEDEBUG=-all
+export DXVK_LOG_LEVEL=error
 export WINEESYNC=1
 export WINEFSYNC=1
 if [ -z "$WINEARCH" ]; then
@@ -17,4 +18,3 @@ fi
 if [ -d /mnt/Games/wine ]; then
 	export WINEPREFIX=/mnt/Games/wine
 fi
-export LGDRY_WINE_PREFIX=/mnt/Games/epic-games-store
