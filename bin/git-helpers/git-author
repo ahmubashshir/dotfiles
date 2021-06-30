@@ -1,0 +1,70 @@
+#!/bin/sh
+WORKDIR=$(git rev-parse --show-toplevel 2> /dev/null)
+if [ -f "$HOME/.git-authors" ]; then
+	authors="$HOME/.git-authors"
+elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/git/authors" ]; then
+	authors="${XDG_CONFIG_HOME:-$HOME/.config}/git/authors"
+fi
+
+_help()
+{
+	printf 'git-author:\n'
+	printf '  git author get @<author>\t\t\tExpand author for use in trailers.\n'
+	printf '  git author set <author> <name> <email>\tCreate author for use in trailers.\n'
+	exit
+}
+if test "$#" -lt 2; then
+	_help
+fi
+
+task="$1"
+shift
+case "$task" in
+	get)
+		if echo "$1" | cut -c1 | grep -q '@'; then
+			set -- "$(echo "$1" | cut -c2-)"
+			if [ -n "$WORKDIR" ] && [ -f "$WORKDIR/.gitauthors" ]; then
+				name=$(
+					git config --file="$WORKDIR/.gitauthors" --get "author.$1.name"
+				)
+				email=$(
+					git config --file="$WORKDIR/.gitauthors" --get "author.$1.email"
+				)
+			fi
+			if [ -z "$name" ]; then
+				name=$(
+					git config --file="$authors" --get "author.$1.name"
+				)
+			fi
+			if [ -z "$email" ]; then
+				email=$(
+					git config --file="$authors" --get "author.$1.email"
+				)
+			fi
+			printf '%s <%s>' "$name" "$email"
+		else
+			printf '%s' "$*"
+		fi
+		exit
+		;;
+	set)
+		cfg="$authors"
+		if [ "$1" = "--local" ] || [ "$1" = "-l" ]; then
+			if [ -z "$WORKDIR" ]; then
+				cat > /dev/stderr << EOF
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+EOF
+				exit 1
+			fi
+			cfg="$WORKDIR/.gitauthors"
+			shift
+		fi
+		[ -z "$1" ] && printf "fatal: empty author" >&2 && exit 2
+		[ -z "$2" ] && printf "fatal: empty author name" >&2 && exit 3
+		[ -z "$3" ] && printf "fatal: empty author email" >&2 && exit 4
+		git config --file="$cfg" "author.$1.name" "$2"
+		git config --file="$cfg" "author.$1.email" "$3"
+		;;
+	*) _help ;;
+esac

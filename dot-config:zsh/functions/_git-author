@@ -1,0 +1,27 @@
+#compdef git-author
+#description get and manage author mapping
+
+function __author_list_commands {
+	local -a commands
+	commands=(
+		'get:get @author contact'
+		'set:update/create author map'
+	)
+	_describe 'command' commands
+}
+
+function __author_command_args {
+	case $line[1] in
+		get) _arguments '2:@author:' ;;
+		set) _arguments "2:author:" "3:name:" "4:email:";;
+	esac
+}
+
+local args state
+args=(
+	"1:command:__author_list_commands"
+	"*:args:__author_command_args"
+)
+
+_arguments -s "${args[@]}"
+
