@@ -1,18 +1,18 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-get_games_list() {
+get_games_list()
+{
 	alert "Downloading games list..." &
 	[ -f all_games_data ] || touch all_games_data
-	if [ "$(expr $(date +%s) - $(stat -c%Y all_games_data) )" -ge 86400 ] || (($(wc -l all_games_data|cut -d\  -f1)==0));then
-		legendary list-games | grep -E '^[[:blank:]]+[*+]' 1>all_games_data || {
+	if [ "$(expr $(date +%s) - $(stat -c%Y all_games_data))" -ge 86400 ] || [ $(wc -l all_games_data | cut -d\  -f1) -eq 0 ]; then
+		legendary list-games | grep -E '^[[:blank:]]+[*+]' 1> all_games_data || {
 			exit 2 && alert "E1: Failed to download games list."
 		}
 	fi
 
-	legendary list-installed | grep -E '^[[:blank:]]+[*+]' 1>downloaded_games_data || {
+	legendary list-installed | grep -E '^[[:blank:]]+[*+]' 1> downloaded_games_data || {
 		exit 2 && alert "E2: Failed to get info about downloaded games."
 	}
-
 
 	# get games official names
 	get_official_names "all_games_data" "$(wc -l < all_games_data)" "games_names"
@@ -23,7 +23,8 @@ get_games_list() {
 	get_store_names "downloaded_games_data" "downloaded_store_names"
 }
 
-clear_cache() {
+clear_cache()
+{
 	return
 	[ "$(pwd)" = "$CACHE" ] && {
 		rm -f all_games_data all_games_data_f
@@ -35,45 +36,54 @@ clear_cache() {
 	}
 }
 
-format_data() {
+format_data()
+{
 	true > "$3"
-	i=1; while [ $i -le "$2" ]
-	do
+	i=1
+	while    [ $i -le "$2" ]; do
 		var=$(sed -n "$i"p "$1" | cut -b 4-)
 		echo "${var%%\,*}" >> "$3"
 
-		i=$((i+1))
+		i=$((i + 1))
 	done
 }
 
-get_official_names() {
-  true > "$3"
-	i=1; while [ $i -le "$2" ]
-  do
-  	sed -nE "$i{s/ [*+] (.*) \(.*/\1/p}" "$1" >> "$3"
-  	i=$((i+1))
-  done
+get_official_names()
+{
+	true > "$3"
+	i=1
+	while    [ $i -le "$2" ]; do
+		sed -nE "$i{s/ [*+] (.*) \(.*/\1/p}" "$1" >> "$3"
+		i=$((i + 1))
+	done
 }
 
-get_store_names() {
+get_store_names()
+{
 	sed -E "s/.*name: (.*) \| V.*/\1/" "$1" > "$2"
 }
 
-show_games() {
+show_games()
+{
 	menu_lines="$(wc -l < "$3")"
 	[ "$menu_lines" -gt 30 ] && menu_lines=30
 	game=$(m -l "$menu_lines" -p "$1" < "$2")
-	[ ! "$game" ] && { clear_cache; exit 1; }
+	[ ! "$game" ] && {
+		clear_cache
+		exit                              1
+	}
 	line_number="$(grep -n "$game$" "$2" | cut -d : -f 1)"
 	game_store_name=$(sed -n "$line_number"p "$3")
 }
 
-run_game() {
+run_game()
+{
 	legendary launch "$1"
 }
-install_game() {
+install_game()
+{
 	echo Installing $1
-	if tty -s;then
+	if tty -s; then
 		legendary install $1
 	else
 		exo-open --launch TerminalEmulator legendary install $1
@@ -85,11 +95,17 @@ trap clear_cache 2
 CACHE="$HOME/.cache/rofi-epiclauncher"
 mkdir -p "$CACHE"
 cd "$CACHE" || {
-	exit 2 && echo "E3: Failed to change directory.";
+	exit 2 && echo "E3: Failed to change directory."
 }
 
-m() { rofi -dmenu -i "$@"; }
-alert() { rofi -e "$@"; }
+m()
+{
+	rofi    -dmenu -i "$@"
+}
+alert()
+{
+	rofi        -e "$@"
+}
 
 get_games_list && pkill rofi
 
@@ -98,14 +114,18 @@ mode="$(
 )"
 
 if [ "$mode" = "Downloaded games" ]; then
-	show_games "Downloaded games"	"downloaded_games_names" "downloaded_store_names"
+	show_games "Downloaded games" "downloaded_games_names" "downloaded_store_names"
 elif [ "$mode" = "All games" ]; then
 	show_games "All games on account" "games_names" "store_names"
-else clear_cache; exit 1; fi
-if grep -wq "$game_store_name" downloaded_store_names;then
+else
+	clear_cache
+	exit                1
+fi
+if grep -wq "$game_store_name" downloaded_store_names; then
 	run_game "$game_store_name"
 else
 	install_game "$game_store_name"
 fi
 
-clear_cache; exit 0
+clear_cache
+exit              0
