@@ -1,0 +1,4 @@
+#!/bin/bash -e
+if [ -f "$1" ]; then
+	git interpret-trailers --in-place --trim-empty "$1"
+fi

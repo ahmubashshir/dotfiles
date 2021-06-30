@@ -10,4 +10,37 @@
 	program = gpg2
 [tag]
 	forceSignAnnotated = true
-
+[trailer]
+	separators = ":; "
+	ifExists = replace
+	ifMissing = doNothing
+[trailer "sign"]
+	key = Signed-off-by
+	command = git author get \"$ARG\"
+[trailer "help"]
+	key = Helped-by
+	command = git author get \"$ARG\"
+[trailer "ack"]
+	key = Acked-by
+	command = git author get \"$ARG\"
+[trailer "review"]
+	key = Reviewed-by
+	command = git author get \"$ARG\"
+[trailer "report"]
+	key = Reported-by
+	command = git author get \"$ARG\"
+[trailer "ref"]
+	key = Reference-to
+	command = git log --grep \"$ARG\" --pretty=reference -1 || true
+[trailer "see"]
+	key = See-also
+	command = git log -1 --oneline --format=\"%h (%s)\" --abbrev-commit --abbrev=14 \"$ARG\"
+[trailer "author"]
+	key = Co-Authored-By
+	command = git author get \"$ARG\"
+[trailer "suggest"]
+	key = Suggested-by
+	command = git author get \"$ARG\"
+[trailer "test"]
+	key = Tested-by
+	command = git author get \"$ARG\"
