@@ -41,9 +41,9 @@ case "$task" in
 					git config --file="$authors" --get "author.$1.email"
 				)
 			fi
-			printf '%s <%s>' "$name" "$email"
+			printf '%s <%s>\n' "$name" "$email"
 		else
-			printf '%s' "$*"
+			printf '%s\n' "$*"
 		fi
 		exit
 		;;
