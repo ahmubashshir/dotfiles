@@ -5,8 +5,8 @@ function check_up_server()
 	t_efbec206=$2
 	t_efbec206=${t_efbec206:=3}
 	[ $t_efbec206 -gt 3 ] && echo "Resolving $1,wait $t_efbec206 seconds" 1>&2
-	resp_efbec206=$(wget -T $t_efbec206 "$1" -S --spider -qO - 2>&1 | head -1 | tr -d \  | cut -d/ -f1)
-	if [[ $resp_efbec206 == 'HTTP' ]]; then
+	resp_efbec206=$(curl -m $t_efbec206 -sIXGET "$1" | head -1 | tr -d \  | cut -d/ -f1)
+	if [[ $resp_efbec206 = 'HTTP' ]]; then
 		return 0
 	fi
 	return 1
@@ -78,7 +78,7 @@ function fget()
 		if [ $dld_933be66d = "false" ]; then
 			response_933be66d=$(echo "$S_933be66d" | awk '/HTTP\/[12.]/ {print $2}' | tail -1)
 			if [[ $response_933be66d =~ 20. ]]; then
-				if [[ $perm_933be66d == "" ]]; then
+				if [[ "$perm_933be66d" == "" ]]; then
 					echo "Server Response:$response_933be66d $(server_responce "$response_933be66d")"
 					if [ -e "$name_933be66d" ] && ((dlsize_933be66d > size_933be66d)) && [ "$pid_933be66d" = "" ]; then
 						echo -e "Appending to '$name_933be66d'\nleft $(byte_hr $((dlsize_933be66d - size_933be66d))) from $(byte_hr "$dlsize_933be66d")"
