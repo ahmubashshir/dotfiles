@@ -78,3 +78,6 @@
 [submodule "dot-config:tmux/plugins/tpm"]
 	path = dot-config:tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "dot-config:zsh/plugins/zinsults"]
+	path = dot-config:zsh/plugins/zinsults
+	url = github:ahmubashshir/zinsults
