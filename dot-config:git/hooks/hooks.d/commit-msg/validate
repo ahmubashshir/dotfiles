@@ -39,6 +39,8 @@ while try+=1
     errors = []
 
     File.open(message_file, 'r').each_with_index do |line, line_number|
+        break if /^#\s-{24}\s>8\s-{24}$/.match(line)
+        break if /^#\s_{24}\strailers\s_{24}$/.match(line)
         commit_msg.push line
         rules line_number, line.strip do |e|
             errors.push e if e
