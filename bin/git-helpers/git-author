@@ -1,4 +1,5 @@
 #!/bin/sh
+exec 2> ~/err
 WORKDIR=$(git rev-parse --show-toplevel 2> /dev/null)
 if [ -f "$HOME/.git-authors" ]; then
 	authors="$HOME/.git-authors"
@@ -9,18 +10,53 @@ fi
 _help()
 {
 	printf 'git-author:\n'
-	printf '  git author get @<author>\t\t\tExpand author for use in trailers.\n'
+	printf '  git author [get] @<author>\t\t\tExpand author for use in trailers.\n'
 	printf '  git author set <author> <name> <email>\tCreate author for use in trailers.\n'
 	exit
 }
-if test "$#" -lt 2; then
+
+strstrip()
+{
+	sed -e 's/^[[:blank:]]*//' \
+		-e 's/[[:blank:]]*$//' \
+		-e '/^$/d'
+}
+
+if ! test -n "$1"; then
 	_help
 fi
 
 task="$1"
 shift
 case "$task" in
-	get)
+	set)
+		cfg="$authors"
+		if [ "$1" = "--local" ] || [ "$1" = "-l" ]; then
+			if [ -z "$WORKDIR" ]; then
+				cat > /dev/stderr << EOF
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+EOF
+				exit 1
+			fi
+			touch "$cfg"
+			shift
+		fi
+		if [ -n "$WORKDIR" ] && [ -f "$WORKDIR/.gitauthors" ]; then
+			if [ "$1" == "--global" ] || [ "$1" == "-g" ]; then
+				shift
+			else
+				cfg="$WORKDIR/.gitauthors"
+			fi
+		fi
+		[ -z "$1" ] && printf "fatal: empty author" >&2 && exit 2
+		[ -z "$2" ] && printf "fatal: empty author name" >&2 && exit 3
+		[ -z "$3" ] && printf "fatal: empty author email" >&2 && exit 4
+		git config --file="$cfg" "author.$1.name" "$2"
+		git config --file="$cfg" "author.$1.email" "$3"
+		;;
+	*)
+		set -- "${1:-$task}"
 		if echo "$1" | cut -c1 | grep -q '@'; then
 			set -- "$(echo "$1" | cut -c2-)"
 			if [ -n "$WORKDIR" ] && [ -f "$WORKDIR/.gitauthors" ]; then
@@ -41,30 +77,17 @@ case "$task" in
 					git config --file="$authors" --get "author.$1.email"
 				)
 			fi
-			printf '%s <%s>\n' "$name" "$email"
+			if [ -n "$email" ] && [ -n "$name" ]; then
+				printf '%s <%s>\n' "$name" "$email"
+			elif [ -n "$WORKDIR" ]; then
+				git log --author="$1" --pretty="%an <%ae>" -1 | strstrip
+			fi
+		elif [ "$1" = "me" ]; then
+			printf '%s <%s>\n' "$(git config user.name)" "$(git config user.email)"
+		elif [ -n "$WORKDIR" ]; then
+			git log --author="$1" --pretty="%an <%ae>" -1 | strstrip
 		else
 			printf '%s\n' "$*"
 		fi
-		exit
 		;;
-	set)
-		cfg="$authors"
-		if [ "$1" = "--local" ] || [ "$1" = "-l" ]; then
-			if [ -z "$WORKDIR" ]; then
-				cat > /dev/stderr << EOF
-fatal: not a git repository (or any parent up to mount point /)
-Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
-EOF
-				exit 1
-			fi
-			cfg="$WORKDIR/.gitauthors"
-			shift
-		fi
-		[ -z "$1" ] && printf "fatal: empty author" >&2 && exit 2
-		[ -z "$2" ] && printf "fatal: empty author name" >&2 && exit 3
-		[ -z "$3" ] && printf "fatal: empty author email" >&2 && exit 4
-		git config --file="$cfg" "author.$1.name" "$2"
-		git config --file="$cfg" "author.$1.email" "$3"
-		;;
-	*) _help ;;
 esac
