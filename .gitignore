@@ -1,3 +1,4 @@
+!bin/
 *.zwc
 *.swp
 bin/youtube-dl
