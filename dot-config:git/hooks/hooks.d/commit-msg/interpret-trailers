@@ -14,20 +14,20 @@ if [ -f "$1" ]; then
 			else printf "5";
 			print " "$0
 		}' |
-		sort -rn  | cut -d' ' -f2- | while IFS=$sep read -r trailer arg; do
+		sort -rn | cut -d' ' -f2- | while IFS=$sep read -r trailer arg; do
 		unset token rep generator key
 		token=$(
 			git config --get-regexp 'trailer.*.key' |
-				awk  -F. '$3 ~ /^key '"$trailer"'/{print $2}'
+				awk -F. '$3 ~ /^key '"$trailer"'/{print $2}'
 		)
 		generator=$(git config --get "trailer.$token.generator")
 		key=$(git config --get "trailer.$token.key")
 		if [ -n "$generator" ]; then
 			rep=$(
 				sh -c "$generator"' "$1" 2>/dev/null || echo "$1"' -- "$arg" |
-					sed  -e 's/^[[:blank:]]*//' \
-						-e  's/[[:blank:]]*$//' \
-						-e  '/^$/d'
+					sed -e 's/^[[:blank:]]*//' \
+						-e 's/[[:blank:]]*$//' \
+						-e '/^$/d'
 			)
 		fi
 		if echo "$key" | grep -q "[$sep]$"; then
