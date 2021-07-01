@@ -4,10 +4,10 @@
 	addIgnoredFile = false
 [commit]
 	gpgSign = true
+	template = ~/.config/git/commit-msg
 [color]
 	ui = auto
 [core]
-	askPass = ~/.config/git/askpass
 	hooksPath = ~/.config/git/hooks
 	editor = nano -r 72
 [fetch]
