@@ -4,8 +4,8 @@ path=(
 	~/bin
 	~/.local/share/go/bin
 	$path
-	~/bin/**(/)
 	/usr/lib/surfraw
+	"${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers"
 )
 for n in $(echo $PATH|tr ':' '\n');do
 	case ":$P:" in

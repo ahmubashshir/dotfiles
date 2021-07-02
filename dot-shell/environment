@@ -16,8 +16,8 @@ else
 	if [ -n "$DISPLAY" ]; then
 		source "$ZDOTDIR/env.d/gui"
 	fi
-	PATH="/home/mubashshir/.local/bin:/home/mubashshir/bin:$PATH"
-	PATH="$PATH:/usr/lib/surfraw:/home/mubashshir/bin/git-helpers:/home/mubashshir/bin/lib"
+	PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+	PATH="$PATH:/usr/lib/surfraw:${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers"
 	export PATH
 	for n in $(echo $PATH | tr ':' '\n'); do
 		case ":$P:" in
