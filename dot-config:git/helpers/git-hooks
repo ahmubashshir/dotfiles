@@ -1,0 +1,53 @@
+#!/bin/sh
+if [ -z "$GIT_DIR" ]; then
+	GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+fi
+hooks=$(git config --get core.hooksPath 2> /dev/null | cut -d / -f2-)
+if [ -z "$hooks" ]; then
+	echo No global hooks
+	exit 1
+else
+	case "$1" in
+		enable)
+			shift
+			id="$1"
+			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
+			shift
+			if [ -x "$hook" ]; then
+				git config "$@" --unset "hook.$id"
+			fi
+			;;
+		disable)
+			shift
+			id="$1"
+			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
+			shift
+			if [ -x "$hook" ]; then
+				git config "$@" "hook.$id" false
+			fi
+			;;
+		edit)
+			test "$#" -eq 2 || {
+				echo "Invalid number of args." 1>&2
+				exit 2
+			}
+			mkdir -p "$hooks/hooks.d/${2%%.*}"
+			exec "$EDITOR" "$hooks/hooks.d/${2%%.*}/${2#*.}"
+			;;
+		ls | '')
+			for hookdir in "$hooks/hooks.d"/*; do
+				stage="$(basename "$hookdir")"
+				if [ -d "$hookdir" ]; then
+					for subhook in "$hookdir"/*; do
+						if [ -x "$subhook" ]; then
+							echo "$stage.${subhook##*/}"
+						fi
+					done
+				fi
+			done
+			;;
+		help)
+			echo "git-hooks commands: ls edit enable disable"
+			;;
+	esac
+fi
