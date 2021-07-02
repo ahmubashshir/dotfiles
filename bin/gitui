@@ -1,0 +1,38 @@
+#!/bin/sh
+NAME=gitui
+OWNER=extrawurst
+exec=$(command -pv $NAME 2> /dev/null)
+if [ -z "$exec" ]; then
+	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
+	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
+	ltver=0.0.0
+	rtver=$(
+		curl -s --config /dev/null -IXGET https://github.com/$OWNER/$NAME/releases/latest |
+			sed -nE '/^location:/{s@.*/tag/(|v)(.*)$@\2@p}' |
+			xargs printf '%q' |
+			sed -n 's/.\(.*\).$.*/\1/p'
+	)
+	if [ -n "$rtver" ]; then
+		if [ -x "$exec" ]; then
+			ltver=$("$exec" --version | awk '{print $2}')
+		fi
+		if
+			[ ! -f "$exec" ] ||
+				test  "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
+		then
+			curl -s \
+				-# "https://github.com/$OWNER/$NAME/releases/download/v$rtver/$NAME-linux-musl.tar.gz" |
+				bsdtar -xOf - "./$NAME" > "$exec"
+			chmod +x "$exec"
+		fi
+	else
+		echo "$NAME: can't check for update."
+	fi
+fi
+
+if [ -x "$exec" ]; then
+	exec "$exec" "$@"
+else
+	echo "$NAME: command not found."
+	exit 1
+fi
