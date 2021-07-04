@@ -198,9 +198,9 @@ for pkgpath in "$@"; do
 				fi
 				git add .
 				if ((aurpublish)); then
-					git commit --no-edit
+					git commit --template=/dev/null --no-edit
 				else
-					git commit -m "${msg:-automatic push.}"
+					git commit --template=/dev/null -m "${msg:-automatic push.}"
 				fi
 			fi
 			if git status --porcelain --branch | grep -q ahead && {
