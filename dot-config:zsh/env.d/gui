@@ -1,8 +1,10 @@
 #!/bin/zsh
 export BROWSER=firefox
 export TERMINAL="xfce4-terminal"
-export QT_QPA_PLATFORMTHEME=qt5ct
-export QT_SCALE_FACTOR=1
+if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ];then
+	export QT_QPA_PLATFORMTHEME=qt5ct
+	export QT_SCALE_FACTOR=1
+fi
 
 export ENABLE_VKBASALT=1
 export mesa_glthread=true
