@@ -81,3 +81,6 @@
 [submodule "dot-config:zsh/plugins/zinsults"]
 	path = dot-config:zsh/plugins/zinsults
 	url = github:ahmubashshir/zinsults
+[submodule "dot-config:mpv/shaders/Anime4K"]
+	path = dot-config:mpv/shaders/Anime4K
+	url = https://github.com/bloc97/Anime4K
