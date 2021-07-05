@@ -40,9 +40,9 @@ autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 
 typeset -A ENV
-ENV[prompt_suffix]='┠'
-ENV[prompt_prefix]='┨'
-ENV[prompt_seperator]=''
+ENV[prompt_suffix]='%(?..%F{cyan})┠'
+ENV[prompt_prefix]='%(?..%F{cyan})┨'
+ENV[prompt_seperator]='%(?..%F{cyan})'
 
 ## modules
 zmodload -ab zsh/datetime strftime
@@ -211,9 +211,9 @@ if [[ $ENV[color_prompt] = yes ]];then
 		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 	}
 
-	PROMPT=$'%F{red}╭───${ENV[prompt_prefix]}%F{green} %F{cyan}%B${__GIOVFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}${ENV[prompt_suffix]}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${ENV[prompt_seperator]}${ENV[prompt_prefix]}%Btty:%F{cyan}%y%b%F{red}${ENV[prompt_suffix]}${DATE_TIME_PROMPT}${GIO_VFS_PROMPT}\b┃
-╰─%(?..%F{cyan})>>%F{lightgreen} '
-	RPROMPT='%(?.🙂.%F{red}%?%f😑)'
+	PROMPT=$'%F{red}%(?..%F{cyan})╭─${ENV[prompt_prefix]}%F{green} %F{cyan}%B${__GIOVFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}${ENV[prompt_suffix]}%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${DATE_TIME_PROMPT}${GIO_VFS_PROMPT}\b┃
+╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	RPROMPT='%(?.🙂.😑)'
 else
 	PROMPT='[%m::%n %1~]$ '
 fi
