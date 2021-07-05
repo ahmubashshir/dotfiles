@@ -1,6 +1,3 @@
 #!/bin/zsh
 setopt extended_glob
 emulate sh -c 'source /etc/profile'
-if [ -f $HOME'/.profile' ];then
-	emulate sh -c 'source '$HOME'/.profile'
-fi

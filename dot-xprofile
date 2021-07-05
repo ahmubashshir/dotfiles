@@ -20,8 +20,14 @@ export XSECURELOCK_PASSWORD_PROMPT=disco
 dbus-update-activation-environment --all --systemd
 #xset +dpms
 #xset s blank
-for service in $services; do
-	systemctl --user restart "$service@$DISPLAY"
-done
-systemctl --user --quiet is-enabled deadd-notification-center.service &&
-	systemctl  --user restart deadd
+if [ "$XDG_SESSION_DESKTOP" = "plasma"; then
+	unset QT_AUTO_SCREEN_SCALE_FACTOR QT_SCALE_FACTOR QT_QPA_PLATFORMTHEME
+	systemctl --user --quiet is-enabled deadd-notification-center.service &&
+		systemctl --user stopdeadd
+else
+	for service in $services; do
+		systemctl --user restart "$service@$DISPLAY"
+	done
+	systemctl --user --quiet is-enabled deadd-notification-center.service &&
+		systemctl --user restart deadd
+fi
