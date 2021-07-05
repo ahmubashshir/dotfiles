@@ -2,10 +2,10 @@
 # shellcheck disable=SC1090,SC2139
 # shellcheck disable=SC2142
 if [ -e ~/bin/libbash ]; then
-	source ~/bin/libbash
+	. ~/bin/libbash
 fi
 if [ -e ~/.weeb/aliases.sh ]; then
-	source ~/.weeb/aliases.sh
+	. ~/.weeb/aliases.sh
 fi
 #aliases
 exec 3> /dev/null
