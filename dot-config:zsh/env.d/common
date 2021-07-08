@@ -11,7 +11,7 @@ fi
 
 export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
 export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
-export LNDIR="/mnt/Books/Light Novels"
+export LNDIR="/mnt/Books/LightNovels"
 export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
 export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
 export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
