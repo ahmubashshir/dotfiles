@@ -1,0 +1,1 @@
+ACTION=="add|change", SUBSYSTEM=="sound", DRIVERS=="snd_aloop", ENV{PULSE_IGNORE}="1"
