@@ -1,0 +1,38 @@
+#!/bin/bash
+if ! command -v -p droidcam | grep -q 'droidcam'; then
+	printf 'droidcam: command not found.\n'
+	exit
+fi
+trap 'die' EXIT
+die()
+{
+	if ((UNLOAD)); then
+		printf 'Unloading loopback source.\n'
+		pactl unload-module "$UNLOAD" 2> /dev/null
+	fi
+	pkill --parent=$$
+}
+while read -r line; do
+	printf '%s\n' "$line"
+	if [[ $line =~ ^Audio:[[:blank:]]*hw:[0-9,]*$ ]]; then
+		LOAD_ALSA_LOOPBACK=1
+	fi
+	if ((LOAD_ALSA_LOOPBACK)) && [[ $line =~ ^connecting ]]; then
+		if ((UNLOAD > 0)); then
+			pactl unload-module "$UNLOAD"
+			printf 'Reloading loopback source.\n'
+		else
+			printf 'Loading loopback source.\n'
+		fi
+		UNLOAD=$(
+			pactl \
+				load-module \
+				module-alsa-source \
+				device=hw:Loopback,1,0 \
+				source_properties=device.description=droidcam
+		)
+	fi
+done < <(
+	trap "pkill --parent=$(pgrep --parent=$$)" EXIT
+	stdbuf -i0 -o0 -e0 $(command -v -p droidcam) 2> /dev/null
+)
