@@ -1,14 +1,14 @@
 #!/bin/zsh
 zmodload zsh/system
 LOCKFILE="${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck"
-exec 2> ~/pipe2
+exec 2> /dev/null
 zsystem flock -t 0 -f fd "$LOCKFILE" || exit
 
 setopt null_glob extended_glob
 function zcompare {
 	if [[ -w $1:P:h ]] && [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
 	then
-		zcompile "${@:2}" "$1"
+		zcompile "${@:2}" "$1" || touch "$1.ignore.zwc"
 	fi
 }
 
@@ -17,7 +17,7 @@ for target in $@;do
 		zcompare "$target" -Rz
 	elif [[ -d $target ]];then
 		for dir in "$target" "$target"/**/*(/);do
-			for file in "$dir"/^*(.(zwc|md|adoc|png|gif)|(LICENSE|CHANGELOG))(^/);do
+			for file in "$dir"/^*(.(zwc|md|adoc|rst|(c|h)(|pp|xx)|cc|png|gif|zunit|ini|org)|(AUTHORS|LICENSE|CHANGELOG))(.);do
 				zcompare "$file" -Rz
 			done
 		done
