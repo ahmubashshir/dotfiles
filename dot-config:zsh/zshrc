@@ -122,6 +122,8 @@ zplug command-time && {
 #zplug auto-ls
 VIRTUAL_ENV_DISABLE_PROMPT=1
 zplug autoswitch_virtualenv
+zplug zinsults
+zinsults_load=('default' 'shakespeare')
 
 ## Zstyle Config
 # The following lines were added by compinstall
