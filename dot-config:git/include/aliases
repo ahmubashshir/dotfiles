@@ -22,7 +22,9 @@
 	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
-	ch = checkout
+	cb = switch
+	ch = cb
+	co = checkout
 	root = rev-parse --show-toplevel
 	run = "!exec "
 	lsmod = !git submodule status|awk '{print $2}'
