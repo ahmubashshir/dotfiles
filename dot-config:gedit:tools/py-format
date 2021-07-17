@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 # [Gedit Tool]
 # Name=Format
 # Languages=python,python3
-# Input=document
-# Output=replace-document
-# Applicability=titled
+# Input=nothing
+# Output=nothing
+# Applicability=local
 # Save-files=nothing
 # Shortcut=<Shift>F1
 
-if type -p autopep8 2>&1 1> /dev/null; then
-	autopep8 -
+if command -vp autopep8 | grep -q 'autopep8$'; then
+	autopep8 --in-place "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
 else
 	echo autopep8 not installed 1>&2
 fi
