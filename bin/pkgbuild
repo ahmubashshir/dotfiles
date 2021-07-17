@@ -38,6 +38,19 @@ elif [[ $1 == --stdin ]]; then
 	mkdir -p "${BUILD_DIR:-aur-build}"
 	cd "${BUILD_DIR:-aur-build}"
 	unset BUILD_DIR
+	for each in "${BUILDENV[@]}"; do
+		if [[ $each = "distcc" ]]; then
+			USE_DISTCC=1
+			break
+		fi
+	done
+	if [ -n "$DISTCC_HOSTS" ] && ((USE_DISTCC)); then
+		eval "$(pump --startup)"
+		PATH="/usr/lib/distcc/bin:$PATH"
+	fi
+	if [ -d "$INCLUDE_SERVER_DIR" ] && test -S "$INCLUDE_SERVER_PORT"; then
+		export PATH="/usr/lib/distcc/bin:$PATH"
+	fi
 	while read -r cmd pkg; do
 		if [[ $cmd = make && -n $pkg ]]; then
 			"$0" "$pkg"
@@ -46,6 +59,9 @@ elif [[ $1 == --stdin ]]; then
 			fi
 		fi
 	done
+	if [ -d "$INCLUDE_SERVER_DIR" ] && test -S "$INCLUDE_SERVER_PORT"; then
+		pump --shutdown
+	fi
 	exit
 elif ! [ -d "$1" ]; then
 	git clone pkg:"$1" \
@@ -56,6 +72,7 @@ fi
 
 unset UPTODATE_CHROOT
 if [ -d .git ]; then
+	git reset --hard
 	git pull origin master
 fi
 if [ -f PKGBUILD ]; then
