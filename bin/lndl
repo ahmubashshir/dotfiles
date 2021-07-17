@@ -180,8 +180,8 @@ function lock
 	no_more_locking()
 	{
 		_lock u
-		_lock          xn && rm -f ./lock.lck
-		unset                                       _lock
+		_lock        xn && rm -f ./lock.lck
+		unset                                     _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
@@ -233,12 +233,16 @@ function drv_ls
 function drv_get
 {
 	local size JSON md5sums try target etarget action data
-	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "$1")'...$ALL_OFF"
+	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "${2:-$1}")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ]; do
-		JSON=$(drv_api_call "files/$2" "fields=md5Checksum,size")
+		JSON=$(drv_api_call "files/$1" "fields=md5Checksum,size${2:-,name}")
 		size="$(echo "$JSON" | jq -r .size)"
 	done
+	if [[ -z "$2" ]]; then
+		set -- "$1" "$(echo "$JSON" | jq -r .name)"
+	fi
+	set -- "$2" "$1"
 	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
 	if echo "$md5sums" | md5sum -c --status --ignore-missing; then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr "$size")].$ALL_OFF"
@@ -279,7 +283,7 @@ function drv_sync
 			id=$(echo "$n" | cut -d\| -f2 | cut -d: -f2)
 			mime=$(echo "$n" | cut -d\| -f3 | cut -d: -f2)
 			if [[ $mime != 'application/vnd.google-apps.folder' ]]; then
-				drv_get "$name" "$id"
+				drv_get "$id" "$name"
 				files+=('-not' '-samefile' "$name")
 			else
 				mkdir -p "$name" 2> /dev/null && (
@@ -435,7 +439,7 @@ else
 			unset "${all_funcs[@]}"
 			echo "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                             1
+			exit                                                                                           1
 			;;
 	esac
 fi
