@@ -89,6 +89,10 @@ zplug auto-notify && {
 }
 zplug systemd
 zplug autopair
+zplug autosuggestions && {
+	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+}
 zplug fast-syntax-highlighting && {
 	((${+aliases[fsh-alias]})) && \
 		unalias fsh-alias
