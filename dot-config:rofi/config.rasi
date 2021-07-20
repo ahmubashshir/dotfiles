@@ -1,0 +1,11 @@
+configuration {
+	theme: "slate.rasi";
+	lines: 7;
+	padding: 1;
+	icon-theme: "Papirus-Dark";
+	display-run: " ";
+	display-drun: "  ";
+	display-window: "  ";
+	drun-display-format: "{icon} {name}";
+	show-icons: true;
+}
