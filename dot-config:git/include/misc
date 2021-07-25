@@ -1,9 +1,9 @@
 [credential]
 	helper = netrc
 [instaweb]
-	browser = chromium-browser
+	browser = xdg-open
 [web]
-	browser = chromium-browser
+	browser = xdg-open
 [cola]
 	spellcheck = false
 [gpg]
