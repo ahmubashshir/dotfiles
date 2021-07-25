@@ -180,8 +180,8 @@ function lock
 	no_more_locking()
 	{
 		_lock u
-		_lock        xn && rm -f ./lock.lck
-		unset                                     _lock
+		_lock      xn && rm -f ./lock.lck
+		unset                                   _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
@@ -236,11 +236,14 @@ function drv_get
 	echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "${2:-$1}")'...$ALL_OFF"
 	[ -z "$DRIVE_API_KEY" ] && echo 'No usable api key for google drive.' && return 1
 	until [ -n "$size" ]; do
-		JSON=$(drv_api_call "files/$1" "fields=md5Checksum,size${2:-,name}")
+		JSON=$(drv_api_call "files/$1" "fields=md5Checksum,size$(test -z "$2" && echo ,name)")
 		size="$(echo "$JSON" | jq -r .size)"
 	done
 	if [[ -z "$2" ]]; then
 		set -- "$1" "$(echo "$JSON" | jq -r .name)"
+		tput cuu1
+		tput         el
+		echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "${2:-$1}")'...$ALL_OFF"
 	fi
 	set -- "$2" "$1"
 	md5sums="$(echo "$JSON" | jq -r .md5Checksum) $1"
@@ -439,7 +442,7 @@ else
 			unset "${all_funcs[@]}"
 			echo "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                           1
+			exit                                                                                         1
 			;;
 	esac
 fi
