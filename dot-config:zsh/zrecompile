@@ -24,6 +24,6 @@ for target in $@;do
 	fi
 done
 
-for target in ${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} ${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} $HOME/.cache/zsh/**/^*.zwc;do
+for target in ${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} ${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} $HOME/.cache/zsh/**/^(*.zwc|history);do
 	zcompare "$target" -Mz
 done

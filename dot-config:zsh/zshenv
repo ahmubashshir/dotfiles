@@ -27,11 +27,12 @@ else
 	}
 fi
 
-function loadenv {
-	local each
+function load {
+	local each from
+	from=$1;shift
 	for each in "$@";do
-		zcompare "${ZDOTDIR:-$HOME/.zsh}/env.d/$each" -UMz
-		source "${ZDOTDIR:-$HOME/.zsh}/env.d/$each"
+		zcompare "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" -UMz
+		source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
 	done
 }
 if [ ! -d ~/.cache/zsh ];then
@@ -40,7 +41,7 @@ if [ ! -d ~/.cache/zsh ];then
 fi
 # Traps
 function TRAPUSR1 { rehash; }
-loadenv api-keys common cli path
-[[ -n $DISPLAY ]] && loadenv gui
+load env api-keys common cli path
+[[ -n $DISPLAY ]] && load env gui
 
-unfunction zcompare loadenv
+unfunction zcompare

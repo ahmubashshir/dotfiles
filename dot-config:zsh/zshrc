@@ -14,19 +14,12 @@ if [ -e ~/zprof ] || [ -p ~/pipe ];then
 fi
 # source
 source $HOME'/.shell/import'
-source "${ZDOTDIR:-$HOME}/.zinputrc"
 #source /usr/share/doc/pkgfile/command-not-found.zsh
 ## options
 zsh_options=(
-	extended_glob prompt_subst rematchpcre
-	hist_fcntl_lock inc_append_history beep
-	extended_history hist_no_store no_nomatch
-	hist_reduce_blanks share_history null_glob
-	hist_expire_dups_first hist_ignore_dups
-	hist_ignore_all_dups hist_ignore_space
-	hist_find_no_dups hist_save_no_dups c_bases
-	hist_no_functions no_flow_control auto_continue
-	hist_verify auto_cd auto_pushd pushd_silent
+	extended_glob prompt_subst rematchpcre beep
+	no_nomatch null_glob c_bases no_flow_control
+	auto_continue auto_cd auto_pushd pushd_silent
 	pushd_to_home pushd_ignore_dups pushd_minus
 	auto_list glob_complete list_packed 
 )
@@ -39,189 +32,9 @@ autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 
 typeset -A ENV
-ENV[prompt_suffix]='%(?..%F{cyan})┠'
-ENV[prompt_prefix]='%(?..%F{cyan})┨'
-ENV[prompt_seperator]='%(?..%F{cyan})'
+load rc completion keymap history modules plugins prompt
 
-## modules
-zmodload -ab zsh/datetime strftime
-zmodload -ab zsh/pcre pcre_compile pcre_study pcre_match
-zmodload -ab zsh/sched sched
-zmodload -ab zsh/system syserror sysopen sysread sysseek syswrite zsystem
-zmodload zsh/zprof
-zmodload zsh/zpty
-
-## HISTCONTROL
-# Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
-HISTFILE=${ZDOTDIR:-$HOME/.zsh_}${ZDOTDIR:+/}history
-HISTSIZE=1000
-SAVEHIST=3000
-HISTDUP=erase
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
-
-## Start
-case "$TERM" in
-	xterm|xterm-color|*-256color|*-kitty) ENV[color_prompt]=yes;;
-esac
-
-## local plugins
-# zplug async
-ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE=1
-zplug hacker-quotes
-unset ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE
-zplug bd
-unalias .. ... ....
-zplug lazyload
-zplug completions
-zplug auto-notify && {
-	AUTO_NOTIFY_THRESHOLD=20
-	AUTO_NOTIFY_EXPIRE_TIME=5000
-	AUTO_NOTIFY_WHITELIST=()
-	AUTO_NOTIFY_IGNORE+=(
-		man info
-		gcc g++ pbi wormhole
-		shit danime git
-		nano xed gedit vi vim
-		vlc mpv celluloid
-		yay pacman bc
-	)
-}
-zplug systemd
-zplug autopair
-zplug autosuggestions && {
-	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-}
-zplug fast-syntax-highlighting && {
-	((${+aliases[fsh-alias]})) && \
-		unalias fsh-alias
-}
-zplug you-should-use && {
-	YSU_MESSAGE_POSITION=after
-#	YSU_HARDCORE=1
-	YSU_MESSAGE_FORMAT="$(print -P %B%F{cyan})Use \"$(print -P %F{blue})%alias$(print -P %F{cyan})\", $(print -P %F{red})you little shit!$(print -P %b%f)"
-	function ysu:start { enable_you_should_use; }
-	function ysu:stop { disable_you_should_use; }
-	function ysu:stat {
-		echo YSU Stats
-		check_alias_usage 2>&1|grep -v 'entry='
-	}
-}
-zplug bash-completions-fallback
-zplug zshmarks && {
-	alias jmp=jump
-	alias mark=bookmark
-	alias unmark=deletemark
-	alias lsmark=showmarks
-}
-zplug history-substring-search && {
-	bindkey "$terminfo[kcuu1]" history-substring-search-up
-	bindkey "$terminfo[kcud1]" history-substring-search-down
-}
-zplug command-time && {
-	ZSH_COMMAND_TIME_MSG="Execution time: %s"
-	ZSH_COMMAND_TIME_COLOR=cyan
-}
-#zplug auto-ls
-VIRTUAL_ENV_DISABLE_PROMPT=1
-zplug autoswitch_virtualenv
-zplug zinsults
-zinsults_load=('default' 'shakespeare')
-
-## Zstyle Config
-# The following lines were added by compinstall
-zstyle :compinstall filename "${ZDOTDIR:-$HOME}/.zshrc"
-zstyle ':completion:*' auto-description 'specify: %d'
-zstyle ':completion:*' completer _list _expand _complete _ignored _match _correct _approximate _prefix
-zstyle ':completion:*' completions set
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' expand prefix suffix
-zstyle ':completion:*' file-sort name
-zstyle ':completion:*' format 'Completing %d'
-zstyle ':completion:*' glob set
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' ignore-parents parent pwd
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
-zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
-zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*'
-zstyle ':completion:*' max-errors 1
-zstyle ':completion:*' menu select=0
-zstyle ':completion:*' preserve-prefix '//[^/]##/'
-zstyle ':completion:*' prompt 'Correct'
-zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
-zstyle ':completion:*' special-dirs true
-zstyle ':completion:*' squeeze-slashes true
-zstyle ':completion:*' substitute set
-zstyle ':completion:*' use-compctl false
-zstyle ':completion:*' verbose true
-zstyle ':completion:*' list-grouped true
-zstyle ':completion:*' list-dirs-first true
-zstyle ':completion:*' list-rows-first true
-zstyle ':completion:*' remove-all-dups true #
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path ~/.cache/zsh/compcache
-
-
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
-zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
-zstyle ':completion:*:kill:*' gain-privileges true
-zstyle ':completion:*:kill:*' force-list always
-
-#zstyle ':completion:*:(all-|)files' ignored-patterns '(|*/)CVS'
-#zstyle ':completion:*:cd:*' ignored-patterns '(*/)#CVS'
-
-#zstyle ':completion:*:match:*' original only
-#zstyle -e ':completion:*:approximate:*' \
-	#max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
-
-
-## ignore invalid commands
-#zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
-
-## Zsh Hook Functions
-function xterm_title_precmd {
-	print -Pn "\e]2;zsh/$$: %1~\a"
-}
-function xterm_title_preexec {
-		print -Pn "\e]2;zsh/$$/$1: %1~\a"
-}
-function reset_broken_terminal {
-	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
-}
-# zsh hooks
-add-zsh-hook -Uz precmd reset_broken_terminal
-if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
-	add-zsh-hook -Uz precmd xterm_title_precmd
-	add-zsh-hook -Uz preexec xterm_title_preexec
-fi
-# Prompt Setup
-if [[ $ENV[color_prompt] = yes ]];then
-	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
-		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
-	fi
-	zplug gitstatus-async && {
-		GITSTATUS[seperator]="${ENV[prompt_seperator]}"
-		GITSTATUS[prefix]="${ENV[prompt_prefix]}"
-		GITSTATUS[suffix]="${ENV[prompt_suffix]}"
-	}
-	zplug devprompt && {
-		DEVPROMPT[seperator]="${ENV[prompt_seperator]}"
-		DEVPROMPT[prefix]="${ENV[prompt_prefix]}"
-		DEVPROMPT[suffix]="${ENV[prompt_suffix]}"
-	}
-	zplug gio-vfs-prompt && {
-		GIOVFS[seperator]=$'\n├───'
-		GIOVFS[prefix]="${ENV[prompt_prefix]}"
-		GIOVFS[suffix]="${ENV[prompt_suffix]}"
-	}
-
-	PROMPT=$'%F{red}%(?..%F{cyan})╭─${ENV[prompt_prefix]}%F{green} %F{cyan}%B${__GIOVFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}${ENV[prompt_suffix]}%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${DATE_TIME_PROMPT}${GIO_VFS_PROMPT}\b┃
-╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
-	RPROMPT='%(?.🙂.😑)'
-else
-	PROMPT='%1~ $ '
-fi
 
 zcompinit
 if [ -e zprof ];then
