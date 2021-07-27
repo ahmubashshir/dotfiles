@@ -15,8 +15,7 @@ fi
 # source
 source $HOME'/.shell/import'
 source "${ZDOTDIR:-$HOME}/.zinputrc"
-source /usr/share/doc/pkgfile/command-not-found.zsh
-source ./.env_setup
+#source /usr/share/doc/pkgfile/command-not-found.zsh
 ## options
 zsh_options=(
 	extended_glob prompt_subst rematchpcre
@@ -198,10 +197,10 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 fi
 # Prompt Setup
 if [[ $ENV[color_prompt] = yes ]];then
-	if [ -z "$TMUX" ] && [ -z "$TMUX_PLUGIN_MANAGER_PATH" ];then
+	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
 	fi
-	zplug git && {
+	zplug gitstatus-async && {
 		GITSTATUS[seperator]="${ENV[prompt_seperator]}"
 		GITSTATUS[prefix]="${ENV[prompt_prefix]}"
 		GITSTATUS[suffix]="${ENV[prompt_suffix]}"
@@ -221,7 +220,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 ╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
 	RPROMPT='%(?.🙂.😑)'
 else
-	PROMPT='[%m::%n %1~]$ '
+	PROMPT='%1~ $ '
 fi
 
 zcompinit
