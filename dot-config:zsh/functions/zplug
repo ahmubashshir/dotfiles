@@ -19,13 +19,14 @@ done
 
 plugname=$1;shift
 for plugpath in $zplugdirs[@];do
-	for plug in "$plugname/$plugname.plugin" \
-				"$plugname/zsh-$plugname.plugin" \
-				"zsh-$plugname/$plugname.plugin" \
-				"zsh-$plugname/zsh-$plugname.plugin" \
-				"$plugname/$plugname" \
-				"zsh-$plugname/$plugname" \
-				"zsh-$plugname/zsh-$plugname"
+	for plug in \
+		"$plugname/$plugname.plugin" \
+		"$plugname/zsh-$plugname.plugin" \
+		"zsh-$plugname/$plugname.plugin" \
+		"zsh-$plugname/zsh-$plugname.plugin" \
+		"$plugname/$plugname" \
+		"zsh-$plugname/$plugname" \
+		"zsh-$plugname/zsh-$plugname"
 	do
 		plugin="$plugpath/$plug.zsh"
 		if [ -f "$plugin" ]
