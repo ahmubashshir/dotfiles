@@ -1,11 +1,21 @@
 #!/bin/zsh
-alias compinit="compinit -d ~/.cache/zsh/compdump"
 fpath=(${ZDOTDIR:-$HOME/.zsh}/functions $fpath)
+
 function source {
 	if [ -f "$1" ];then
 		builtin source "$@"
 	fi
 }
+
+function compinit {
+		local body
+		body=$functions[compinit]
+		unfunction compinit
+		autoload -Uz compinit
+		compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/compdump" "$@"
+		functions[compinit]=$body
+}
+
 if [[ -o interactive ]];then
 	autoload -Uz zcompare
 else
