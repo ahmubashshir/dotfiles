@@ -6,6 +6,7 @@ zplug async
 (($+functions[async_init])) || return
 autoload -U add-zsh-hook
 add-zsh-hook precmd _git_prompt_precmd
+add-zsh-hook zshexit _git_prompt_worker_shutdown
 
 typeset -gA GITSTATUS
 typeset -g  GITSTATUS_PROMPT
@@ -121,14 +122,18 @@ function _git_prompt_update {
 	fi
 }
 
+function _git_prompt_worker_shutdown {
+	async_stop_worker "gitworker$$" 2>/dev/null
+}
+
 function _git_prompt_worker_restart {
-	async_stop_worker "gitworker$$" 2>/dev/null 
+	_git_prompt_worker_shutdown
 	async_start_worker "gitworker$$" -n
 	async_register_callback "gitworker$$" _git_prompt_update
 }
 
 function _git_prompt_precmd {
-	${__GIOVFS_PROMPT_DATA[vfs]:-false} && return 0
+	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/ ]] && return 0
 	async_flush_jobs "gitworker$$"  2>/dev/null || _git_prompt_worker_restart
 	async_worker_eval "gitworker$$" cd "$PWD"
 	async_job "gitworker$$" _git_prompt_update_async
