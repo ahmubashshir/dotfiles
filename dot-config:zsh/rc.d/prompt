@@ -1,0 +1,51 @@
+#!/bin/zsh
+
+ENV[prompt_suffix]='%(?..%F{cyan})┠'
+ENV[prompt_prefix]='%(?..%F{cyan})┨'
+ENV[prompt_seperator]='%(?..%F{cyan})'
+case "$TERM" in
+	xterm|xterm-color|*-256color|*-kitty) ENV[color_prompt]=yes;;
+esac
+
+function xterm_title_precmd {
+	print -Pn "\e]2;zsh/$$: %1~\a"
+}
+function xterm_title_preexec {
+	print -Pn "\e]2;zsh/$$/$1: %1~\a"
+}
+function reset_broken_terminal {
+	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
+}
+# zsh hooks
+add-zsh-hook -Uz precmd reset_broken_terminal
+if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
+	add-zsh-hook -Uz precmd xterm_title_precmd
+	add-zsh-hook -Uz preexec xterm_title_preexec
+fi
+# Prompt Setup
+if [[ $ENV[color_prompt] = yes ]];then
+	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
+		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
+	fi
+	zplug gitstatus-async && {
+		GITSTATUS[seperator]="${ENV[prompt_seperator]}"
+		GITSTATUS[prefix]="${ENV[prompt_prefix]}"
+		GITSTATUS[suffix]="${ENV[prompt_suffix]}"
+	}
+	zplug devprompt && {
+		DEVPROMPT[seperator]="${ENV[prompt_seperator]}"
+		DEVPROMPT[prefix]="${ENV[prompt_prefix]}"
+		DEVPROMPT[suffix]="${ENV[prompt_suffix]}"
+	}
+	zplug gio-vfs-prompt && {
+		GIOVFS[seperator]=$'\n├───'
+		GIOVFS[prefix]="${ENV[prompt_prefix]}"
+		GIOVFS[suffix]="${ENV[prompt_suffix]}"
+	}
+	PROMPT=$'%F{red}%(?..%F{cyan})╭─${ENV[prompt_prefix]}%F{green} %F{cyan}%B${__GIOVFS_PROMPT_DATA[pwd]:-%1~}%b%F{red}${ENV[prompt_suffix]}%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${DATE_TIME_PROMPT}${GIO_VFS_PROMPT}\b┃
+╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	RPROMPT='%(?.🙂.😑)'
+else
+	PROMPT='%1~ $ '
+fi
+
