@@ -1,14 +1,15 @@
 #!/bin/zsh
 autoload -Uz zplug
 zplug gitstatus
+zplug async
 (($+functions[gitstatus_check])) || return
-gitstatus_stop "gitstatus$$" && gitstatus_start -s -1 -u -1 -c -1 -d -1 "gitstatus$$"
-# Allow for functions in the prompt.
-setopt PROMPT_SUBST
+(($+functions[async_init])) || return
 autoload -U add-zsh-hook
+add-zsh-hook precmd _git_prompt_precmd
 
-add-zsh-hook precmd _git_prompt_update
 typeset -gA GITSTATUS
+typeset -g  GITSTATUS_PROMPT
+typeset -gi GITSTATUS_PROMPT_LEN
 
 GITSTATUS[clean]='%F{green}' 	# green foreground
 GITSTATUS[changed]='%F{cyan}'		# cyan forground
@@ -22,13 +23,9 @@ GITSTATUS[seperator]='-'
 GITSTATUS[prefix]='['
 GITSTATUS[suffix]=']'
 
-function _git_prompt_update() {
+function _git_prompt_update_async {
 	emulate -L zsh
-	typeset -g  GITSTATUS_PROMPT=''
-	typeset -gi GITSTATUS_PROMPT_LEN=0
-	${ENV[in_vfs]:-false} && return 0
-	# Call gitstatus_query synchronously. Note that gitstatus_query can also be called
-	# asynchronously; see documentation in gitstatus.plugin.zsh.
+	# Call gitstatus_query asynchronously
 	local \
 		VCS_STATUS_ACTION VCS_STATUS_COMMIT \
 		VCS_STATUS_COMMITS_AHEAD VCS_STATUS_COMMITS_BEHIND \
@@ -110,7 +107,29 @@ function _git_prompt_update() {
 		# 'merge' if the repo is in an unusual state.
 		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GITSTATUS[conflicted]}:✘"
 	}
-	GITSTATUS_PROMPT="${GITSTATUS[seperator]}${GITSTATUS[prefix]}${head}${stat:+:$stat}${GITSTATUS[default]}${GITSTATUS[suffix]}"
-	# The length of GITSTATUS_PROMPT after removing %f and %F.
-	GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
+	printf '%s' "${GITSTATUS[seperator]}${GITSTATUS[prefix]}${head}${stat:+:$stat}${GITSTATUS[default]}${GITSTATUS[suffix]}"
+}
+
+function _git_prompt_update {
+	[[ $1 != _git_prompt_update_async ]] && return
+	if [[ "$GITSTATUS_PROMPT" != "$3" ]];then
+		emulate -L zsh
+		GITSTATUS_PROMPT="$3"
+		GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
+		# The length of GITSTATUS_PROMPT after removing %f and %F.
+		(($6==0)) && zle && zle reset-prompt
+	fi
+}
+
+function _git_prompt_worker_restart {
+	async_stop_worker "gitworker$$" 2>/dev/null 
+	async_start_worker "gitworker$$" -n
+	async_register_callback "gitworker$$" _git_prompt_update
+}
+
+function _git_prompt_precmd {
+	${__GIOVFS_PROMPT_DATA[vfs]:-false} && return 0
+	async_flush_jobs "gitworker$$"  2>/dev/null || _git_prompt_worker_restart
+	async_worker_eval "gitworker$$" cd "$PWD"
+	async_job "gitworker$$" _git_prompt_update_async
 }
