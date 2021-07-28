@@ -130,7 +130,6 @@ config.codekit3
 .project
 .buildlog
 
-*.patch
 *.diff
 
 # DW Dreamweaver added files
