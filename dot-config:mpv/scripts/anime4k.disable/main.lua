@@ -28,9 +28,10 @@ local function load_shaders(...)
     msg.info("Mode: " .. o.mode)
     for _, shader in ipairs(...) do
         if shader == nil then goto continue end
-        table.insert(list, table.concat({
-            shader_path, 'anime4k', "Anime4K_" .. shader .. ".glsl"
-        }, pathsep))
+        table.insert(list, table.concat(
+                         {
+                shader_path, 'anime4k', "Anime4K_" .. shader .. ".glsl"
+            }, pathsep))
         msg.info('Loaded Shaders: ' .. shader)
         ::continue::
     end
