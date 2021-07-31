@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 if [ -z "$*" ]; then
 	echo No url specified.
 	exit 2
