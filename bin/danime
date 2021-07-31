@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r200.499c96f-30
+# VERSION r201.4e12303-30
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1329,24 +1329,36 @@ trollvid:get_url()
 
 vidstreaming:get_url()
 {
-	curl --config /dev/null -s "https://gogo-stream.com/ajax.php?id=$1&refer=none" \
-		| jq '.source + .source_bk|[.[]|select(.type == "mp4")][0]|.file' \
-		| get_effective_url
+	curl "https://streamani.net/streaming.php?id=$1" \
+		| xmllint \
+			--nocdata --noent --html --xmlout \
+			--xpath 'string(//*[@data-provider="serverwithtoken"][1]/@data-video)' - 2> /dev/null \
+		| xargs curl -s \
+		| xmllint \
+			--nocdata --html --xmlout --xpath \
+			'string(//div[@id="myVideo"]/../script[contains(text(), "playerInstance.setup")]/text())' - 2> /dev/null \
+		| beautify_js \
+		| sed -nE "/^\s+file:.*\.mp4/s/.*'(.*)',/\1/p"
 }
 
 gogo+server:get_url()
 {
-	vidstreaming:get_url $1
+	vidstreaming:get_url "$1"
 }
 
 mixdrop:get_url()
 {
-	curl --config /dev/null -s "https://mixdrop.to/e/$1" | grep '^eval' | beautify_js | grep MDCore.wurl | sed -E 's@.* = "//(.*)".*@https://\1@'
+	curl --config /dev/null -s "https://mixdrop.to/e/$1" \
+		| grep '^eval' \
+		| beautify_js \
+		| grep MDCore.wurl \
+		| sed -E 's@.* = "//(.*)".*@https://\1@'
 }
 
 cloud9:get_url()
 {
-	curl --config /dev/null -s "https://api.cloud9.to/stream/$1" | jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
+	curl --config /dev/null -s "https://api.cloud9.to/stream/$1" \
+		| jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
 }
 if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	while [ -n "$1" ]; do
