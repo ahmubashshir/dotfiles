@@ -87,3 +87,6 @@
 [submodule "dot-config:zsh/plugins/autocomplete"]
 	path = dot-config:zsh/plugins/autocomplete
 	url = github:marlonrichert/zsh-autocomplete
+[submodule "dot-config:zsh/plugins/defer"]
+	path = dot-config:zsh/plugins/defer
+	url = https://github.com/romkatv/zsh-defer
