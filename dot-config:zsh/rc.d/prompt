@@ -44,7 +44,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
-	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${RET_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${DATE_TIME_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${RET_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
 	RPROMPT='%(?.🙂.😑)'
 else
 	PROMPT='%1~ %% '
