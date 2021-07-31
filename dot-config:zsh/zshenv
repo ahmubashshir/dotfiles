@@ -41,7 +41,11 @@ if [ ! -d ~/.cache/zsh ];then
 fi
 # Traps
 function TRAPUSR1 { rehash; }
-load env api-keys common cli path
-[[ -n $DISPLAY ]] && load env gui
+function {
+	emulate -L zsh
+	setopt extendedglob nullglob
+	load env $ZDOTDIR/env.d/^gui~*.zwc(:t)
+	[[ $XDG_SESSION_TYPE =~ ^(x11|wayland)$ ]] && load env gui
+}
 
 unfunction zcompare
