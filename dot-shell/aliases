@@ -89,9 +89,11 @@ alias vdir='vdir --color=auto'
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='grep -E --color=auto'
-
+if [ -z "$XAUTHORITY" ]; then
+	alias minimize='xdotool getactivewindow windowminimize;chvt 7'
+fi
 # Zsh suffix aliases
-if [[ ${ZSH_VERSION} && ${ZSH_NAME} ]]; then
+if [ -n "${ZSH_VERSION}" ] && [ -n "${ZSH_NAME}" ]; then
 	alias -s tmate=ssh
 	alias -s {txt,md}='less'
 	alias -s {c,cpp,h,hpp,cxx,cc,hh}='nano'
