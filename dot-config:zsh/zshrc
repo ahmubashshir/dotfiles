@@ -14,7 +14,6 @@ if [ -e ~/zprof ] || [ -p ~/pipe ];then
 fi
 # source
 source $HOME'/.shell/import'
-#source /usr/share/doc/pkgfile/command-not-found.zsh
 ## options
 zsh_options=(
 	extended_glob prompt_subst rematchpcre beep
@@ -30,8 +29,21 @@ bindkey -e
 ## Lazy load section
 autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
+if ! zplug defer;then
+	if ! (
+		cd "$(realpath "$ZDOTDIR")"
+		git submodule init
+		git submodule update
+	);then
+		printf "zsh: failed to initialize plugins"
+		function zsh-defer {
+			"$@"
+		}
+	fi
+fi
 
 typeset -A ENV
+zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
 load rc completion keymap history modules plugins prompt
 
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
