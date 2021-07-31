@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # [Gedit Tool]
 # Name=Format
 # Languages=pkgbuild,sh
@@ -8,8 +8,34 @@
 # Save-files=document
 # Shortcut=F3
 
-if type -tf shfmt 2>&1 > /dev/null; then
-	shfmt -s -bn -ci -sr "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+file="$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+if [ "$(head -c2 "$file")" = "#!" ]; then
+	fmt=$(
+		head -1 "$file" |
+			tr ' ' '\n' |
+			grep -Ev '^-|^(.*)=(.*)$' |
+			awk '
+			$1 ~ /bin\/env/	{
+				enved="true";
+			}; {
+				intr=$0
+			}; (enved == "true" && NR > 2) || NR > 1 {
+				exit
+			}; END {
+				len=split(intr, path , "/")
+				print path[len]
+			};'
+	)
+else
+	fmt=${file##*.}
+fi
+if command -vp shfmt 2>&1 > /dev/null; then
+	case $fmt in
+		bash | bats | mksh)
+			shfmt -i 0 -ci -sr -bn -ln "$fmt" -kp -fn "$file"
+			;;
+		sh) shfmt -i 0 -ci -sr -ln posix -kp -fn "$file" ;;
+	esac
 else
 	echo shfmt not installed 1>&2
 fi
