@@ -1,6 +1,7 @@
 #!/bin/zsh
 zmodload zsh/system
-LOCKFILE="${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck"
+LOCKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/recompile.lck"
+touch "$LOCKFILE"
 exec 2> /dev/null
 zsystem flock -t 0 -f fd "$LOCKFILE" || exit
 
@@ -24,6 +25,12 @@ for target in $@;do
 	fi
 done
 
-for target in ${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} ${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} $HOME/.cache/zsh/**/^(*.zwc|history);do
+for target in \
+	${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} \
+	${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} \
+	$HOME/.cache/zsh/**/^(*.zwc|history|recompile.lck)
+do
 	zcompare "$target" -Mz
 done
+
+rm -f "$LOCKFILE"
