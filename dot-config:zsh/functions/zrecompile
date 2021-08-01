@@ -1,9 +1,6 @@
 #!/bin/zsh
-[[ ! -f "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck" ]] && touch "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck"
-(
-	if ! zsystem flock -t 0 -f fd "${ZDOTDIR:-$HOME/.zsh}/zrecompile.lck" 2>/dev/null;then
-		echo "zrecompile running..."
-		exit 1
-	fi
-	exit 0
-) && ${ZDOTDIR:-$HOME/.zsh}/zrecompile $fpath $zsh_loaded_plugin_paths &!
+if [[ ! -f "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/recompile.lck" ]];then
+ 	${ZDOTDIR:-$HOME/.zsh}/zrecompile $fpath $zsh_loaded_plugin_paths &!
+else
+ 	printf 'zsh: zrecompile running...'
+fi
