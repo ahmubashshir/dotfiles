@@ -1,6 +1,9 @@
 #!/bin/zsh
 local plugname plug plugpath plugin
-[[ -z $1 ]] && return 1
+if [[ -z $1 ]];then
+	printf '%s\n' $zsh_loaded_plugins
+	return
+fi
 
 if (( ! ${+zplugdirs} )); then
 	typeset -ga zplugdirs
