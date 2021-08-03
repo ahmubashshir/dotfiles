@@ -93,3 +93,6 @@
 [submodule "submodules/git-good-commit"]
 	path = submodules/git-good-commit
 	url = https://github.com/tommarshall/git-good-commit
+[submodule "submodules/git-confirm"]
+	path = submodules/git-confirm
+	url = https://github.com/pimterry/git-confirm
