@@ -51,7 +51,7 @@ joined_inactive_tabs=false
 layout_spacing=6
 layout_margin=9
 scrollbar_in_view=false
-transient_scrollbar=false
+transient_scrollbar=true
 transient_groove=true
 submenu_overlap=3
 tooltip_delay=-1
@@ -118,6 +118,7 @@ scroll_jump_workaround=false
 centered_forms=false
 kinetic_scrolling=true
 noninteger_translucency=false
+style_vertical_toolbars=false
 
 [PanelButtonCommand]
 frame=true
