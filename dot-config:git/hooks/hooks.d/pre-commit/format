@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2016
-declare -A FORMATTERS
+declare -A FORMATTERS f
 FORMATTERS=(
 	# shfmt
 	[sh]=shfmt
@@ -26,6 +26,23 @@ FORMATTERS=(
 	[xml]=xmllint
 	[lua]=lua-format
 )
+
+if tput setaf 0 &> /dev/null; then
+	f[reset]="$(tput sgr0)"
+	f[bold]="$(tput bold)"
+	f[blue]="${f[bold]}$(tput setaf 4)"
+	f[green]="${f[bold]}$(tput setaf 2)"
+	f[red]="${f[bold]}$(tput setaf 1)"
+	f[yellow]="${f[bold]}$(tput setaf 3)"
+else
+	f[reset]="\e[0m"
+	f[bold]="\e[1m"
+	f[blue]="${f[bold]}\e[34m"
+	f[green]="${f[bold]}\e[32m"
+	f[red]="${f[bold]}\e[31m"
+	f[yellow]="${f[bold]}\e[33m"
+fi
+readonly f
 
 format_file()
 {
@@ -88,11 +105,13 @@ for file in "${STAGED[@]}"; do
 	fi
 	if [[ ${fmt} ]] && [[ ${FORMATTERS[$fmt]} ]]; then
 		if command -v "${FORMATTERS[$fmt]}" 2>&1 > /dev/null; then
-			echo "I:[${fmt^^}] Formatting $file"
+			printf '  %s-> %s[%s] Formatting %s\n' "${f[blue]}" \
+				"${f[green]}" "${f[blue]}${fmt,,}${f[green]}" "${f[yellow]}$file${f[reset]}"
 			format_file "$fmt" "$file" 2> /dev/null
 			git add "$file"
 		else
-			echo "W:Formatter for $fmt [${FORMATTERS[$fmt]}] is not installed."
+			printf '  %s-> %s[%s] Formatter for %s is not installed.%s\n' "${f[blue]}" "${f[yellow]}" \
+				"${f[green]}${fmt,,} [${FORMATTERS[$fmt]}]${f[yellow]}" "${f[reset]}"
 			unset "FORMATTERS[$fmt]"
 		fi
 	fi
