@@ -90,3 +90,6 @@
 [submodule "dot-config:zsh/plugins/defer"]
 	path = dot-config:zsh/plugins/defer
 	url = https://github.com/romkatv/zsh-defer
+[submodule "submodules/git-good-commit"]
+	path = submodules/git-good-commit
+	url = https://github.com/tommarshall/git-good-commit
