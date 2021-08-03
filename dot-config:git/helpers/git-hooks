@@ -2,7 +2,7 @@
 if [ -z "$GIT_DIR" ]; then
 	GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
 fi
-hooks=$(git config --get core.hooksPath 2> /dev/null | cut -d / -f2-)
+hooks="$HOME/$(git config --get core.hooksPath 2> /dev/null | cut -d / -f2-)"
 if [ -z "$hooks" ]; then
 	echo No global hooks
 	exit 1
@@ -35,7 +35,7 @@ else
 			exec "$EDITOR" "$hooks/hooks.d/${2%%.*}/${2#*.}"
 			;;
 		ls | '')
-			for hookdir in "$hooks/hooks.d"/*; do
+			for hookdir in "$hooks"/hooks.d/*; do
 				stage="$(basename "$hookdir")"
 				if [ -d "$hookdir" ]; then
 					for subhook in "$hookdir"/*; do
