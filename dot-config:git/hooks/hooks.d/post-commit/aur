@@ -1,2 +1,3 @@
 #!/bin/bash
+# HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
 git diff-tree -r --no-commit-id -z --name-only HEAD -- ':/**/.SRCINFO' | git update-index -z --stdin

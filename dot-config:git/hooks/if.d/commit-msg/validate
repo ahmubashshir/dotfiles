@@ -1,7 +1,0 @@
-#!/bin/bash -e
-[[ -x /usr/bin/ruby ]]
-[[ ! $(git remote get-url origin) =~ ^(https?://|ssh://aur@)aur.archlinux.org/ ]]
-repo="$(git rev-parse --show-toplevel 2> /dev/null)"
-[[ ! $(readlink "$repo/.git/hooks/prepare-commit-msg") =~ /aurpublish/ ]]
-[[ ! -e "$repo/.aurpublish" ]]
-unset repo

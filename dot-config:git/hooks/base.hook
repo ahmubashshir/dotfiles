@@ -1,81 +1,108 @@
-#!/bin/bash -e
+#!/bin/bash
 shopt -s nullglob
-typeset -A color
+typeset -A f
 typeset -a hooks
-if [ -z "$GIT_DIR" ];then
+if [ -z "$GIT_DIR" ]; then
 	GIT_DIR="$(git rev-parse --git-dir)"
 fi
-if tput setaf 0 &>/dev/null; then
-	color[-]="$(tput sgr0)"
-	color[bold]="$(tput bold)"
-	color[blue]="${color[bold]}$(tput setaf 4)"
-	color[green]="${color[bold]}$(tput setaf 2)"
-	color[red]="${color[bold]}$(tput setaf 1)"
-	color[yellow]="${color[bold]}$(tput setaf 3)"
+if tput setaf 0 &> /dev/null; then
+	f[reset]="$(tput sgr0)"
+	f[bold]="$(tput bold)"
+	f[blue]="${f[bold]}$(tput setaf 4)"
+	f[green]="${f[bold]}$(tput setaf 2)"
+	f[red]="${f[bold]}$(tput setaf 1)"
+	f[yellow]="${f[bold]}$(tput setaf 3)"
 else
-	color[-]="\e[0m"
-	color[bold]="\e[1m"
-	color[blue]="${color[bold]}\e[34m"
-	color[green]="${color[bold]}\e[32m"
-	color[red]="${color[bold]}\e[31m"
-	color[yellow]="${color[bold]}\e[33m"
+	f[reset]="\e[0m"
+	f[bold]="\e[1m"
+	f[blue]="${f[bold]}\e[34m"
+	f[green]="${f[bold]}\e[32m"
+	f[red]="${f[bold]}\e[31m"
+	f[yellow]="${f[bold]}\e[33m"
 fi
-color[E]=${color[red]}
-color[W]=${color[yellow]}
-color[D]=${color[blue]}
-color[I]=${color[green]}
-color[+]=${color[bold]}
-readonly color
-format()
-{
-	local err=0 lvl msg
-	while IFS=: read -r lvl msg;do
-		[[ -z "$msg" ]] && continue
-		if [[ $lvl =~ ^[EIWD]$ || -z $lvl ]];then
-			[[ $lvl = D ]] && ! (( GIT_DEBUG_HOOKS )) && continue
-			printf '  '
-			[[ $lvl != E ]] && \
-				printf '%s' "${color[blue]}"\
-			||\
-				printf '%s' "${color[red]}"
-			printf -- '->'
-			echo " ${color[${lvl:-+}]}$msg...${color[-]}"
-			[[ $lvl = E ]] && ((err++)) || continue
-		else
-			printf '  -> '
-			echo "${lvl//[[:punct:]]/} $msg"
-		fi
-	done
-	return $err
-}
+readonly f
+
 stage="${0##*/}"
 export HOOKSDIR="${0%/*}"
 checker="${0%/*}/if.hook"
 hookdir="${0%/*}/hooks.d/$stage"
-if [ -d "$hookdir" ];then
-	for subhook in "$hookdir"/*;do
+
+case "$stage" in
+	pre-push | pre-receive | post-receive | post-rewrite)
+		# These hooks are unique in that they are provided by git with data on
+		# standard input. Dump this data into a temporary file, and replay it
+		# as standard input to each of the hooks.
+		tempfile="$(mktemp "${TMPDIR:-/tmp}"/tmp.XXXXXXXXXX)"
+		trap 'rm -f "$tempfile"' EXIT
+		cat > "$tempfile"
+		;;
+esac
+exit_status=0
+if [ -d "$hookdir" ]; then
+	for subhook in "$hookdir"/*; do
 		id="$stage.${subhook##*/}"
-		if \
-			[[ -x "$subhook" ]] \
-			&& "$checker" "${subhook##*/}" "$id" "$stage"
-		then
-			echo "${color[green]}==> Running ${color[blue]}$id${color[green]}...${color[-]}"
-			if \
-				[[ -x "$subhook" ]] \
-				&& env CHECKPIPE=1 "$checker" "${subhook##*/}" "$id" "$stage"
-			then
-				"$subhook" "$@" 2>&1|format
-				if [[ ${PIPESTATUS[0]} -gt 0 ]];then
-					echo "E: $id failed"|format
-					exit 1
-				fi
+		[ -f "$subhook" -a -x "$subhook" ] || continue
+		if [ "${hook%.optional}" = "${hook}" ]; then
+			run="true" # hook does not end in ".optional"
+		else
+			run="false" # hook ends in ".optional"
+		fi
+		if "$checker" "${subhook##*/}" "$id" "$stage" "$run	"; then
+			echo "${f[blue]}::${f[green]} Running '${f[blue]}$id${f[green]}'${f[reset]}"
+			if [ "$tempfile" ]; then
+				"$subhook" "$@" < "$tempfile"
 			else
 				"$subhook" "$@"
-			fi
+			fi || {
+				ret=$?
+				let exit_status+=$ret
+				echo "${f[blue]}:: $id${f[red]} exited with return code ${f[yellow]}$ret${f[reset]}" >&2
+			}
 		fi
 	done
 fi
-if [ -x "$GIT_DIR/hooks/$stage" ];then
-	echo "${color[green]}==> Running local ${color[blue]}$stage${color[green]}...${color[-]}"
-	"$GIT_DIR/hooks/$stage" "$@"
+
+if [ -x "$GIT_DIR/hooks/$stage" ]; then
+	echo "${f[blue]}::${f[green]} Running '${f[yellow]}local/$stage${f[green]}'${f[reset]}"
+	if [ "$tempfile" ]; then
+		"$GIT_DIR/hooks/$stage" "$@" < "$tempfile"
+	else
+		"$GIT_DIR/hooks/$stage" "$@"
+	fi || {
+		ret=$?
+		let exit_status+=$ret
+		echo "${f[blue]}:: ${f[yellow]}local/$stage${f[red]} exited with return code ${f[yellow]}$ret${f[reset]}" >&2
+	}
 fi
+
+# all the hooks have run; perform some cleanup.
+case "$stage" in
+	post-update)
+		if [ "$exit_status" -ne 0 ]; then
+			cat >&2 <<- EOF
+				${f[yellow]}:: Warning, there was a problem running $stage githooks.
+					(However, this has no negative effect on the action you just
+					attempted.)${f[reset]}
+			EOF
+		fi
+		;;
+	pre-commit | commit-msg)
+		if [ $exit_status -ne 0 ]; then
+			cat >&2 <<- EOF
+				${f[red]}:: Aborting commit from $stage due to previous errors. If you
+				   want to override these checks, pass the --no-verify option to
+				   'git commit'.${f[reset]}
+				${f[yellow]}:: Note, these checks are performed against the contents of your
+				   index (staging area.) If you don't see the problem being
+				   reported, ensure that you've run 'git add' on the fixed lines.${f[reset]}
+			EOF
+		fi
+		;;
+	update)
+		if [ $exit_status -ne 0 ]; then
+			echo >&2 "ERROR: aborting update to $1 due to previous errors."
+		fi
+		;;
+esac
+# exit with an appropriate success code.
+exit $exit_status
