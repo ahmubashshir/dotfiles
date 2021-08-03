@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r202.cf5cbb9-30
+# VERSION r203.67e8e18-30
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1333,7 +1333,7 @@ vidstreaming:get_url()
 		| xmllint \
 			--nocdata --noent --html --xmlout \
 			--xpath 'string(//*[@data-provider="serverwithtoken"][1]/@data-video)' - 2> /dev/null \
-		| xargs --config /dev/null -s \
+		| xargs curl --config /dev/null -s \
 		| xmllint \
 			--nocdata --html --xmlout --xpath \
 			'string(//div[@id="myVideo"]/../script[contains(text(), "playerInstance.setup")]/text())' - 2> /dev/null \
