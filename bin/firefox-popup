@@ -13,7 +13,7 @@ config="${XDG_CONFIG_HOME:-$HOME/.config}/firefox-popup"
 [ -d "$profile" ] || mkdir -p "$profile/chrome" || exit 1
 printf '%s\n' \
 	"#nav-bar, #toolbar-menubar," \
-	"menupopup:not(#contentAreaContextMenu)," \
+	"#mainPopupSet > menupopup:not(#contentAreaContextMenu)," \
 	"#identity-box, #toolbarbutton" \
 	"{ visibility: collapse !important;}" > "$profile/chrome/userChrome.css"
 printf '%s\n' \
