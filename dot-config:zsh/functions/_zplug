@@ -16,22 +16,29 @@ _list_plugins()
 		for i in "$plugpath"/*(/);do
 			i=${i:t}
 			j=${i#zsh-}
-			for plug in "$i/$j.plugin" \
-				"$plugpath/$i/zsh-$j.plugin" \
-				"$plugpath/$i/$j.plugin" \
-				"$plugpath/$i/zsh-$j.plugin" \
-				"$plugpath/$i/$j" \
-				"$plugpath/$i/$j" \
-				"$plugpath/$i/zsh-$j"
+			for plug in "$j.plugin" "zsh-$j.plugin" \
+				"$j.plugin" "zsh-$j.plugin" "$j" "zsh-$j"
 			do
-				if [ -f "$plug.zsh" ];then
+				if [ -f "$plugpath/$i/$plug.zsh" ];then
 					plugins+=($j)
-					break
+					continue 2
 				fi
+			done
+			for k in "$plugpath/$i"/*(/);do
+				k=${k:t}
+				j=${k#zsh-}
+				for plug in "$j.plugin" "zsh-$j.plugin" \
+					"$j.plugin" "zsh-$j.plugin" "$j" "zsh-$j"
+				do
+					if [ -f "$plugpath/$i/$k/$plug.zsh" ];then
+						plugins+=($i/$j)
+						continue 2
+					fi
+				done
 			done
 		done
 	done
-	_values "plugins" "${plugins[@]}"
+	_values plugin $plugins
 }
 
 local args

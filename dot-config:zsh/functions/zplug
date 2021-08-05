@@ -20,7 +20,10 @@ for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 	fi
 done
 
-plugname=$1;shift
+plugname=$1:t
+plugpkg=$1:h
+[[ $plugpkg =~ ^\.$ ]] && unset plugpkg
+shift
 for plugpath in $zplugdirs[@];do
 	for plug in \
 		"$plugname/$plugname.plugin" \
@@ -31,7 +34,7 @@ for plugpath in $zplugdirs[@];do
 		"zsh-$plugname/$plugname" \
 		"zsh-$plugname/zsh-$plugname"
 	do
-		plugin="$plugpath/$plug.zsh"
+		plugin="$plugpath/${plugpkg+$plugpkg/}$plug.zsh"
 		if [ -f "$plugin" ]
 		then
 			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
