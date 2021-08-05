@@ -56,7 +56,7 @@ if [ -d "$hookdir" ]; then
 			fi || {
 				ret=$?
 				let exit_status+=$ret
-				echo "${f[blue]}:: $id${f[red]} exited with return code ${f[yellow]}$ret${f[reset]}" >&2
+				echo "${f[blue]}:: ${f[yellow]}$id${f[green]} exited with return code ${f[red]}$ret${f[reset]}" >&2
 			}
 		fi
 	done
