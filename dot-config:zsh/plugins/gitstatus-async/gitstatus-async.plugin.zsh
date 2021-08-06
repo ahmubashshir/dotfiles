@@ -86,7 +86,7 @@ function _git_prompt_update_async {
 		stat+="%B:%b${GITSTATUS[clean]}"
 	}
 	# *42 if have stashes.
-	(( VCS_STATUS_STASHES        	  )) && stat+="${GITSTATUS[clean]}%B*%b${VCS_STATUS_STASHES}%f"
+	(( VCS_STATUS_STASHES        	  )) && stat+="${GITSTATUS[clean]}%B☰%b ${VCS_STATUS_STASHES}%f"
 	((
 			VCS_STATUS_NUM_CONFLICTED
 		+	VCS_STATUS_NUM_STAGED
