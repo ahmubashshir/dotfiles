@@ -1,13 +1,40 @@
 #!/bin/zsh
+typeset -a subvols mounts
 mounts=(${(f)"$(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1)"})
-for mount in $mounts;{
-	subvols=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
-
-	for subvol in $subvols;udisksctl unmount -b $subvol
-	udisksctl unmount -b $mount
-
-	ntfsfix $mount
-
-	udisksctl mount -b $mount
+if [[ $1 = hbcd ]];then
+	for mount in $mounts; {
+		subvols+=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
+		for subvol in $subvols;udisksctl unmount -b $subvol
+		udisksctl unmount -b $mount
+	}
+	qemu_args=(
+		-boot d
+		-cdrom
+		~/hbcd.iso
+		-m "${HBCD_RAM:-2048}"
+		-machine q35,accel=xen:kvm:tcg
+		-device ich9-usb-uhci6
+	)
+	for ((i=0;i<($#mounts/3 + ($#mounts%3>0?1:0));i++ ));qemu_args+=(-device usb-hub)
+	for dev in $mounts;{
+		qemu_args+=(
+			-drive "id=${dev:s%/%%:gs%/%_%},file=$dev,format=raw,if=none"
+			-device "usb-storage,drive=${dev:s%/%%:gs%/%_%}"
+		)
+	}
+	qemu-system-x86_64 $qemu_args
+	for mount in $mounts; udisksctl mount -b $mount
 	for subvol in $subvols;udisksctl mount -b $subvol
-}
+else
+	for mount in $mounts; {
+		subvols=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
+
+		for subvol in $subvols;udisksctl unmount -b $subvol
+		udisksctl unmount -b $mount
+
+		ntfsfix $mount
+
+		udisksctl mount -b $mount
+		for subvol in $subvols;udisksctl mount -b $subvol
+	}
+fi
