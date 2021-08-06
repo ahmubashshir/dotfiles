@@ -96,3 +96,9 @@
 [submodule "submodules/git-confirm"]
 	path = submodules/git-confirm
 	url = https://github.com/pimterry/git-confirm
+[submodule "dot-config:zsh/plugins/rockz"]
+	path = dot-config:zsh/plugins/rockz
+	url = https://github.com/aperezdc/rockz
+[submodule "dot-config:zsh/plugins/git-extra-commands"]
+	path = dot-config:zsh/plugins/git-extra-commands
+	url = https://github.com/unixorn/git-extra-commands
