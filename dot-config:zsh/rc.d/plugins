@@ -1,13 +1,25 @@
 #!/bin/zsh
-# zplug async
-ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE=1
-zplug hacker-quotes
-unset ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE
-zsh-defer zplug bd
-unalias .. ... ....
-zsh-defer zplug lazyload
-zsh-defer zplug completions
-zsh-defer zplug auto-notify && {
+# plugin hooks
+function zplug:post:zinsults {
+	zinsults_load=('default' 'shakespeare')
+}
+function zplug:post:autoswitch_virtualenv {
+	VIRTUAL_ENV_DISABLE_PROMPT=1
+}
+function zplug:post:fast-syntax-highlighting {
+	((${+aliases[fsh-alias]})) && \
+	unalias fsh-alias
+}
+function zplug:pre:hacker-quotes {
+	ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE=1
+}
+function zplug:post:hacker-quotes {
+	unset ZSH_HACKER_QUOTES_ENABLE_WHEN_INTERACTIVE
+}
+function zplug:post:bd {
+	unalias .. ... ....
+}
+function zplug:post:auto-notify {
 	AUTO_NOTIFY_THRESHOLD=20
 	AUTO_NOTIFY_EXPIRE_TIME=5000
 	AUTO_NOTIFY_WHITELIST=()
@@ -20,17 +32,11 @@ zsh-defer zplug auto-notify && {
 		yay pacman bc
 	)
 }
-zsh-defer zplug systemd
-zsh-defer zplug autopair
-zsh-defer zplug autosuggestions && {
+function zplug:post:autosuggestions {
 	ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 	ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 }
-zsh-defer zplug fast-syntax-highlighting && {
-	((${+aliases[fsh-alias]})) && \
-	unalias fsh-alias
-}
-zsh-defer zplug you-should-use && {
+function zplug:post:you-should-use {
 	YSU_MESSAGE_POSITION=after
 #	YSU_HARDCORE=1
 	YSU_MESSAGE_FORMAT="$(print -P %B%F{cyan})Use \"$(print -P %F{blue})%alias$(print -P %F{cyan})\", $(print -P %F{red})you little shit!$(print -P %b%f)"
@@ -41,24 +47,40 @@ zsh-defer zplug you-should-use && {
 		check_alias_usage 2>&1|grep -v 'entry='
 	}
 }
-zsh-defer zplug bash-completions-fallback
-zsh-defer zplug zshmarks && {
+function zplug:post:zshmarks {
 	alias jmp=jump
 	alias mark=bookmark
 	alias unmark=deletemark
 	alias lsmark=showmarks
 }
-zsh-defer zplug history-substring-search && {
+function zplug:post:history-substring-search {
 	bindkey "$terminfo[kcuu1]" history-substring-search-up
 	bindkey "$terminfo[kcud1]" history-substring-search-down
 }
-zsh-defer zplug command-time && {
+function zplug:post:command-time {
 	ZSH_COMMAND_TIME_MSG="Execution time: %s"
 	ZSH_COMMAND_TIME_COLOR=cyan
 }
+# load plugins
+#zplug async
+zplug hacker-quotes
+zsh-defer zplug bd
+zsh-defer zplug lazyload
+zsh-defer zplug completions
+zsh-defer zplug auto-notify
+zsh-defer zplug systemd
+#zsh-defer zplug autocomplete
+zsh-defer zplug fast-syntax-highlighting
+zsh-defer zplug autosuggestions
+zsh-defer zplug autopair
+zsh-defer zplug you-should-use
+zsh-defer zplug bash-completions-fallback
+zsh-defer zplug zshmarks
+zsh-defer zplug history-substring-search
+zsh-defer zplug command-time
 #zplug auto-ls
-VIRTUAL_ENV_DISABLE_PROMPT=1
 zsh-defer zplug autoswitch_virtualenv
+zsh-defer zplug rockz
+zsh-defer zplug git-extra-commands
 zsh-defer zplug zinsults
-zinsults_load=('default' 'shakespeare')
 
