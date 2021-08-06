@@ -18,4 +18,6 @@ function __DEVPROMPT_precmd {
 	DEVPROMPT_PROMPT=''
 	[[ -n $VIRTUAL_ENV ]] && \
 		DEVPROMPT_PROMPT+="${DEVPROMPT[seperator]}${DEVPROMPT[prefix]}${DEVPROMPT[icon]}%B ${DEVPROMPT[text]}${VIRTUAL_ENV##*/}%b${DEVPROMPT[default]}${DEVPROMPT[suffix]}"
+	[[ -n $ROCK_ENV_NAME ]] && \
+		DEVPROMPT_PROMPT+="${DEVPROMPT[seperator]}${DEVPROMPT[prefix]}${DEVPROMPT[icon]}%B ${DEVPROMPT[text]}${ROCK_ENV_NAME}%b${DEVPROMPT[default]}${DEVPROMPT[suffix]}"
 }
