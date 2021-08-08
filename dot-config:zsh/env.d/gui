@@ -7,11 +7,12 @@ if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ];then
 fi
 
 export ENABLE_VKBASALT=1
-export mesa_glthread=true
 export MANGOHUD=1
+export mesa_glthread=true
+#export MESA_LOADER_DRIVER_OVERRIDE=zink
 
-export WINEDEBUG=-all
 export DXVK_LOG_LEVEL=error
+export WINEDEBUG=-all
 export WINEESYNC=1
 export WINEFSYNC=1
 if [ -z "$WINEARCH" ]; then
