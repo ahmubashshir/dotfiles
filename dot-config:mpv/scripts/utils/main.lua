@@ -1,4 +1,4 @@
-local opt = mp.options.read_options
+local opt = require("mp.options").read_options
 local o = {repl = true, quack = true}
 
 opt(o)
