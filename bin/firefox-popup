@@ -26,7 +26,7 @@ printf '%s\n' \
 	printf '%s\n' \
 		'user_pref("browser.cache.disk.enable", false);' \
 		'user_pref("browser.cache.disk.capacity", 0);' \
-		'user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"nav-bar\":[\"back-button\",\"forward-button\",\"stop-reload-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"customizableui-special-spring2\",\"save-to-pocket-button\",\"downloads-button\",\"fxa-toolbar-menu-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"tabbrowser-tabs\",\"alltabs-button\"],\"PersonalToolbar\":[]},\"seen\":[\"save-to-pocket-button\",\"developer-button\"],\"dirtyAreaCache\":[\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":17,\"newElementCount\":3}");' \
+		'user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"nav-bar\":[],\"toolbar-menubar\":[],\"TabsToolbar\":[\"tabbrowser-tabs\",\"customizableui-special-spring2\",\"stop-reload-button\",\"alltabs-button\"],\"PersonalToolbar\":[]},\"dirtyAreaCache\":[\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"]}");' \
 		'user_pref("browser.cache.disk.filesystem_reported", 1);' \
 		'user_pref("browser.cache.disk.smart_size.enabled", false);' \
 		'user_pref("browser.cache.disk.smart_size.first_run", false);' \
