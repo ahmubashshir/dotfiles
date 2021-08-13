@@ -20,7 +20,7 @@ zsh_options=(
 	no_nomatch null_glob c_bases no_flow_control
 	auto_continue auto_cd auto_pushd pushd_silent
 	pushd_to_home pushd_ignore_dups pushd_minus
-	auto_list glob_complete list_packed 
+	auto_list glob_complete list_packed
 )
 setopt $zsh_options
 unset zsh_options
@@ -30,15 +30,16 @@ bindkey -e
 autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 if ! zplug defer;then
-	if ! (
-		cd "$(realpath "$ZDOTDIR")"
-		git submodule init
-		git submodule update
-	);then
-		printf "zsh: failed to initialize plugins"
+	git -C "$ZDOTDIR" submodule init --quiet plugins
+	if ! git -C "$ZDOTDIR" submodule update --progress plugins
+	then
+		printf "zsh: failed to initialize plugins\n"
 		function zsh-defer {
 			"$@"
 		}
+	else
+		printf "zsh: finished cloning modules\n"
+		zplug defer
 	fi
 fi
 
