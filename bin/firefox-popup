@@ -4,9 +4,9 @@ if [ -z "$*" ]; then
 	exit 2
 fi
 end=$(
-	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line;exit}' "$0"
+	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line+2;exit}' "$0"
 )
-search=152
+search=153
 places=107
 profile="${XDG_DATA_HOME:-$HOME/.local/share}/firefox-popup"
 config="${XDG_CONFIG_HOME:-$HOME/.config}/firefox-popup"
@@ -38,7 +38,7 @@ printf '%s\n' \
 tail -n "+$end" "$0" | head -n $search | base64 -d > "$profile/search.json.mozlz4"
 tail -n "+$end" "$0" | tail -n $places | base64 -d | zstd -d > "$profile/places.sqlite"
 
-exec firefox -width 800 -height 600 --profile "$profile" "$*"
+exec firefox --class firefox-popup -width 800 -height 600 --profile "$profile" "$*"
 
 ### END SCRIPT ###
 bW96THo0MABWRwAA9B57InZlcnNpb24iOjEsImJ1aWxkSUQiOiIyMDE5MTIwNTE4NDkyNCIsImFw
