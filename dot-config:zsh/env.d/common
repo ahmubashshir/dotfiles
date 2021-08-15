@@ -9,7 +9,8 @@ if [ -z "$XDG_DATA_HOME" ]; then
 	export XDG_DATA_HOME="$HOME/.local/share"
 fi
 
-export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
+#export CORS_PROXY="https://calm-everglades-31879.herokuapp.com/"
+export CORS_PROXY="https://cors.eu.org/"
 export PUPPETEER_PROXY='https://pumpkin-cake-35757.herokuapp.com/'
 export LNDIR="/mnt/Books/LightNovels"
 export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
