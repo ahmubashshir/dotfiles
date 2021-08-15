@@ -2,6 +2,10 @@
 typeset -a subvols mounts
 mounts=(${(f)"$(lsblk --output PATH,FSTYPE,PARTLABEL|grep ntfs|grep -v 'mnt\.windows'|cut -d' ' -f1)"})
 if [[ $1 = hbcd ]];then
+	shift
+	if (($#>0));then
+		mounts=("$@")
+	fi
 	for mount in $mounts; {
 		subvols+=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
 		for subvol in $subvols;udisksctl unmount -b $subvol
