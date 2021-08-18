@@ -1,4 +1,3 @@
 .hidden
-Hand of Fate 2.x86_64.conf
-wine-GenshinImpact.conf
-wine-TokyoXanadu.conf
+*.conf
+!MangoHud.conf
