@@ -19,15 +19,9 @@ template()
 		cp MangoHud.conf "$1"
 		cat "$1.in" >> "$1"
 		grep -xq "$1" .hidden 2> /dev/null || echo "$1" >> .hidden
-		grep -xq "$1" .gitignore 2> /dev/null || echo "$1" >> .gitignore
 	fi
 }
-touch .hidden .gitignore
+touch .hidden
 for each in *.conf.in; do
 	template "${each%.in}" "$1"
 done
-while read -r file; do
-	if ! [ -f "$file.in" ]; then
-		sed -i /"^$file$"/d .gitignore
-	fi
-done < .gitignore
