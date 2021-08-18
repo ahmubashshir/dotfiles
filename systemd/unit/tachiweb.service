@@ -2,11 +2,9 @@
 Description=tachiyomi web server
 
 [Service]
-ExecCondition=/usr/bin/test -f /opt/TachiWeb/resources/static/tachiserver.jar
-WorkingDirectory=%h/.config/TachiWeb
-ExecStart=/usr/bin/java --patch-module java.base=$PWD/tachiserver-data/patches --add-reads java.base=java.logging -Dts.bootstrap.active=true -jar /opt/TachiWeb/resources/static/tachiserver.jar
+ExecCondition=/usr/bin/test -f /usr/share/java/tachidesk/tachidesk.jar
+ExecStart=/usr/bin/java -jar /usr/share/java/tachidesk/tachidesk.jar
 Restart=always
-SuccessExitStatus=143
 MemoryHigh=300M
 MemoryMax=400M
 

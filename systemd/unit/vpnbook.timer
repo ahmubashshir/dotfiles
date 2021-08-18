@@ -1,5 +1,6 @@
 [Unit]
 Description=Update vpnbook.net password daily
+After=network-online.target
 
 [Timer]
 OnCalendar=daily
