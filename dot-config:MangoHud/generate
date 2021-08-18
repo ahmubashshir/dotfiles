@@ -1,0 +1,33 @@
+#!/bin/sh
+template()
+{
+	test -f "$1.in" || {
+		echo "$1.in: File doesn't exist." >&2
+		return 2
+	}
+	if [ "$2" = "clean" ]; then
+		echo "Cleaning $1"
+		rm -f "$1"
+		grep -xq "$1" .hidden 2> /dev/null &&
+			sed  -i /"^$1$"/d .hidden
+	else
+		{
+			test MangoHud.conf -nt "$1" ||
+				! test -f "$1"
+		} || return 0
+		echo "Generating $1"
+		cp MangoHud.conf "$1"
+		cat "$1.in" >> "$1"
+		grep -xq "$1" .hidden 2> /dev/null || echo "$1" >> .hidden
+		grep -xq "$1" .gitignore 2> /dev/null || echo "$1" >> .gitignore
+	fi
+}
+touch .hidden .gitignore
+for each in *.conf.in; do
+	template "${each%.in}" "$1"
+done
+while read -r file; do
+	if ! [ -f "$file.in" ]; then
+		sed -i /"^$file$"/d .gitignore
+	fi
+done < .gitignore
