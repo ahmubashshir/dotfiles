@@ -1,3 +1,5 @@
 #!/bin/zsh
 setopt extended_glob
-emulate sh -c 'source /etc/profile'
+if ! [[ -f /etc/zsh/zprofile ]] || ! grep -q 'source /etc/profile' /etc/zsh/zprofile;then
+	emulate sh -c 'builtin source /etc/profile'
+fi
