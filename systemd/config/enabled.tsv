@@ -6,14 +6,16 @@ service	fetchcord
 service	gamemoded
 service	geary
 service	mpris-proxy
-service	phonesim
 service	redshift-gtk
+service	replay-sorcery
 service	systembus-notify
 service	trakt-scrobbler
 service	transmission-trackers
 service	vino-server
+service	windscribe-proxy
 socket	dirmngr
 socket	gpg-agent
+timer	aur-autobuild
 timer	aur-autopush
 timer	eos-update-notifier
 timer	epic-claim
