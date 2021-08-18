@@ -1,0 +1,10 @@
+[Unit]
+Descritpion=Windscribe Proxy Client on port 28080
+After=network-online.target
+
+[Service]
+ExecCondition=bash -c 'hash windscribe-proxy 2>/dev/null'
+ExecStart=bash -c windscribe-proxy
+
+[Install]
+WantedBy=default.target
