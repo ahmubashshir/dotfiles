@@ -9,7 +9,7 @@ template()
 		echo "Cleaning $1"
 		rm -f "$1"
 		grep -xq "$1" .hidden 2> /dev/null &&
-			sed  -i /"^$1$"/d .hidden
+			sed -i /"^$1$"/d .hidden
 	else
 		{
 			test MangoHud.conf -nt "$1" ||
