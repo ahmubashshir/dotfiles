@@ -1,2 +1,6 @@
-position=middle-left
+position=middle-right
 fps_limit=30
+background_alpha=0.5
+alpha=0.9
+offset_x=-8
+offset_y=50
