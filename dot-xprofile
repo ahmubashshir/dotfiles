@@ -3,7 +3,7 @@ if [ -f ~/.shell/environment ]; then
 	. ~/.shell/environment
 fi
 
-services="ibus picom"
+services="ibus picom dockx"
 export GTK_IM_MODULE=ibus
 export QT_IM_MODULE=ibus
 export XMODIFIERS=@im=ibus
