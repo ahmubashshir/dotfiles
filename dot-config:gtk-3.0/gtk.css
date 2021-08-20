@@ -1,9 +1,11 @@
-decoration {
+.csd decoration {
+	border-radius: 0;
 	border-width: 0px;
 	box-shadow: none;
-	margin: 0px;
+	margin: 0;
 }
 
-.titlebar {
+.csd .titlebar {
+	box-shadow: none;
 	opacity: 0.65;
 }
