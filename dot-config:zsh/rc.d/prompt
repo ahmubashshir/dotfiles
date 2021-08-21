@@ -11,7 +11,8 @@ function xterm_title_precmd {
 	print -Pnf '\e]2;[%s idle]\a' -- '%1~'
 }
 function xterm_title_preexec {
-	print -Pnf '\e]2;[%s run] %s\a' -- '%1~' "${1:gs:%:%%:}"
+	print -Pnf '\e]2;[%s run]' -- '%1~'
+	printf ' %s\a' "$1"
 }
 function reset_broken_terminal {
 	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
