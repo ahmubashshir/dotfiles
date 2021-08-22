@@ -4,5 +4,6 @@ Description=PiCom Compositning Manager on Display %I
 [Service]
 Environment=DISPLAY="%I"
 ExecStart=/usr/bin/picom --experimental-backends
+ExecReload=kill -USR1 $MAINPID
 RestartSec=3
 Restart=on-failure
