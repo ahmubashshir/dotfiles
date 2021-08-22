@@ -1,6 +1,6 @@
 @define-color fg #fff;
-@define-color bg rgba(27, 34, 36, 1.0);
-@define-color border #181C1C;
+@define-color bg #1B2224;
+@define-color border rgba(24, 28, 28, 0.75);
 
 @define-color critical rgb(120, 34, 36);
 @define-color low rgb(39, 41, 52);
@@ -14,17 +14,18 @@
 @define-color close_active rgb(241, 48, 57);
 
 .blurredBG,
-#main_window,
 .blurredBG.low,
-.blurredBG.normal {
-	background: @bg;
+.blurredBG.normal,
+#main_window {
+	background: alpha(@bg, 0.5);
 }
 
+/*
 .blurredBG.notification {
-	background: rgba(31, 40, 42, 0.75);
+	background: alpha(@bg, 0.3);
 	border-radius: 5px;
 }
-
+*/
 #img_img {
 	border-radius: 10px;
 }
