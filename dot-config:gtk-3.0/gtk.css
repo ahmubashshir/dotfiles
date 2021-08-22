@@ -5,32 +5,9 @@ decoration {
 	margin: 0;
 }
 
-decoration:backdrop {
-	border-radius: 6px 6px 0 0;
-	border-width: 0px;
-	box-shadow: none;
-	margin: 4px;
-}
-
 .window-frame:backdrop {
 	box-shadow: none;
 }
-
-tooltip {
-	border-radius: 0px;
-	box-shadow: none;
-}
-
-tooltip.background {
-	box-shadow: none;
-}
-
-tooltip.background label {
-	padding: 0px;
-	box-shadow: none;
-	margin: 0px;
-}
-
 
 .titlebar,
 .titlebar headerbar {
