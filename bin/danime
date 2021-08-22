@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r203.67e8e18-30
+# VERSION r205.258fbef-30
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -304,11 +304,10 @@ anime_cover()
 	#ext=${anime_cover_img##*.}
 	if [ ! -e folder.jpg ]; then
 		{
-			curl --config /dev/null -kLsIXGET "$anime_cover_img" && wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
-		}                                                                                           &> /dev/null
-		if {
-			! grep -q cover.jpg .hidden &> /dev/null
-		}                                 && [ -f cover.jpg ]; then
+			curl --config /dev/null -kLsIXGET "$anime_cover_img" \
+				&& wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
+		} &> /dev/null
+		if ! grep -q cover.jpg .hidden &> /dev/null && [ -f cover.jpg ]; then
 			echo cover.jpg >> .hidden
 		fi
 	fi
@@ -765,14 +764,34 @@ da_get()
 	while [[ 
 		"$(
 			echo "$da_page" \
-				| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+				| xmllint --html --xmlout --xpath \
+					'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 		)" != "https://ww5.dubbedanime.net/$series" ]] \
 		&& ((try_page++ < 5)); do
-		da_page=$(curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series")
+		da_page=$(
+			curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL \
+				"${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series"
+		)
 		((try_page > 1)) && sleep 1
 	done
-	da_page_json=$(echo "$da_page" | grep -E '(let|var) anime' | cut -d= -f2- | cut -d\  -f2- | sed 's/\;$//g' | jq)
-	baseurl=$(echo "$da_page" | xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/node()' - 2> /dev/null | awk '/<li/,/li>/{printf $0;if (++o%3 == 0) print ""}' | while read -rs xml_node; do echo -e "$xml_node" | xmllint --html --nowarning --xpath 'concat("href=",//a/@href,";subbed=",//li/@data-subbed="true" or //li/@data-sub="true",";dubbed=",//li/@data-dubbed="true" or //li/@data-dub="true"," ")' -; done | tr -s ' ' \\n | tac)
+	da_page_json=$(
+		echo "$da_page" \
+			| grep -E '(let|var) anime' \
+			| cut -d= -f2- \
+			| cut -d\  -f2- \
+			| sed 's/\;$//g' \
+			| jq
+	)
+	baseurl=$(
+		echo "$da_page" \
+			| xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/node()' - 2> /dev/null \
+			| awk '/<li/,/li>/{printf $0;if (++o%3 == 0) print ""}' \
+			| while read -rs xml_node; do
+				echo -e "$xml_node" \
+					| xmllint --html --nowarning --xpath 'concat("href=",//a/@href,";subbed=",//li/@data-subbed="true" or //li/@data-sub="true",";dubbed=",//li/@data-dubbed="true" or //li/@data-dub="true"," ")' -
+			done \
+			| tr -s ' ' \\n
+	)
 	stop_spinner "$([[ -n $baseurl ]] && echo 0 || echo 1)"
 	[[ -n $baseurl ]] && ${DEBUG:-false} && echo "$da_page"
 	if ! {
@@ -974,10 +993,16 @@ da_get_episede()
 		while [[ 
 			"$(
 				echo "$parse_episode_page" \
-					| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+					| xmllint --html --xmlout --xpath \
+						'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 			)" != "$1" ]] \
 			&& ((try_page++ < 5)); do
-			parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$1" | grep -E '(var|let) episode')"
+			parse_episode_page="$(
+				curl --config /dev/null \
+					-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
+					"${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$1" \
+					| grep -E '(var|let) episode'
+			)"
 			((try_page > 1)) && sleep 1
 		done
 		if [ -z "$parse_episode_page" ]; then
@@ -985,17 +1010,29 @@ da_get_episede()
 			while [[ 
 				"$(
 					echo "$parse_episode_page" \
-						| xmllint --html --xmlout --xpath 'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
+						| xmllint --html --xmlout --xpath \
+							'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
 				)" != "$page_url" ]] \
 				&& ((try_page++ < 5)); do
-				parse_episode_page="$(curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$page_url" | grep -E '(var|let) episode')"
+				parse_episode_page="$(
+					curl --config /dev/null \
+						-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
+						"${CURL_OPTIONS[@]}" -Lks \
+						"${PUPPETEER_PROXY}$page_url" \
+						| grep -E '(var|let) episode'
+				)"
 				((try_page > 1)) && sleep 1
 			done
 			shift
 			set "$page_url" "$@"
 		fi
 		unset page_url
-		parse_episode_page="$(echo "$parse_episode_page" | cut -d= -f2- | sed 's/\;$//g;s/^[[:blank:]]*//g' | head -1)"
+		parse_episode_page="$(
+			echo "$parse_episode_page" \
+				| cut -d= -f2- \
+				| sed 's/\;$//g;s/^[[:blank:]]*//g' \
+				| head -1
+		)"
 		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
 			tr=dubbed
 		fi
@@ -1014,7 +1051,13 @@ da_get_episede()
 			local ep_number
 			ep_number=$(echo "$parse_episode_page" | jq -r '.number')
 			if [ "$ep_number" = "null" ]; then
-				ep_number=$(echo "$parse_episode_page" | jq -r '.name.default' | rev | cut -d' ' -f1 | rev)
+				ep_number=$(
+					echo "$parse_episode_page" \
+						| jq -r '.name.default' \
+						| rev \
+						| cut -d' ' -f1 \
+						| rev
+				)
 				if ! [[ $ep_number =~ ^[[:digit:].]+$ ]]; then
 					((null_ep_count += 1))
 					ep_number=${null_ep_count}n
@@ -1053,7 +1096,21 @@ da_get_episede()
 			fi
 			ep_file_name="$(echo "$ep_title" | replace_invalid)-$tr.mp4"
 		fi
-		ep_id_list="$(echo "$ep_id_list" | awk -e '!seen[$0]++' | awk '/'"${PREFERRED_HOSTS//,/|}"'/{print};!/'"${PREFERRED_HOSTS//,/|}"'/{lines[a++]=$0};END{for(i in lines) print lines[i]}')"
+		ep_id_list="$(
+			echo "$ep_id_list" \
+				| awk -e '!seen[$0]++' \
+				| awk \
+					'/'"${PREFERRED_HOSTS//,/|}"'/{
+						print
+					}
+					!/'"${PREFERRED_HOSTS//,/|}"'/{
+						lines[a++]=$0
+					}
+					END {
+						for(i in lines)
+							print lines[i]
+					}'
+		)"
 		set +x
 		if [ -n "$parse_episode_page" ] && [ -n "$ep_title" ]; then
 			stop_spinner 0
@@ -1148,7 +1205,16 @@ da_get_episede()
 download()
 {
 	local s1 s2 ret tried
-	s1=$(curl --config /dev/null -kLsIXGET "$2" | awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($1) ~ /^content-length:$/){ print $2 }}')
+	s1=$(
+		curl --config /dev/null -kLsIXGET "$2" \
+			| awk \
+				'/^HTTP\/[12.]+ 200/,/^\r$/ {
+					gsub(/\r/,"")
+					if( tolower($1) ~ /^content-length:$/) {
+						print $2
+					}
+				}'
+	)
 	s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
 	if ((s1 >= s2)); then
 		until fget "$2" "$1"; do
@@ -1160,7 +1226,7 @@ download()
 				((tried > 1)) && (
 					tput el1
 					tput el
-					tput         cuu1
+					tput       cuu1
 				)
 				tput el1
 				tput el
@@ -1210,7 +1276,16 @@ compare_episode()
 	if ((${BS:-524288} > size)); then
 		BS=$size
 	fi
-	wsize=$(curl --config /dev/null -LksIXGET "$2" | awk '/^HTTP\/[12.]+ 200/,/^\r$/{gsub(/\r/,"");if( tolower($1) ~ /^content-length:$/){ print $2 }}')
+	wsize=$(
+		curl --config /dev/null -LksIXGET "$2" \
+			| awk \
+				'/^HTTP\/[12.]+ 200/,/^\r$/ {
+					gsub(/\r/,"")
+					if( tolower($1) ~ /^content-length:$/) {
+						print $2
+					}
+				}'
+	)
 	if ((size > wsize)); then
 		return 3
 	elif ((size == 0)); then
