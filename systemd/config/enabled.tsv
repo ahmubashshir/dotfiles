@@ -2,12 +2,10 @@ TYPE	NAME
 service	anbox-session-manager
 service	aria2@6801
 service	broadwayd
-service	fetchcord
 service	gamemoded
 service	geary
 service	mpris-proxy
 service	redshift-gtk
-service	replay-sorcery
 service	systembus-notify
 service	trakt-scrobbler
 service	transmission-trackers
