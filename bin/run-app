@@ -1,0 +1,43 @@
+#!/bin/sh
+if
+	[ "$#" -ge 1 ] &&
+		command -pv "$1" > /dev/null 2>&1
+then
+
+	if echo "$*" | grep -qE '\b(sudo|su|true|false|yes|pkexec)\b'; then
+		echo "invalid: $*"
+		exit 1
+	fi
+
+	trap 'rm -f "$PIDFILE";exit' EXIT TERM QUIT ABRT
+
+	PIDFILE="${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service/$1"
+	if [ -d "${XDG_RUNTIME_DIR:-/tmp}" ]; then
+		mkdir -p "${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service"
+		if [ -f "$PIDFILE" ]; then
+			PID=$(cat "$PIDFILE")
+			if [ -n "$PID" ]; then
+				#shellcheck disable=SC2086
+				kill $PID > /dev/null 2>&1
+			fi
+			rm -f "$PIDFILE"
+		fi
+		until
+			xset q > /dev/null 2>&1
+		do
+			echo "$$" > "$PIDFILE"
+			sleep 1
+		done
+		while true; do
+			"$@" &
+			PID=$!
+			echo "$$ $PID" > "$PIDFILE"
+			wait $PID
+			xset q > /dev/null 2>&1 || break
+			sleep 1
+		done
+	fi
+else
+	echo "usage: ${0##*/} command [args]"
+	exit
+fi
