@@ -7,7 +7,11 @@ zsystem flock -t 0 -f fd "$LOCKFILE" || exit
 
 setopt null_glob extended_glob
 function zcompare {
-	if [[ -w $1:P:h ]] && [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
+	if
+		! [[ $1:e =~ ^(zwc|md|adoc|rst|(c|h)(|pp|xx)|cc|png|gif|zunit|ini|org|zwc|lck)$ ]] \
+		&& ! [[ $1:t =~ ^(AUTHORS|LICENSE|CHANGELOG|history)$ ]] \
+		&& [[ -O $1:P:h ]] \
+		&& [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
 	then
 		zcompile "${@:2}" "$1" || touch "$1.ignore.zwc"
 	fi
@@ -17,18 +21,16 @@ for target in $@;do
 	if [[ -f $target ]];then
 		zcompare "$target" -Rz
 	elif [[ -d $target ]];then
-		for dir in "$target" "$target"/**/*(/);do
-			for file in "$dir"/^*(.(zwc|md|adoc|rst|(c|h)(|pp|xx)|cc|png|gif|zunit|ini|org)|(AUTHORS|LICENSE|CHANGELOG))(.);do
-				zcompare "$file" -Rz
-			done
+		for file in "$target"/**/*(^/);do
+			zcompare "$file" -Rz
 		done
 	fi
 done
 
 for target in \
-	${ZDOTDIR:-$HOME}/.z{shrc,shenv,login,logout,profile,inputrc} \
-	${ZDOTDIR:-$HOME/.zsh}/{compdef,lazyload} \
-	$HOME/.cache/zsh/**/^(*.zwc|history|recompile.lck)
+	"${ZDOTDIR:-$HOME}"/.z{shrc,shenv,login,logout,profile,inputrc} \
+	"${ZDOTDIR:-$HOME/.zsh}"/compdef \
+	"${XDG_CACHE_HOME:-$HOME/.cache}/zsh"/**/*(.)
 do
 	zcompare "$target" -Mz
 done
