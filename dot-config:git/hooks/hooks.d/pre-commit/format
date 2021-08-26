@@ -67,19 +67,21 @@ format_file()
 			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab "$2"
 			rm -f "$2.orig"
 			;;
-		js) js-beautify -itPjakxnr "$2" 2>&1 > /dev/null ;;
-		css) css-beautify --replace --space-around-combinator --end-with-newline --indent-with-tabs "$2" ;;
+		js) js-beautify -tPjakxnr "$2" 2>&1 > /dev/null ;;
+		css) css-beautify -rnt --space-around-combinator "$2" > /dev/null ;;
 		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
 		lua) lua-format -i "$2" 2>&1 > /dev/null ;;
 		*) return 1 ;;
 	esac
 }
-
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
 for file in "${STAGED[@]}"; do
 	if ! [ -f "$file" ] || [ -L "$file" ]; then
 		continue
 	fi
+	test -f "${file%/*}/.hookignore" \
+		&& grep -xFq "$id" "${file%/*}/.hookignore" \
+		&& continue
 	if [ "$(head -c2 "$file")" = "#!" ]; then
 		fmt=$(
 			head -1 "$file" \
