@@ -40,7 +40,7 @@ esac
 exit_status=0
 if [ -d "$hookdir" ]; then
 	for subhook in "$hookdir"/*; do
-		id="$stage.${subhook##*/}"
+		export id="$stage.${subhook##*/}"
 		[ -f "$subhook" -a -x "$subhook" ] || continue
 		if [ "${hook%.optional}" = "${hook}" ]; then
 			run="true" # hook does not end in ".optional"
@@ -59,6 +59,7 @@ if [ -d "$hookdir" ]; then
 				echo "${f[blue]}:: ${f[yellow]}$id${f[green]} exited with return code ${f[red]}$ret${f[reset]}" >&2
 			}
 		fi
+		unset id
 	done
 fi
 
