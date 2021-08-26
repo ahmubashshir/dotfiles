@@ -1,2 +1,5 @@
 [General]
 theme=Matcha-sea-dark#
+
+[Applications]
+Default=gfxbench
