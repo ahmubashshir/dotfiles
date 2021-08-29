@@ -57,7 +57,7 @@ function pip:deps
 function poetry:deps
 {
 	dephell deps convert \
-		--from ${1:-pyproject.toml} \
+		--from "${1:-pyproject.toml}" \
 		--to-format=pip \
 		--to-path=stdout 2> /dev/null | pip:deps -
 }
@@ -70,7 +70,7 @@ function pypi:deps
 			's/^([[:alnum:]]+)\s*\(>=([[:digit:].]+),<([[:digit:].]+)\)(|; sys_platform == \"linux\")$/python-\1<\3\npython-\1>=\2/p' \
 		| py:deps
 }
-
+export GIT_DISABLED_HOOKS=commit-msg.validate:prepare-commit-msg.restore:commit-msg.validate
 # script start
 if (($# == 0)); then
 	set -- ./*/
@@ -97,13 +97,13 @@ for pkgpath in "$@"; do
 	fi
 	if [ -f "$pkgpath/PKGBUILD" ] && [ ! -e "$pkgpath/WIP" ]; then
 		if ((aurpublish)); then
-			cd "$repo"
-			find \
+			cd "$repo" || exit
+			find . \
 				-mindepth 1 -maxdepth 1 \
 				-type d -not -name '.git' \
 				-not -name "$(basename "$pkgpath")" -print0 \
 				| git stash push --pathspec-from-file=- --pathspec-file-nul > /dev/null 2>&1
-			cd "$OLDPWD"
+			cd "$OLDPWD" || exit
 		fi
 		(
 			lock "$pkgpath" || exit
@@ -215,9 +215,9 @@ for pkgpath in "$@"; do
 			git clean -fxd "${exclude[@]}" .
 		)
 		if ((aurpublish)); then
-			cd "$repo"
+			cd "$repo" || exit
 			git stash pop > /dev/null 2>&1
-			cd "$OLDPWD"
+			cd "$OLDPWD" || exit
 		fi
 	fi
 done
