@@ -5,12 +5,13 @@ stage="$3"
 run="$4"
 
 shift 3
-[[ "$(git config --bool "hook.$id")" != "false" && ! ":$GIT_DISABLED_HOOKS:" =~ :$id: ]]
+[[ "$(git config --bool "hook.$id")" != "false" ]]
+[[ ! ":$GIT_DISABLED_HOOKS:" =~ :$id: ]]
+[[ ! ":$GSH:" =~ :$subhook: ]]
 
 [[ "$(
 	git config --bool hook.$id \
 		|| git config --bool hook.$id.enabled \
-		|| git config --bool hook.${hook_short##*/}.enable \
 		|| echo $run
 )" = "true" ]]
 
