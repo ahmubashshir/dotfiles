@@ -1,0 +1,15 @@
+#!/bin/sh
+if ! tty -s && set -o | awk '/^xtrace/{exit $2 != "on"}'; then
+	exec exo-open --launch TerminalEmulator "$0 $*"
+fi
+if [ "$#" -ge 2 ]; then
+	! echo "$3" | grep -q '^[[:digit:]]*$' && set -- "$1" "$2" "1" "$4"
+	! echo "$4" | grep -q '^[[:digit:]]*$' && set -- "$1" "$2" "$3" "1"
+	xdg-open https://cubari.moe/read/$1/$2/${3:-1}/${4:-1}/
+	if tty -s; then
+		read -r -p 'Press any key to continue' _
+	fi
+else
+	echo "${0##*/}:"
+	echo "  ${0##*/} <source> <id> [chapter [page]]"
+fi
