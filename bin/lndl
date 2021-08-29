@@ -76,7 +76,7 @@ function add_sync
 	for id in "$@"; do
 		if [[ $id =~ ^[[:digit:][:lower:]-]+$ ]]; then
 			src=al
-			name=$(curl -s "https://armaell-library.net/novel/$id/rss" | xmllint --xpath 'string(/rss/channel/title)' - 2> /dev/null | tr -s '<>:"/\|?*' '-' 2> /dev/null)
+			name=$(curl --disable -s "https://armaell-library.net/novel/$id/rss" | xmllint --xpath 'string(/rss/channel/title)' - 2> /dev/null | tr -s '<>:"/\|?*' '-' 2> /dev/null)
 			[[ -n $name ]] && mime='inode/dir-novel.folder'
 		else
 			src=drv
@@ -144,12 +144,12 @@ function download
 	url="$1"
 	name="$2"
 	shift "$( (($# <= 2)) && echo $# || echo 2)"
-	curl "$@" -sL "$url" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s "${size:-0}" > "$name"
+	curl --disable "$@" -sL "$url" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s "${size:-0}" > "$name"
 }
 
 function read_header
 {
-	awk -F: -v name="$1" 'gsub(/\r/,"") && tolower($1) == name {gsub(name":","");gsub(/^[ \t]+/,"");gsub(/[ \t]+$/,"");val=$0} END{print val}'
+	sed -nE "s/\r//g;/$1/I{s/^$1:\s*//I;s/^\s+//;s/\s+$//;p}"
 }
 
 function http_code
@@ -221,7 +221,7 @@ except KeyboardInterrupt:
 # Google Drive
 function drv_api_call
 {
-	curl -s "https://www.googleapis.com/drive/v3/$1?key=$DRIVE_API_KEY${2:+&$2}"
+	curl --disable -s "https://www.googleapis.com/drive/v3/$1?key=$DRIVE_API_KEY${2:+&$2}"
 }
 function drv_ls
 {
@@ -339,7 +339,7 @@ function al_get
 function al_ls
 {
 	echo "$GREEN===> Fetching info about $1...$ALL_OFF" >&2
-	curl -s "https://armaell-library.net/novel/$1" | awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
+	curl --disable -s "https://armaell-library.net/novel/$1" | awk '/title="EPUB download"/ && match($2,/href="http:\/\/sh.st\/.*\/download\/(.*\/epub\/.*)"/, m){rc = 1;print "https://armaell-library.net/file/"m[1]};END { exit !rc }'
 }
 
 function al_sync
@@ -357,7 +357,7 @@ function al_sync
 		}
 		read -rsa urls < <(al_ls "$1")
 		for n in "${urls[@]}"; do
-			name=$(curl -XGET -kLsI "$n" | read_header content-disposition)
+			name=$(curl --disable -kLsIXGET "$n" | read_header content-disposition)
 			if [ -z "$(echo "$name" | awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ]; then
 				name=$(echo "$name" | awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}' | tr -s '<>:"/\|?*' '-')
 			else
