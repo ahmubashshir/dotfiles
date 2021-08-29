@@ -44,7 +44,6 @@ while IFS=': ' read -r repo src fork; do
 		fi
 		cd "$OLDPWD"
 	done
-	fi
 done < <(
 	curl --disable -s --netrc --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql \
 		| jq -r "$filter"
