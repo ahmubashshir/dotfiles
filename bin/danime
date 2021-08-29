@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r205.258fbef-30
+# VERSION r207.e74844b
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -304,7 +304,7 @@ anime_cover()
 	#ext=${anime_cover_img##*.}
 	if [ ! -e folder.jpg ]; then
 		{
-			curl --config /dev/null -kLsIXGET "$anime_cover_img" \
+			curl --disable -kLsIXGET "$anime_cover_img" \
 				&& wget --no-check-certificate -q "$anime_cover_img" -cO "cover.jpg"
 		} &> /dev/null
 		if ! grep -q cover.jpg .hidden &> /dev/null && [ -f cover.jpg ]; then
@@ -337,7 +337,7 @@ replace_invalid()
 remote_exist()
 {
 	if echo "$@" | grep -q http; then
-		if [[ $(curl --config /dev/null -kLsIXGET "$@" | awk '/HTTP\// {print $2}' | tail -1) =~ 2[[:digit:]]. ]]; then
+		if [[ $(curl --disable -kLsIXGET "$@" | awk '/HTTP\// {print $2}' | tail -1) =~ 2[[:digit:]]. ]]; then
 			return 0
 		else
 			return 1
@@ -730,7 +730,7 @@ da_get_len()
 	type=$(da_db get type)
 	(
 		try_page=0
-		until curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series" || ((try_page++ >= 5)); do
+		until curl --disable "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series" || ((try_page++ >= 5)); do
 			sleep 1
 		done
 	) | case $type in
@@ -769,7 +769,7 @@ da_get()
 		)" != "https://ww5.dubbedanime.net/$series" ]] \
 		&& ((try_page++ < 5)); do
 		da_page=$(
-			curl --config /dev/null "${CURL_OPTIONS[@]}" -ksL \
+			curl --disable "${CURL_OPTIONS[@]}" -ksL \
 				"${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series"
 		)
 		((try_page > 1)) && sleep 1
@@ -936,7 +936,7 @@ da_read_ep_json()
 {
 	cat | {
 		jq -Mc '.videos[]|del(.date)'
-		curl --config /dev/null -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$2" 2> /dev/null | jq -Mc '.[]' 2> /dev/null
+		curl --disable -H "referer: $page_url" "${CURL_OPTIONS[@]}" -Lks "https://vid.xngine.com/api/episode/$2" 2> /dev/null | jq -Mc '.[]' 2> /dev/null
 	} | jq -Mc 'select(has("id") and (.host|test("'$SUPPORTED_HOSTS'")) )' | eval "$1"
 }
 get_mapped()
@@ -998,7 +998,7 @@ da_get_episede()
 			)" != "$1" ]] \
 			&& ((try_page++ < 5)); do
 			parse_episode_page="$(
-				curl --config /dev/null \
+				curl --disable \
 					-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
 					"${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$1" \
 					| grep -E '(var|let) episode'
@@ -1015,7 +1015,7 @@ da_get_episede()
 				)" != "$page_url" ]] \
 				&& ((try_page++ < 5)); do
 				parse_episode_page="$(
-					curl --config /dev/null \
+					curl --disable \
 						-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
 						"${CURL_OPTIONS[@]}" -Lks \
 						"${PUPPETEER_PROXY}$page_url" \
@@ -1206,7 +1206,7 @@ download()
 {
 	local s1 s2 ret tried
 	s1=$(
-		curl --config /dev/null -kLsIXGET "$2" \
+		curl --disable -kLsIXGET "$2" \
 			| awk \
 				'/^HTTP\/[12.]+ 200/,/^\r$/ {
 					gsub(/\r/,"")
@@ -1226,7 +1226,7 @@ download()
 				((tried > 1)) && (
 					tput el1
 					tput el
-					tput       cuu1
+					tput     cuu1
 				)
 				tput el1
 				tput el
@@ -1277,7 +1277,7 @@ compare_episode()
 		BS=$size
 	fi
 	wsize=$(
-		curl --config /dev/null -LksIXGET "$2" \
+		curl --disable -LksIXGET "$2" \
 			| awk \
 				'/^HTTP\/[12.]+ 200/,/^\r$/ {
 					gsub(/\r/,"")
@@ -1313,7 +1313,7 @@ compare_episode()
 		printf "\rComparing episode[test:%d]" "$((i + 1))"
 		start=${offsets[$i]}
 		hash1="$(dd bs=1 count="${BS:-524288}" status=none if="$1" skip="$start" | sha256sum | cut -d\  -f1)"
-		hash2="$(curl --config /dev/null -Lskr "$start-$((start + ${BS:-524288} - 1))" "$2" | sha256sum | cut -d\  -f1)"
+		hash2="$(curl --disable -Lskr "$start-$((start + ${BS:-524288} - 1))" "$2" | sha256sum | cut -d\  -f1)"
 		test "$hash1" = "$hash2" && failed_tests=$((failed_tests - 1))
 		test "$hash1" = "$hash2" || echo -e "\rComparing episode[test:$((i + 1)):fail]"
 		test "$hash1" = "$hash2" || return 4
@@ -1324,7 +1324,7 @@ compare_episode()
 SUPPORTED_HOSTS='trollvid|mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
 get_effective_url()
 {
-	xargs curl --config /dev/null -ILksXGET -o /dev/null -w '%{url_effective}\n' 2> /dev/null | grep '^http'
+	xargs curl --disable -ILksXGET -o /dev/null -w '%{url_effective}\n' 2> /dev/null | grep '^http'
 }
 get_url()
 {
@@ -1359,12 +1359,12 @@ beautify_js()
 
 mp4upload:get_url()
 {
-	curl --config /dev/null -ks "https://www.mp4upload.com/embed-$1.html" | grep 'eval(' | cut -d\> -f2- | beautify_js | sed -znE 's@.*(http(s|)://[[:alnum:]]+.mp4upload.com:[[:digit:]]+/[[:lower:]]/[[:alnum:]]+/[[:alnum:]-]+.mp4).*@\1\n@p'
+	curl --disable -ks "https://www.mp4upload.com/embed-$1.html" | grep 'eval(' | cut -d\> -f2- | beautify_js | sed -znE 's@.*(http(s|)://[[:alnum:]]+.mp4upload.com:[[:digit:]]+/[[:lower:]]/[[:alnum:]]+/[[:alnum:]-]+.mp4).*@\1\n@p'
 }
 
 xstreamcdn:get_url()
 {
-	curl --config /dev/null -sX POST "https://fcdn.stream/api/source/$1" --data "r=https://fcdn.stream/f/$1" --data 'd=fcdn.stream' | jq -r 'select(.success == true).data|[ reverse[]|select(.label == "720p" or .label == "480p")][0].file' 2> /dev/null | get_effective_url
+	curl --disable -sX POST "https://fcdn.stream/api/source/$1" --data "r=https://fcdn.stream/f/$1" --data 'd=fcdn.stream' | jq -r 'select(.success == true).data|[ reverse[]|select(.label == "720p" or .label == "480p")][0].file' 2> /dev/null | get_effective_url
 }
 
 trollvid:get_url()
@@ -1373,28 +1373,27 @@ trollvid:get_url()
 	while [[ -z $url ]] && ((try++ < 5)); do
 		((try > 1)) && sleep 2
 		token=$(
-			curl --config /dev/null -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
+			curl --disable -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
 				| sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
 		[ -z "$token" ] && continue
 		[ "$token" ] \
 			&& token=$(
-				curl "https://mp4.sh/embed/${1}${token}" \
-					--config /dev/null -s \
-					-H 'Referer: https://ww5.dubbedanime.net/' \
+				curl --disable "https://mp4.sh/embed/${1}${token}" \
+					-s -H 'Referer: https://ww5.dubbedanime.net/' \
 					| sed -nE "/token: /s/.*'(.*)'.*/\1/p"
 			)
 		[ -z "$token" ] && continue
 		[ "$token" ] \
 			&& url=$(
-				curl "https://mp4.sh/v/$1" \
+				curl --disable "https://mp4.sh/v/$1" \
 					-H 'Origin: https://mp4.sh' \
-					--config /dev/null -s \
-					--data-raw "token=$token" \
+					-s --data-raw "token=$token" \
 					| jq -r 'select(.success == true).file' 2> /dev/null
 			)
 		[ "$url" ] \
-			&& curl -s "$(echo "$url" | cut -d/ -f1-3)/video.php" --data-raw "token=$token" 2> /dev/null \
+			&& curl --disable -s "$(echo "$url" | cut -d/ -f1-3)/video.php" \
+				--data-raw "token=$token" 2> /dev/null \
 			&& {
 				echo "$url"
 				break
@@ -1404,11 +1403,11 @@ trollvid:get_url()
 
 vidstreaming:get_url()
 {
-	curl --config /dev/null -s "https://streamani.net/streaming.php?id=$1" \
+	curl --disable -s "https://streamani.net/streaming.php?id=$1" \
 		| xmllint \
 			--nocdata --noent --html --xmlout \
 			--xpath 'string(//*[@data-provider="serverwithtoken"][1]/@data-video)' - 2> /dev/null \
-		| xargs curl --config /dev/null -s \
+		| xargs curl --disable -s \
 		| xmllint \
 			--nocdata --html --xmlout --xpath \
 			'string(//div[@id="myVideo"]/../script[contains(text(), "playerInstance.setup")]/text())' - 2> /dev/null \
@@ -1423,7 +1422,7 @@ gogo+server:get_url()
 
 mixdrop:get_url()
 {
-	curl --config /dev/null -s "https://mixdrop.to/e/$1" \
+	curl --disable -s "https://mixdrop.to/e/$1" \
 		| grep '^eval' \
 		| beautify_js \
 		| grep MDCore.wurl \
@@ -1432,7 +1431,7 @@ mixdrop:get_url()
 
 cloud9:get_url()
 {
-	curl --config /dev/null -s "https://api.cloud9.to/stream/$1" \
+	curl --disable -s "https://api.cloud9.to/stream/$1" \
 		| jq -r 'select(.success == true).data.sources|[.[]|select(.height<=720)][0].file'
 }
 if [[ $# != 0 ]] && [[ $1 != latest ]]; then
