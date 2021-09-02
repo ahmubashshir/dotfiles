@@ -5,29 +5,48 @@ if [ -z "$exec" ]; then
 	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
 	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
 	ltver=0.0.0
-	rtver=$(
-		curl -s --config /dev/null -IXGET https://github.com/$OWNER/$NAME/releases/latest \
-			| sed -nE '/^location:/{s@.*/tag/(|v)(.*)$@\2@p}' \
-			| xargs printf '%q' \
-			| sed -n 's/.\(.*\).$.*/\1/p'
+	relinfo=$(
+		curl -s --config /dev/null "https://api.github.com/repos/$OWNER/$NAME/releases/latest"
 	)
+	rtver=$(
+		echo "$relinfo" \
+			| jq -r '.tag_name'
+	)
+	rtver="${rtver#*v}"
 	if [ -n "$rtver" ]; then
 		if [ -x "$exec" ]; then
 			ltver=$("$exec" --version | awk '{print $2}')
 		fi
 		arch=$(uname -m)
+		os=$(uname -s)
 		case $arch in
 			arm) abi=gnueabihf ;;
+			x86_64) arch='x86_64|amd64' ;;
 			*) abi=gnu ;;
 		esac
 		if
 			[ ! -f "$exec" ] \
 				|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
 		then
-			curl -s -# \
-				"https://github.com/$OWNER/$NAME/releases/download/v$rtver/$NAME-v$rtver-$arch-unknown-linux-$abi.tar.gz" \
-				| bsdtar -xOf - "$NAME-v$rtver-$arch-unknown-linux-$abi/$NAME" > "$exec"
+			file=$(mktemp /tmp/bin.XXXXXXXX)
+			trap 'rm -f $file' TERM QUIT EXIT INT
+			curl --disable -L -# "$(
+				echo "$relinfo" \
+					| jq '.assets[]|select(type == "object")' \
+					| jq "select(.name|test(\"(?i)$os\"))" \
+					| jq "select(.name|test(\"(?i)$arch\"))" \
+					| jq 'select(.name|test("(?i).tar"))' \
+					| jq -r '.browser_download_url' \
+					| head -n 1
+			)" -o "$file"
+			bsdtar -xOf "$file" "${FILE:-$(
+				bsdtar -tvf "$file" \
+					| rev | cut -d ' ' -f1 \
+					| rev | grep -E "(^|/)$NAME$"
+			)}" > "$exec"
 			chmod +x "$exec"
+			rm -f "$file"
+			trap -- TERM QUIT EXIT INT
 		fi
 	else
 		echo "$NAME: can't check for update."
@@ -35,7 +54,10 @@ if [ -z "$exec" ]; then
 fi
 
 if [ -x "$exec" ]; then
-	exec "$exec" "$@"
+	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
+		PATH="${XDG_CACHE_HOME:-$HOME/.cache}/bin:$PATH"
+	fi
+	exec "$NAME" "$@"
 else
 	echo "$NAME: command not found."
 	exit 1
