@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r207.e74844b
+# VERSION r210.015fd40
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -109,11 +109,11 @@ PREFERRED_TR=${PREFERRED_TR:-dub}
 export USER_AGENT="${USER_AGENT:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36}"
 CURL_OPTIONS=(
 	--compressed
-	-H 'authority: ww5.dubbedanime.net'
+	-H 'authority: 1anime.to'
 	-H 'pragma: no-cache'
 	-H 'cache-control: no-cache'
 	-H 'user-agent: '"$USER_AGENT"
-	-H 'origin: https://ww5.dubbedanime.net'
+	-H 'origin: https://1anime.to'
 	-H 'sec-fetch-site: same-origin'
 	-H 'sec-fetch-mode: cors'
 	-H 'sec-fetch-dest: empty'
@@ -501,17 +501,17 @@ if os.path.exists(cookiesFile):
 r = requests.Session()
 
 r.headers = {
-    "authority"			: "ww5.dubbedanime.net",
+    "authority"			: "1anime.to",
     "pragma"			: "no-cache",
     "cache-control"		: "no-cache",
     "accept"			: "application/json",
     "x-requested-with"	: "XMLHttpRequest",
     "user-agent"		: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36",
-    "origin"			: "https://ww5.dubbedanime.net",
+    "origin"			: "https://1anime.to",
     "sec-fetch-site"	: "same-origin",
     "sec-fetch-mode"	: "cors",
     "sec-fetch-dest"	: "empty",
-    "referer"			: "https://ww5.dubbedanime.net/browse-anime?search=%s"%quote_plus(" ".join(argv[1:]))
+    "referer"			: "https://1anime.to/browse-anime?search=%s"%quote_plus(" ".join(argv[1:]))
 }
 
 r.cookies = cj
@@ -542,7 +542,7 @@ try:
 			"query"			:	"search=" + " ".join(argv[1:])
 		}
 		try:
-			for n in r.post("%shttps://ww5.dubbedanime.net/ajax/paginate"%os.environ.get("PUPPETEER_PROXY"), data).json()["results"]:
+			for n in r.post("%shttps://1anime.to/ajax/paginate"%os.environ.get("PUPPETEER_PROXY", ""), data).json()["results"]:
 				print("%s:%s:%s:%s"%(n["url"],n["id"],0 if not "total" in n else n["total"],refine(n["title"])))
 		except:
 			pass
@@ -567,7 +567,7 @@ da_search()
 		RES_LIST='1'
 	elif [ -z "$RES_LIST" ] && ! ${DOWNLOAD_ALL:-false}; then
 		vbar
-		vbar "DubbedAnime.net Search Result" true
+		vbar "Search Result" true
 		vbar
 		vbar "Select One or more to download"
 		vbar
@@ -730,15 +730,15 @@ da_get_len()
 	type=$(da_db get type)
 	(
 		try_page=0
-		until curl --disable "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series" || ((try_page++ >= 5)); do
+		until curl --disable "${CURL_OPTIONS[@]}" -ksL "${PUPPETEER_PROXY}https://1anime.to/$series" || ((try_page++ >= 5)); do
 			sleep 1
 		done
 	) | case $type in
 		null | 0)
 			xmllint --html --nowarning --xpath '//*[@id="jump-episode"]/li/a/@href' - 2> /dev/null | wc -l
 			;;
-		subbed | dubbed)
-			xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/li[@data-'$type'="true" or @data-'${type:0:3}'="true"]/a/@href' - 2> /dev/null | wc -l
+		sub* | dub*)
+			xmllint --html --nowarning --xpath '//ul[@id="jump-episode"]/li[@data-'$type'bed="true" or @data-'${type:0:3}'="true"]/a/@href' - 2> /dev/null | wc -l
 			;;
 		*)
 			return 1
@@ -766,11 +766,11 @@ da_get()
 			echo "$da_page" \
 				| xmllint --html --xmlout --xpath \
 					'string((//head/meta[@property="og:url"])[1]/@content)' - 2> /dev/null
-		)" != "https://ww5.dubbedanime.net/$series" ]] \
+		)" != "https://1anime.to/$series" ]] \
 		&& ((try_page++ < 5)); do
 		da_page=$(
 			curl --disable "${CURL_OPTIONS[@]}" -ksL \
-				"${PUPPETEER_PROXY}https://ww5.dubbedanime.net/$series"
+				"${PUPPETEER_PROXY}https://1anime.to/$series"
 		)
 		((try_page > 1)) && sleep 1
 	done
@@ -823,21 +823,21 @@ da_get()
 			) || (
 				echo "$baseurl" | tr \; \\n | grep '=true$' | sort -u | cut -d= -f1 | cut -c1-3
 			)
-		)bed"
+		)"
 	elif [[ -n $FORCE ]]; then
-		tr=${FORCE:0:3}bed
+		tr=${FORCE:0:3}
 	elif [ "$(echo "$baseurl" | grep dubbed=true | tr -d '[:space:]')" != "" ]; then
-		tr=dubbed
+		tr=dub
 	elif [ "$(echo "$baseurl" | grep subbed=true | tr -d "[:space:]")" != "" ]; then
 		tr=$(echo "$baseurl" | tr \; \\n | grep '=true$' | sort -u | cut -d= -f1)
 	fi
 	da_db set type "\"$tr\""
-	url="$(echo "$baseurl" | grep "$tr=true" | cut -d\; -f1 | awk "{print \$0\"-english-$tr\";}")"
+	url="$(echo "$baseurl" | grep "${tr}bed=true" | cut -d\; -f1 | awk "{print \$0\"-english-$tr\";}")"
 	if ! (echo "$url" | grep -q "${tr}$"); then
 		echo "$(
 			tput setaf 1
 			tput dim
-		)\"$(ellipsis 38 "$TITLE")\" doesn't have any ${tr} episode yet.$(tput sgr0)" 1>&2
+		)\"$(ellipsis 38 "$TITLE")\" doesn't have any ${tr}bed episode yet.$(tput sgr0)" 1>&2
 		if ! find . -name '*.mp4' | grep -q '\.mp4$'; then
 			cd ..
 			rm -rf "$OLDPWD"
@@ -862,7 +862,7 @@ da_get()
 		return 0
 	}
 	if ${FILE_LIST:-false} && [[ -z $FILE_LIST_RANGE ]]; then
-		vbar "ID:$id Type:${tr:-dubbed} Files:$epc"
+		vbar "ID:$id Type:${tr:-dub}bed Files:$epc"
 		read -eri "1-$epc" -p$'Episode list: ' FILE_LIST_RANGE
 		ep="$(echo "${FILE_LIST_RANGE:-1-}" | num_unicode2ascii)"
 		tput cuu 2
@@ -881,9 +881,6 @@ da_get()
 		ep_show="file $FILE_LIST_RANGE"
 		dl_notify="Episode ${ep_show:5} is"
 	fi
-	if [ -n "$FORCE" ]; then
-		echo "${FORCE:0:3}" > .type
-	fi
 	${DEBUG:-false} && set +x
 	${SKIP_DOWNLOAD:-false} || anime_cover "https://cdn.animeapi.com/images/${1%%-*}.jpg" &
 	ep=$(expand_limit "${FILE_LIST_RANGE:-1-}" "$epc")
@@ -895,10 +892,10 @@ da_get()
 		dl_notify="Episode ${ep_show:5}is"
 	fi
 	if [[ -n $ep ]] && [[ -n $ep_show ]]; then
-		vbar "ID:$id Type:${tr:-dubbed}"
+		vbar "ID:$id Type:${tr:-dub}bed"
 		vbar " Files:$epc Downloading:$ep_show "
 	else
-		vbar "ID:$id Files:$epc Type:${tr:-dubbed}"
+		vbar "ID:$id Files:$epc Type:${tr:-dub}bed"
 	fi
 	total_pw=$(echo "$ep" | tr \  \\n | wc -l)
 	${DEBUG:-false} && set -x
@@ -975,19 +972,14 @@ da_get_episede()
 		total_pw=$5
 		local tr="$tr"
 		IFS=$'\n'
-		case ${1%%/*} in
-			episode | e) episode_type=episode ;;
-			cartoon | c) episode_type=cartoon ;;
-			*) echo ${1%%/*}:invalid ;;
-		esac
 		start_spinner "Fetching info about episode[id:$(echo "${1%%-*}" | xargs basename)]"
 		${DEBUG:-false} && set -x
 		if ! [[ $1 =~ ^http* ]]; then
 			local d
 			d=$1
 			shift
-			set "https://ww5.dubbedanime.net/$d" "$@"
-			page_url="https://ww5.dubbedanime.net/${d%%-*}"
+			set "https://1anime.to/$d" "$@"
+			page_url="https://1anime.to/${d%%-*}"
 			unset d
 		fi
 		while [[ 
@@ -999,7 +991,7 @@ da_get_episede()
 			&& ((try_page++ < 5)); do
 			parse_episode_page="$(
 				curl --disable \
-					-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
+					-H "referer: https://1anime.to$(da_db get url)" \
 					"${CURL_OPTIONS[@]}" -Lks "${PUPPETEER_PROXY}$1" \
 					| grep -E '(var|let) episode'
 			)"
@@ -1016,7 +1008,7 @@ da_get_episede()
 				&& ((try_page++ < 5)); do
 				parse_episode_page="$(
 					curl --disable \
-						-H "referer: https://ww5.dubbedanime.net$(da_db get url)" \
+						-H "referer: https://1anime.to$(da_db get url)" \
 						"${CURL_OPTIONS[@]}" -Lks \
 						"${PUPPETEER_PROXY}$page_url" \
 						| grep -E '(var|let) episode'
@@ -1033,11 +1025,11 @@ da_get_episede()
 				| sed 's/\;$//g;s/^[[:blank:]]*//g' \
 				| head -1
 		)"
-		if echo "$tr" | grep -qvw 'dubbed\|subbed'; then
-			tr=dubbed
+		if echo "$tr" | grep -qvw 'dub\|sub'; then
+			tr=dub
 		fi
-		if [[ $tr = dubbed ]] || [[ $tr = subbed ]]; then
-			filter="grep '\"type\":\"$tr'"
+		if [[ $tr = dub ]] || [[ $tr = sub ]]; then
+			filter="grep '\"type\":\s*\"${tr}\(bed\|\)\"'"
 		else
 			filter="cat"
 		fi
@@ -1046,56 +1038,54 @@ da_get_episede()
 			echo Episode not available.
 			${NOBREAK:-false} && return 0 || return 1
 		fi
-		if [ "$episode_type" = "episode" ]; then
-			ep_title=$(echo "$parse_episode_page" | jq -r '.name.default')
-			local ep_number
-			ep_number=$(echo "$parse_episode_page" | jq -r '.number')
-			if [ "$ep_number" = "null" ]; then
-				ep_number=$(
-					echo "$parse_episode_page" \
-						| jq -r '.name.default' \
-						| rev \
-						| cut -d' ' -f1 \
-						| rev
-				)
-				if ! [[ $ep_number =~ ^[[:digit:].]+$ ]]; then
-					((null_ep_count += 1))
-					ep_number=${null_ep_count}n
-					# shellcheck disable=SC2001
-					ep_title="$(echo "$ep_title" | sed 's|episode|special|gI') ${ep_number}"
-					export null_ep_count
-				fi
+		ep_title=$(echo "$parse_episode_page" | jq -r '.name.default')
+		local ep_number
+		ep_number=$(echo "$parse_episode_page" | jq -r '.number')
+		if [ "$ep_number" = "null" ]; then
+			ep_number=$(
+				echo "$parse_episode_page" \
+					| jq -r '.name.default' \
+					| rev \
+					| cut -d' ' -f1 \
+					| rev
+			)
+			if ! [[ $ep_number =~ ^[[:digit:].]+$ ]]; then
+				((null_ep_count += 1))
+				ep_number=${null_ep_count}n
+				# shellcheck disable=SC2001
+				ep_title="$(echo "$ep_title" | sed 's|episode|special|gI') ${ep_number}"
+				export null_ep_count
 			fi
-			ep_title=${ep_title% *}
-			if [ "${ep_title% *}" = "${ep_title##* }" ]; then
-				ep_title="$TITLE $ep_title"
-			elif [[ "${ep_title% *}" =~ ${ep_title##* }$ ]]; then
-				ep_title="$(echo "$ep_title" | tr ' ' $'\n' | head -n -1 | xargs echo)"
-			fi
-			ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
-			ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
+		fi
+		ep_title=${ep_title% *}
+		if [ "${ep_title% *}" = "${ep_title##* }" ]; then
+			ep_title="$TITLE $ep_title"
+		elif [[ "${ep_title% *}" =~ ${ep_title##* }$ ]]; then
+			ep_title="$(echo "$ep_title" | tr ' ' $'\n' | head -n -1 | xargs echo)"
+		fi
+		ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
+		ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
+		slug=$(
+			echo "$parse_episode_page" \
+				| jq -r '.slug' \
+				| sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
+		)
+		ep_id_list=$(
+			echo "$parse_episode_page" \
+				| da_read_ep_json "$filter" "$slug"
+		)
+		if [ -z "$ep_id_list" ]; then
+			tr=sub
 			slug=$(
 				echo "$parse_episode_page" \
-					| jq -r '.slug' \
-					| sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
+					| jq -r '.slug'
 			)
-			ep_id_list=$(
-				echo "$parse_episode_page" \
-					| da_read_ep_json "$filter" "$slug"
-			)
-			if [ -z "$ep_id_list" ]; then
-				tr=subbed
-				slug=$(
-					echo "$parse_episode_page" \
-						| jq -r '.slug'
-				)
-				ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$slug")
-			fi
-			if echo "$1" | grep -q "-extra-[[:digit:]]*-english-subbed$"; then
-				ep_title="${ep_title// ep / extra }"
-			fi
-			ep_file_name="$(echo "$ep_title" | replace_invalid)-$tr.mp4"
+			ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$slug")
 		fi
+		if echo "$1" | grep -q "-extra-[[:digit:]]*-english-${tr}bed$"; then
+			ep_title="${ep_title// ep / extra }"
+		fi
+		ep_file_name="$(echo "$ep_title" | replace_invalid)-${tr}bed.mp4"
 		ep_id_list="$(
 			echo "$ep_id_list" \
 				| awk -e '!seen[$0]++' \
@@ -1145,8 +1135,7 @@ da_get_episede()
 				ep_file_url=$(get_mapped "$ep_number")
 			fi
 			for ep_file_url_current in $ep_file_url; do
-				if ! [[ $ep_file_url_current =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]] \
-					&& remote_exist "$ep_file_url_current"; then
+				if remote_exist "$ep_file_url_current"; then
 					continue
 				fi
 				ep_file_url=
@@ -1163,16 +1152,12 @@ da_get_episede()
 			fi
 			for ep_file_url_current in $ep_file_url; do
 				if [ -n "$file_num" ]; then
-					file_num=$((file_num + 1))
-					if [ "$episode_type" = "cartoon" ]; then
-						ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num.mp4"
-					else
-						ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num-$tr.mp4"
-					fi
+					((file_num++))
+					ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num-${tr}bed.mp4"
 				fi
 				ep_file_name="${ep_file_name//---/--}"
 				if ! {
-					[[ $tr = dubbed ]] || [[ $tr = subbed ]]
+					[[ $tr = dub ]] || [[ $tr = sub ]]
 				}; then
 					tr=$(echo "$n" | jq -r '.type')
 				fi
@@ -1202,42 +1187,75 @@ da_get_episede()
 	fi
 }
 
+download_hls()
+{
+	(
+		set -o pipefail
+		trap 'rm -f "$1.part"' EXIT ABRT QUIT INT
+		duration=$(
+			ffprobe -of compact -show_entries \
+				"format=duration" -i "$2" 2> /dev/null \
+				| cut -d= -f2
+		)
+		ffmpeg -y -progress /dev/stdout \
+			-i "$2" -f mp4 "$1.part" 2> /dev/null \
+			| awk -v "duration=$duration" -F= \
+				'/out_time_ms/ {
+					progress= $2 / (duration * 1000000)
+					cols = 50
+					fill = cols * progress
+					bar = gensub(/ /,"#","g",sprintf("%" fill "s",""))
+					blank = sprintf("%" fill - cols "s","")
+					printf "\r%6.2f%% [%s%s]", progress * 100, bar, blank
+				}
+				END{
+					printf "\n"
+				}' \
+			&& mv "$1.mp4.part" "$1.mp4"
+	)
+}
 download()
 {
 	local s1 s2 ret tried
-	s1=$(
-		curl --disable -kLsIXGET "$2" \
-			| awk \
-				'/^HTTP\/[12.]+ 200/,/^\r$/ {
-					gsub(/\r/,"")
-					if( tolower($1) ~ /^content-length:$/) {
-						print $2
-					}
-				}'
-	)
-	s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
-	if ((s1 >= s2)); then
-		until fget "$2" "$1"; do
-			ret=$?
-			if [[ $ret = 10 ]]; then
-				return
-			elif ((tried <= ${MAX_TRY:-5})); then
-				tput cuu 2
-				((tried > 1)) && (
+	if [[ $2 =~ https://[[:alnum:][:punct:]]*/[[:alnum:][:punct:]]*.m3u8[[:alnum:][:punct:]]* ]]; then
+		echo "Downloading '$1'"
+		download_hls "$@"
+		ret=$?
+	else
+		s1=$(
+			curl --disable -kLsIXGET "$2" \
+				| awk \
+					'/^HTTP\/[12.]+ 200/,/^\r$/ {
+						gsub(/\r/,"")
+						if( tolower($1) ~ /^content-length:$/) {
+							print $2
+						}
+					}'
+		)
+		s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
+		if ((s1 >= s2)); then
+			until fget "$2" "$1"; do
+				ret=$?
+				if [[ $ret = 10 ]]; then
+					return
+				elif ((tried <= ${MAX_TRY:-5})); then
+					tput cuu 2
+					((tried > 1)) && (
+						tput el1
+						tput el
+						tput cuu1
+					)
 					tput el1
 					tput el
-					tput     cuu1
-				)
-				tput el1
-				tput el
-				((tried += 1))
-				echo "Retrying...[$tried]"
-			else
-				break
-			fi
-		done
-	else
-		echo "Manually downloaded $1[$(byte_hr "$s2")],skipping."
+					((tried += 1))
+					echo "Retrying...[$tried]"
+				else
+					break
+				fi
+			done
+		else
+			echo "Manually downloaded $1[$(byte_hr "$s2")],skipping."
+		fi
 	fi
 	if ((ret == 0)) || [ "$CHECK_FILE" == "false" ]; then
 		da_db set saved "$current_ep"
@@ -1373,14 +1391,14 @@ trollvid:get_url()
 	while [[ -z $url ]] && ((try++ < 5)); do
 		((try > 1)) && sleep 2
 		token=$(
-			curl --disable -H "referer: https://ww5.dubbedanime.net$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
+			curl --disable -L -H "referer: https://1anime.to$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
 				| sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
 		[ -z "$token" ] && continue
 		[ "$token" ] \
 			&& token=$(
 				curl --disable "https://mp4.sh/embed/${1}${token}" \
-					-s -H 'Referer: https://ww5.dubbedanime.net/' \
+					-s -H 'Referer: https://1anime.to/' \
 					| sed -nE "/token: /s/.*'(.*)'.*/\1/p"
 			)
 		[ -z "$token" ] && continue
@@ -1412,7 +1430,8 @@ vidstreaming:get_url()
 			--nocdata --html --xmlout --xpath \
 			'string(//div[@id="myVideo"]/../script[contains(text(), "playerInstance.setup")]/text())' - 2> /dev/null \
 		| beautify_js \
-		| sed -nE "/^\s+file:.*\.mp4/s/.*'(.*)',/\1/p"
+		| sed -nE "/^\s+file:.*\.mp4/s/.*'(.*)',/\1/p" \
+		| head -n 1
 }
 
 gogo+server:get_url()
@@ -1797,7 +1816,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 				#long: --sub
 				#long: --dub
 				#IDNT: 1
-				#text: Prefer subbed/dubbed for downloading.
+				#text: Prefer sub/dub for downloading.
 				#-option
 				PREFERRED_TR=$(echo "$1" | tr -d - | cut -c1 | tr '[:upper:]' '[:lower:]')ub
 				;;
@@ -1812,7 +1831,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 		shift
 	done
 	if [[ -n $TYPE_ANIME ]] && {
-		[[ $TYPE_ANIME = subbed ]] || [[ $TYPE_ANIME = dubbed ]]
+		[[ $TYPE_ANIME = sub ]] || [[ $TYPE_ANIME = dub ]]
 	}; then
 		tr=$TYPE_ANIME
 	else
@@ -1826,7 +1845,7 @@ if [[ $# != 0 ]] && [[ $1 != latest ]]; then
 	fi
 	[[ -n $FORCE ]] && echo "${FORCE} enforced."
 	if [[ $SEARCHSTR != '' ]] || [[ -n $DO_ALT ]]; then
-		if [ -n "$NC" ] || check_up_server "${PUPPETEER_PROXY}https://ww5.dubbedanime.net" "${RSOLV:-1}"; then
+		if [ -n "$NC" ] || check_up_server "${PUPPETEER_PROXY}https://1anime.to" "${RSOLV:-1}"; then
 			case $DO_ALT in
 				update)
 					da_update
