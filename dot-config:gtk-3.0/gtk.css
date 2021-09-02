@@ -10,7 +10,7 @@ decoration {
 }
 
 .titlebar,
-GtkHeaderBar,
+.titlebar headerbar,
 .titlebar HdyHeaderBar {
 	box-shadow: none;
 	background-color: alpha(@theme_bg_color, 0.5);
