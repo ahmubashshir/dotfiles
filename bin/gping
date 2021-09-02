@@ -1,0 +1,3 @@
+#!/bin/bash
+OWNER=orf
+source "${0%/*}/lib/rust-git-rel"
