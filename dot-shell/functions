@@ -65,10 +65,9 @@ fpio()
 }
 fixhist()
 {
-	file=".$(readlink /proc/$$/exe | xargs basename)_history"
 	hash iconv || return
-	iconv -f utf-8 -t utf-8 -c ~/"$file" > ~/"$file~"
-	mv ~/"$file"{~,}
+	iconv -f utf-8 -t utf-8 -c "$HISTFILE" > "$HISTFILE~"
+	mv "$HISTFILE"{~,}
 }
 get_m3u()
 {
