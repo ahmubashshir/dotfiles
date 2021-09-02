@@ -1,0 +1,3 @@
+#!/bin/bash
+OWNER=muesli
+source "${0%/*}/lib/rust-git-rel"
