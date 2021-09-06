@@ -102,3 +102,6 @@
 [submodule "dot-config:zsh/plugins/git-extra-commands"]
 	path = dot-config:zsh/plugins/git-extra-commands
 	url = https://github.com/unixorn/git-extra-commands
+[submodule "submodules/git-secrets"]
+	path = submodules/git-secrets
+	url = https://github.com/awslabs/git-secrets
