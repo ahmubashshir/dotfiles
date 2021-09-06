@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r210.015fd40
+# VERSION r212.b12b9e2
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -31,6 +31,10 @@ else
 	PREFERRED_TR=${PREFERRED_TR:-dub}
 fi
 if [ -n "$AP" ]; then
+	#+env
+	#text: Set ANIME_PATH for only this instance.
+	#special: @ denotes $MEDIA_ROOT/
+	#-env
 	ANIME_PATH="$AP"
 fi
 if [[ $ANIME_PATH = @* ]]; then
@@ -402,7 +406,7 @@ da_get_license()
 	echo " the Free Software Foundation; either version 2 of the License, or"
 	echo " (at your option) any later version."
 	echo
-	if [ -e "LICENSE" ] && [ "$(head -1 LICENSE | tr -d '[:blank:]')" = "GNUGENERALPUBLICLICENSE" ]; then
+	if [ -e "LICENSE" ] && [ "$(sha256sum LICENSE | awk '{print $1}')" = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986" ]; then
 		echo "See 'LICENSE' for more details."
 		return 0
 	fi
