@@ -114,8 +114,10 @@ for pkgpath in "$@"; do
 			if git stash push -- . 2> /dev/null | grep -q '^Saved'; then
 				stashed=1
 			fi
+			echo "Pulling from upstream:"
 			git pull
 			if ((aurpublish)); then
+				echo "Pulling from aur:"
 				aurpublish -p "$PWD"
 			fi
 			if ((stashed)); then
@@ -192,8 +194,10 @@ for pkgpath in "$@"; do
 			if git status --porcelain --branch | grep -q ahead && {
 				[ ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
 			}; then
+				echo "Pushing to upstream:"
 				git push
 				if ((aurpublish)); then
+					echo "Publishing to aur:"
 					aurpublish "$PWD"
 				fi
 			fi
@@ -203,6 +207,7 @@ for pkgpath in "$@"; do
 				-e '.no*'
 				-e 'lock.lck'
 			)
+			source ./PKGBUILD
 			for src in "${source[@]}"; do
 				src=${src%%::*}
 				src=${src##*/}
