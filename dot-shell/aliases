@@ -33,6 +33,9 @@ fi
 if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
 fi
+if [ -x /usr/bin/makechrootpkg ]; then
+	alias makechrootpkg="makechrootpkg -r /var/lib/archbuild"
+fi
 alias t=time
 alias k="kill"
 alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
