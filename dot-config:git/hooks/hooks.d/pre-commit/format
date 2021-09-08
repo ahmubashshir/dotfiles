@@ -113,7 +113,7 @@ for file in "${STAGED[@]}"; do
 			git add "$file"
 		else
 			printf '  %s-> %s[%s] Formatter for %s is not installed.%s\n' "${f[blue]}" "${f[yellow]}" \
-				"${f[green]}${fmt,,} [${FORMATTERS[$fmt]}]${f[yellow]}" "${f[reset]}"
+				"${f[green]}${FORMATTERS[$fmt]}${f[yellow]}" "${f[green]}${fmt,,}${f[yellow]}" "${f[reset]}"
 			unset "FORMATTERS[$fmt]"
 		fi
 	fi
