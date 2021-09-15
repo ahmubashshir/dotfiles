@@ -6,6 +6,7 @@ fi
 end=$(
 	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line+2;exit}' "$0"
 )
+ffver=$(firefox -version | awk '{print $NF}')
 search=153
 places=107
 profile="${XDG_DATA_HOME:-$HOME/.local/share}/firefox-popup"
@@ -34,6 +35,9 @@ printf '%s\n' \
 		'user_pref("browser.ctrlTab.previews", true);' \
 		'user_pref("browser.tabs.warnOnClose", false);' \
 		'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+	[ "$ffver" != "$(printf '%s\n84.0\n' "$ffver" | sort --version-sort | head -n 1)" ] &&
+		test  -c /dev/nvidiactl &&
+		printf  'user_pref("gfx.webrender.software", true);\n'
 } > "$profile/user.js"
 tail -n "+$end" "$0" | head -n $search | base64 -d > "$profile/search.json.mozlz4"
 tail -n "+$end" "$0" | tail -n $places | base64 -d | zstd -d > "$profile/places.sqlite"
