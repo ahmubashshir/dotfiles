@@ -34,7 +34,7 @@ if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
 fi
 if [ -x /usr/bin/makechrootpkg ]; then
-	alias makechrootpkg="makechrootpkg -r /var/lib/archbuild"
+	alias makechrootpkg="$([ -x /usr/bin/pump ] && printf 'pump env -u MAKEFLAGS \n')makechrootpkg -ur /var/lib/archbuild"
 fi
 alias t=time
 alias k="kill"
