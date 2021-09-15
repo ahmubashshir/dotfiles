@@ -54,7 +54,7 @@ function pip:deps
 		| py:deps
 }
 
-function poetry:deps
+function pyproject:deps
 {
 	dephell deps convert \
 		--from "${1:-pyproject.toml}" \
