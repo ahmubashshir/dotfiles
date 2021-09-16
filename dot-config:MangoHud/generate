@@ -21,6 +21,7 @@ template()
 		grep -xq "$1" .hidden 2> /dev/null || echo "$1" >> .hidden
 	fi
 }
+cd "$(dirname "$(realpath "$0")")"
 touch .hidden
 for each in *.conf.in; do
 	template "${each%.in}" "$1"
