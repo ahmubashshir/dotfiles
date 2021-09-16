@@ -6,12 +6,12 @@ if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ];then
 	export QT_SCALE_FACTOR=1
 fi
 
-export ENABLE_VKBASALT=1
+#export ENABLE_VKBASALT=1
 export MANGOHUD=1
 #export mesa_glthread=true
 #export MESA_LOADER_DRIVER_OVERRIDE=zink
 
-export DXVK_LOG_LEVEL=error
+#export DXVK_LOG_LEVEL=error
 export WINEDEBUG=-all
 export WINEESYNC=1
 export WINEFSYNC=1
