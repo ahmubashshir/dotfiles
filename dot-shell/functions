@@ -34,6 +34,11 @@ gradlew()
 {
 	./gradlew "$@"
 }
+\$()
+{
+	printf 'Running "%s"\n' "$*"
+	"$@"
+}
 if [ -x /usr/bin/thefuck ]; then
 	shit()
 	{
