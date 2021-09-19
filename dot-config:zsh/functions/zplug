@@ -27,6 +27,14 @@ if (( ! $+functions[____zplug_run_hook]));then
 		functions -m 'zplug:(pre|post):*'
 	)
 fi
+
+if [[ $1 = --path ]];then
+	if [[ -d $2 ]];then
+		zplugdirs+=("$2")
+	fi
+	return
+fi
+
 if [[ -z $1 ]];then
 	printf '%s\n' $zsh_loaded_plugins
 	return
