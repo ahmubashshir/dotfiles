@@ -21,3 +21,4 @@ zplug-defer rockz
 zplug-defer git-extra-commands
 zplug-defer zinsults
 zplug-defer git
+zplug-defer archlinux

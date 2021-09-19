@@ -28,8 +28,8 @@ if [[ $ENV[color_prompt] = yes ]];then
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
 	fi
-	zsh-defer zplug gitstatus-async
-	zsh-defer zplug devprompt
+	zplug-defer gitstatus-async
+	zplug-defer devprompt
 	DIR_PROMPT="${ENV[prompt_prefix]}%F{green} %F{cyan}%B%1~%b%F{red}${ENV[prompt_suffix]}"
 	RET_PROMPT="%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})"
 #	zplug gio-vfs-prompt && {
