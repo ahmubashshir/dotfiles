@@ -105,3 +105,6 @@
 [submodule "submodules/git-secrets"]
 	path = submodules/git-secrets
 	url = https://github.com/awslabs/git-secrets
+[submodule "dot-config:zsh/omz"]
+	path = dot-config:zsh/omz
+	url = https://github.com/ohmyzsh/ohmyzsh
