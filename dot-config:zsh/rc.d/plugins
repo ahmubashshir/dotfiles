@@ -1,22 +1,23 @@
 #!/bin/zsh
 #zplug async
 zplug hacker-quotes
-zsh-defer zplug bd
-zsh-defer zplug lazyload
-zsh-defer zplug completions
-zsh-defer zplug auto-notify
-zsh-defer zplug systemd
-#zsh-defer zplug autocomplete
-zsh-defer zplug fast-syntax-highlighting
-zsh-defer zplug autosuggestions
-zsh-defer zplug autopair
-zsh-defer zplug you-should-use
-zsh-defer zplug bash-completions-fallback
-zsh-defer zplug zshmarks
-zsh-defer zplug history-substring-search
-zsh-defer zplug command-time
+zplug-defer bd
+zplug-defer lazyload
+zplug-defer completions
+zplug-defer auto-notify
+zplug-defer systemd
+#zplug-defer autocomplete
+zplug-defer fast-syntax-highlighting
+zplug-defer autosuggestions
+zplug-defer autopair
+zplug-defer you-should-use
+zplug-defer bash-completions-fallback
+zplug-defer zshmarks
+zplug-defer history-substring-search
+zplug-defer command-time
 #zplug auto-ls
-zsh-defer zplug autoswitch_virtualenv
-zsh-defer zplug rockz
-zsh-defer zplug git-extra-commands
-zsh-defer zplug zinsults
+zplug-defer autoswitch_virtualenv
+zplug-defer rockz
+zplug-defer git-extra-commands
+zplug-defer zinsults
+zplug-defer git
