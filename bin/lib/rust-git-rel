@@ -6,14 +6,16 @@ if [ -z "$exec" ]; then
 	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
 	ltver=0.0.0
 	relinfo=$(
-		curl -s --config /dev/null "https://api.github.com/repos/$OWNER/$NAME/releases/latest"
+		timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
+			&& curl --netrc -s --disable \
+				"https://api.github.com/repos/$OWNER/$NAME/releases/latest"
 	)
-	rtver=$(
-		echo "$relinfo" \
-			| jq -r '.tag_name'
-	)
-	rtver="${rtver#*v}"
-	if [ -n "$rtver" ]; then
+	if [ -n "$relinfo" ]; then
+		rtver=$(
+			printf '%s' "$relinfo" \
+				| jq -r '.tag_name'
+		)
+		rtver="${rtver#*v}"
 		if [ -x "$exec" ]; then
 			ltver=$("$exec" --version | awk '{print $2}')
 		fi
