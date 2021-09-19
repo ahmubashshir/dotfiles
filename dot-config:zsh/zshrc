@@ -32,8 +32,8 @@ autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 
 zplug --path "$ZDOTDIR/omz/plugins"
 if ! zplug defer;then
-	git -C "$ZDOTDIR" submodule init --quiet "$ZDOTDIR"
-	if ! git -C "$ZDOTDIR" submodule update --progress "$ZDOTDIR"
+	git -C "$ZDOTDIR" submodule init --quiet .
+	if ! git -C "$ZDOTDIR" submodule update --progress .
 	then
 		printf "zsh: failed to initialize plugins\n"
 		function zsh-defer {
