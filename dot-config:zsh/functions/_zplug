@@ -4,8 +4,8 @@ _list_plugins()
 	local -a plugins
 	plugins=()
 	local plugpath i j k
-	if (( ${+zplugdirs} )); then
-		typeset -a zplugdirs
+	if ! (( ${+zplugdirs} )); then
+		typeset -ga zplugdirs
 	fi
 	for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 		if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
