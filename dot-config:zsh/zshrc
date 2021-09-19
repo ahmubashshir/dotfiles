@@ -29,9 +29,11 @@ bindkey -e
 ## Lazy load section
 autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
+
+zplug --path "$ZDOTDIR/omz/plugins"
 if ! zplug defer;then
-	git -C "$ZDOTDIR" submodule init --quiet plugins
-	if ! git -C "$ZDOTDIR" submodule update --progress plugins
+	git -C "$ZDOTDIR" submodule init --quiet "$ZDOTDIR"
+	if ! git -C "$ZDOTDIR" submodule update --progress "$ZDOTDIR"
 	then
 		printf "zsh: failed to initialize plugins\n"
 		function zsh-defer {
