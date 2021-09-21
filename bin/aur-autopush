@@ -134,18 +134,23 @@ for pkgpath in "$@"; do
 			fi
 			source ./PKGBUILD
 			srcdir=src
-			if grep -m 1 -q '^# pkg:' PKGBUILD; then
-				type=$(awk '/^# pkg: /{print $3}' PKGBUILD)
-				src=$(awk '/^# pkg: /{print $4}' PKGBUILD)
-				provider=$(awk '/^# pkg: / && NF > 4 {print $5}' PKGBUILD)
-				case $type in
+			from=$(awk '/^# from: /{print $3}' PKGBUILD)
+			if test -n "$from"; then
+				where=$(awk '/^# from: /{print $4}' PKGBUILD)
+				what=$(awk '/^# what: /{print $3}' PKGBUILD)
+				case $from in
+					pypi) tool=$from ;;
+					*) tool=$(awk '/^# deps: / {print $3}' PKGBUILD) ;;
+				esac
+
+				case $from in
 					bzr | git | hg | svn)
 						makepkg -o -d --skipchecksums
 						PKGVER=$(pkgver)
 						;;
 					*)
-						if [ "$(type -t "$type:pkgver")" = "function" ]; then
-							PKGVER=$("$type:pkgver" "${src:-${_name:-${pkgbase:-$pkgname}}}" "$provider")
+						if [ "$(type -t "$from:pkgver")" = "function" ]; then
+							PKGVER=$("$from:pkgver" "${what:-${_name:-${pkgbase:-$pkgname}}}" "$where")
 						else
 							PKGVER=0
 						fi
@@ -153,19 +158,9 @@ for pkgpath in "$@"; do
 				esac
 				if [ "$(vercmp ${PKGVER:-0} $pkgver)" = "1" ]; then
 					sed -Ei "s/^(pkgver=)(\"|'|)$pkgver(\"|'|)$/\1\2$PKGVER\3/g;s/^(pkgrel)=.*/\1=1/g" PKGBUILD
-					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] Updated to $PKGVER-1"
+					msg="[${what:-${_name:-${pkgbase:-$pkgname}}}] Updated to $PKGVER-1"
 				fi
-				for dep in ${type} ${src} ${provider}; do
-					if
-						type -t "${dep}:deps" 2> /dev/null \
-							| grep -wq function
-					then
-						depfunc=$dep
-						unset dep
-						break
-					fi
-				done
-				if [[ -n $depfunc ]]; then
+				if type -t "${tool}:deps" 2> /dev/null | grep -wq function; then
 					makepkg --nobuild --nodeps
 					sed -Ei.bak '/^depends=\(/,/\)/{/#auto-deps$/d}' PKGBUILD
 					(
@@ -175,7 +170,7 @@ for pkgpath in "$@"; do
 							cd "$srcdir/$dir" || continue
 							break
 						done
-						"${depfunc}:deps" "${src}"
+						"${tool}:deps" "${what}" "${where}"
 					) | while read -r line; do
 						sed -Ei.bak "/^depends=\(/,/\)/{s@^\)\$@\t'$line' #auto-deps\n\)@}" PKGBUILD
 					done
@@ -187,7 +182,7 @@ for pkgpath in "$@"; do
 			if [ -n "$(git status --porcelain .)" ] || [ "${FORCE_REL_BUMP+defined}" ] && [ "$FORCE_REL_BUMP" != "false" ]; then
 				if [ -z "$PKGVER" ] || [ "$(vercmp $PKGVER $pkgver)" = "0" ]; then
 					sed -Ei "s/^(pkgrel=)[[:digit:]]+$/\1$((pkgrel + 1))/" PKGBUILD
-					msg="[${src:-${_name:-${pkgbase:-$pkgname}}}] pkgrel bump."
+					msg="[${what:-${_name:-${pkgbase:-$pkgname}}}] pkgrel bump."
 				fi
 				[ -f ../.nopush ] && msg='[nopush] '"${msg:-automatic commmit.}"
 				if ((aurpublish)); then
@@ -200,6 +195,7 @@ for pkgpath in "$@"; do
 					git commit --template=/dev/null -m "${msg:-automatic push.}"
 				fi
 			fi
+			unset from what where tool
 			if git status --porcelain --branch | grep -q ahead && {
 				[ ! -f ../.nopush ] || [ "${SKIP_PUSH+defined}" ] && [ "$SKIP_PUSH" != "false" ]
 			}; then
