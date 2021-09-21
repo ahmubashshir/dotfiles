@@ -1,7 +1,6 @@
 TYPE	NAME
 service	anbox-session-manager
-service	aria2@6801
-service	broadwayd
+service	aria2@6803
 service	gamemoded
 service	geary
 service	mpris-proxy
@@ -9,11 +8,8 @@ service	redshift-gtk
 service	systembus-notify
 service	trakt-scrobbler
 service	transmission-trackers
-service	vino-server
-service	windscribe-proxy
 socket	dirmngr
 socket	gpg-agent
-timer	aur-autobuild
 timer	aur-autopush
 timer	eos-update-notifier
 timer	epic-claim
