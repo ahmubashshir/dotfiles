@@ -4,6 +4,6 @@ Documentation=man:systemd.special(7)
 Requires=graphical-session.target
 Before=graphical-session.target
 ConditionEnvironment=XDG_SESSION_TYPE=x11
-ConditionEnvironment=XDG_CURRENT_DESKTOP!=KDE
-ConditionEnvironment=XDG_CURRENT_DESKTOP!=GNOME
+ConditionEnvironment=!XDG_CURRENT_DESKTOP=KDE
+ConditionEnvironment=!XDG_CURRENT_DESKTOP=GNOME
 StopWhenUnneeded=yes
