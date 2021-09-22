@@ -7,6 +7,15 @@ fi
 if [ -e ~/.weeb/aliases.sh ]; then
 	. ~/.weeb/aliases.sh
 fi
+if [ -z "$LS_COLORS" ]; then
+	alias  ls='ls --color=auto'
+	alias  dir='dir --color=auto'
+	alias  vdir='vdir --color=auto'
+	alias  grep='grep --color=auto'
+	alias  fgrep='fgrep --color=auto'
+	alias  egrep='egrep --color=auto'
+fi
+
 #aliases
 exec 3> /dev/null
 if hash apt 1>&3 2>&1; then
