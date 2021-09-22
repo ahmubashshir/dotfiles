@@ -57,26 +57,10 @@ fi
 case "$TERM" in
 	xterm | xterm-color | *-256color) color_prompt=yes ;;
 esac
-#custom
-# get current branch in git repo
-function parse_git_branch()
-{
-	BRANCH=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-	if [ ! "${BRANCH}" == "" ]; then
-		STAT=$(parse_git_dirty)
-		echo -e "-[\e[m${BRANCH}${STAT}\e[31m]"
-	else
-		echo ""
-	fi
-}
-
-# get current status of git repo
-
-#end custom
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
-force_color_prompt=yes
+#force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
 	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
@@ -88,22 +72,11 @@ if [ -n "$force_color_prompt" ]; then
 		color_prompt=
 	fi
 fi
-free_percent()
-{
-	res=$(free | grep Mem | cut -d: -f2 | tr -s '[:blank:]' | sed 's/^ //g' | sed 's/ $//g')
-	freed=$(echo $res | cut -d' ' -f3)
-	cached=$(echo $res | cut -d' ' -f5)
-	avail=$((freed + cached))
-	total=$(echo $res | cut -d' ' -f1)
-	echo "scale=2;($avail/$total)*100" | bc | sed -e 's/0*$//' | sed -e 's/\.$//' | tr -d [[:space:]]
-}
 if [ "$color_prompt" = yes ]; then
 	if [[ ${EUID} == 0 ]]; then
 		PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\h\[\033[01;34m\] \W \$\[\033[00m\] '
 	else
-		#PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \[\033[01;34m\]\w \$\[\033[00m\] '
-		#PS1="\[\e[31m\]┌───=[\[\e[m\]\[\e[1m\]\[\e[32m\]\u\[\e[31m\]::\[\e[m\]\[\e[33m\]\[\e[1m\]\h\[\e[m\]\[\e[31m\]]-(\[\e[m\]\`nonzero_return\`\[\e[31m\])\`parse_git_branch\`-\[\e[31m\][\[\e[m\]\[\033[38;5;9m\]\$(/usr/bin/tty | /bin/sed -e 's:/dev/::'|sed 's/\//:/')\[\e[31m\]]\n├────[\[\e[m\]\[\033[38;5;3m\]jobs:\[\e[m\]\j\[\e[31m\]]-[\[\033[38;5;3m\]Ram:\[\e[m\]\$(free_percent)%\[\e[31m\]]-[\[\e[m\]\W\[\e[31m\]]\n\[\e[31m\]└─>>>\[\e[m\] "
-		source ~/.bash-powerline
+		PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\] \[\033[01;34m\]\w \$\[\033[00m\] '
 	fi
 else
 	PS1='${debian_chroot:+($debian_chroot)}\u@\h \w \$ '
@@ -119,26 +92,6 @@ case "$TERM" in
 
 esac
 
-# enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
-	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-	alias ls='ls --color=auto'
-	#alias dir='dir --color=auto'
-	#alias vdir='vdir --color=auto'
-
-	alias grep='grep --color=auto'
-	alias fgrep='fgrep --color=auto'
-	alias egrep='egrep --color=auto'
-fi
-
-# colored GCC warnings and errors
-#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -152,8 +105,8 @@ if ! shopt -oq posix; then
 	elif [ -f /etc/bash_completion ]; then
 		. /etc/bash_completion
 	fi
-	if [ -d ~/.bash/completions ]; then
-		completions=$(find ~/.bash/completions/*)
+	if [ -d ~/${XDG_DATA_HOME:-.local/share/}bash/completions ]; then
+		completions=$(find ~/${XDG_DATA_HOME:-.local/share/}bash/completions/*)
 		if [ "$completions" != "" ]; then
 			for n in $completions; do
 				. $n
@@ -161,4 +114,3 @@ if ! shopt -oq posix; then
 		fi
 	fi
 fi
-export GPG_TTY=$(tty)
