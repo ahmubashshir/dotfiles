@@ -1,6 +1,11 @@
-/* /* Frank edited file - you are good to go...*/
-@namespace url(http://www.w3.org/1999/xhtml);
+@-moz-document url(about:blank) {
 
+	html:not(#ublock0-epicker),
+	html:not(#ublock0-epicker) body,
+	#newtab-customize-overlay {
+		background: var(--bf-bg) !important;
+	}
+}
 
 @-moz-document url-prefix(about:home),
 url-prefix(about:newtab) {
@@ -73,6 +78,20 @@ url-prefix(about:newtab) {
 }
 
 :root {
-	scrollbar-color: rgb(94, 94, 94, 0.55) rgb(255, 255, 255, .0) !important;
+	scrollbar-color: rgb(161, 161, 161) transparent !important;
 	scrollbar-width: thin !important;
+}
+
+/* Sets up minimal scrollbar */
+:root {
+	scrollbar-width: thin !important;
+	scrollbar-color: rgb(161, 161, 161) transparent !important;
+}
+
+/*  Sets up minimal incognito scrollbar */
+@-moz-document url(about:privatebrowsing) {
+	:root {
+		scrollbar-width: thin !important;
+		scrollbar-color: rgb(161, 161, 161) transparent !important;
+	}
 }

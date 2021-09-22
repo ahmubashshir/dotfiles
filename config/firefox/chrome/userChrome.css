@@ -1,10 +1,6 @@
-/* Frank edited file - you are good to go...*/
-
-/*
- * Do not remove the @namespace line -- it's required for correct functioning
- */
-
 /* Hide main tabs toolbar */
+
+
 #main-window[tabsintitlebar="true"]:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
 	opacity: 0;
 	pointer-events: none;
