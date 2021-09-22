@@ -17,7 +17,12 @@ if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
 	if git config remote.upstream.url \
 		| grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
-		gh repo fork --remote --remote-name origin
+		case $(git config --get user.email) in
+			ahmubashshir@*)
+				gh repo fork --remote --remote-name origin --org ahm-forks "$@"
+				;;
+			*) gh repo fork --remote --remote-name origin "$@" ;;
+		esac
 	fi
 	if ! git remote | grep -xqw origin; then
 		git remote rename upstream origin
