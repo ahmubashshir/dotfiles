@@ -1,13 +1,7 @@
-
 players:
-
     mpv:
         poll_interval: 0.5
-
-    vlc:
-        poll_interval: 0.5
-    monitored: [vlc, mpv]
-
+    monitored: [mpv]
 fileinfo:
     whitelist:
     - /mnt/Multimedia/Anime
