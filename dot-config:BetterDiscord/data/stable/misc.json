@@ -12,6 +12,9 @@
     "addonlistControls": {
         "plugin": {
             "view": "grid"
+        },
+        "theme": {
+            "view": "grid"
         }
     }
 }
