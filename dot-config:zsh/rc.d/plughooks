@@ -83,3 +83,11 @@ function zplug:post:devprompt {
 	DEVPROMPT[prefix]="${ENV[prompt_prefix]}"
 	DEVPROMPT[suffix]="${ENV[prompt_suffix]}"
 }
+
+function zplug:pre:git {
+	source $ZDOTDIR/omz/lib/git.zsh
+}
+
+function zplug:post:dotenv {
+	alias dotenv=source_env
+}
