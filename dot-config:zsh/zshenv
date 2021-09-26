@@ -1,5 +1,8 @@
 #!/bin/zsh
 fpath=(${ZDOTDIR:-$HOME/.zsh}/functions $fpath)
+ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+ZSH="$ZDOTDIR/omz"
+ZSH_COMPDUMP="$ZSH_CACHE_DIR/compdump"
 
 function source {
 	if [ -f "$1" ];then
@@ -12,7 +15,7 @@ function compinit {
 		body=$functions[compinit]
 		unfunction compinit
 		autoload -Uz compinit
-		compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/compdump" "$@"
+		compinit -d "$ZSH_COMPDUMP" "$@"
 		functions[compinit]=$body
 }
 
