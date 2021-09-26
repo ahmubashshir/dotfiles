@@ -22,3 +22,5 @@ zplug-defer git-extra-commands
 zplug-defer zinsults
 zplug-defer git
 zplug-defer archlinux
+zplug-defer dotenv
+zplug-defer rbenv
