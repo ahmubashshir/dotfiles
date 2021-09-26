@@ -108,3 +108,6 @@
 [submodule "dot-config:zsh/omz"]
 	path = dot-config:zsh/omz
 	url = https://github.com/ohmyzsh/ohmyzsh
+[submodule "dot-config:zsh/plugins/rbenv"]
+	path = dot-config:zsh/plugins/rbenv
+	url = https://github.com/ecortinas/zsh-rbenv
