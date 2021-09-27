@@ -46,8 +46,17 @@ else
 				fi
 			done
 			;;
+		exrun)
+			shift
+			while [ "$1" != "--" ] && [ "$1" != "--" ]; do
+				export GIT_DISABLED_HOOKS="${GIT_DISABLED_HOOKS:+$GIT_DISABLED_HOOKS:}$1"
+				shift
+			done
+			shift
+			exec "$@"
+			;;
 		help)
-			echo "git-hooks commands: ls edit enable disable"
+			echo "git-hooks commands: ls edit enable disable exrun"
 			;;
 	esac
 fi
