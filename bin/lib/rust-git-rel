@@ -2,56 +2,68 @@
 NAME=${NAME:-${0##*/}}
 exec=$(env which $NAME -a | grep -v "^$HOME" | head -n1)
 if [ -z "$exec" ]; then
+	last_modified=0
+	diff=0
 	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
 	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
-	ltver=0.0.0
-	relinfo=$(
-		timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
-			&& curl --netrc -s --disable \
-				"https://api.github.com/repos/$OWNER/$NAME/releases/latest"
-	)
-	if [ -n "$relinfo" ]; then
-		rtver=$(
-			printf '%s' "$relinfo" \
-				| jq -r '.tag_name'
+	if [ -f "$exec" ]; then
+		last_modified="$(stat -c%Y "$exec")"
+		date_now="$(date +%s)"
+		diff=$((date_now - last_modified))
+	fi
+	if ((diff > 60 * 60 * 24 && last_modified != 0)); then
+		touch "$exec"
+		relinfo=$(
+			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
+				&& curl --netrc -s --disable \
+					"https://api.github.com/repos/$OWNER/$NAME/releases/latest"
 		)
-		rtver="${rtver#*v}"
-		if [ -x "$exec" ]; then
-			ltver=$("$exec" --version | awk '{print $2}')
+		if [ -n "$relinfo" ]; then
+			rtver=$(
+				printf '%s' "$relinfo" \
+					| jq -r '.tag_name'
+			)
+			rtver="${rtver#*v}"
+			if [ -x "$exec" ]; then
+				ltver=$("$exec" --version | awk '{print $2}')
+			fi
+			if [ -z "$ltver" ]; then
+				ltver=0.0.0
+			fi
+			arch=$(uname -m)
+			os=$(uname -s)
+			case $arch in
+				arm) abi=gnueabihf ;;
+				x86_64) arch='x86_64|amd64' ;;
+				*) abi=gnu ;;
+			esac
+			if
+				[ ! -f "$exec" ] \
+					|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
+			then
+				file=$(mktemp /tmp/bin.XXXXXXXX)
+				trap 'rm -f $file' TERM QUIT EXIT INT
+				curl --disable -L -# "$(
+					echo "$relinfo" \
+						| jq '.assets[]|select(type == "object")' \
+						| jq "select(.name|test(\"(?i)$os\"))" \
+						| jq "select(.name|test(\"(?i)$arch\"))" \
+						| jq 'select(.name|test("(?i).tar"))' \
+						| jq -r '.browser_download_url' \
+						| head -n 1
+				)" -o "$file"
+				bsdtar -xOf "$file" "${FILE:-$(
+					bsdtar -tvf "$file" \
+						| rev | cut -d ' ' -f1 \
+						| rev | grep -E "(^|/)$NAME$"
+				)}" > "$exec"
+				chmod +x "$exec"
+				rm -f "$file"
+				trap -- TERM QUIT EXIT INT
+			fi
+		else
+			echo "$NAME: can't check for update."
 		fi
-		arch=$(uname -m)
-		os=$(uname -s)
-		case $arch in
-			arm) abi=gnueabihf ;;
-			x86_64) arch='x86_64|amd64' ;;
-			*) abi=gnu ;;
-		esac
-		if
-			[ ! -f "$exec" ] \
-				|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
-		then
-			file=$(mktemp /tmp/bin.XXXXXXXX)
-			trap 'rm -f $file' TERM QUIT EXIT INT
-			curl --disable -L -# "$(
-				echo "$relinfo" \
-					| jq '.assets[]|select(type == "object")' \
-					| jq "select(.name|test(\"(?i)$os\"))" \
-					| jq "select(.name|test(\"(?i)$arch\"))" \
-					| jq 'select(.name|test("(?i).tar"))' \
-					| jq -r '.browser_download_url' \
-					| head -n 1
-			)" -o "$file"
-			bsdtar -xOf "$file" "${FILE:-$(
-				bsdtar -tvf "$file" \
-					| rev | cut -d ' ' -f1 \
-					| rev | grep -E "(^|/)$NAME$"
-			)}" > "$exec"
-			chmod +x "$exec"
-			rm -f "$file"
-			trap -- TERM QUIT EXIT INT
-		fi
-	else
-		echo "$NAME: can't check for update."
 	fi
 fi
 
