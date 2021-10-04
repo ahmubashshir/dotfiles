@@ -11,7 +11,12 @@ if [ -z "$exec" ]; then
 		date_now="$(date +%s)"
 		diff=$((date_now - last_modified))
 	fi
-	if ((diff > 60 * 60 * 24 && last_modified != 0)); then
+	if
+		[ ! -f "$exec" ] \
+			|| [ ! -s "$exec" ] \
+			|| ! "$exec" --help &> /dev/null \
+			|| ((diff > 60 * 60 * 24 && last_modified != 0))
+	then
 		touch "$exec"
 		relinfo=$(
 			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
