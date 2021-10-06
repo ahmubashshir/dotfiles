@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ -z "$GITGUARDIAN_API_KEY" ]; then
+	printf 'Fatal: GitGuardian API key is not present in environment.'
+	exit
+fi
+stage="${0%/*}"
+stage="${stage##*/}"
+if ! command -pv ggshield 2> /dev/null; then
+	pip install -U --upgrade ggshield --quiet
+fi
+
+ggshield scan "$stage"
+tput cuu1
+if [ -f .cache_ggshield ]; then
+	rm .cache_ggshield
+fi
