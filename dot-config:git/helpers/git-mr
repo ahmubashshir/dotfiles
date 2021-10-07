@@ -80,6 +80,6 @@ esac
 
 set -e
 
-test -n "$1" || die "Usage: $0 <request_number> [<remote_name>]"
+test -n "$1" || die "Usage: ${0##*/} <request_number> [<remote_name>]"
 
 fetch_request "$@"
