@@ -18,7 +18,6 @@ zplug-defer command-time
 #zplug auto-ls
 zplug-defer autoswitch_virtualenv
 zplug-defer rockz
-zplug-defer git-extra-commands
 zplug-defer zinsults
 zplug-defer git
 zplug-defer archlinux
