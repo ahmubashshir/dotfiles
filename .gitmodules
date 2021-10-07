@@ -99,8 +99,8 @@
 [submodule "dot-config:zsh/plugins/rockz"]
 	path = dot-config:zsh/plugins/rockz
 	url = https://github.com/aperezdc/rockz
-[submodule "dot-config:zsh/plugins/git-extra-commands"]
-	path = dot-config:zsh/plugins/git-extra-commands
+[submodule "submodules/git-extras"]
+	path = submodules/git-extras
 	url = https://github.com/unixorn/git-extra-commands
 [submodule "submodules/git-secrets"]
 	path = submodules/git-secrets

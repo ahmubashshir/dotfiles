@@ -6,6 +6,7 @@ path=(
 	$path
 	/usr/lib/surfraw
 	"${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers"
+	"${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers/extras/bin"
 )
 for n in $(echo $PATH|tr ':' '\n');do
 	case ":$P:" in
