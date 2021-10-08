@@ -5,7 +5,7 @@ This package holds private credentials.
 from enum import Enum, auto
 
 
-class Creds(Enum):
+class Creds(str, Enum):
     def __init__(self, *args, **kwargs):
         super().__init__()
         attribs = dir(self.value)
