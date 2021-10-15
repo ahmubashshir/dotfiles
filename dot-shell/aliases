@@ -8,12 +8,12 @@ if [ -e ~/.weeb/aliases.sh ]; then
 	. ~/.weeb/aliases.sh
 fi
 if [ -z "$LS_COLORS" ]; then
-	alias  ls='ls --color=auto'
-	alias  dir='dir --color=auto'
-	alias  vdir='vdir --color=auto'
-	alias  grep='grep --color=auto'
-	alias  fgrep='fgrep --color=auto'
-	alias  egrep='egrep --color=auto'
+	alias ls='ls --color=auto'
+	alias dir='dir --color=auto'
+	alias vdir='vdir --color=auto'
+	alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
 fi
 
 #aliases
@@ -38,6 +38,9 @@ if [ -x /usr/bin/yay ]; then
 fi
 if [ -x /usr/bin/time ]; then
 	alias time="/usr/bin/time"
+fi
+if [ -x /usr/bin/ytfzf ]; then
+	alias ytfzf="ytfzf -ft --thumb-disp-method=chafa"
 fi
 if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
