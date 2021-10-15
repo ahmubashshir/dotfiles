@@ -3,4 +3,4 @@
 	smtpServer = smtp.gmail.com
 	smtpServerPort = 587
 	confirm = auto
-
+	suppressCc = self
