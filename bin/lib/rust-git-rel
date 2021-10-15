@@ -1,5 +1,6 @@
 #!/bin/bash
 NAME=${NAME:-${0##*/}}
+REPO=${REPO:-${NAME:-${0##*/}}}
 exec=$(env which $NAME -a | grep -v "^$HOME" | head -n1)
 if [ -z "$exec" ]; then
 	last_modified=0
@@ -21,7 +22,7 @@ if [ -z "$exec" ]; then
 		relinfo=$(
 			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
 				&& curl --netrc -s --disable \
-					"https://api.github.com/repos/$OWNER/$NAME/releases/latest"
+					"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
 		)
 		if [ -n "$relinfo" ]; then
 			rtver=$(
@@ -51,8 +52,8 @@ if [ -z "$exec" ]; then
 				curl --disable -L -# "$(
 					echo "$relinfo" \
 						| jq '.assets[]|select(type == "object")' \
-						| jq "select(.name|test(\"(?i)$os\"))" \
-						| jq "select(.name|test(\"(?i)$arch\"))" \
+						| jq 'select(.name|test("(?i)$os"))' \
+						| jq 'select(.name|test("(?i)$arch"))' \
 						| jq 'select(.name|test("(?i).tar"))' \
 						| jq -r '.browser_download_url' \
 						| head -n 1
