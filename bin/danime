@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r212.b12b9e2
+# VERSION r213.3afd36a
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -341,7 +341,7 @@ replace_invalid()
 remote_exist()
 {
 	if echo "$@" | grep -q http; then
-		if [[ $(curl --disable -kLsIXGET "$@" | awk '/HTTP\// {print $2}' | tail -1) =~ 2[[:digit:]]. ]]; then
+		if [[ $(curl --disable --referer "$1" -kLsIXGET "$1" | awk '/HTTP\// {print $2}' | tail -1) =~ 2[[:digit:]]. ]]; then
 			return 0
 		else
 			return 1
@@ -1067,7 +1067,11 @@ da_get_episede()
 		elif [[ "${ep_title% *}" =~ ${ep_title##* }$ ]]; then
 			ep_title="$(echo "$ep_title" | tr ' ' $'\n' | head -n -1 | xargs echo)"
 		fi
-		ep_title="${ep_title% *} $(echo "${ep_title##* } $ep_number" | sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI')"
+		ep_title="${ep_title% *} $(
+			echo "${ep_title##* } $ep_number" \
+				| sed 's|episode|ep|gI;s|ova|ova|gI;s|ona|ona|gI;s|movie|movie|gI;s|special|special|gI' \
+				| sed -E 's/(ova|ona|special)/\1 ep/gI'
+		)"
 		ep_title="$(echo "$ep_title" | sed 's| *$||g;s|^ *||g')"
 		slug=$(
 			echo "$parse_episode_page" \
@@ -1227,7 +1231,7 @@ download()
 		ret=$?
 	else
 		s1=$(
-			curl --disable -kLsIXGET "$2" \
+			curl --disable --referer "${2}" -kLsIXGET "$2" \
 				| awk \
 					'/^HTTP\/[12.]+ 200/,/^\r$/ {
 						gsub(/\r/,"")
@@ -1386,7 +1390,7 @@ mp4upload:get_url()
 
 xstreamcdn:get_url()
 {
-	curl --disable -sX POST "https://fcdn.stream/api/source/$1" --data "r=https://fcdn.stream/f/$1" --data 'd=fcdn.stream' | jq -r 'select(.success == true).data|[ reverse[]|select(.label == "720p" or .label == "480p")][0].file' 2> /dev/null | get_effective_url
+	curl --disable -sX POST "https://embedsito.com/api/source/$1" --data "r=https://1anime.to/" --data 'd=embedsito.com' | jq -r 'select(.success == true).data|[ reverse[]|select(.label == "720p" or .label == "480p")][0].file' 2> /dev/null | get_effective_url
 }
 
 trollvid:get_url()
@@ -1425,16 +1429,12 @@ trollvid:get_url()
 
 vidstreaming:get_url()
 {
-	curl --disable -s "https://streamani.net/streaming.php?id=$1" \
+	curl --disable -s "https://gogoplay1.com/download?id=$1" \
 		| xmllint \
 			--nocdata --noent --html --xmlout \
-			--xpath 'string(//*[@data-provider="serverwithtoken"][1]/@data-video)' - 2> /dev/null \
-		| xargs curl --disable -s \
-		| xmllint \
-			--nocdata --html --xmlout --xpath \
-			'string(//div[@id="myVideo"]/../script[contains(text(), "playerInstance.setup")]/text())' - 2> /dev/null \
-		| beautify_js \
-		| sed -nE "/^\s+file:.*\.mp4/s/.*'(.*)',/\1/p" \
+			--xpath '//a[@download]/@href' - 2> /dev/null \
+		| sed 's/[[:blank:]]?*href="\(.*\)"/\1/' \
+		| tail -n 2 \
 		| head -n 1
 }
 
