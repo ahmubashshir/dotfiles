@@ -53,7 +53,7 @@ function fget()
 		url_933be66d="https://www.googleapis.com/drive/v3/files/$(echo "$url_933be66d" | tr '?&' '\n' | grep '^id=' | cut -d= -f2)?alt=media&key=$DRIVE_API_KEY"
 		name_933be66d="$(curl "https://www.googleapis.com/drive/v3/files/$(echo "${url_933be66d%%\?*}" | xargs basename)?key=$DRIVE_API_KEY" -s | jq '.name' -r)"
 	fi
-	S_933be66d=$(curl -skLIXGET "$url_933be66d" 2>&1 | awk '/^HTTP\/[12.]+ 200/,/^\r$/ {gsub(/\r/,"");if(length)print}')
+	S_933be66d=$(curl --disable --referer "$url_933be66d" -skLIXGET "$url_933be66d" 2>&1 | awk '/^HTTP\/[12.]+ 200/,/^\r$/ {gsub(/\r/,"");if(length)print}')
 	if (exit "$?"); then
 		if [ "$name_933be66d" = "" ]; then
 			name_933be66d="${url_933be66d##*/}"
@@ -85,7 +85,7 @@ function fget()
 					elif [ ! -e "$name_933be66d" ]; then
 						echo -e "Writing to '$name_933be66d'\nFile Size: $(byte_hr "$dlsize_933be66d")"
 					fi
-					wget "$@" --show-progress -qcO "$name_933be66d" "$url_933be66d" || ([ "$?" = "5" ] && wget "$@" --show-progress -qcO "$name_933be66d" --no-check-certificate "$url_933be66d" || (exit $?))
+					wget --referer="$url_933be66d" "$@" --show-progress -qcO "$name_933be66d" "$url_933be66d" || ([ "$?" = "5" ] && wget "$@" --show-progress -qcO "$name_933be66d" --no-check-certificate "$url_933be66d" || (exit $?))
 				else
 					(exit 10)
 				fi
