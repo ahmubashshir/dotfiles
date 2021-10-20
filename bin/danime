@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r213.3afd36a
+# VERSION r214.01dcade
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -1242,7 +1242,7 @@ download()
 		)
 		s2=$(stat -Lc%s "$1" 2> /dev/null || echo 0)
 		if ((s1 >= s2)); then
-			until fget "$2" "$1"; do
+			until fget "$2" "$1" --no-check-certificate; do
 				ret=$?
 				if [[ $ret = 10 ]]; then
 					return
