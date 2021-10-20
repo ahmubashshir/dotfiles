@@ -42,7 +42,7 @@
     "tracker_ignore_not_next": true,
     "tracker_interval": 10,
     "tracker_not_found_prompt": true,
-    "tracker_process": "mpv|vlc|celluloid",
+    "tracker_process": "mpv|vlc|celluloid|ffmpeg",
     "tracker_type": "local",
     "tracker_update_close": true,
     "tracker_update_prompt": true,
