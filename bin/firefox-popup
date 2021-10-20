@@ -1,7 +1,24 @@
 #!/bin/sh
+# variables
+MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
+
 if [ -z "$*" ]; then
 	echo No url specified.
 	exit 2
+fi
+if
+	command -pv "$MEDIA_PLAYER" &&
+		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+'
+then
+	case "$MEDIA_PLAYER" in
+		mpv) exec mpv \
+			--script-opts=ontop-enable=no \
+			--player-operation-mode=pseudo-gui \
+			--cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
+			--cache=yes --cache-on-disk \
+			-- "$@" ;;
+		*) exec "$MEDIA_PLAYER" "$@" ;;
+	esac
 fi
 end=$(
 	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line+2;exit}' "$0"
@@ -36,8 +53,8 @@ printf '%s\n' \
 		'user_pref("browser.tabs.warnOnClose", false);' \
 		'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
 	[ "$ffver" != "$(printf '%s\n84.0\n' "$ffver" | sort --version-sort | head -n 1)" ] &&
-		test  -c /dev/nvidiactl &&
-		printf  'user_pref("gfx.webrender.software", true);\n'
+		test -c /dev/nvidiactl &&
+		printf 'user_pref("gfx.webrender.software", true);\n'
 } > "$profile/user.js"
 tail -n "+$end" "$0" | head -n $search | base64 -d > "$profile/search.json.mozlz4"
 tail -n "+$end" "$0" | tail -n $places | base64 -d | zstd -d > "$profile/places.sqlite"
