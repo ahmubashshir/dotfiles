@@ -40,7 +40,10 @@ if [ -x /usr/bin/time ]; then
 	alias time="/usr/bin/time"
 fi
 if [ -x /usr/bin/ytfzf ]; then
-	alias ytfzf="ytfzf -ft --thumb-disp-method=chafa"
+	case $TERM in
+		*-kitty) alias ytfzf="ytfzf -ft" ;;
+		*) alias ytfzf="ytfzf -ft --thumb-disp-method=chafa" ;;
+	esac
 fi
 if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
