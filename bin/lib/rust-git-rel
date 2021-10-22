@@ -52,8 +52,8 @@ if [ -z "$exec" ]; then
 				curl --disable -L -# "$(
 					echo "$relinfo" \
 						| jq '.assets[]|select(type == "object")' \
-						| jq 'select(.name|test("(?i)$os"))' \
-						| jq 'select(.name|test("(?i)$arch"))' \
+						| jq "select(.name|test(\"(?i)$os\"))" \
+						| jq "select(.name|test(\"(?i)$arch\"))" \
 						| jq 'select(.name|test("(?i).tar"))' \
 						| jq -r '.browser_download_url' \
 						| head -n 1
