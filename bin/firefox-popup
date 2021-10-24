@@ -8,7 +8,7 @@ if [ -z "$*" ]; then
 fi
 if
 	command -pv "$MEDIA_PLAYER" &&
-		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+'
+		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+$'
 then
 	case "$MEDIA_PLAYER" in
 		mpv) exec mpv \
