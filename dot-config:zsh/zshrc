@@ -43,6 +43,8 @@ if ! zplug defer;then
 		printf "zsh: finished cloning modules\n"
 		zplug defer
 	fi
+else
+	zsh-defer git -C "$ZDOTDIR" submodule update --progress .
 fi
 
 typeset -A ENV
