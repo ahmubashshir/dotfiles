@@ -10,16 +10,23 @@ dotdir="$(
 	)"
 )"
 cd "$dotdir" || exit
-custom_dirs=(bin)
+custom=(
+	bin
+	Pictures:snaps:org.zsh
+	Videos:records:org.zsh
+)
 
 if realpath "$dotdir" | grep -q "^$HOME" && [[ $1 == ln ]]; then
 	## non hidden dirs
-	for n in "${custom_dirs[@]}"; do
-		echo Linking "$n" '->' "~/$n"
-		if [ ! -L "$HOME/$n" ]; then
-			rm -rf "${HOME:?}/$n"
+	for n in "${custom[@]}"; do
+		t="${n//$PATHSEP//}"
+		mkdir -p "$(dirname "$HOME/$t")"
+		s=$(realpath --relative-to="$(dirname "$HOME/$t")" "$n")
+		echo Linking "$n" '->' "~/$t"
+		if [ ! -L "$HOME/$t" ]; then
+			rm -rf "${HOME}/$t"
 		fi
-		ln -Tfs "$PWD/$n" "$HOME/$n"
+		ln -Tfs "$s" "$HOME/$t"
 	done
 
 	for n in dot-*; do
