@@ -80,13 +80,13 @@
 	url = https://github.com/tmux-plugins/tpm
 [submodule "dot-config:zsh/plugins/zinsults"]
 	path = dot-config:zsh/plugins/zinsults
-	url = github:ahmubashshir/zinsults
+	url = https://github.com/ahmubashshir/zinsults
 [submodule "dot-config:mpv/shaders/Anime4K"]
 	path = dot-config:mpv/shaders/Anime4K
 	url = https://github.com/bloc97/Anime4K
 [submodule "dot-config:zsh/plugins/autocomplete"]
 	path = dot-config:zsh/plugins/autocomplete
-	url = github:marlonrichert/zsh-autocomplete
+	url = https://github.com/marlonrichert/zsh-autocomplete
 [submodule "dot-config:zsh/plugins/defer"]
 	path = dot-config:zsh/plugins/defer
 	url = https://github.com/romkatv/zsh-defer
