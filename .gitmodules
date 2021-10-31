@@ -111,3 +111,6 @@
 [submodule "dot-config:zsh/plugins/rbenv"]
 	path = dot-config:zsh/plugins/rbenv
 	url = https://github.com/ecortinas/zsh-rbenv
+[submodule "dot-config:zsh/plugins/autosuggestions"]
+	path = dot-config:zsh/plugins/autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions
