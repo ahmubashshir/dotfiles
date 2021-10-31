@@ -11,7 +11,7 @@ function on_exit
 	done
 	exit $ret
 }
-# VERSION r214.01dcade
+# VERSION r220.36e6eb8
 if [ -f ~/.config/danime.cfg ]; then
 	source ~/.config/danime.cfg
 else
@@ -80,19 +80,18 @@ check_deps()
 	done
 	return $a
 }
-check_deps bin:awk bin:bash bin:dos2unix bin:cd \
-	bin:curl bin:cut bin:dd bin:echo \
-	bin:false bin:ffmpeg bin:ffprobe \
-	bin:grep bin:head bin:jq bin:libbash \
-	bin:lsof bin:mkdir bin:mv bin:printf \
-	py3:json py3:numpy py3:requests bin:python3 \
-	bin:read bin:readonly bin:rm bin:sed \
-	bin:sha256sum bin:sleep bin:sort bin:spinner \
-	bin:stat bin:tac bin:tail bin:tput bin:tr \
-	bin:true bin:wc bin:wget bin:chromedriver \
-	bin:gdbus bin:chromium x11:notify-send \
-	lib:xml2-util:xmllint bin:js-beautify \
-	bin:tee || exit $?
+check_deps bin:awk bin:curl \
+	bin:cut bin:dd bin:false bin:ffmpeg \
+	bin:ffprobe bin:grep bin:head bin:jq \
+	bin:libbash bin:lsof bin:mkdir bin:mv \
+	bin:printf py3:json py3:numpy \
+	py3:requests bin:python3 bin:rm \
+	bin:sed bin:sha256sum bin:sleep \
+	bin:sort bin:spinner bin:stat \
+	bin:tail bin:tput bin:tr bin:true \
+	bin:wc bin:wget x11:notify-send \
+	lib:xml2-util:xmllint bin:js-beautify || exit $?
+
 . spinner
 . libbash
 #variables
@@ -122,17 +121,19 @@ CURL_OPTIONS=(
 	-H 'sec-fetch-mode: cors'
 	-H 'sec-fetch-dest: empty'
 )
-
-cookies=()
-for each in ~/.local/share/danime/cookies-*.txt; do
-	cookies+=("$each")
-done
-if ((${#cookies[@]})); then
-	cat "${cookies[@]}" > ~/.local/share/danime/cookies.txt
-fi
-unset cookies
-if [ -f ~/.local/share/danime/cookies.txt ]; then
-	CURL_OPTIONS+=(--cookie ~/.local/share/danime/cookies.txt)
+shopt -s nullglob
+if [ -d ~/.local/share/danime ]; then
+	cookies=()
+	for each in ~/.local/share/danime/cookies-*.txt; do
+		cookies+=("$each")
+	done
+	if ((${#cookies[@]})); then
+		cat "${cookies[@]}" > ~/.local/share/danime/cookies.txt
+	fi
+	unset cookies
+	if [ -f ~/.local/share/danime/cookies.txt ]; then
+		CURL_OPTIONS+=(--cookie ~/.local/share/danime/cookies.txt)
+	fi
 fi
 
 langs=(
@@ -971,6 +972,7 @@ da_get_episede()
 		return 1
 	else
 		local IFS file_num ret progress total_pw ep_number ep_title current_ep page_url try_page=0
+		local -a ep_id_list ep_file_url
 		current_ep=$2
 		progress=$4
 		total_pw=$5
@@ -1078,24 +1080,27 @@ da_get_episede()
 				| jq -r '.slug' \
 				| sed "s/\(-episode-\)/$([[ ${tr:0:1} == d ]] && echo -${tr:0:3})\1/"
 		)
-		ep_id_list=$(
+		readarray -t ep_id_list < <(
 			echo "$parse_episode_page" \
 				| da_read_ep_json "$filter" "$slug"
 		)
-		if [ -z "$ep_id_list" ]; then
+		if ((${#ep_id_list[@]} == 0)); then
 			tr=sub
 			slug=$(
 				echo "$parse_episode_page" \
 					| jq -r '.slug'
 			)
-			ep_id_list=$(echo "$parse_episode_page" | da_read_ep_json "$filter" "$slug")
+			readarray -t ep_id_list < <(
+				echo "$parse_episode_page" \
+					| da_read_ep_json "$filter" "$slug"
+			)
 		fi
 		if echo "$1" | grep -q "-extra-[[:digit:]]*-english-${tr}bed$"; then
 			ep_title="${ep_title// ep / extra }"
 		fi
 		ep_file_name="$(echo "$ep_title" | replace_invalid)-${tr}bed.mp4"
-		ep_id_list="$(
-			echo "$ep_id_list" \
+		readarray -t ep_id_list < <(
+			printf '%s\n' "${ep_id_list[@]}" \
 				| awk -e '!seen[$0]++' \
 				| awk \
 					'/'"${PREFERRED_HOSTS//,/|}"'/{
@@ -1108,7 +1113,7 @@ da_get_episede()
 						for(i in lines)
 							print lines[i]
 					}'
-		)"
+		)
 		set +x
 		if [ -n "$parse_episode_page" ] && [ -n "$ep_title" ]; then
 			stop_spinner 0
@@ -1121,44 +1126,44 @@ da_get_episede()
 		vbar "$ep_title" true
 		vbar "ID:$(echo "$1" | rev | cut -d/ -f1 | rev | cut -d- -f1)$([ -n "$progress" ] && [ -n "$total_pw" ] && echo " - Progress:$progress/$total_pw")"
 		vbar
-		if [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -z "$REPLACE_FAIL" ]; then
+		if ((${#ep_id_list[@]} == 1)) && [ -z "$REPLACE_FAIL" ]; then
 			REPLACE_FAIL=true
-		elif [ "$(echo "$ep_id_list" | wc -l)" -gt 1 ] && [ -z "$REPLACE_FAIL" ]; then
+		elif ((${#ep_id_list[@]} > 1)) && [ -z "$REPLACE_FAIL" ]; then
 			REPLACE_FAIL=false
 		fi
 		${DEBUG:-false} && set -x
-		for n in $ep_id_list; do
+		for n in "${ep_id_list[@]}"; do
 			if [ -n "$_sp_pid" ]; then
 				stop_spinner 1
 			fi
-			ep_file_url=
+			ep_file_url=()
 			ep_file_host=$(echo "$n" | jq -r '.host')
 			ep_file_id=$(echo "$n" | jq -r '.id' | xargs basename -a 2> /dev/null)
 			[ -z "$ep_file_id" ] && continue
 			set +x
 			start_spinner "Getting url from provider[$ep_file_host:$(ellipsis 15 "$ep_file_id")]"
 			${DEBUG:-false} && set -x
-			ep_file_url=$(get_url "$n" "$1")
-			if [ -z "$ep_file_url" ] && [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -f maps.yml ]; then
+			readarray -t ep_file_url < <(get_url "$n" "$1")
+			if ((${#ep_file_url[@]} == 0)) && [ "$(echo "$ep_id_list" | wc -l)" -eq 1 ] && [ -f maps.yml ]; then
 				ep_file_url=$(get_mapped "$ep_number")
 			fi
-			for ep_file_url_current in $ep_file_url; do
+			for ep_file_url_current in "${ep_file_url[@]}"; do
 				if remote_exist "$ep_file_url_current"; then
 					continue
 				fi
-				ep_file_url=
+				ep_file_url=()
 				stop_spinner 1
 				continue 2
 			done
-			if [ -z "$ep_file_url" ]; then
+			if ((${#ep_file_url[@]} == 0)); then
 				stop_spinner 1
 				continue
 			fi
 			stop_spinner 0
-			if [[ $(echo "$ep_file_url" | wc -l) -gt 1 ]]; then
+			if ((${#ep_file_url[@]} > 1)); then
 				file_num=0
 			fi
-			for ep_file_url_current in $ep_file_url; do
+			for ep_file_url_current in "${ep_file_url[@]}"; do
 				if [ -n "$file_num" ]; then
 					((file_num++))
 					ep_file_name="$(echo "$ep_title" | replace_invalid)-part$file_num-${tr}bed.mp4"
@@ -1347,7 +1352,7 @@ compare_episode()
 	echo -e "\rComparing episode[test:1-${TOTAL_CHECKS:-${#offsets}}:pass]"
 	return 0
 }
-SUPPORTED_HOSTS='trollvid|mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop|cloud9'
+SUPPORTED_HOSTS='trollvid|mp4upload|vidstreaming|xstreamcdn|gogo server|mixdrop'
 get_effective_url()
 {
 	xargs curl --disable -ILksXGET -o /dev/null -w '%{url_effective}\n' 2> /dev/null | grep '^http'
@@ -1395,17 +1400,17 @@ xstreamcdn:get_url()
 
 trollvid:get_url()
 {
-	local token try=0 url
+	local token xToken try=0 url
 	while [[ -z $url ]] && ((try++ < 5)); do
 		((try > 1)) && sleep 2
-		token=$(
+		xToken=$(
 			curl --disable -L -H "referer: https://1anime.to$(da_db get url)" "${CURL_OPTIONS[@]}" -s "${PUPPETEER_PROXY}$2" \
 				| sed -nE "/xToken/s/.*'(.*)'.*/\1/p"
 		)
-		[ -z "$token" ] && continue
-		[ "$token" ] \
+		[ -z "$xToken" ] && continue
+		[ "$xToken" ] \
 			&& token=$(
-				curl --disable "https://mp4.sh/embed/${1}${token}" \
+				curl --disable "https://mp4.sh/embed/${1}${xToken}" \
 					-s -H 'Referer: https://1anime.to/' \
 					| sed -nE "/token: /s/.*'(.*)'.*/\1/p"
 			)
@@ -1413,6 +1418,9 @@ trollvid:get_url()
 		[ "$token" ] \
 			&& url=$(
 				curl --disable "https://mp4.sh/v/$1" \
+					-H "User-Agent: $USER_AGENT" \
+					-H "Referer: https://mp4.sh/embed/${1}${xToken}" \
+					-H "Alt-Used: mp4.sh" \
 					-H 'Origin: https://mp4.sh' \
 					-s --data-raw "token=$token" \
 					| jq -r 'select(.success == true).file' 2> /dev/null
@@ -1420,10 +1428,8 @@ trollvid:get_url()
 		[ "$url" ] \
 			&& curl --disable -s "$(echo "$url" | cut -d/ -f1-3)/video.php" \
 				--data-raw "token=$token" 2> /dev/null \
-			&& {
-				echo "$url"
-				break
-			}
+			&& echo "$url" \
+			&& break
 	done
 }
 
