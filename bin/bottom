@@ -1,4 +1,4 @@
 #!/bin/bash
 OWNER=ClementTsang
 FILE=btm
-source "${0%/*}/lib/rust-git-rel"
+source "${0%/*}/lib/git-rel"
