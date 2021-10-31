@@ -1,4 +1,4 @@
 #!/bin/bash
 NAME=hyperfine
 OWNER=sharkdp
-source "${0%/*}/lib/rust-git-rel"
+source "${0%/*}/lib/git-rel"
