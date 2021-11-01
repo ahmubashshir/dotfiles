@@ -63,9 +63,6 @@
 [submodule "dot-config:zsh/plugins/fast-syntax-highlighting"]
 	path = dot-config:zsh/plugins/fast-syntax-highlighting
 	url = https://github.com/zdharma-continuum/fast-syntax-highlighting
-[submodule "submodules/tldr"]
-	path = submodules/tldr
-	url = https://github.com/raylee/tldr-sh-client
 [submodule "dot-config:zsh/plugins/autoswitch_virtualenv"]
 	path = dot-config:zsh/plugins/autoswitch_virtualenv
 	url = https://github.com/MichaelAquilina/zsh-autoswitch-virtualenv
