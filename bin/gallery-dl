@@ -1,0 +1,6 @@
+#!/bin/bash
+OWNER=mikf
+OS=bin
+ARCH=bin
+EXTRACT=0
+source "${0%/*}/lib/git-rel"
