@@ -1,7 +1,8 @@
 #!/bin/bash
 NAME=${NAME:-${0##*/}}
 REPO=${REPO:-${NAME:-${0##*/}}}
-exec=$(env which $NAME -a | grep -v "^$HOME" | head -n1)
+EXTRACT=${EXTRACT:-1}
+exec=$(env which $NAME -a 2> /dev/null | grep -v "^$HOME" | head -n1)
 if [ -z "$exec" ]; then
 	last_modified=0
 	diff=0
@@ -38,9 +39,9 @@ if [ -z "$exec" ]; then
 			fi
 			arch=$(uname -m)
 			os=$(uname -s)
-			case $arch in
+			case "$arch" in
 				arm) abi=gnueabihf ;;
-				x86_64) arch='x86_64|amd64' ;;
+				x86_64) arch="x86_64|amd64|${os}64" ;;
 				*) abi=gnu ;;
 			esac
 			if
@@ -49,26 +50,38 @@ if [ -z "$exec" ]; then
 			then
 				file=$(mktemp /tmp/bin.XXXXXXXX)
 				trap 'rm -f $file' TERM QUIT EXIT INT
-				curl --disable -L -# "$(
-					echo "$relinfo" \
+				data="$(
+					printf '%s' "$relinfo" \
 						| jq '.assets[]|select(type == "object")' \
 						| jq "select(.name|test(\"(?i)$os\"))" \
-						| jq "select(.name|test(\"(?i)$arch\"))" \
-						| jq 'select(.name|test("(?i).tar"))' \
+						| jq "select(.name|test(\"(?i)$arch\"))"
+				)"
+				if ((EXTRACT)); then
+					data=$(
+						printf '%s' "$data" \
+							| jq 'select(.name|test("(?i).tar"))'
+					)
+				fi
+				curl --disable -L -# "$(
+					printf '%s' "$data" \
 						| jq -r '.browser_download_url' \
 						| head -n 1
 				)" -o "$file"
-				bsdtar -xOf "$file" "${FILE:-$(
-					bsdtar -tvf "$file" \
-						| rev | cut -d ' ' -f1 \
-						| rev | grep -E "(^|/)$NAME$"
-				)}" > "$exec"
+				if ((EXTRACT)); then
+					bsdtar -xOf "$file" "${FILE:-$(
+						bsdtar -tvf "$file" \
+							| rev | cut -d ' ' -f1 \
+							| rev | grep -E "(^|/)$NAME$"
+					)}" > "$exec"
+				else
+					cat "$file" > "$exec"
+				fi
 				chmod +x "$exec"
 				rm -f "$file"
 				trap -- TERM QUIT EXIT INT
 			fi
 		else
-			echo "$NAME: can't check for update."
+			printf "%s: can't check for update.\n" "$NAME"
 		fi
 	fi
 fi
@@ -76,9 +89,11 @@ fi
 if [ -x "$exec" ]; then
 	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
 		PATH="${XDG_CACHE_HOME:-$HOME/.cache}/bin:$PATH"
+	else
+		PATH="${exec%/*}:$PATH"
 	fi
 	exec "$NAME" "$@"
 else
-	echo "$NAME: command not found."
+	printf "%s: command not found.\n" "$NAME"
 	exit 1
 fi
