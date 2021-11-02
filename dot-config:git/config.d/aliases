@@ -57,4 +57,3 @@
 	head = rev-parse --abbrev-ref HEAD
 	dtc = dt --cached
 	drop = reset --hard
-
