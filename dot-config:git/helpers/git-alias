@@ -1,2 +1,2 @@
 #!/bin/bash -e
-exec git config --file ~/.config/git/include/aliases "$@"
+exec git config --file ~/.config/git/config.d/aliases "$@"

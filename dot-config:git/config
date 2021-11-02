@@ -1,9 +1,9 @@
 [include]
-	path = ./include/aliases
-	path = ./include/config
-	path = ./include/diff-merge
-	path = ./include/lfs
-	path = ./include/misc
-	path = ./include/smtp
-	path = ./include/url
+	path = ./config.d/aliases
+	path = ./config.d/config
+	path = ./config.d/diff-merge
+	path = ./config.d/lfs
+	path = ./config.d/misc
+	path = ./config.d/smtp
+	path = ./config.d/url
 	path = ~/.config/git.conf
