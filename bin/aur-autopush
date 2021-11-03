@@ -147,18 +147,18 @@ for pkgpath in "$@"; do
 		fi
 		# shellcheck disable=SC2031,SC2030
 		(
-			lock "$pkgpath" || exit
 			typeset -a exclude source
 			pkgver=0
 			pkgrel=0
 			cd "$pkgpath" > /dev/null 2>&1 || exit
+			lock || exit
 			source ./PKGBUILD
 			if git stash push -- . 2> /dev/null | grep -q '^Saved'; then
 				stashed=1
 			fi
 			echo "Pulling from upstream: ${pkgbase:-$pkgname}"
 			git pull
-			if ((aurpublish)); then
+			if ((aurpublish)) && [[ ! -f .noaur ]]; then
 				echo "Pulling from aur: ${pkgbase:-$pkgname}"
 				aurpublish -p "$PWD"
 			fi
@@ -242,7 +242,7 @@ for pkgpath in "$@"; do
 			}; then
 				echo "Pushing to upstream:"
 				git push
-				if ((aurpublish)); then
+				if ((aurpublish)) && [[ ! -f .noaur ]]; then
 					echo "Publishing to aur:"
 					aurpublish "$PWD"
 				fi
