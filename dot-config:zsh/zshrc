@@ -44,7 +44,7 @@ if ! zplug defer;then
 		zplug defer
 	fi
 else
-	zsh-defer git -C "$ZDOTDIR" submodule update --progress .
+	"$ZDOTDIR/ztasklocked" exec git -C "$ZDOTDIR" submodule update --quiet . &!
 fi
 
 typeset -A ENV
