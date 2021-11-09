@@ -26,6 +26,11 @@
 	visibility: collapse;
 }
 
+browser[type="content-primary"],
+browser[type="content"] {
+	background: var(--tabbar-bg) !important;
+}
+
 /* Shrink sidebar until hovered, when using Tree Style Tab. */
 :root {
 	--thin-tab-width: 24px;
