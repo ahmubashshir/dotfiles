@@ -5,11 +5,11 @@ function lock
 	local FD LOCKFILE
 	FD=$(shuf -i 1-1000 -n 1)
 	LOCKFILE="${1:-$PWD}/lock.lck"
-	trap "no_more_locking $LOCKFILE" EXIT TERM
+	trap "unlock $LOCKFILE" EXIT TERM
 
 	eval "$(printf 'exec %d>%q' "$FD" "$LOCKFILE")"
 	eval "$(printf '_lock() { flock -$1 %d; }' "$FD")"
-	no_more_locking()
+	unlock()
 	{
 		_lock u
 		_lock xn && rm -f "$1"
@@ -205,10 +205,10 @@ for pkgpath in "$@"; do
 						PKGVER=$(pkgver)
 						;;
 					*)
-						if [ "$(type -t "$from:pkgver")" = "function" ]; then
+						if type -t "$from:pkgver" | grep -wq function; then
 							PKGVER=$("$from:pkgver" "${what:-${_name:-${pkgbase:-$pkgname}}}" "$where" | sed 's/-/_/g')
 						else
-							PKGVER=0
+							PKGVER="$pkgver"
 						fi
 						;;
 				esac
