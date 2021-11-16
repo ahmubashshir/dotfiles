@@ -41,7 +41,7 @@ function gitlab:pkgver
 		| jq -r 'if (.[]|length)>0 then .[0].name, halt else null end|.|=sub("v(?<ver>.*)";"\(.ver)")'
 }
 
-function snap:pkgver
+function snap:query
 {
 	test -z "$1" && return 1
 	if ! grep -qE 'stable|candidate|beta|edge' <<< "$2"; then
@@ -50,21 +50,42 @@ function snap:pkgver
 	curl --disable -s -H "Snap-Device-Series: 16" \
 		"http://api.snapcraft.io/v2/snaps/info/$1" \
 		| jq -r '."channel-map"[]
-				 |select(
-					.channel
+				 |select(.channel
 					|[
 						.name == "'"$2"'",
-						.architecture == "amd64"
+						.architecture != "i386",
+						.track == "latest"
 					 ]
-					|all(.)
-				  )
-				 |[
-					(.version | tostring),
-					(.revision | tostring)
-				  ]
-				 |join(".")' 2> /dev/null \
+					| all
+				 )' 2> /dev/null
+}
+
+function snap:pkgver
+{
+	snap:query "$1" "$2" \
+		| jq -r '.version
+				 | tostring' 2> /dev/null \
 		| sort --version-sort \
 		| tail -n1
+}
+
+function snap:util
+{
+	local arch rev
+	test -z "$3" && return 1
+	snap:query "$1" "$2" \
+		| jq -r 'select(.version == "'"$3"'")
+				 |[
+					.channel.architecture,
+					(.revision | tostring)
+				  ]
+				 |join(" ")' 2> /dev/null \
+		| sort --version-sort \
+		| while read -r arch rev; do
+			sed -Ei.bak \
+				-e "/^_rev_$arch=[[:digit:]]+[[:blank:]]+#[[:blank:]]+snap:revision/d" \
+				-e "/^_snap=/a\_rev_$arch=$rev # snap:revision" PKGBUILD
+		done
 }
 
 function py:deps
@@ -200,6 +221,9 @@ for pkgpath in "$@"; do
 
 					sed -Ei "s/^(pkgver=)(\"|'|)$pkgver(\"|'|)$/\1\2$PKGVER\3/g;s/^(pkgrel)=.*/\1=1/g" PKGBUILD
 					msg="[${what:-${_name:-${pkgbase:-$pkgname}}}] Updated to $PKGVER-1"
+				fi
+				if type -t "${tool}:util" 2> /dev/null | grep -wq function; then
+					"${tool}:util" "${what:-${_name:-${pkgbase:-$pkgname}}}" "$where" "$PKGVER"
 				fi
 				if type -t "${tool}:deps" 2> /dev/null | grep -wq function; then
 					makepkg --nobuild --nodeps
