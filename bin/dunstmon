@@ -1,0 +1,12 @@
+#!/bin/sh
+printf '<iconclick>dunstctl set-paused toggle</iconclick>\n'
+printf '<txtclick>dunstctl history-pop</txtclick>\n'
+pending=$(dunstctl count waiting)
+case "$(dunstctl is-paused)-$pending" in
+	false-0) icon=-symbolic ;;
+	true-0) icon=-disabled-symbolic ;;
+	false-*) icon=-new-symbolic ;;
+	true-*) icon=-disabled-new-symbolic ;;
+esac
+printf '<txt>Pending %5d </txt>\n' "$pending"
+printf '<icon>notification%s</icon>\n' "$icon"
