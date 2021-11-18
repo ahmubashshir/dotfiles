@@ -1,16 +1,20 @@
 #!/bin/bash
 if timeout 0.3 ping -c 1 1.0.0.1 2> /dev/null >&2; then
-	icon=''
+	icon='network-wired-activated'
 	msg=Online
+	txt=UP
 elif ip route | awk '/^default/ && ! _[$3]++ {print $3}' | xargs timeout 0.3 ping -c1 2> /dev/null >&2; then
-	icon=''
+	icon='network-wired-no-route'
 	msg=Local
+	txt=LO
 else
-	icon=''
+	icon='network-wired-offline'
 	msg=Disconnected
+	txt=DW
 fi
 if ! systemctl is-active -q nginx.service; then
-	icon=''
+	icon='network-wired-acquiring'
 	msg="$msg"$'\nServer Down'
+	txt=SD
 fi
-printf '<txt>%s</txt><tool>%s</tool>' "$icon" "$msg"
+printf '<icon>%s</icon><txt> %s</txt><tool>%s</tool>' "$icon" "$txt" "$msg"
