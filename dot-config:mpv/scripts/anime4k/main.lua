@@ -74,7 +74,7 @@ local function match_prop(name, match)
 end
 
 local function get_mode_from_props()
-    local regexdb = table.concat({shader_path, 'anime4k.csv'}, pathsep)
+    local regexdb = table.concat({shader_path, 'anime4k.tsv'}, pathsep)
     local f = csv.open(regexdb, {
         separator = "\t",
         columns = {
