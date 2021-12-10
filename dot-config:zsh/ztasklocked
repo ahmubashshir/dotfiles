@@ -1,6 +1,13 @@
 #!/bin/zsh
 zmodload zsh/system
-task="$1";LOCKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/$task.lck";shift
+task="$1";shift
+case "$task" in
+	recompile) LOCK="$task";;
+	exec) LOCK="$1";;
+	*) LOCK="$*";;
+esac
+
+LOCKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/$LOCK.lck"
 touch "$LOCKFILE"
 exec 2> /dev/null
 zsystem flock -t 0 -f fd "$LOCKFILE" || exit
