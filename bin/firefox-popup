@@ -11,12 +11,17 @@ if
 		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+$'
 then
 	case "$MEDIA_PLAYER" in
-		mpv) exec mpv \
-			--script-opts=ontop-enable=no \
-			--player-operation-mode=pseudo-gui \
-			--cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
-			--cache=yes --cache-on-disk \
-			-- "$@" ;;
+		mpv)
+			mkdir   -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv"
+			exec mpv \
+				--script-opts=ontop-enable=no \
+				--player-operation-mode=pseudo-gui \
+				--cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
+				--cache=yes --cache-on-disk \
+				--cache-unlink-files=whendone \
+				--cache-pause-initial \
+				-- "$@"
+			;;
 		*) exec "$MEDIA_PLAYER" "$@" ;;
 	esac
 fi
