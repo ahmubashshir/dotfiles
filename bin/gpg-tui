@@ -1,0 +1,3 @@
+#!/bin/bash
+OWNER=orhun
+source "${0%/*}/lib/git-rel"
