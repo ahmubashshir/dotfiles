@@ -1,0 +1,13 @@
+#!/bin/bash
+OWNER=dipu-bd
+REPO=lightnovel-crawler
+EXTRACT=0
+ARCH='.'
+OS='.'
+FILTER='lncrawl$'
+DEFAULT_ARGS=(
+	--format epub
+	--multi
+	--all
+)
+source "${0%/*}/lib/git-rel"
