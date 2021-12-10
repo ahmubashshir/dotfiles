@@ -39,7 +39,7 @@ if [ -z "$exec" ]; then
 			fi
 			arch=${ARCH:-$(uname -m)}
 			os=${OS:-$(uname -s)}
-			abi=${ABI:-gnu}
+
 			case "$arch" in
 				arm) abi=gnueabihf ;;
 				x86_64) arch="x86_64|amd64|${os}64" ;;
@@ -53,8 +53,10 @@ if [ -z "$exec" ]; then
 				data="$(
 					printf '%s' "$relinfo" \
 						| jq '.assets[]|select(type == "object")' \
-						| jq "select(.name|test(\"(?i)$os\"))" \
-						| jq "select(.name|test(\"(?i)$arch\"))"
+						| jq "select(.name|test(\"(?i)${os:-.}\"))" \
+						| jq "select(.name|test(\"(?i)${arch:-.}\"))" \
+						| jq "select(.name|test(\"(?i)${abi:-.}\"))" \
+						| jq "select(.name|test(\"(?i)${FILTER:-.}\"))"
 				)"
 				if ((EXTRACT)); then
 					data=$(
@@ -92,7 +94,11 @@ if [ -x "$exec" ]; then
 	else
 		PATH="${exec%/*}:$PATH"
 	fi
-	exec "$NAME" "$@"
+	if [[ x$(typeset -p DEFAULT_ARGS 2> /dev/null | awk '{print $2}') != x-a ]]; then
+		unset -v DEFAULT_ARGS
+		declare -a DEFAULT_ARGS
+	fi
+	exec "$NAME" "${DEFAULT_ARGS[@]}" "$@"
 else
 	printf "%s: command not found.\n" "$NAME"
 	exit 1
