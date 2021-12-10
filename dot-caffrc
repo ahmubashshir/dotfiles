@@ -2,7 +2,7 @@
 # This file is in perl(1) format - see caff(1) for details.
 
 $CONFIG{'owner'} = 'Ahmad Hasan Mubashshir';
-$CONFIG{'email'} = 'ahm@disroot.org';
+$CONFIG{'email'} = 'ahmubashshir@gmail.org';
 $ENV{'PERL_MAILERS'} = 'sendmail:/usr/bin/msmtp';
 $CONFIG{'caffhome'} = $ENV{'HOME'}. '/.local/share/caff';
 #$CONFIG{'reply-to'} = 'foo@bla.org';
