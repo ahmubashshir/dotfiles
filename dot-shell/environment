@@ -33,4 +33,5 @@ else
 		esac
 	done
 	export PATH="$P"
+	unset                P
 fi

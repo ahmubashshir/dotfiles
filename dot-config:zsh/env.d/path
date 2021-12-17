@@ -18,4 +18,4 @@ for n in $(echo $PATH|tr ':' '\n');do
 		;;
 	esac
 done
-export PATH="$P"
+export PATH="$P";unset P
