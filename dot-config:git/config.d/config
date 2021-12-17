@@ -3,8 +3,11 @@
 [advice]
 	addIgnoredFile = false
 [commit]
-	gpgSign = true
+	gpgSign = false
 	template = ~/.config/git/commit-msg
+[tag]
+	gpgSign = true
+	forceSignAnnotated = true
 [color]
 	ui = auto
 [core]
