@@ -48,6 +48,7 @@ if [ -z "$exec" ]; then
 				[ ! -f "$exec" ] \
 					|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
 			then
+				echo >&2 "Updating: $ltver -> $rtver"
 				file=$(mktemp /tmp/bin.XXXXXXXX)
 				trap 'rm -f $file' TERM QUIT EXIT INT
 				data="$(
