@@ -8,8 +8,6 @@
 	spellcheck = false
 [gpg]
 	program = gpg2
-[tag]
-	forceSignAnnotated = true
 [trailer]
 	separators = ":;# "
 	ifExists = replace
