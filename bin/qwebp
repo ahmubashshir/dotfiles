@@ -1,0 +1,12 @@
+#!/bin/sh
+for src in "$@"; do
+	if file --brief --mime-type "$src" |
+		grep -q '^image/'; then
+		cwebp -q 90 -z 9 -m 6 -partition_limit 0 \
+			-qrange 88 92 -mt -progress -pass 10 \
+			-lossless -short "$src" -o "${src%.*}.webp" &&
+			rm "$src"
+	else
+		echo >&2 "$src: Not an image, skipping"
+	fi
+done
