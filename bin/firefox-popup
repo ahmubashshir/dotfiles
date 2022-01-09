@@ -7,12 +7,12 @@ if [ -z "$*" ]; then
 	exit 2
 fi
 if
-	command -pv "$MEDIA_PLAYER" &&
+	command -pv "$MEDIA_PLAYER" > /dev/null &&
 		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+$'
 then
 	case "$MEDIA_PLAYER" in
 		mpv)
-			mkdir   -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv"
+			mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv"
 			exec mpv \
 				--script-opts=ontop-enable=no \
 				--player-operation-mode=pseudo-gui \
