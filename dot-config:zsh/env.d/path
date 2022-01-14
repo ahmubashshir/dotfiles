@@ -2,20 +2,17 @@
 path=(
 	~/.local/bin
 	~/bin
-	~/.local/share/go/bin
+	"${XDG_DATA_HOME:-$HOME/.local/share}/go/bin"
+	"${XDG_DATA_HOME:-$HOME/.local/share}/cargo/bin"
 	$path
 	/usr/lib/surfraw
 	"${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers"
 	"${XDG_CONFIG_HOME:-$HOME/.config}/git/helpers/extras/bin"
 )
-for n in $(echo $PATH|tr ':' '\n');do
-	case ":$P:" in
-		*:"$n":*) continue;;
-		*)
-			if [ -d "$n" ];then
-				P="${P:+$P:}$n"
-			fi
-		;;
-	esac
+_path=()
+for each in $path;do
+	printf '%s\n' $_path|grep -qxF "$each" && continue
+	_path+=("$each")
 done
-export PATH="$P";unset P
+path=($_path)
+unset _path
