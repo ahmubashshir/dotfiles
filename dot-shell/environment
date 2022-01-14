@@ -2,7 +2,7 @@
 if [ -x /bin/zsh ]; then
 	eval "$(
 		zsh -c 'env' |
-			grep -Ev '^(WINDOWID|_|SHLVL|OLDPWD)=' |
+			grep -Ev '^(WINDOWID|_|SHLVL|OLDPWD|ZSH.*)=' |
 			awk '{printf "%s\0", $0}' |
 			xargs -0 printf 'export %q\n'
 	)"
@@ -10,7 +10,7 @@ else
 	eval "$(grep ^ZDOTDIR ~/.zshenv)"
 	for each in "$ZDOTDIR"/env.d/*; do
 		case $each in
-			*.zwc | gui) continue ;;
+			*.zwc | gui | path) continue ;;
 			*) . "$each" ;;
 		esac
 	done
@@ -33,5 +33,5 @@ else
 		esac
 	done
 	export PATH="$P"
-	unset                P
+	unset P
 fi
