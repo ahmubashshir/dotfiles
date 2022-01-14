@@ -1,2 +1,3 @@
 #compdef hex2rgb
 _arguments -s '*::Hex Color:'
+# vim: ft=sh:ts=4:noet:

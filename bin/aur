@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ "$1" != "help" ]; then
+	exec ssh aur@aur.archlinux.org "$@"
+else
+	cat >&2 << EOF
+Commands:
+   adopt <name>                      Adopt a package base.
+   disown <name>                     Disown a package base.
+   flag <name> <comment>             Flag a package base out-of-date.
+   help                              Show this help message and exit.
+   list-repos                        List all your repositories.
+   restore <name>                    Restore a deleted package base.
+   set-comaintainers <name> [...]    Set package base co-maintainers.
+   set-keywords <name> [...]         Change package base keywords.
+   setup-repo <name>                 Create a repository (deprecated).
+   unflag <name>                     Remove out-of-date flag from a package base.
+   unvote <name>                     Remove vote from a package base.
+   vote <name>                       Vote for a package base.
+EOF
+fi

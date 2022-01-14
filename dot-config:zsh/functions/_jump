@@ -5,3 +5,5 @@ _list_bookmarks() {
 	_describe "bookmarks" bookmarks
 }
 _arguments -s "1:bookmark id:_list_bookmarks"
+
+# vim: ft=sh:ts=4:noet:

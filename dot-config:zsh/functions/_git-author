@@ -25,3 +25,4 @@ args=(
 
 _arguments -s "${args[@]}"
 
+# vim: ft=sh:ts=4:noet:
