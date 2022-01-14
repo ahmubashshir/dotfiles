@@ -1,0 +1,96 @@
+#compdef aur
+_aur_list_tasks() {
+    local -a tasks
+    tasks=(
+        'adopt:Adopt a package base.'
+        'disown:Disown a package base.'
+        'flag:Flag a package base out-of-date.'
+        'help:Show this help message and exit.'
+        'list-repos:List all your repositories.'
+        'restore:Restore a deleted package base.'
+        'set-comaintainers:Set package base co-maintainers.'
+        'set-keywords:Change package base keywords.'
+        'setup-repo:Create a repository (deprecated).'
+        'unflag:Remove out-of-date flag from a package base.'
+        'unvote:Remove vote from a package base.'
+        'vote:Vote for a package base.'
+    )
+
+    _describe 'tasks' tasks
+}
+
+# _aur_repo_cache
+# Cache aur repo list
+# $1: Cache name
+# $@: Cache update command
+_aur_repo_cache() {
+    local cachename="$1";shift
+    _retrieve_cache "$cachename"
+    if [ -e ~/pipe ];then
+        echo "$((EPOCHSECONDS-lastcache))" > ~/pipe
+    fi
+    if ((EPOCHSECONDS-lastcache>43200));then
+        lastcache=$EPOCHSECONDS
+        (repos=(${(@f)"$("$@"|tr -d '[:blank:]')"})
+         if (($#repos));then
+            _cache_invalid "$cachename"
+            _store_cache "$cachename" lastcache repos
+         fi)&!
+    fi
+}
+
+_aur_list_repos() {
+    local lastcache
+    local -a repos
+    _aur_repo_cache aur-own-repos aur list-repos
+    if (($#repos));then
+        _values name $repos
+        unset repos
+    else
+        _message "name"
+    fi
+}
+
+_aur_list_all_repos() {
+    local lastcache
+    local -a repos
+    _aur_repo_cache aur-repos curl --disable -s https://aur.archlinux.org/packages.gz --compressed
+
+    if (($#repos));then
+        _values name $repos
+        unset repos
+    else
+        _message "name"
+    fi
+}
+
+_aur_task_params() {
+    case $line[1] in
+		(list-repos | help)
+		    _message 'no more arguments' ;;
+		(disown | restore | setup-repo | unflag)
+		    _arguments '2:name:_aur_list_repos' ;;
+		(adopt | unvote | vote)
+            _arguments '2:name:_aur_list_all_repos' ;;
+		(flag)
+		    _arguments '2:name:_aur_list_all_repos' '3:comment:';;
+		(set-comaintainers)
+		    _arguments '2:name:_aur_list_repos' '*:co-maintainers:' ;;
+		(set-keywords)
+            _arguments '2:name:_aur_list_repos' '*:keywords:' ;;
+		(*) _message "unknown command: $line[1]" ;;
+	esac
+}
+
+if ! ((EPOCHSECONDS));then
+    zmodload zsh/datetime
+fi
+
+local args
+args=(
+    "1:task:_aur_list_tasks"
+    "*:task params:_aur_task_params"
+)
+_arguments -s "${args[@]}"
+
+# vim: ft=sh:ts=4:noet:

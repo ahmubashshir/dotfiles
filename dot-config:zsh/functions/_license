@@ -18,3 +18,5 @@ __licenses() {
   _values License $arguments
 }
 _arguments -s '1: :__licenses' '2: :__actions'
+
+# vim: ft=sh:ts=4:noet:

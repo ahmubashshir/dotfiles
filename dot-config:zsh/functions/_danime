@@ -37,3 +37,5 @@ arguments=(
 )
 
 _arguments -s $arguments
+
+# vim: ft=sh:ts=4:noet:

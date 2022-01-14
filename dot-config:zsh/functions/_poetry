@@ -133,3 +133,5 @@ _poetry_9cf82bc144790825_complete()
 
 _poetry_9cf82bc144790825_complete "$@"
 compdef _poetry_9cf82bc144790825_complete /usr/bin/poetry
+
+# vim: ft=sh:ts=4:noet:

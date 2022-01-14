@@ -47,3 +47,4 @@ __git_branch_names () {
 
 _arguments -s "1:branch:__git_branch_names"
 
+# vim: ft=sh:ts=4:noet:
