@@ -1,4 +1,13 @@
 #!/bin/sh
+rotate_log()
+{
+	local r
+	for r in 4 3 2 1; do
+		[ -f "$1.$r.gz" ] && mv "$1.$r.gz" "$1.$((r + 1)).gz"
+	done
+	[ -f "$1" ] && mv "$1" "$1.1" && gzip "$1.1"
+}
+
 if
 	[ "$#" -ge 1 ] &&
 		command -pv "$1" > /dev/null 2>&1
@@ -12,8 +21,9 @@ then
 	trap 'rm -f "$PIDFILE";exit' EXIT TERM QUIT ABRT
 
 	PIDFILE="${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service/$1"
+	LOGFILE="$HOME/logs/$1.log"
 	if [ -d "${XDG_RUNTIME_DIR:-/tmp}" ]; then
-		mkdir -p "${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service"
+		mkdir -p "${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service" "$HOME/logs"
 		if [ -f "$PIDFILE" ]; then
 			PID=$(cat "$PIDFILE")
 			if [ -n "$PID" ]; then
@@ -29,7 +39,12 @@ then
 			sleep 1
 		done
 		while true; do
-			"$@" &
+			rotate_log "$LOGFILE"
+			(
+				exec 2> "$LOGFILE"
+				exec 1>&2
+				exec "$@"
+			) &
 			PID=$!
 			echo "$$ $PID" > "$PIDFILE"
 			wait $PID
