@@ -1,0 +1,50 @@
+/* url bar */
+#widget-overflow-mainView,
+#urlbar[open="true"] > #urlbar-background {
+	backdrop-filter: contrast(100%) blur(var(--bct-blur)) saturate(25%) !important;
+	border: none !important;
+}
+
+/* overfow menu in customize menu */
+vbox#customization-panelWrapper box.panel-arrowcontent {
+	backdrop-filter: contrast(100%) blur(6px) !important;
+	border: none !important;
+}
+
+/* window transparencies */
+#main-window {
+	background: transparent !important;
+	-moz-appearance: -moz-win-glass !important;
+}
+
+/* blank page */
+#tabbrowser-tabpanels {
+	background: transparent !important;
+}
+
+/* navbar / tabbar / titlebar */
+/*#nav-bar {*/
+/*	background: transparent !important;*/
+/*	border-color: transparent !important;*/
+/*}*/
+/*#navigator-toolbox {*/
+/*	background: transparent !important;*/
+/*	border: none !important;*/
+/*}*/
+/*#urlbar-background {*/
+/*	background: transparent !important;*/
+/*}*/
+
+/* Sidebar */
+#sidebar-box,
+#sidebar-box:-moz-lwtheme-darktext,
+#sidebar-box:-moz-lwtheme-brighttext {
+	--sidebar-background-color: transparent !important;
+	background: transparent !important;
+
+}
+
+#sidebar,
+.sidebar-panel {
+	background: transparent !important;
+}
