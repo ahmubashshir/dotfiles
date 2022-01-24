@@ -1,10 +1,10 @@
 #!/bin/zsh
-if [ -e ~/zprof ] || [ -p ~/pipe ];then
+if [ -e ~/zprof ] || [ -p ~/pipe:zsh ];then
 	zmodload zsh/datetime
 	setopt PROMPT_SUBST
 	PS4='+$EPOCHREALTIME %N:%i> '
-	if [ -p ~/pipe ];then
-		logfile=~/pipe
+	if [ -p ~/pipe:zsh ];then
+		logfile=~/pipe:zsh
 	else
 		logfile=$(mktemp /tmp/zsh_profile.XXXXXXXX)
 	fi
