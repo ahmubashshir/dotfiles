@@ -1,0 +1,38 @@
+browser[type="content-primary"],
+browser[type="content"] {
+	background: var(--tabbar-bg) !important;
+}
+
+.menupopup-arrowscrollbox,
+.panel-arrowcontainer slot,
+:is(panel, menupopup)::part(content) {
+	box-shadow: none !important;
+	margin: 0 !important;
+	border-radius: 0 !important;
+}
+
+
+window,
+#main-window,
+#toolbar-menubar,
+#TabsToolbar,
+#PersonalToolbar,
+#navigator-toolbox,
+#sidebar-box {
+	background-color: rgba(41, 47, 52, 0.4) !important;
+	-moz-appearance: none !important;
+	background-image: none !important;
+}
+
+window,
+#nav-bar {
+	background-color: rgba(33, 37, 41, 0.5) !important;
+	-moz-appearance: none !important;
+	background-image: none !important;
+}
+
+.tab-background[selected="true"] {
+	background: rgba(33, 37, 41, 0.3) !important;
+	-moz-appearance: none !important;
+	background-image: none !important;
+}
