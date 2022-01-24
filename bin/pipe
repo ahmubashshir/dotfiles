@@ -1,22 +1,23 @@
 #!/bin/bash
 trap die TERM EXIT QUIT ABRT INT
+PIPE="${1:+:${1//[^[:alnum:]]/}}"
 die()
 {
 	_lock u
-	_lock xn && rm -f ~/pipe "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe.lck"
+	_lock xn && rm -f ~/"pipe$PIPE" "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe$PIPE.lck"
 	exit
 }
 _lock()
 {
-	flock -$1 99
+	flock "-$1" 99
 }
 
-exec 99> "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe.lck"
+exec 99> "${XDG_RUNTIME_DIR:-/run/user/$UID}/pipe$PIPE.lck"
 _lock xn || exit
-rm -f ~/pipe
-mkfifo ~/pipe 2> /dev/null
+rm -f ~/"pipe$PIPE"
+mkfifo ~/"pipe$PIPE" 2> /dev/null
 (
 	sleep 0.001
-	echo           "Watching PIPE" > ~/pipe
+	echo         "Watching PIPE$PIPE" > ~/"pipe$PIPE"
 ) &
-tail -f ~/pipe
+tail -f ~/"pipe$PIPE"
