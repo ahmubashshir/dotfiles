@@ -63,7 +63,7 @@
 [submodule "dot-local:share:gedit/plugins/restore-minimap"]
 	path = dot-local:share:gedit/plugins/restore-minimap
 	url = https://github.com/johnfactotum/gedit-restore-minimap.git
-	branch = local
+	branch = master
 [submodule "dot-local:share:gedit/plugins/wakatime"]
 	path = dot-local:share:gedit/plugins/wakatime
 	url = https://github.com/wakatime/gedit-wakatime
@@ -119,7 +119,7 @@
 [submodule "submodules/git-good-commit"]
 	path = submodules/git-good-commit
 	url = https://github.com/tommarshall/git-good-commit
-	branch = local
+	branch = master
 [submodule "submodules/git-confirm"]
 	path = submodules/git-confirm
 	url = https://github.com/pimterry/git-confirm
@@ -131,7 +131,7 @@
 [submodule "submodules/git-extras"]
 	path = submodules/git-extras
 	url = https://github.com/unixorn/git-extra-commands
-	branch = master
+	branch = main
 [submodule "submodules/git-secrets"]
 	path = submodules/git-secrets
 	url = https://github.com/awslabs/git-secrets
