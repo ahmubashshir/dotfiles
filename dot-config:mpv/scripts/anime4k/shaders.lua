@@ -84,8 +84,10 @@ shaders["fast"]["ca"] = {
     {"Restore", "Restore_CNN_Soft_S"}, {"Upscale", "Upscale_CNN_x2_S"}
 }
 
-shaders.resolve = function(tshader)
-    local tab = {table.unpack(tshader)}
+function shaders.resolve(tshader)
+    local tab = table.unpack ~= nil
+                and {table.unpack(tshader)}
+                or {unpack(tshader)}
     local last = table.maxn(tab)
     tab[last] = "Anime4K_" .. tab[last] .. ".glsl"
     return table.concat(tab, shaders.psep)
