@@ -1,0 +1,37 @@
+#!/bin/sh
+if printf '%s\n' | grep -qxE -- '-(-help|h)' || [ $# -eq 0 ]; then
+	cat >&2 << EOF
+Usage:
+	git send-patch <recipient> [Base Branch] [send-email args...]
+
+EOF
+	exec git send-email "$@"
+fi
+
+REPO=$(git rev-parse --git-dir 2> /dev/null)
+if [ -z "$REPO" ]; then
+	cat >&2 << EOF
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+EOF
+	exit 2
+fi
+
+to=$(git author get "$1")
+shift
+if [ -z "$to" ]; then
+	echo >&2 "git: Can't find intended user: $1"
+	exit 1
+fi
+
+if [ -n "$1" ]; then
+	if [ -f "$REPO/refs/heades/$1" ] || [ -f "$REPO/refs/remotes/$1" ]; then
+		REF=$1
+		shift
+	fi
+fi
+if [ -z "$REF" ]; then
+	REF=$(git remote | awk '/upstream/{p=$1};!/upstream/{q=$1};END{printf "%s\n", p==""?q:p }')/HEAD
+fi
+
+exec git send-email "$@" --to="$to" "$REF"
