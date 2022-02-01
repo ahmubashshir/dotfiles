@@ -148,3 +148,6 @@
 	path = dot-config:zsh/plugins/autosuggestions
 	url = https://github.com/zsh-users/zsh-autosuggestions
 	branch = master
+[submodule "dot-config:zsh/plugins/forgit"]
+	path = dot-config:zsh/plugins/forgit
+	url = https://github.com/wfxr/forgit

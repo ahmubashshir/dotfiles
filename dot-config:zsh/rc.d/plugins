@@ -20,6 +20,7 @@ zplug-defer autoswitch_virtualenv
 zplug-defer rockz
 zplug-defer zinsults
 zplug-defer git
+zplug-defer forgit
 zplug-defer archlinux
 zplug-defer dotenv
 zplug-defer rbenv
