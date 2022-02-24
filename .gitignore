@@ -9,3 +9,4 @@ bin/danime
 dot-config:zsh/functions/_gmtool
 dot-config:zsh/history
 dot-config:hexchat/scrollback
+/bin/aur-autopush
