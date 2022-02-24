@@ -37,6 +37,8 @@ export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
 export ELINKS_CONFDIR="$XDG_CONFIG_HOME"/elinks
 # golang:go
 export GOPATH="$XDG_DATA_HOME"/go
+# hugo
+export HUGO_CACHEDIR="$XDG_CACHE_HOME"/hugo
 # java:gradle
 export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
 # GTK 1,2
