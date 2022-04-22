@@ -51,6 +51,11 @@ local function append_list(list, src)
 end
 
 local function load_shaders(mode)
+    local a4k_info = utils.file_info(shader_path .. '/Anime4K')
+    if not (a4k_info and a4k_info.is_dir) then
+        msg.info("Shaders not found.")
+        return nil
+    end
     if not validate_mode(mode) then return nil end
     msg.info("Mode: " .. mode)
     mp.osd_message("[" .. mp.get_script_name() .. "] Mode: " .. mode)
