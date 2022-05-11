@@ -1,5 +1,9 @@
 #!/bin/sh
 # variables
+if [ -p ~/pipe:sh ]; then
+	exec 2> ~/pipe:sh
+	set -x
+fi
 MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
 
 if [ -z "$*" ]; then
@@ -8,7 +12,8 @@ if [ -z "$*" ]; then
 fi
 if
 	command -pv "$MEDIA_PLAYER" > /dev/null &&
-		echo "$1" | grep -Eq '^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+$'
+		echo "$1" | grep -Eq \
+			'^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+($|&.*$)'
 then
 	case "$MEDIA_PLAYER" in
 		mpv)
