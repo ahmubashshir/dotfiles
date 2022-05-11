@@ -2,7 +2,7 @@
 if printf '%s\n' | grep -qxE -- '-(-help|h)' || [ $# -eq 0 ]; then
 	cat >&2 << EOF
 Usage:
-	git send-patch <recipient> [Base Branch] [send-email args...]
+	git mail-patch <recipient> [Base Branch] [send-email args...]
 
 EOF
 	exec git send-email "$@"
