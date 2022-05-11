@@ -15,7 +15,7 @@ function fork_setup
 
 if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
-	if git config remote.upstream.url \
+	if git remote get-url upstream \
 		| grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
 		case $(git config --get user.email) in
 			ahmubashshir@*)
