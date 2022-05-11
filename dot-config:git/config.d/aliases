@@ -23,7 +23,7 @@
 	gui = !gitg -a 2>/dev/null
 	bclone = clone --single-branch --branch
 	cb = switch
-	ch = cb
+	ch = switch
 	co = checkout
 	root = rev-parse --show-toplevel
 	run = "!exec "
@@ -57,3 +57,6 @@
 	head = rev-parse --abbrev-ref HEAD
 	dtc = dt --cached
 	drop = reset --hard
+	send-patch = mail-patch
+	patch = !patch
+	mail-patch = mail-patch
