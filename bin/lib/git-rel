@@ -31,9 +31,20 @@ if [ -z "$exec" ]; then
 					| jq -r '.tag_name'
 			)
 			rtver="${rtver#*v}"
-			if [ -x "$exec" ]; then
-				ltver=$("$exec" --version | awk '{print $2}')
+			if ! declare -Fp version |& grep -q '^declare -f'; then
+				version()
+				{
+					"$exec" --version
+				}
 			fi
+			if [ -x "$exec" ]; then
+				ltver=$(
+					version \
+						| grep -oEm1 '\sv?[[:digit:]][[:digit:].-]+' \
+						| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
+				)
+			fi
+			unset -f version
 			if [ -z "$ltver" ]; then
 				ltver=0.0.0
 			fi
