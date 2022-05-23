@@ -2,5 +2,16 @@
 	smtpEncryption = tls
 	smtpServer = smtp.gmail.com
 	smtpServerPort = 587
-	confirm = auto
+	confirm = compose
 	suppressCc = self
+	annotate = yes
+	multiEdit = yes
+	aliasesFile = ~/.config/git/mail-aliases
+	aliasFileType = mutt
+
+[format]
+	outputDirectory = patches
+#	from = true
+	numbered = auto
+	thread = shallow
+	coverLetter = auto

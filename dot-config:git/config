@@ -6,4 +6,11 @@
 	path = ./config.d/misc
 	path = ./config.d/smtp
 	path = ./config.d/url
-	path = ~/.config/git.conf
+
+# user global configs
+[user]
+	email = ahmubashshir@gmail.com
+	name = Mubashshir
+	signingKey = ahmubashshir@gmail.com
+[sendemail]
+	smtpuser = ahmubashshir@gmail.com
