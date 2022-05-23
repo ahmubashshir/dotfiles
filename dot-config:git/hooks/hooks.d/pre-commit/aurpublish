@@ -1,0 +1,8 @@
+#!/bin/bash -e
+# HOOK-CONDITION: git diff --name-only --cached | grep -q '/PKGBUILD$'
+
+git diff --name-only --cached \
+	| awk -F/ '/\/PKGBUILD$/{print $(NF-1)}' \
+	| while read -r path; do
+		"${0%/*}/aur" DIR "$path"
+	done
