@@ -9,16 +9,15 @@
 """
 import os
 
-from threading import Thread
-from time import time
+from threading import Thread, Event
+from time import time, sleep
 from asyncio import (new_event_loop as new_loop,
                      set_event_loop as set_loop)
 from pypresence.client import Client
 from pypresence.exceptions import InvalidID, InvalidPipe
 from trackma.engine import Engine
 from trackma.utils import (estimate_aired_episodes,
-                           TRACKER_PLAYING as PLAYING,
-                           TRACKER_IGNORED as IGNORED)
+                           Tracker)
 
 
 class DiscordRPC(Thread):
@@ -33,7 +32,7 @@ class DiscordRPC(Thread):
     _client_id = "777075127266705408"  # set discord application id here
     _enabled = False
     _pid = None
-    _last_run = 0
+    _quit = None
     _errors = (
         ConnectionRefusedError,
         InvalidID,
@@ -49,6 +48,7 @@ class DiscordRPC(Thread):
                 del kwargs[attr]
 
         super().__init__(*args, **kwargs)
+        self._quit = Event()
         self._pid = os.getpid()
 
         self._details = {
@@ -58,6 +58,10 @@ class DiscordRPC(Thread):
             'img': None,
             'txt': None
         }
+
+    def stop(self):
+        self._quit.set()
+        self.join()
 
     def present(
         self, engine: Engine, pos: int = None,
@@ -79,16 +83,12 @@ class DiscordRPC(Thread):
 
     def run(self):
         set_loop(new_loop())
-        while True:
+        while not self._quit.is_set():
             try:
                 self._reconnect()
                 if self._enabled:
-                    if time() - self._last_run <= 0.25:
-                        continue
-                    self._last_run = time()
-
                     if self._details['details'] == "Regretting..." \
-                            and not self.regret:
+                       and not self.regret or self._quit.is_set():
                         self._rpc.clear_activity(pid=self._pid)
                     else:
                         self._rpc.set_activity(
@@ -99,7 +99,7 @@ class DiscordRPC(Thread):
                             small_text=self._details['txt'],
                             details=self._details['details'],
                             state=self._details['state'],
-                            start=time() * 1000 - self._details['pos']
+                            start=time() * 1000 - int(self._details['pos'])
                             if self._details['pos'] else None
                         )
             except self._errors:
@@ -108,6 +108,7 @@ class DiscordRPC(Thread):
                     self._rpc.close()
                 except AttributeError:
                     pass
+            sleep(0.25)
 
     def _reconnect(self):
         if not self._enabled:
@@ -119,7 +120,7 @@ class DiscordRPC(Thread):
                 self._enabled = False
 
 
-rpc = DiscordRPC(daemon=True, regret=False)
+rpc = DiscordRPC(regret=False)
 
 
 def init(engine):
@@ -131,6 +132,7 @@ def init(engine):
 
 
 def destroy(engine):
+    rpc.stop()
     engine.msg.debug("presence", "Destroyed")
 
 
@@ -138,8 +140,7 @@ def tracker_state(engine, status):
     """
     Update status in thread.
     """
-    print(status)
-    if status["state"] in [PLAYING, IGNORED]:
+    if status["state"] in [Tracker.PLAYING, Tracker.IGNORED]:
         show = status["show"][0]
         title = show["titles"][0]
         episode = status["show"][-1]

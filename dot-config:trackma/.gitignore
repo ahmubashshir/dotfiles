@@ -1,4 +1,0 @@
-accounts.dict
-/hooks/private/*
-!/hooks/private/__init__.py
-
