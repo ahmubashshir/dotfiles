@@ -48,7 +48,7 @@ else
 fi
 
 typeset -A ENV
-zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
+#zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
 load rc completion keymap history modules plughooks plugins prompt
 zsh-defer source "$ZDOTDIR/env.d/path"
 
