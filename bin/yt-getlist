@@ -1,18 +1,26 @@
 #!/bin/env python3
-from base64 import b64decode
-import xml.etree.ElementTree as ET
+import os
+import sys
+import errno
 import re
+import xml.etree.ElementTree as ET
+
 from sys import argv
+from base64 import b64decode
+
 import yaml
 import stagger
+import requests as r
+
 from youtube_dl import YoutubeDL as YDL
 from stagger.errors import NoTagError
-
 
 #########################################################################
 #                            Xspf Module                                #
 #                  https://github.com/alastair/xspf/                    #
 #########################################################################
+
+
 class XspfBase(object):
     NS = "http://xspf.org/ns/0/"
 
@@ -476,18 +484,6 @@ def file_name(item):
             item['comment'].split(' ')))
 
 
-class F:
-    _n = None
-
-    @property
-    def n(self):
-        return self._n
-
-    @n.setter
-    def n(self, v):
-        self._n = v
-
-
 class playlist:
     _list = None
     _name = 'base'
@@ -574,27 +570,49 @@ def copy_filename(d, to):
         to.n = d['filename']
 
 
-def get_item(item, ydl_opts, opts):
-    file = F()
-    ydl_opts['progress_hooks'] = [lambda x: copy_filename(x, file)]
+def get_item_slider(item, opts):
+    pass
 
-    with YDL(ydl_opts) as ydl:
-        ydl.download([item['id']])
-        if opts and 'ext' in opts:
-            file.n = file_name(item) % opts
-        if opts and opts.get('sub', None) and isinstance(
-                item.get('sub', None), (list, )):
-            sub = file_name(item) % {'ext': opts.get('sub', None)}
-            with open(sub, 'w') as f:
-                data = b64decode(''.join(item['sub']).encode('ascii'))
+
+def get_item(item, ydl_opts, opts):
+
+    _item = file_name(item) % opts
+    print("Downloading: {}".format(_item))
+    if not os.path.exists(_item):
+        if len(str.split(item['id'], ':')) > 1:
+            _data = str.split(item['id'], ':')
+            item['id'] = ':'.join(_data[1:])
+            get_item_func = globals().get('get_item_%s' % next(iter(_data)), None)
+            if callable(get_item_func):
+                get_item_func(item, opts)
+        else:
+            with YDL(ydl_opts) as ydl:
                 try:
-                    data = data.decode('ascii')
-                except Exception:
-                    data = data.decode('utf-8')
-                f.write(strip(data))
-        if opts and not opts.get('skip-tagging', False):
-            id3_tags(item, file.n)
-        return file.n
+                    ydl.download([item['id']])
+                except Exception as e:
+                    print(e)
+
+    if not os.path.exists(_item):
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), _item)
+    if os.path.isdir(_item):
+        raise IsADirectoryError(errno.EISDIR, os.strerror(errno.EISDIR), _item)
+    if not os.path.isfile(_item):
+        raise IOError(errno.EIO, "{}, not a file".format(
+            os.strerror(errno.EIO)), _item)
+
+    if opts and opts.get('sub', None) and isinstance(
+            item.get('sub', None), (list, )):
+        sub = file_name(item) % {'ext': opts.get('sub', None)}
+        with open(sub, 'w') as f:
+            data = b64decode(''.join(item['sub']).encode('ascii'))
+            try:
+                data = data.decode('ascii')
+            except Exception:
+                data = data.decode('utf-8')
+            f.write(strip(data))
+    if opts and not opts.get('skip-tagging', False):
+        id3_tags(item, _item)
+    return _item
 
 
 def get_list(_list,
@@ -635,12 +653,57 @@ def get_list(_list,
             raise ValueError("Nested Playlists are not supported")
 
 
+class info:
+    @staticmethod
+    def debug(msg):
+        pass
+
+    @staticmethod
+    def warning(msg):
+        pass
+
+    @staticmethod
+    def error(msg):
+        import textwrap
+        import itertools
+
+        _msg = (
+            *textwrap.wrap("%s" % msg.splitlines()[0].strip(' ')),
+            *itertools.chain.from_iterable(
+                textwrap.wrap(textwrap.indent(_msg, '  '))
+                for _msg in msg.splitlines()[1:]
+            )
+        )
+        print(*_msg, file=sys.stderr, sep='\n')
+
+    @staticmethod
+    def progess(d):
+        if d['status'] == 'downloading':
+            print("\r\x1B[KProgess: {} of {} at {} ETA {}".format(
+                d['_percent_str'],
+                d['_total_bytes_str'],
+                d['_speed_str'],
+                d['_eta_str']
+            ), end='', flush=True)
+
+        elif d['status'] == 'finished':
+            print('\r\x1B[KProgess: 100% of {} in {}, converting ...'.format(
+                d['_total_bytes_str'],
+                d['_elapsed_str'],
+            ), flush=True)
+
+
 if __name__ == '__main__':
 
     try:
         with open('.list.yml', 'r') as f:
             file = yaml.load(f, Loader=yaml.FullLoader)
         ydl = file.get('ydl', dict())
+        ydl['quiet'] = True
+        ydl['noprogress'] = False
+        ydl['progress_hooks'] = [info.progess]
+        ydl['logtostderr'] = True
+        ydl['logger'] = info
 
         if len(argv) > 1 and 'skip-dl' in argv:
             ydl['skip_download'] = True
@@ -649,4 +712,6 @@ if __name__ == '__main__':
         get_list(file['list'], lists, ydl, file.get('opts', dict()))
     except FileNotFoundError:
         print('.list.yml: file not found.')
+    except KeyboardInterrupt:
+        print('\r\x1B[KInterrupred, quitting.')
 # vim: ts=4:ft=python:noet:

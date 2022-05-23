@@ -6,7 +6,7 @@ ARCH='.'
 OS='.'
 FILTER='lncrawl$'
 DEFAULT_ARGS=(
-	--format epub
+	--format epub json
 	--multi
 	--all
 )

@@ -178,12 +178,12 @@ function lock
 	trap no_more_locking EXIT
 	FD=$(shuf -i 1-1000 -n 1)
 	eval "exec $FD>./lock.lck"
-	eval "_lock()             { flock -\$1 $FD; }"
+	eval "_lock()             { flock -\$1 $FD 2>/dev/null; }"
 	no_more_locking()
 	{
 		_lock u
-		_lock    xn && rm -f ./lock.lck
-		unset                                 _lock
+		_lock xn && rm -f ./lock.lck
+		unset                             _lock
 	}
 	_lock xn || {
 		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
@@ -244,7 +244,7 @@ function drv_get
 	if [[ -z "$2" ]]; then
 		set -- "$1" "$(echo "$JSON" | jq -r .name)"
 		tput cuu1
-		tput       el
+		tput   el
 		echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "${2:-$1}")'...$ALL_OFF"
 	fi
 	set -- "$2" "$1"
@@ -462,7 +462,7 @@ else
 			unset "${all_funcs[@]}"
 			echo "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                       1
+			exit                                                                                   1
 			;;
 	esac
 fi
