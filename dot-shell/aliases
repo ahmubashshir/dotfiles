@@ -41,15 +41,15 @@ if [ -x /usr/bin/time ]; then
 fi
 if [ -x /usr/bin/ytfzf ]; then
 	case $TERM in
-		*-kitty) alias ytfzf="ytfzf -ft" ;;
-		*) alias ytfzf="ytfzf -ft --thumb-disp-method=chafa" ;;
+		*-kitty) alias ytfzf="ytfzf -ft --thumb-viewer=ikat" ;;
+		*) alias ytfzf="ytfzf -ft --thumb-viewer=chafa" ;;
 	esac
 fi
 if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
 fi
 if [ -x /usr/bin/makechrootpkg ]; then
-	alias makechrootpkg="$([ -x /usr/bin/pump ] && printf 'pump env -u MAKEFLAGS \n')makechrootpkg -ur /var/lib/archbuild"
+	alias makechrootpkg="sudo makechrootpkg -ur /var/lib/archbuild"
 fi
 alias t=time
 alias k="kill"

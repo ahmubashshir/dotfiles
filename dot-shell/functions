@@ -75,6 +75,12 @@ get_m3u()
 	echo -ne "URL\t:  " 1>&2
 	curl "$1" 2> /dev/null | grep -v ^# | sed '/^$/d' | ( (head -2 | cut -d\& -f1) && (tail -2 | cut -d\? -f2 | cut -d\& -f2- | awk 'NR==1 {print "&"$0;}')) | awk 'NR>=2 && NR<=3 {printf $0;}' | awk "{print \"$(dirname "$1" | tr -d '[:blank:]')/\"\$0;}"
 }
+cbzinfo() {
+	local each
+	for each in "$@";do
+		unzip -p "$each" comment.txt
+	done
+}
 wlen()
 {
 	wget --spider -O- $1 2>&1 | grep Length | sed 's|Length|Size|g'
