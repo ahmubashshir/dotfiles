@@ -1,15 +1,23 @@
 #!/bin/bash -e
 # HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+if [[ $1 = DIR ]] && [[ -d $2 ]]; then
+	cd "$2"
+	echo ":: Updating $2"
+fi
+
 if grep -q 'git://|git+http' PKGBUILD; then
 	makepkg -o
 fi
-echo "==> Updating SRCINFO"
+echo ":: Updating SRCINFO"
 makepkg --verifysource -f \
 	&& makepkg --printsrcinfo > .SRCINFO
 git add -f .SRCINFO
 
-IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
-git reset -q
+IFS=$'\r\n' readarray -t STAGED < <(
+	git diff --name-only --cached \
+		| awk -F/ '{print $NF}'
+)
+
 if [ ! -f .gitignore ]; then
 	echo " -> Initializing gitignore"
 	echo '*' > .gitignore
@@ -28,9 +36,6 @@ grep '^!' .gitignore | cut -c2- | while read -r line; do
 	fi
 done
 git add --force .gitignore
-for n in "${STAGED[@]}"; do
-	git add --force "$n"
-done
 
 if [[ -x /usr/bin/namcap ]]; then
 	namcap -im PKGBUILD

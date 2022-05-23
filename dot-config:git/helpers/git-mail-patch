@@ -17,7 +17,12 @@ EOF
 	exit 2
 fi
 
-to=$(git author get "$1")
+if echo "$1" | grep -qE '^.* <[^[:space:]]+@[[:alnum:].-]+>$'; then
+	to="$1"
+else
+	to=$(git author get "$1")
+fi
+
 shift
 if [ -z "$to" ]; then
 	echo >&2 "git: Can't find intended user: $1"
