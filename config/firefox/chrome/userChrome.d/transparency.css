@@ -48,3 +48,7 @@ vbox#customization-panelWrapper box.panel-arrowcontent {
 .sidebar-panel {
 	background: transparent !important;
 }
+
+#appcontent {
+	background: transparent !important;
+}
