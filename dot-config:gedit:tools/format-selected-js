@@ -1,0 +1,20 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Format Selected JS
+# Languages=html
+# Input=selection
+# Output=replace-selection
+# Applicability=all
+# Save-files=nothing
+
+check()
+{
+	for n in "$@"; do
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n 2>&1 > /dev/null; then
+			echo "$n is not installed" >&2
+			exit 1
+		fi
+	done
+}
+check js-beautify
+js-beautify -ijkx -w 80
