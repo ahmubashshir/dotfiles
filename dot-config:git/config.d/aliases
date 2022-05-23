@@ -58,5 +58,6 @@
 	dtc = dt --cached
 	drop = reset --hard
 	send-patch = mail-patch
+	email = send-email --compose
 	patch = !patch
 	mail-patch = mail-patch
