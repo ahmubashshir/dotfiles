@@ -9,8 +9,7 @@ require_version('GLib', '2.0')  # nopep8
 
 from gi.repository import Notify, GdkPixbuf, GLib, Gio
 from trackma.utils import (EngineError,
-                           TRACKER_PLAYING as PLAYING,
-                           TRACKER_IGNORED as IGNORED)
+                           Tracker)
 
 
 notif = None
@@ -43,7 +42,7 @@ def playing(engine, show, is_playing, episode):
 
 
 def tracker_state(engine, status):
-    if status["state"] in [PLAYING, IGNORED] and engine.config['tracker_type'] != 'local':
+    if status["state"] in [Tracker.PLAYING, Tracker.IGNORED] and engine.config['tracker_type'] != 'local':
         show = status['show'][0]
         episode = status['show'][1]
         is_playing = not status['paused']
