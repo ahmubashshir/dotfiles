@@ -3,7 +3,7 @@ export BROWSER=firefox
 export TERMINAL="xfce4-terminal"
 if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ];then
 	export QT_QPA_PLATFORMTHEME=qt5ct
-	export QT_SCALE_FACTOR=1
+#	export QT_SCALE_FACTOR=1
 fi
 
 #export ENABLE_VKBASALT=1
