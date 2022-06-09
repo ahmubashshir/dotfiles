@@ -48,13 +48,25 @@ if [ -z "$exec" ]; then
 			if [ -z "$ltver" ]; then
 				ltver=0.0.0
 			fi
-			arch=${ARCH:-$(uname -m)}
-			os=${OS:-$(uname -s)}
+			filter='.assets[]|select(type == "object")'
+
+			filter()
+			{
+				test       -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
+			}
+
+			arch=${ARCH-$(uname -m)}
+			os=${OS-$(uname -s)}
 
 			case "$arch" in
 				arm) abi=gnueabihf ;;
 				x86_64) arch="x86_64|amd64|${os}64" ;;
 			esac
+			filter "$arch"
+			filter "$os"
+			filter "$abi"
+			filter "$FILTER"
+
 			if
 				[ ! -f "$exec" ] \
 					|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
@@ -67,12 +79,7 @@ if [ -z "$exec" ]; then
 				file=$(mktemp /tmp/bin.XXXXXXXX)
 				trap 'rm -f $file' TERM QUIT EXIT INT
 				data="$(
-					printf '%s' "$relinfo" \
-						| jq '.assets[]|select(type == "object")' \
-						| jq "select(.name|test(\"(?i)${os:-.}\"))" \
-						| jq "select(.name|test(\"(?i)${arch:-.}\"))" \
-						| jq "select(.name|test(\"(?i)${abi:-.}\"))" \
-						| jq "select(.name|test(\"(?i)${FILTER:-.}\"))"
+					printf '%s' "$relinfo" | jq "$filter"
 				)"
 				if ((EXTRACT)); then
 					data=$(
@@ -90,13 +97,13 @@ if [ -z "$exec" ]; then
 						bsdtar -tvf "$file" \
 							| rev | cut -d ' ' -f1 \
 							| rev | grep -E "(^|/)$NAME$"
-					)}" > "$exec"
+					)}"
 				else
-					cat "$file" > "$exec"
-				fi
+					cat "$file"
+				fi > "$exec" 2> /dev/null
 				chmod +x "$exec"
 				rm -f "$file"
-				trap -- TERM QUIT EXIT INT
+				trap - TERM QUIT EXIT INT
 			fi
 		else
 			printf "%s: can't check for update.\n" "$NAME"
@@ -104,7 +111,7 @@ if [ -z "$exec" ]; then
 	fi
 fi
 
-if [ -x "$exec" ]; then
+if [ -x "$exec" ] && [ -s "$exec" ]; then
 	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
 		PATH="${XDG_CACHE_HOME:-$HOME/.cache}/bin:$PATH"
 	else
