@@ -1,3 +1,0 @@
-#!/bin/sh
-umask 077
-exec htpasswd -cB ~/.xsecurelock.pw "$USER"
