@@ -44,3 +44,7 @@
 	generator = git-author
 [trailer "close"]
 	key = "Closes #"
+[trailer "ctx"]
+	key = "Context"
+[trailer "more"]
+	key = "More-info"
