@@ -12,7 +12,7 @@ this ```dotfiles``` directory is our local repo.
 
 - Now clone the dot manager into your ```dotfiles``` directory.
 ```
-curl -L https://github.com/ahmubashshir/dotfiles/raw/master/dots > dots
+curl -L https://github.com/ahmubashshir/dotfiles/raw/master/dots > dotfiles/dots
 ```
 
 - Now init your local repo.
