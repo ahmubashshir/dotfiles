@@ -45,7 +45,7 @@ dots cp <~/.dotfile1>[ ~/.dotfile2[ ...]]
 
 ## Usage of dot manager.
 
-> You can find dot manager [here](./raw/master/dots)
+> You can find dot manager [here](dots)
 
 | Command | Task |
 | --- | --- |
@@ -61,4 +61,4 @@ dots cp <~/.dotfile1>[ ~/.dotfile2[ ...]]
 
 ## LICENSE
 
-This repo is licensed under [GPL-2.0](./LICENSE)
+This repo is licensed under [GPL-2.0](LICENSE)
