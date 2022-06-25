@@ -1,73 +1,64 @@
 # dotfiles
 
-Assalamu Alaikum Wa Rahmatullah. Welcome to my dotfiles repo.
+Assalamu Alaikum Wa Rahmatullah. <br />
+Welcome to my dotfiles repo.
 
-## Process
+## `dots` dotfile manager Usage
 
-- First you need to create a directory. 
-```
+- Create a directory.
+```sh
 mkdir dotfiles
 ```
-this ```dotfiles``` directory is our local repo.
+this `dotfiles` directory will be our local repo.
 
-- Now clone the dot manager into your ```dotfiles``` directory.
-```
-curl -L https://github.com/ahmubashshir/dotfiles/raw/master/dots > dotfiles/dots
-```
-
-- Now init your local repo.
-```
-git -C dotfiles init
-```
-
-- Change directory & enter into dotfiles directory.
-```
+- cd into `dotfiles` directory and init a git repo.
+```sh
 cd dotfiles
+git init
 ```
 
-- Now execute the dot manager.
-```
+- Download `dots` into your `dotfiles` directory and make it executable.
+```sh
+curl -L https://github.com/ahmubashshir/dotfiles/raw/master/dots > dots
 chmod +x dots
 ```
 
-- For easy use you should add this line into your ```.bashrc``` or ```.zshrc``` file.
-```
+- For convenient access, add an alias into your `.bashrc` or `.zshrc`.
+```sh
 alias dots='$HOME/<your dotfile directory>/dots'
 ```
 
-> :warning: **Warning**
->
-> Make sure to change ```<your dotfile directory>```
+> :warning: **Warning:** Make sure to change `<your dotfile directory>`
 
 
-- Now link track dotfiles to your local repo one by one.
-```
-dots cp <dotfile path>
+- Track selected dotfiles to your local repo.
+```sh
+dots cp <~/.dotfile1>[ ~/.dotfile2[ ...]]
 ```
 
-> :warning: **Example**
->
-> If I want to link my ```.bashrc``` to my local repo, I should run -   
-> ```dots cp ~/.bashrc```
+> :warning: **Example:** If I want to link my `.bashrc` to my local repo, I should run
+> ```sh
+> dots cp ~/.bashrc
+> ```
 
-- Now add, commit and push to your github!
-  
-  
+- Now add, commit and push to origin!
+
 ## Usage of dot manager.
 
-> You can find dot manager [here](https://github.com/ahmubashshir/dotfiles/blob/master/dots)
+> You can find dot manager [here](./raw/master/dots)
 
 | Command | Task |
 | --- | --- |
-| ```dots``` or ```dots help``` | Show the help message |
-| ```dots cp <file path>``` | Track your dotfile |
-| ```dots ls``` | List tracked dotfiles. |
-| ```dots systemd backup``` | Backup systemd config. |
-| ```dots systemd restore``` | Restore systemd config. |
-| ```dots rm <dotfile>``` | unlink and delete dotfile from local repo. | 
-| ```dots ln``` | Link dotfiles. | 
-| ```dots ps <chr>```| use chr as seperator. |
-  
+| `dots` or `dots help` | Show the help message |
+| `dots cp <file path>` | Track your dotfile |
+| `dots ls` | List tracked dotfiles. |
+| `dots systemd backup` | Backup systemd config. |
+| `dots systemd restore` | Restore systemd config. |
+| `dots rm <dotfile>` | unlink and delete dotfile from local repo. |
+| `dots ln` | Link dotfiles. |
+| `dots ps <chr>`| use chr as seperator. |
+
+
 ## LICENSE
-  
+
 This repo is licensed under [GPL-2.0](./LICENSE)
