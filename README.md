@@ -57,7 +57,7 @@ dots cp <dotfile path>
 
 > You can find dot manager [here](https://github.com/ahmubashshir/dotfiles/blob/master/dots)
 
-| Command | Work |
+| Command | Task |
 | --- | --- |
 | ```dots``` or ```dots help``` | Show the help message |
 | ```dots cp <file path>``` | Track your dotfile |
