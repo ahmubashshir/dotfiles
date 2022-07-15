@@ -1,33 +1,73 @@
 #!/bin/bash
 exec 3> /dev/null
-query='{
+
+list-forks()
+{
+	local query filter
+	query='
+query ownedRepos {
 	viewer {
-		repositories(isFork:true,first:100) {
-			edges {
-				node {
+		repositories(
+			first: 100,
+			isFork: true,
+			ownerAffiliations: [
+				ORGANIZATION_MEMBER,
+				OWNER
+			],
+			privacy: PUBLIC,
+			orderBy: {
+				direction: ASC,
+				field: NAME
+			}
+		) {
+			nodes {
 					name,
 					nameWithOwner,
 					parent {
 						nameWithOwner
-					}
 				}
 			}
 		}
 	}
 }'
+	filter='.data.viewer.repositories.nodes[]| .name+":"+.parent.nameWithOwner +":"+.nameWithOwner'
+	curl --disable -s --netrc --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql \
+		| jq -r "$filter"
+}
+
 REPOPATH=(
 	~/Documents/git
 	~/Documents/git-forks
 )
-filter='.data.viewer.repositories.edges[]|.node| .name+":"+.parent.nameWithOwner +":"+.nameWithOwner'
 while IFS=': ' read -r repo src fork; do
 	for parent in "${REPOPATH[@]}"; do
-		[ -d "$parent/$repo" ] && git -C "$parent/$repo" rev-parse >&3 2>&1 || continue
+
+		if [[ -d "$parent/$repo" ]]; then
+			git -C "$parent/$repo" rev-parse >&3 2>&1
+		elif [[ $parent = "${parent[1]}" && $1 = "clone" ]]; then
+			git clone "https://github.com/$src" "$repo"
+		else
+			continue
+		fi
+
 		cd "$parent/$repo" || continue
+		read -r path < <(
+			sed "s@$HOME@~@" <<< "$parent/$repo"
+		)
+
+		sed "s@$HOME@~@" <<< "$path" \
+			| wc -c | xargs expr 4 + \
+			| sed 's/^/%/;s/$/c\\\\n/' | xargs printf | tr ' ' -
+
+		echo "- $path -"
+
+		sed "s@$HOME@~@" <<< "$path" \
+			| wc -c | xargs expr 4 + \
+			| sed 's/^/%/;s/$/c\\\\n/' | xargs printf | tr ' ' -
 		current=$(git rev-parse --abbrev-ref HEAD 2>&3)
 		default=$(git remote show origin 2>&3 | grep "HEAD branch" | awk '{print $3}')
 		if [[ $current != "$default" ]]; then
-			git checkout "$default"
+			git switch "$default"
 		fi
 		if ! git config remote.upstream.url 2>&1 >&3; then
 			git remote rename origin upstream
@@ -40,11 +80,10 @@ while IFS=': ' read -r repo src fork; do
 		git pull --rebase origin $default
 		git push -f origin $default
 		if [[ $current != "$default" ]]; then
-			git checkout "$current"
+			git switch "$current"
 		fi
 		cd "$OLDPWD"
 	done
 done < <(
-	curl --disable -s --netrc --data '{"query":"'"${query//[^[:print:] ]/}"'"}' https://api.github.com/graphql \
-		| jq -r "$filter"
+	list-forks
 )
