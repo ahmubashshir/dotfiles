@@ -1,13 +1,14 @@
 #!/bin/sh
 FEED=$(cat)
+xpath='//channel/link|//*[local-name() = "feed"]/*[local-name() = "link"][1]/@href'
 src=$(
-	echo -n "$FEED" | xml sel -t -c '//channel/link/text()' |
+	echo -n "$FEED" | xml sel -t -v "$xpath" |
 		sed -E 's@^https?://([0-9a-z.-]+)(/.*|$)@\1@'
 )
 filter="${XDG_DATA_HOME:-$HOME/.local/share}/feed-sed/$src${1:+-$1}.sh"
 printf '%s\n' "$FEED" |
 	if test -e "$filter"; then
-		.  "$filter"
+		. "$filter"
 	else
 		cat
 	fi

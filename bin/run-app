@@ -5,7 +5,7 @@ rotate_log()
 	for r in 4 3 2 1; do
 		[ -f "$1.$r.gz" ] && mv "$1.$r.gz" "$1.$((r + 1)).gz"
 	done
-	[ -f "$1" ] && mv "$1" "$1.1" && gzip "$1.1"
+	[ -f "$1" ] && gzip < "$1" > "$1.1.gz"
 }
 
 if
