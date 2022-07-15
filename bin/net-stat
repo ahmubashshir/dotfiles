@@ -2,7 +2,7 @@
 if timeout 0.4 ping -c 1 1.0.0.1 2> /dev/null >&2; then
 	icon='network-wired-activated'
 	msg='Connected'
-elif ip route | awk '/^default/ && ! _[$3]++ {print $3}' | xargs timeout 0.4 ping -c1 2> /dev/null >&2; then
+elif ip route | awk '/^default/ && ! _[$3]++ {print $3}' | xargs -r -P 5 -n 1 timeout 0.4 ping -c1 2> /dev/null >&2; then
 	icon='network-wired-no-route'
 	msg='Connected(No Internet)'
 else
