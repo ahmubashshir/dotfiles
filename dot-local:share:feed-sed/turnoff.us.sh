@@ -1,2 +1,3 @@
 #!/bin/sh
-sed -E 's|(<description>)|\1<![CDATA[|;s|(</description>)|]]>\1|'
+set -x
+sed -E 's|(<description>)|\1<![CDATA[\n\t\t|;s|(</description>)|\n]]>\1|'
