@@ -2,5 +2,4 @@
 theme=Matcha-sea-dark#
 
 [Applications]
-Matcha-sea%23=whatpulse, gfxbench
-Matcha-sea-dark%23=kwin_x11
+Matcha-sea%23=gfxbench
