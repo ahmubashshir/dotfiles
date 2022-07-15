@@ -1,0 +1,4 @@
+#!/bin/bash
+OWNER=wakatime
+ARCHIVE=zip
+source "${0%/*}/lib/git-rel"

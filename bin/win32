@@ -1,0 +1,7 @@
+#!/bin/sh
+export WINEPREFIX="$WINEPREFIX-i386" WINEARCH=win32
+if [ ! -d "$WINEPREFIX" ]; then
+	echo "WINEPREFIX not initialized" >&2
+	exit 1
+fi
+exec "$@"

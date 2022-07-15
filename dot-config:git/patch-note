@@ -1,0 +1,6 @@
+You can apply these patches using `git am`. If you don't know how to apply
+these patches then read [1], [2] and [3].
+
+[1]: https://stackoverflow.com/questions/24856020/applying-git-patches-from-a-mailing-list
+[2]: https://stackoverflow.com/questions/23594843/applying-email-patch-with-git
+[3]: https://www.git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Email

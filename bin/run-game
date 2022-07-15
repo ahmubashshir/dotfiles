@@ -1,0 +1,21 @@
+#!/bin/sh -x
+GAME_DIR=$(dirname "$1")
+GAME_ID=$(echo "$1" | tr -s '[:blank:][:punct:]' '.')
+if [ -f "$GAME_DIR/ENV" ]; then
+	. "$GAME_DIR/ENV"
+fi
+if [ "${USEMANGOHUD:-yes}" = "yes" ]; then
+	EXEC="mangohud"
+fi
+if [ "${USEGMRUN:-yes}" = "yes" ]; then
+	EXEC="${EXEC:+$EXEC }gamemoderun"
+fi
+
+env -u ENABLE_VKBASALT -u WINEDEBUG -u MANGOHUD ${EXEC} \
+	wine explorer "/desktop=$GAME_ID,${VDRES:-1366x743}" "$@" &
+
+WPID="$!"
+xdotool search --all --sync --name --class "^($GAME_ID - Wine desktop|explorer.exe)$" |
+	xargs -n1 toggle-decors
+fg
+env
