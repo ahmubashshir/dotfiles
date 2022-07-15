@@ -1,60 +1,33 @@
 #!/bin/sh
+# shellcheck disable=SC1087
 if [ -f "$1" ]; then
-	sep=$(git config --get trailer.separators)
-	[ -z "$sep" ] && sep=":"
-	dsep=$(echo "$sep" | cut -c1)
-	cat "$1" |
-		git interpret-trailers --parse --trim-empty |
-		sed "s/[$sep]\{1,\}/$dsep/" |
-		sort -u |
-		awk -F "$dsep" '{
-			if($1 ~ /^Signed-off-by$/) printf "9";
-			else if($1 ~ /^(Closes|See-also)$/) printf "0";
-			else if($1 ~ /^Reference-to$/) printf "3";
-			else printf "5";
-			print " "$0
-		}' |
-		sort -rn | cut -d' ' -f2- | while IFS="$sep" read -r trailer arg; do
-		unset token rep generator key
-		token=$(
-			git config --get-regexp 'trailer.*.key' |
-				awk -F. '$3 ~ /^key '"$trailer"'/{print $2}'
-		)
-		generator=$(git config --get "trailer.$token.generator")
-		key=$(git config --get "trailer.$token.key")
-		if [ -n "$generator" ]; then
-			rep=$(
-				sh -c "$generator"' "$1" 2>/dev/null || echo "$1"' -- "$arg" |
-					sed -e 's/^[[:blank:]]*//' \
-						-e 's/[[:blank:]]*$//' \
-						-e '/^$/d'
+	git interpret-trailers --in-place "$1"
+
+	TS=$(git config --get trailer.separators)
+	TS="${TS:-:}"
+	DTS=$(             echo "$TS" | cut -c1)
+
+	git interpret-trailers --parse --trim-empty "$1" |
+		sed "s/[$TS]\{1,\}/$DTS/" | sort -u |
+		while IFS="$TS" read -r trailer arg; do
+			token=$(
+				git config --get-regexp 'trailer.*.key' |
+					awk -F. '$3 ~ /^key '"$trailer"'/{print $2}'
 			)
-		fi
-		if echo "$key" | grep -q "[$sep]$"; then
-			rep="$key${rep:-$arg}"
-		else
-			rep="$key$dsep ${rep:-$arg}"
-		fi
-		if grep -q "^$token $arg$" "$1"; then
-			sed="$token $(echo "$arg" | sed 's@/@\\/@g')"
-		else
-			sed="$(echo "$rep" | sed 's@/@\\/@g')"
-		fi
-		if [ -n "$start" ]; then
-			sed -i "/^$sed$/d" "$1"
-		else
-			start="# ______________________ trailers ______________________"
-			if ! grep -q "^$start$" "$1"; then
-				sed -i "/^$sed$/c\\$start\ninsert-trailer-here" "$1"
-			else
-				sed -i "/^$sed$/c\\insert-trailer-here" "$1"
+			generator=$(git config --get "trailer.$token.generator")
+			key=$(git config --get "trailer.$token.key")
+			if [ -n "$generator" ]; then
+				rep=$(
+					sh -c "$generator"' "$1" 2>/dev/null || echo "$1"' -- "$arg" |
+						sed -e 's/^[[:blank:]]*//' \
+							-e 's/[[:blank:]]*$//' \
+							-e '/^$/d'
+				)
 			fi
-		fi
-		sed -i "/^insert-trailer-here$/c\\insert-trailer-here\n$rep" "$1"
-	done
-	sed -i '/^insert-trailer-here$/d' "$1"
-	if [ -z "$INTERPRETE_TRAILER_FIRST_RUN_DONE" ]; then
-		export "INTERPRETE_TRAILER_FIRST_RUN_DONE=1"
-		exec "$0" "$@"
-	fi
+			if ! echo "$key" | grep -q "[$TS]$"; then
+				key="$key$DTS "
+			fi
+			sed -Ei "/^$trailer[$TS]+$(echo "$arg" | sed 's@/@\\/@g')$/c\\$key${rep:-$arg}" "$1"
+			unset token rep generator key
+		done
 fi
