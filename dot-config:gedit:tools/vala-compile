@@ -8,5 +8,21 @@
 # Save-files=document
 # Shortcut=F4
 
-args=(-X -w $( sed -n '/\/\*$/,/\*\//{/^@args/{s/^@args \(.*\)$/\1/;p};/^@requires/{s/^@requires \(.*\)$/\1/;s/\//-/g;s/\([a-zA-Z0-9.+-_]*\)/--pkg=\1/gp}}' "$GEDIT_CURRENT_DOCUMENT_NAME"))
+declare -a args
+
+while read -r flag arg; do
+	if [[ $flag =~ ^- ]]; then
+		args+=("$flag")
+	else
+		args+=("--$flag")
+	fi
+	if [[ -n $arg ]]; then
+		args+=("$arg")
+	fi
+done < <(
+	sed -nE \
+		'/\/\*$/,/\*\//s/^.+@(-?\w+ ?.+)$/\1/p;s|.*// @(-?\w+ ?[^"]+)$|\1|p' \
+		"$GEDIT_CURRENT_DOCUMENT_NAME"
+)
+
 valac "$GEDIT_CURRENT_DOCUMENT_NAME" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.out"

@@ -8,12 +8,20 @@
 # Save-files=nothing
 # Shortcut=F5
 
-args=($( sed -n '/\/\*$/,/\*\//{/^@run-args/ s/^@args \(.*\)$/\1/;p}' "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"))
+declare -a args
+
+readarray -t args < <(
+	sed -nE \
+		'/\/\*$/,/\*\//s/^.+arg@ (.+)$/\1/p;s|.*// arg@ ([^"]+)$|\1|p' \
+		"$GEDIT_CURRENT_DOCUMENT_NAME"
+)
+
 if ! [ -f "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out" ]; then
 	echo You did\'nt compile $GEDIT_CURRENT_DOCUMENT_NAME 1>&2
 	exit 1
 fi
-if [ -n "$(sed -n '/\/\*$/,/\*\//{/^@no-term/p}' "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME")" ]; then
+
+if [ -n "$(sed -n '/\/\*$/,/\*\//{/:no-term:/p}' "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME")" ]; then
 	"$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out" "${args[@]}"
 else
 	exo-open --launch TerminalEmulator "cb_console_runner '$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out' ${args[@]}"
