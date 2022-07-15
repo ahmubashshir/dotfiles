@@ -1,5 +1,5 @@
 return {
-    ['eng'] = {
+    ['en'] = {
         welcome = '{\\fs24\\1c&H0&\\3c&HFFFFFF&}Drop files or URLs to play here.', -- this text appears when mpv starts
         off = 'OFF',
         na = 'n/a',
@@ -14,7 +14,7 @@ return {
         chapter = 'Chapter',
         nochapter = 'No chapters.'
     },
-    ['chs'] = {
+    ['cn'] = {
         welcome = '{\\1c&H00\\bord0\\fs30\\fn微软雅黑 light\\fscx125}MPV{\\fscx100} 播放器', -- this text appears when mpv starts
         off = '关闭',
         na = 'n/a',
