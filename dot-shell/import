@@ -1,8 +1,10 @@
 #!/bin/sh
 . ~/.shell/functions
 . ~/.shell/aliases
-
-cat > /dev/stderr << EOF
+if [ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]; then
+	kitty   +kitten icat --align=left ~/.shell/motd.png
+else
+	cat   > /dev/stderr << EOF
           _————             +--------------------------------------+
          //¯¯\\\\\\\\           |    _  _     _    _ _                 |
         // _  _\\\\           |   | \| |_ _(_)__| (_)__ _            |
@@ -19,3 +21,4 @@ cat > /dev/stderr << EOF
      /     /  //; \     |  |+--------------------------------------+
      \    /  /|;   \    |  \'
 EOF
+fi

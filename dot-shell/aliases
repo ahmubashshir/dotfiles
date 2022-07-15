@@ -41,7 +41,7 @@ if [ -x /usr/bin/time ]; then
 fi
 if [ -x /usr/bin/ytfzf ]; then
 	case $TERM in
-		*-kitty) alias ytfzf="ytfzf -ft --thumb-viewer=ikat" ;;
+		*-kitty) alias ytfzf="ytfzf -ft --thumb-viewer=kitty" ;;
 		*) alias ytfzf="ytfzf -ft --thumb-viewer=chafa" ;;
 	esac
 fi
