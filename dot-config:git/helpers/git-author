@@ -84,7 +84,7 @@ EOF
 		elif [ "$1" = "me" ]; then
 			printf '%s <%s>\n' "$(git config user.name)" "$(git config user.email)"
 		elif [ -n "$WORKDIR" ]; then
-			git log --author="$1" --pretty="%an <%ae>" -1 | strstrip
+			git log -E --author="$1" --pretty="%an <%ae>" -1 | strstrip
 		else
 			printf '%s\n' "$*"
 		fi

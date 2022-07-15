@@ -2,12 +2,13 @@
     insteadOf = "aur:"
 [url "http://aur.archlinux.org/"]
 	insteadOf = "pkg:"
-[url "https://github.com/ahm-forks/"]
-	insteadOf = "gh-fork:"
-[url "https://github.com/"]
-	insteadOf = "gh:"
 [url "https://github.com/"]
 	insteadOf = "github:"
+	insteadOf = "gh:"
+[url "https://github.com/ahm-forks/"]
+	insteadOf = "gh-fork:"
+[url "https://github.com/The-Penguins-Club/"]
+	insteadOf = "tpc:"
 [url "https://gist.github.com/"]
 	insteadOf = "gist:"
 [url "https://gitlab.com/"]
