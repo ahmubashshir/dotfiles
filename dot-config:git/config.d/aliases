@@ -61,3 +61,4 @@
 	email = send-email --compose
 	patch = !patch
 	mail-patch = mail-patch
+	patch-note = !git notes add -fF ~/.config/git/patch-note

@@ -19,6 +19,7 @@
     log = delta
     reflog = delta
     show = delta
+    blame = delta
 
 [interactive]
     diffFilter = delta --color-only --features=interactive
@@ -27,6 +28,8 @@
     features = decorations
     line-numbers = true
     syntax-theme = Dracula
+#    side-by-side = true
+    navigate = true
 
 [delta "interactive"]
     keep-plus-minus-markers = false

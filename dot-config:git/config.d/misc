@@ -29,7 +29,7 @@
 	generator = git-author
 [trailer "ref"]
 	key = Reference-to
-	generator = git log --pretty=reference -1 --grep
+	generator = git log --pretty=reference -1 -E --grep
 [trailer "see"]
 	key = See-also
 	generator = git log -1 --oneline --format=\"%h (%s)\" --abbrev-commit --abbrev=14
