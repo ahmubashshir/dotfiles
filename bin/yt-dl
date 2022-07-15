@@ -1,0 +1,8 @@
+#!/bin/bash
+OWNER=ytdl-org
+NAME=youtube-dl
+EXTRACT=0
+ARCH=
+OS=
+FILTER=$NAME
+source "${0%/*}/lib/git-rel"

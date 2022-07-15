@@ -1,0 +1,14 @@
+#!/bin/sh
+if printf '%s\n' "$@" | grep -q -- '^(-h|--help)'; then
+	echo "usage: ${0##*/} [file1[ file2[ ...]]" >&2
+	exit
+fi
+if [ "$#" -gt 0 ]; then
+	for file in "$@"; do
+		[ "$file" = "-" ] && file=/dev/stdin
+		echo ":: $file" >&2
+		gpg < "$file"
+	done
+else
+	cat | gpg
+fi

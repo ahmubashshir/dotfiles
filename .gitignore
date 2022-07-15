@@ -3,10 +3,9 @@
 !dot-config:git/include
 *.zwc
 *.swp
-bin/youtube-dl
-bin/faketty
-bin/danime
-dot-config:zsh/functions/_gmtool
-dot-config:zsh/history
-dot-config:hexchat/scrollback
+/dot-config:zsh/functions/_gmtool
+/dot-config:zsh/history
 /bin/aur-autopush
+/bin/chia-dl
+/bin/youtube-dl
+/bin/faketty
