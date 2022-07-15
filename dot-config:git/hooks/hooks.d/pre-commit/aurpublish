@@ -1,8 +1,17 @@
 #!/bin/bash -e
-# HOOK-CONDITION: git diff --name-only --cached | grep -q '/PKGBUILD$'
+# HOOK-CONDITION: git status --porcelain=v1 --untracked-files=no | grep -q '/PKGBUILD$'
 
-git diff --name-only --cached \
-	| awk -F/ '/\/PKGBUILD$/{print $(NF-1)}' \
+git status --porcelain=v1 --untracked-files=no -z \
+	| sed -zE 's/^([A-Z]+) +/\1\t/' \
+	| awk -v RS='\0' -F '/|\t' '
+		$1 !~ /D/ && $NF ~ /^PKGBUILD$/ {
+			if(NF>2) {
+				for(i=2; i<NF-1; i++) {
+					printf "%s/", $(i)
+				}
+				print $(NF-1)
+			} else print "."
+		}' \
 	| while read -r path; do
 		"${0%/*}/aur" DIR "$path"
 	done
