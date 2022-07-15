@@ -8,13 +8,14 @@
  when creating discord application
 """
 import os
+import sys
 
 from threading import Thread, Event
 from time import time, sleep
 from asyncio import (new_event_loop as new_loop,
                      set_event_loop as set_loop)
 from pypresence.client import Client
-from pypresence.exceptions import InvalidID, InvalidPipe
+from pypresence.exceptions import InvalidID, InvalidPipe, DiscordNotFound
 from trackma.engine import Engine
 from trackma.utils import (estimate_aired_episodes,
                            Tracker)
@@ -35,10 +36,13 @@ class DiscordRPC(Thread):
     _quit = None
     _errors = (
         ConnectionRefusedError,
-        InvalidID,
         InvalidPipe,
         FileNotFoundError,
         ConnectionResetError,
+    )
+    _fatal = (
+        DiscordNotFound,
+        InvalidID,
     )
 
     def __init__(self, *args, **kwargs):
@@ -61,7 +65,6 @@ class DiscordRPC(Thread):
 
     def stop(self):
         self._quit.set()
-        self.join()
 
     def present(
         self, engine: Engine, pos: int = None,
@@ -83,12 +86,13 @@ class DiscordRPC(Thread):
 
     def run(self):
         set_loop(new_loop())
-        while not self._quit.is_set():
+        while not self._quit.wait(0.25):
             try:
                 self._reconnect()
-                if self._enabled:
-                    if self._details['details'] == "Regretting..." \
-                       and not self.regret or self._quit.is_set():
+                if self._quit.is_set() and self._enabled:
+                    self._rpc.clear_activity(pid=self._pid)
+                elif self._enabled and not self._quit.is_set():
+                    if self._details['details'] == "Regretting..." and not self.regret:
                         self._rpc.clear_activity(pid=self._pid)
                     else:
                         self._rpc.set_activity(
@@ -108,7 +112,7 @@ class DiscordRPC(Thread):
                     self._rpc.close()
                 except AttributeError:
                     pass
-            sleep(0.25)
+        sys.exit(0)
 
     def _reconnect(self):
         if not self._enabled:
@@ -118,6 +122,9 @@ class DiscordRPC(Thread):
                 self._enabled = True
             except self._errors:
                 self._enabled = False
+            except self._fatal:
+                self._enabled = False
+                self._quit.set()
 
 
 rpc = DiscordRPC(regret=False)
