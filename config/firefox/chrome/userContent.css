@@ -1,7 +1,7 @@
 @-moz-document url-prefix(about:home),
 url-prefix(about:newtab) {
 	body {
-		background: url(bungou-stray-dogs-1.png) no-repeat center center fixed !important;
+		background: url(backdrop.png) no-repeat center center fixed !important;
 		background-size: cover !important;
 	}
 
@@ -68,6 +68,15 @@ url-prefix(about:newtab) {
 
 }
 
+@-moz-document url(about:blank){
+
+html:not(#ublock0-epicker),
+html:not(#ublock0-epicker) body,
+#newtab-customize-overlay {
+	background: url(backdrop.png) no-repeat center center fixed !important;
+}
+}
+
 /* Sets up minimal scrollbar */
 :root {
 	scrollbar-width: thin !important;
@@ -75,9 +84,9 @@ url-prefix(about:newtab) {
 }
 
 /*  Sets up minimal incognito scrollbar */
-@-moz-document url(about:privatebrowsing) {
-	:root {
-		scrollbar-width: thin !important;
-		scrollbar-color: rgb(161, 161, 161) transparent !important;
-	}
+@-moz-document url(about:privatebrowsing){
+:root {
+	scrollbar-width: thin !important;
+	scrollbar-color: rgb(161, 161, 161) transparent !important;
+}
 }
