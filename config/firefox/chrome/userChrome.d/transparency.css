@@ -5,7 +5,7 @@
 	border: none !important;
 }
 
-/* overfow menu in customize menu */
+/* overflow menu in customize menu */
 vbox#customization-panelWrapper box.panel-arrowcontent {
 	backdrop-filter: contrast(100%) blur(6px) !important;
 	border: none !important;
@@ -17,25 +17,18 @@ vbox#customization-panelWrapper box.panel-arrowcontent {
 	-moz-appearance: -moz-win-glass !important;
 }
 
-/* blank page */
-#tabbrowser-tabpanels {
-	background: transparent !important;
+/* urlbar popup */
+#urlbar[open] #urlbar-background {
+	opacity: 0.85 !important;
 }
 
-/* navbar / tabbar / titlebar */
-/*#nav-bar {*/
-/*	background: transparent !important;*/
-/*	border-color: transparent !important;*/
-/*}*/
-/*#navigator-toolbox {*/
-/*	background: transparent !important;*/
-/*	border: none !important;*/
-/*}*/
-/*#urlbar-background {*/
-/*	background: transparent !important;*/
-/*}*/
+#urlbar[open] #urlbar-input-container {
+	background-color: var(--toolbar-field-background-color);
+}
 
-/* Sidebar */
+/* var(--toolbar-field-background-color) */
+
+/* Sidebar
 #sidebar-box,
 #sidebar-box:-moz-lwtheme-darktext,
 #sidebar-box:-moz-lwtheme-brighttext {
@@ -48,7 +41,7 @@ vbox#customization-panelWrapper box.panel-arrowcontent {
 .sidebar-panel {
 	background: transparent !important;
 }
-
 #appcontent {
 	background: transparent !important;
 }
+*/

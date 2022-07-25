@@ -3,14 +3,12 @@ browser[type="content"] {
 	background: var(--tabbar-bg) !important;
 }
 
-.menupopup-arrowscrollbox,
-.panel-arrowcontainer slot,
+menupopup,
 :is(panel, menupopup)::part(content) {
 	box-shadow: none !important;
-	margin: 0 !important;
+	margin: unset !important;
 	border-radius: 0 !important;
 }
-
 
 window,
 #main-window,
@@ -35,4 +33,12 @@ window,
 	background: rgba(33, 37, 41, 0.3) !important;
 	-moz-appearance: none !important;
 	background-image: none !important;
+}
+
+.private-browsing-indicator {
+	display: none
+}
+
+:root[privatebrowsingmode="temporary"] #PanelUI-menu-button {
+	list-style-image: url("chrome://global/skin/icons/indicator-private-browsing.svg") !important;
 }
