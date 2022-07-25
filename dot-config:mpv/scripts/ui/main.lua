@@ -31,6 +31,10 @@ local window_control_box_width = 138
 local tick_delay = 0.03
 
 --- Automatically disable OSC
+if not user_opts.enable then
+    mp.set_property_native('osc', true);
+    return {}
+end
 if builtin_osc_enabled then mp.set_property_native('osc', false) end
 --
 -- Helperfunctions
