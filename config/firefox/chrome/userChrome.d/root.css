@@ -1,6 +1,6 @@
 /* Shrink sidebar until hovered, when using Tree Style Tab. */
 :root {
-	--thin-tab-width: 24px;
+	--thin-tab-width: 40px;
 	--wide-tab-width: 250px;
 	--tab-surface-regular: var(--theme-colors-tab);
 	--tab-surface-active: var(--theme-colors-tab_selected, var(--theme-colors-toolbar, var(--browser-bg-for-header-image, var(--tab-like-surface))));

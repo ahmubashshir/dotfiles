@@ -1,0 +1,98 @@
+#main-window:not([sizemode="fullscreen"]) #navigator-toolbox-background {
+	position: fixed;
+	bottom: 0;
+	display: block;
+	z-index: 1;
+	width: 100% !important;
+}
+
+#main-window:not([sizemode="fullscreen"]) #navigator-toolbox {
+	width: 100% !important;
+}
+
+#main-window:not([sizemode="fullscreen"]) #titlebar {
+	padding-left: var(--thin-tab-width);
+}
+
+#main-window:not([sizemode="fullscreen"]) #browser {
+	padding-bottom: 40px;
+}
+
+/* TOOLBAR BALLOONS HAVE TO BECOME VISIBLE AGAIN */
+panel[position^="bottomcenter"] {
+	top: 0px;
+}
+
+.urlbarView {
+	top: auto !important;
+	bottom: 40px !important;
+}
+
+#urlbar[breakout-extend] {
+	top: auto !important;
+	bottom: 0px !important;
+}
+
+#urlbar[open] .urlbarView-body-inner {
+	margin-top: 42px;
+	border-top: none !important;
+}
+
+#urlbar[open] #urlbar-input-container {
+	display: inline-flex;
+	position: absolute !important;
+	bottom: 0 !important;
+}
+
+#urlbar[searchmode][open] #urlbar-search-mode-indicator {
+	min-width: fit-content !important;
+}
+
+#urlbar-input {
+	min-width: calc(350px + 2 * var(--toolbarbutton-inner-padding)) !important;
+	width: 100vw !important;
+}
+
+moz-input-box.urlbar-input-box {
+	overflow: hidden;
+}
+
+box.panel-viewstack {
+	min-height: min-content;
+	max-height: none !important;
+}
+
+/* That menu that appears with Alt, must not destroy the UI */
+#toolbar-menubar:not([inactive="true"]) {
+	margin-top: -28px;
+	background: linear-gradient(45deg, var(--toolbar-bgcolor), 255px, transparent, 0, transparent) !important;
+	padding-bottom: 0 !important;
+	animation: appear 0.4s;
+}
+
+#toolbar-menubar:not([inactive="true"]),
+toolbarspring,
+#titlebar {
+	-moz-window-dragging: no-drag !important;
+}
+
+#customization-footer {
+	margin-bottom: 42px;
+}
+
+/* FIX YOUTUBE FULLSCREEN VIDEO */
+ytd-app[masthead-hidden] #masthead-container.ytd-app {
+	display: none;
+}
+
+@keyframes appear {
+	from {
+		margin-left: -350px;
+		opacity: 0
+	}
+
+	to {
+		margin-left: 0px;
+		opacity: 1
+	}
+}
