@@ -1,4 +1,4 @@
-#main-window:not([sizemode="fullscreen"]) #navigator-toolbox-background {
+#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #navigator-toolbox-background {
 	position: fixed;
 	bottom: 0;
 	display: block;
@@ -6,15 +6,15 @@
 	width: 100% !important;
 }
 
-#main-window:not([sizemode="fullscreen"]) #navigator-toolbox {
+#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #navigator-toolbox {
 	width: 100% !important;
 }
 
-#main-window:not([sizemode="fullscreen"]) #titlebar {
+#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #titlebar {
 	padding-left: var(--thin-tab-width);
 }
 
-#main-window:not([sizemode="fullscreen"]) #browser {
+#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #browser {
 	padding-bottom: 40px;
 }
 
@@ -76,7 +76,7 @@ toolbarspring,
 	-moz-window-dragging: no-drag !important;
 }
 
-#customization-footer {
+:root:not([chromehidden~="location"]):not([chromehidden~="toolbar"]) #customization-footer {
 	margin-bottom: 42px;
 }
 
