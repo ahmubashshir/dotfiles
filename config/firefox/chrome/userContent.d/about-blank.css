@@ -1,0 +1,16 @@
+@-moz-document url(about:blank){
+
+html:not(#ublock0-epicker),
+html:not(#ublock0-epicker) body,
+#newtab-customize-overlay {
+	background: var(--backdrop) no-repeat center center fixed !important;
+}
+}
+
+/*  Sets up minimal incognito scrollbar */
+@-moz-document url(about:privatebrowsing){
+:root {
+	scrollbar-width: thin !important;
+	scrollbar-color: rgb(161, 161, 161) transparent !important;
+}
+}
