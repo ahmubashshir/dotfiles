@@ -1,92 +1,10 @@
-@-moz-document url-prefix(about:home),
-url-prefix(about:newtab) {
-	body {
-		background: url(backdrop.png) no-repeat center center fixed !important;
-		background-size: cover !important;
-	}
-
-	div.search-inner-wrapper {
-		display: none !important;
-		visibility: collapse !important;
-	}
-
-	div.non-collapsible-section,
-	div.search-wrapper,
-	div.logo-and-wordmark,
-	div.search-inner-wrapper {
-		padding: 0px !important;
-		margin: 0px !important;
-	}
-
-	a.top-site-button div.tile {
-		border-radius: 50% !important;
-		background-color: rgba(38, 48, 52, 0.7) !important;
-	}
-
-	a.top-site-button div.top-site-icon {
-		border-radius: 50% !important;
-		width: 100% !important;
-		height: 100% !important;
-		position: unset !important;
-		background-color: transparent !important;
-	}
-
-	ul.top-sites-list {
-		display: inline-grid !important;
-		grid-template-columns: auto auto auto auto;
-		grid-gap: 1em;
-		position: relative !important;
-		left: 50% !important;
-		transform: translate(-50%, 25%);
-	}
-
-	a.top-site-button div.tile:is(.active, :focus, :hover) {
-		background-color: rgba(56, 70, 75, 0.7) !important;
-	}
-
-	button.personalize-button {
-		opacity: 0.1 !important;
-	}
-
-	button.personalize-button:hover {
-		opacity: 0.5 !important;
-	}
-
-	a.top-site-button div.title,
-	a.top-site-button div.screenshot.active {
-		display: none !important;
-		visibility: collapse !important;
-	}
-
-	li.top-site-outer:is(.active, :focus, :hover) {
-		background: none !important;
-	}
-
-	li.top-site-outer:is(.active, :focus, :hover) button.context-menu-button {
-		opacity: 0.5 !important;
-	}
-
-}
-
-@-moz-document url(about:blank){
-
-html:not(#ublock0-epicker),
-html:not(#ublock0-epicker) body,
-#newtab-customize-overlay {
-	background: url(backdrop.png) no-repeat center center fixed !important;
-}
-}
+@import url('userContent.d/newtab.css');
+@import url('userContent.d/about-blank.css');
+@import url('userContent.d/treestyletab.css');
 
 /* Sets up minimal scrollbar */
 :root {
 	scrollbar-width: thin !important;
 	scrollbar-color: rgb(161, 161, 161) transparent !important;
-}
-
-/*  Sets up minimal incognito scrollbar */
-@-moz-document url(about:privatebrowsing){
-:root {
-	scrollbar-width: thin !important;
-	scrollbar-color: rgb(161, 161, 161) transparent !important;
-}
+	--backdrop: -webkit-image-set(url(../backdrop.png), url(backdrop.png));
 }
