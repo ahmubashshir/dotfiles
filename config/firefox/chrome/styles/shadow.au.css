@@ -1,0 +1,6 @@
+panel::part(content) {
+	box-shadow: none !important;
+	margin: unset !important;
+	border-radius: 8px !important;
+	background-color: transparent !important;
+}
