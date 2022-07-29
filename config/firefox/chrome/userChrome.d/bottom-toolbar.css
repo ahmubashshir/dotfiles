@@ -8,6 +8,7 @@
 
 #main-window[chromehidden=""]:not([sizemode="fullscreen"]) #navigator-toolbox {
 	width: 100% !important;
+	margin-bottom: -1px;
 }
 
 #main-window[chromehidden=""]:not([sizemode="fullscreen"]) #titlebar {
@@ -65,9 +66,10 @@ box.panel-viewstack {
 /* That menu that appears with Alt, must not destroy the UI */
 #toolbar-menubar:not([inactive="true"]) {
 	margin-top: -28px;
-	background: linear-gradient(45deg, var(--toolbar-bgcolor), 255px, transparent, 0, transparent) !important;
+	background: linear-gradient(45deg, var(--menubar-background-color), 255px, transparent, 0, transparent) !important;
 	padding-bottom: 0 !important;
 	animation: appear 0.4s;
+	--menubar-background-color: var(--toolbar-bgcolor);
 }
 
 #toolbar-menubar:not([inactive="true"]),

@@ -4,10 +4,11 @@ browser[type="content"] {
 }
 
 menupopup,
-:is(panel, menupopup)::part(content) {
+panel,
+arrowscrollbox.menupopup-arrowscrollbox {
 	box-shadow: none !important;
 	margin: unset !important;
-	border-radius: 0 !important;
+	border-radius: 8px !important;
 }
 
 window,

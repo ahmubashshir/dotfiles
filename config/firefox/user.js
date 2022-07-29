@@ -1,6 +1,8 @@
 user_pref( "toolkit.legacyUserProfileCustomizations.stylesheets", true );
 user_pref( "browser.urlbar.update1", false );
 user_pref( "ui.systemUsesDarkTheme", true );
+user_pref( "layout.css.color-mix.enabled", true );
+user_pref( "layout.css.color-mix.color-spaces.enabled", true );
 
 user_pref( "general.smoothScroll.msdPhysics.enabled", true );
 user_pref( "general.smoothScroll.msdPhysics.continuousMotionMaxDeltaMS", 250 );
