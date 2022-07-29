@@ -17,7 +17,6 @@ var UserChrome_js = {
 			var ucFile = new FileUtils.File( ucFilePath );
 			if ( ucFile.exists() && ucFile.isFile() ) {
 				this.utilFileURI = OS.Path.toFileURI( OS.Path.join( OS.Constants.Path.profileDir, "./chrome/js/lib/utils.js" ) );
-				this.ucFileURI = OS.Path.toFileURI( ucFilePath );
 			};
 			Services.obs.removeObserver( this, "final-ui-startup" );
 			break;
@@ -38,7 +37,6 @@ var UserChrome_js = {
 		if ( document.location && document.location.protocol == "chrome:" ) {
 			try {
 				Services.scriptloader.loadSubScript( this.utilFileURI, window, "UTF-8" );
-				Services.scriptloader.loadSubScript( this.ucFileURI, window, "UTF-8" );
 			} catch ( ex ) {}
 		};
 	}

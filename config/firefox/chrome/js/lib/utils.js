@@ -162,36 +162,16 @@ var userChrome = {
 			.logStringMessage( /*this.date + */ " userChromeJS " +
 				( aCaller ? aCaller + ": " : "" ) + aMsg );
 	},
-	/*
-	  get dateFormat() {
-	    if (!this._dateFormat)
-	      this._dateFormat = "%Y-%m-%d %H:%M:%S";
-	    return this._dateFormat;
-	  },
-
-	  set dateFormat(format) {
-	    this._dateFormat = format;
-	  },
-
-	  get date() {
-	    let date = new Date();
-	//  return date.toLocaleFormat(this.dateFormat);
-	    try {
-	      date = date.toLocaleFormat(this.dateFormat);
-	    } catch(e) {
-	      date = date.toString();
-	    };
-	    return date;
-	  },
-	*/
 	set charSet( val ) {
 		this._charSet = val;
 	},
 
 	get charSet() {
 		if ( !this._charSet )
-			this._charSet = "UTF-8"; // use "UTF-8". Defaults to ascii if null.
+			this._charSet = "UTF-8";
 		return this._charSet;
 	}
 
 };
+
+userChrome.import( 'userChrome.js', "UChrm" );
