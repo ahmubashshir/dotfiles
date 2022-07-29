@@ -26,6 +26,20 @@ vbox#customization-panelWrapper box.panel-arrowcontent {
 	background-color: var(--toolbar-field-background-color);
 }
 
+menupopup,
+panelview {
+	background-color: color-mix(in srgb, transparent 40%, var(--panel-background)) !important;
+}
+
+arrowscrollbox.menupopup-arrowscrollbox {
+	background: transparent !important;
+}
+
+#toolbar-menubar:not([inactive="true"]) {
+	--menubar-background-color: color-mix(in srgb, transparent 10%, var(--toolbar-bgcolor)) !important;
+	;
+}
+
 /* var(--toolbar-field-background-color) */
 
 /* Sidebar
