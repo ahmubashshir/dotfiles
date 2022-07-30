@@ -1,48 +1,68 @@
-/* url bar */
-#widget-overflow-mainView,
-#urlbar[open="true"] > #urlbar-background {
-	backdrop-filter: contrast(100%) blur(var(--bct-blur)) saturate(25%) !important;
-	border: none !important;
-}
+@media (-moz-platform: linux) {
+	/* url bar */
 
-/* overflow menu in customize menu */
-vbox#customization-panelWrapper box.panel-arrowcontent {
-	backdrop-filter: contrast(100%) blur(6px) !important;
-	border: none !important;
-}
+	#widget-overflow-mainView,
+	#urlbar[open="true"] > #urlbar-background {
+		backdrop-filter: contrast(100%) blur(var(--bct-blur)) saturate(25%) !important;
+		border: none !important;
+	}
 
-/* window transparencies */
-#main-window {
-	background: transparent !important;
-	-moz-appearance: -moz-win-glass !important;
-}
+	/* overflow menu in customize menu */
+	vbox#customization-panelWrapper box.panel-arrowcontent {
+		backdrop-filter: contrast(100%) blur(6px) !important;
+		border: none !important;
+	}
 
-/* urlbar popup */
-#urlbar[open] #urlbar-background {
-	opacity: 0.85 !important;
-}
+	/* window transparencies */
+	#main-window {
+		background: transparent !important;
+		-moz-appearance: -moz-win-glass !important;
+	}
 
-#urlbar[open] #urlbar-input-container {
-	background-color: var(--toolbar-field-background-color);
-}
+	/* urlbar popup */
+	#urlbar[open] #urlbar-background {
+		opacity: 0.85 !important;
+	}
 
-menupopup,
-panelview {
-	background-color: color-mix(in srgb, transparent 40%, var(--panel-background)) !important;
-}
+	#urlbar[open] #urlbar-input-container {
+		background-color: var(--toolbar-field-background-color);
+	}
 
-arrowscrollbox.menupopup-arrowscrollbox {
-	background: transparent !important;
-}
+	menupopup,
+	panelview {
+		background-color: color-mix(in srgb, transparent 40%, var(--panel-background)) !important;
+	}
 
-#toolbar-menubar:not([inactive="true"]) {
-	--menubar-background-color: color-mix(in srgb, transparent 10%, var(--toolbar-bgcolor)) !important;
-	;
-}
+	arrowscrollbox.menupopup-arrowscrollbox {
+		background: transparent !important;
+	}
 
-/* var(--toolbar-field-background-color) */
+	#toolbar-menubar:not([inactive="true"]) {
+		--menubar-background-color: color-mix(in srgb, transparent 10%, var(--toolbar-bgcolor)) !important;
+	}
 
-/* Sidebar
+	window,
+	#main-window,
+	#toolbar-menubar,
+	#TabsToolbar,
+	#PersonalToolbar,
+	#navigator-toolbox,
+	#sidebar-box {
+		background-color: transparent !important;
+		-moz-appearance: none !important;
+		background-image: none !important;
+	}
+
+	window,
+	#nav-bar {
+		background-color: transparent !important;
+		-moz-appearance: none !important;
+		background-image: none !important;
+	}
+
+	/* var(--toolbar-field-background-color) */
+
+	/* Sidebar
 #sidebar-box,
 #sidebar-box:-moz-lwtheme-darktext,
 #sidebar-box:-moz-lwtheme-brighttext {
@@ -59,3 +79,4 @@ arrowscrollbox.menupopup-arrowscrollbox {
 	background: transparent !important;
 }
 */
+}
