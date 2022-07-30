@@ -1,32 +1,5 @@
 @-moz-document url-prefix("moz-extension://f924699f-78cc-491e-9ecb-da8b8110af4f") {
 
-	@media screen and (max-width: 70px) {
-		tab-item:not(:hover) tab-twisty {
-			visibility: collapse !important;
-		}
-
-		tab-item:not(:hover) tab-favicon {
-			margin: 0.25em !important;
-		}
-
-		.left tab-item {
-			margin-left: 0 !important;
-		}
-
-		.right tab-item {
-			margin-right: 0 !important;
-		}
-
-		:root {
-			--indent-size: 2px !important;
-		}
-	}
-
-	:root {
-		--tab-margin: 3px;
-		--tab-margin-bottom: var(--tab-margin) !important;
-	}
-
 	.contextual-identity-marker {
 		left: 0.5em !important;
 		right: 0.5em !important;
@@ -51,7 +24,11 @@
 	}
 
 	tab-item {
-		margin: var(--tab-margin) !important;
+		margin: 3px !important;
+	}
+
+	tab-item:not([data-child-ids]) tab-twisty {
+		visibility: collapsed !important;
 	}
 
 	/* Adjust style for tab that is muted. */
@@ -113,6 +90,7 @@
 		box-shadow: none !important;
 		border-radius: 5px 0px 0px 5px;
 		border-left: 1px solid !important;
+		padding-left: 0.3em !important;
 	}
 
 	tab-item-substance:hover {
@@ -131,5 +109,33 @@
 	#subpanel-selector-anchor .icon {
 		margin-right: 0.25em;
 		margin-left: -0.5em;
+	}
+
+
+	@media screen and (width <=70px) {
+
+		tab-item:not(:hover) tab-twisty {
+			visibility: collapse !important;
+		}
+
+		tab-item:not(:hover) tab-favicon {
+			margin: 0.25em !important;
+		}
+
+		.left tab-item {
+			margin-left: 0 !important;
+		}
+
+		.right tab-item {
+			margin-right: 0 !important;
+		}
+
+		tab-item .extra-items-container.indent {
+			width: calc(var(--tab-indent) * 0.45) !important;
+		}
+
+		tab-item-substance {
+			margin-left: calc(var(--tab-indent) * 0.45) !important;
+		}
 	}
 }
