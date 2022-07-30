@@ -11,25 +11,6 @@ arrowscrollbox.menupopup-arrowscrollbox {
 	border-radius: 8px !important;
 }
 
-window,
-#main-window,
-#toolbar-menubar,
-#TabsToolbar,
-#PersonalToolbar,
-#navigator-toolbox,
-#sidebar-box {
-	background-color: transparent !important;
-	-moz-appearance: none !important;
-	background-image: none !important;
-}
-
-window,
-#nav-bar {
-	background-color: transparent !important;
-	-moz-appearance: none !important;
-	background-image: none !important;
-}
-
 .tab-background[selected="true"] {
 	background: rgba(33, 37, 41, 0.3) !important;
 	-moz-appearance: none !important;
