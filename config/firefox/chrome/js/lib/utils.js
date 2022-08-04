@@ -26,6 +26,34 @@ var userChrome = {
 		this._loadOverlayDelayIncr = delay;
 	},
 
+	init: function () {
+		let file, absDir, pathSep;
+		absDir = this.getAbsoluteFile( "UChrm" );
+		if ( !absDir ) return;
+
+		pathSep = absDir.path.match( /[\/\\]/ )[ 0 ];
+		file = absDir.path + pathSep + 'userChrome.js'.replace( /[\/\\]/g,
+			pathSep );
+		try {
+			file = this.getFile( file );
+			file = this.getURLSpecFromActualFile( file );
+			Components.classes[ "@mozilla.org/moz/jssubscript-loader;1" ]
+				.getService( Components.interfaces.mozIJSSubScriptLoader )
+				.loadSubScriptWithOptions( file, {
+					target: window,
+					charset: this.charSet,
+					ignoreCache: this.ignoreCache
+				} );
+			if ( this.init ) {
+				this.reload = this.init;
+				delete this.init;
+				this.log( "Loaded." );
+			} else this.log( "Reloaded." );
+		} catch ( e ) {
+			this.log( e );
+		}
+	},
+
 	import: function ( aPath, aRelDirToken ) {
 		let file;
 		this.path = aPath;
@@ -174,4 +202,4 @@ var userChrome = {
 
 };
 
-userChrome.import( 'userChrome.js', "UChrm" );
+userChrome.init();
