@@ -1,17 +1,14 @@
 #!/bin/zsh
-local plugname plug plugpath plugin
+local plugname plug plugpath plugin plugpkg
 if (( ! $+functions[____zplug_run_hook]));then
 		if (( ! ${+zplugdirs} )); then
 		typeset -ga zplugdirs
 	fi
 	if (( ! ${+zsh_loaded_plugins} )); then
-		typeset -ga zsh_loaded_plugins
+		typeset -gA zsh_loaded_plugins
 	fi
 	if (( ! ${+zplug_hooks} )); then
 		typeset -gA zplug_hooks
-	fi
-	if (( ! ${+zsh_loaded_plugin_paths} )); then
-		typeset -ga zsh_loaded_plugin_paths
 	fi
 	for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 		if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
@@ -80,9 +77,8 @@ for plugpath in $zplugdirs[@];do
 			____zplug_run_hook pre $plugname "$@"
 			builtin source "$plugin" "$@"
 			____zplug_run_hook post $plugname "$@"
-			if ((!${zsh_loaded_plugins[(Ie)$plugname]}));then
-				zsh_loaded_plugins+="$plugname"
-				zsh_loaded_plugin_paths+="${plugin:h}"
+			if (( ! ${+zsh_loaded_plugins[$plugname]}));then
+				zsh_loaded_plugins[$plugname]=$plugin:h
 			fi
 			return 0
 		fi

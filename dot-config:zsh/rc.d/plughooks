@@ -91,3 +91,7 @@ function zplug:pre:git {
 function zplug:post:dotenv {
 	alias dotenv=source_env
 }
+
+function zplug:post:nix {
+	fpath=($zsh_loaded_plugins[nix] $fpath)
+}
