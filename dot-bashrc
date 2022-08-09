@@ -105,8 +105,8 @@ if ! shopt -oq posix; then
 	elif [ -f /etc/bash_completion ]; then
 		. /etc/bash_completion
 	fi
-	if [ -d ~/${XDG_DATA_HOME:-.local/share/}bash/completions ]; then
-		completions=$(find ~/${XDG_DATA_HOME:-.local/share/}bash/completions/*)
+	if [ -d ${XDG_DATA_HOME:-$HOME/.local/share}/bash/completions ]; then
+		completions=$(find ${XDG_DATA_HOME:-$HOME/.local/share}/bash/completions/*)
 		if [ "$completions" != "" ]; then
 			for n in $completions; do
 				. $n
