@@ -46,6 +46,7 @@ readonly f
 
 format_file()
 {
+	local -a args
 	case $1 in
 		bash | bats | mksh) shfmt -w -i 0 -ci -sr -bn -ln "$1" -kp -fn "$2" ;;
 		sh) shfmt -w -i 0 -ci -sr -p -kp -fn "$2" ;;
@@ -64,7 +65,22 @@ format_file()
 					style=gnu
 					;;
 			esac
-			astyle --mode="$mode" --indent-namespaces --indent-classes --style="$style" --indent=tab "$2"
+			args=(--mode="$mode")
+
+			if ! [[ -f .astylerc || -f _astylerc ]]; then
+				args+=(
+					--indent-namespaces
+					--indent-classes
+					--style="$style"
+					--indent=tab
+				)
+			elif [[ -f .astylerc ]]; then
+				args+=(--project=.astylerc)
+			elif [[ -f _astylerc ]]; then
+				args+=(--project=_astylerc)
+			fi
+
+			astyle "${args[@]}" "$2"
 			rm -f "$2.orig"
 			;;
 		js) js-beautify -tPjakxnr "$2" 2>&1 > /dev/null ;;
