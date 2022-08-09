@@ -187,8 +187,8 @@ var userChrome = {
 	log: function ( aMsg, aCaller ) {
 		Components.classes[ "@mozilla.org/consoleservice;1" ]
 			.getService( Components.interfaces.nsIConsoleService )
-			.logStringMessage( /*this.date + */ " userChromeJS " +
-				( aCaller ? aCaller + ": " : "" ) + aMsg );
+			.logStringMessage(
+				( aCaller ? aCaller : "userChromeJS" ) + ": " + aMsg );
 	},
 	set charSet( val ) {
 		this._charSet = val;
