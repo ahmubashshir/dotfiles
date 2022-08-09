@@ -30,6 +30,7 @@ bindkey -e
 autoload -Uz add-zsh-hook compinit
 autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
 
+load rc plughooks
 zplug --path "$ZDOTDIR/omz/plugins"
 if ! zplug defer;then
 	git -C "$ZDOTDIR" submodule init --quiet .
@@ -49,7 +50,7 @@ fi
 
 typeset -A ENV
 #zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
-load rc completion keymap history modules plughooks plugins prompt
+load rc completion keymap history modules plugins prompt
 zsh-defer source "$ZDOTDIR/env.d/path"
 
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
