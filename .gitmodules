@@ -147,3 +147,9 @@
 [submodule "dot-config:zsh/plugins/forgit"]
 	path = dot-config:zsh/plugins/forgit
 	url = https://github.com/wfxr/forgit
+[submodule "dot-config:zsh/plugins/nix-shell"]
+	path = dot-config:zsh/plugins/nix-shell
+	url = https://github.com/chisui/zsh-nix-shell.git
+[submodule "dot-config:zsh/plugins/nix"]
+	path = dot-config:zsh/plugins/nix
+	url = https://github.com/spwhitt/nix-zsh-completions

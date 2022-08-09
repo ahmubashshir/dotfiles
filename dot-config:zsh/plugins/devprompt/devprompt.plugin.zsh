@@ -18,7 +18,7 @@ function __devprompt_env {
 	[[ -z $2 ]] && return 0
 
 	DEVPROMPT_PROMPT+="${DEVPROMPT[seperator]}${DEVPROMPT[prefix]}"
-	DEVPROMPT_PROMPT+="${DEVPROMPT[icon]}%B$1 ${DEVPROMPT[text]}$2%b"
+	DEVPROMPT_PROMPT+="${DEVPROMPT[icon]}$1%B ${DEVPROMPT[text]}$2%b"
 	DEVPROMPT_PROMPT+="${DEVPROMPT[default]}${DEVPROMPT[suffix]}"
 }
 
@@ -26,7 +26,8 @@ function __devprompt_precmd {
 	emulate -L zsh
 	setopt hist_subst_pattern extendedglob
 	DEVPROMPT_PROMPT=''
-	__devprompt_env  ${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@}
-	__devprompt_env  ${ROCK_ENV_NAME}
-	__devprompt_env  ${RBENV_VERSION}
+	__devprompt_env $'\ue606' "${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@}" # nf-seti-python:
+	__devprompt_env $'\ue620' "${ROCK_ENV_NAME}" # nf-seti-lua:
+	__devprompt_env $'\ue605' "${RBENV_VERSION}" # nf-seti-ruby:
+	__devprompt_env $'\uf313' "${IN_NIX_SHELL}" # nf-linux-nixos:
 }
