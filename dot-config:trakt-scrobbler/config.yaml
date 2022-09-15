@@ -1,11 +1,12 @@
 players:
     mpv:
         poll_interval: 0.5
-    monitored: [mpv]
+    monitored:
+    - mpv
 fileinfo:
+    exclude_patterns:
+    - "/mnt/Multimedia/\\.*/.*"
     whitelist:
-    - /mnt/Multimedia/Anime
-    - /mnt/Multimedia/Animation
-    - /mnt/Multimedia/Movie
+    - /mnt/Multimedia
     - /mnt/Torrents
 version: '1.0'
