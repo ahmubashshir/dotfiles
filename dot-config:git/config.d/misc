@@ -44,6 +44,8 @@
 	generator = git-author
 [trailer "close"]
 	key = "Closes #"
+[trailer "fix"]
+	key = "Fixes #"
 [trailer "ctx"]
 	key = "Context"
 [trailer "more"]
