@@ -1,0 +1,59 @@
+#!/bin/bash
+PROFILES="${0%/*}"
+PROFILES="${PROFILES%/*}/profiles"
+
+function show_help
+{
+	cat >&2 << EOF
+Usage: ${0##*/} [list|show|apply|help] <profile>
+
+subcommands:
+  list|ls	List available profiles
+  show		Show the selected profile
+  apply		Apply the selected profile
+  help		Show this help
+EOF
+}
+
+while (($# > 0)); do
+	arg="$1"
+	shift
+	case "$arg" in
+		list | ls)
+			find "$PROFILES" -not -type d -not -xtype l \
+				| sed -E "s|^$PROFILES/(.+).cfg$|\1|" \
+				| while read -r profile; do
+					sed -nE 's/^# NAME: (.+)$/\1/p' "$PROFILES/$profile.cfg" \
+						| xargs -d $'\n' printf '%s\n' "$profile" \
+						| tac | xargs -d $'\n' printf '%s:\t%s\n'
+				done
+			exit 0
+			;;
+		show)
+			profile="$1"
+			shift
+			sed -nE 's/^# NAME: (.+)$/Name:\t\1/p;s/^# DESC: (.+)$/Info:\t\1/p' "$PROFILES/$profile.cfg"
+			sed '/^#/d' "$PROFILES/$profile.cfg"
+			exit
+			;;
+		apply)
+			git rev-parse --git-dir > /dev/null || exit 1
+
+			profile="$1"
+			shift
+			sed '/^#/d' "$PROFILES/$profile.cfg" \
+				| while read -r key op val; do
+					case "$op" in
+						=) git config --local "$key" "$val" ;;
+						+) git config --local --add "$key" "$val" ;;
+					esac
+				done
+			exit
+			;;
+		*)
+			show_help
+			exit             0
+			;;
+	esac
+done
+show_help
