@@ -23,7 +23,7 @@ fi
 readonly f
 
 stage="${0##*/}"
-export HOOKSDIR="${0%/*}"
+export HOOKSUTIL="${0%/*}/hooks.d/utils"
 checker="${0%/*}/if.hook"
 hookdir="${0%/*}/hooks.d/$stage"
 
@@ -47,7 +47,7 @@ if [ -d "$hookdir" ]; then
 		else
 			run="false" # hook ends in ".optional"
 		fi
-		if "$checker" "${subhook##*/}" "$id" "$stage" "$run	"; then
+		if "$checker" "${subhook##*/}" "$id" "$stage" "$run"; then
 			echo "${f[blue]}::${f[green]} Running '${f[blue]}$id${f[green]}'${f[reset]}"
 			if [ "$tempfile" ]; then
 				"$subhook" "$@" < "$tempfile"
