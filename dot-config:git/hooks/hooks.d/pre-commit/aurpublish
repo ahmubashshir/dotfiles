@@ -1,12 +1,10 @@
 #!/bin/bash -e
 # HOOK-CONDITION: git status --porcelain=v1 --untracked-files=no | grep -q '/PKGBUILD$'
-
-git status --porcelain=v1 --untracked-files=no -z \
-	| sed -zE 's/^([A-Z]+) +/\1\t/' \
-	| awk -v RS='\0' -F '/|\t' '
+git diff -z --cached --name-only --diff-filter=AM '**/PKGBUILD' \
+	| awk -v RS='\0' -F '/' '
 		$1 !~ /D/ && $NF ~ /^PKGBUILD$/ {
-			if(NF>2) {
-				for(i=2; i<NF-1; i++) {
+			if(NF>1) {
+				for(i=1; i<NF-1; i++) {
 					printf "%s/", $(i)
 				}
 				print $(NF-1)
