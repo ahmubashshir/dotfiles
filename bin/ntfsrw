@@ -30,6 +30,9 @@ if [[ $1 = hbcd ]];then
 	for mount in $mounts; udisksctl mount -b $mount
 	for subvol in $subvols;udisksctl mount -b $subvol
 else
+	if (($#>0));then
+		mounts=("$@")
+	fi
 	for mount in $mounts; {
 		subvols=(${(f)"$(findmnt -Rln $mount|awk '$2 != "'"$mount"'" && $3 != "fuseblk" {print $2}')"})
 
