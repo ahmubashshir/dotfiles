@@ -51,18 +51,18 @@ function _git_prompt_update_async {
 	head="%B${GITSTATUS[clean]}"
 	if [[ -n $VCS_STATUS_LOCAL_BRANCH ]]; then
 		case $VCS_STATUS_LOCAL_BRANCH in
-			(pr/*) head+='';;
-			(*) head+='';;
+			(pr/*|mr/*) head+='';;
+			(*) head+='';;
 		esac
-	    head+=' '
 		where=$VCS_STATUS_LOCAL_BRANCH
 	elif [[ -n $VCS_STATUS_TAG ]]; then
-		head+=' '
+		head+=''
 		where=$VCS_STATUS_TAG
 	else
-		head+=' '
+		head+=''
 		where=${VCS_STATUS_COMMIT[1,8]}
 	fi
+    head+=' '
 
 	(( $#where > 32 )) && where[13,-13]="…"  # truncate long branch names and tags
 	head+="${where//\%/%%}%b"             # escape %
