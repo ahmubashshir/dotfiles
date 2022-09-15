@@ -12,5 +12,8 @@ root=$(git rev-parse --show-toplevel 2> /dev/null)
 if [ "$root" ]; then
 	cd "$root"
 fi
-
-pylint "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+if poetry check > /dev/null 2>&1; then
+	poetry run pylint "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+else
+	pylint "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME"
+fi

@@ -18,4 +18,4 @@ check()
 	done
 }
 check astyle
-astyle --mode=c  --indent-namespaces --indent-classes --style=allman --indent=tab
+astyle --mode=c --style=linux --indent=tab
