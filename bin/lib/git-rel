@@ -2,30 +2,28 @@
 NAME=${NAME:-${0##*/}}
 REPO=${REPO:-${NAME:-${0##*/}}}
 EXTRACT=${EXTRACT:-1}
-exec=$(env which $NAME -a 2> /dev/null | grep -v "^$HOME" | head -n1)
-if [ -z "$exec" ]; then
+FILTER=${FILTER:-.}
+exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^$HOME" | head -n1)
+if [[ -z $exec ]]; then
 	last_modified=0
 	diff=0
 	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
 	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
-	if [ -f "$exec" ]; then
+	if [[ -f $exec ]]; then
 		last_modified="$(stat -c%Y "$exec")"
 		date_now="$(date +%s)"
 		diff=$((date_now - last_modified))
 	fi
-	if
-		[ ! -f "$exec" ] \
-			|| [ ! -s "$exec" ] \
-			|| ! "$exec" --help &> /dev/null \
-			|| ((diff > 60 * 60 * 24 && last_modified != 0))
-	then
+	if ! [[ -f "$exec" && -s "$exec" ]] \
+		|| ! "$exec" --help &> /dev/null \
+		|| ((diff > 60 * 60 * 24 && last_modified != 0)); then
 		touch "$exec"
 		relinfo=$(
 			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
 				&& curl --netrc -s --disable \
 					"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
 		)
-		if [ -n "$relinfo" ]; then
+		if [[ -n $relinfo ]]; then
 			rtver=$(
 				printf '%s' "$relinfo" \
 					| jq -r '.tag_name'
@@ -37,22 +35,18 @@ if [ -z "$exec" ]; then
 					"$exec" --version
 				}
 			fi
-			if [ -x "$exec" ]; then
-				ltver=$(
-					version \
-						| grep -oEm1 '\sv?[[:digit:]][[:digit:].-]+' \
-						| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
-				)
-			fi
+			[[ ! -x $exec ]] || ltver=$(
+				version \
+					| grep -oEm1 '\sv?[[:digit:]][[:digit:].-]+' \
+					| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
+			)
 			unset -f version
-			if [ -z "$ltver" ]; then
-				ltver=0.0.0
-			fi
-			filter='.assets[]|select(type == "object")'
+			[[ -n $ltver ]] || ltver=0.0.0
 
+			filter='.assets[]|select(type == "object")'
 			filter()
 			{
-				test     -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
+				test   -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
 			}
 
 			arch=${ARCH-$(uname -m)}
@@ -67,10 +61,7 @@ if [ -z "$exec" ]; then
 			filter "$abi"
 			filter "$FILTER"
 
-			if
-				[ ! -f "$exec" ] \
-					|| test "$(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1)" != "$rtver"
-			then
+			if ! [[ -f $exec && $(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1) == "$rtver" ]]; then
 				if [[ $ltver == 0.0.0 ]]; then
 					echo >&2 "Downloading ${0##*/}: $rtver"
 				else
@@ -111,16 +102,17 @@ if [ -z "$exec" ]; then
 	fi
 fi
 
-if [ -x "$exec" ] && [ -s "$exec" ]; then
-	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
-		NAME="$exec"
-	fi
+if [[ -x "$exec" && -s "$exec" ]]; then
+	#	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
+	#		NAME="$exec"
+	#	fi
 	if [[ x$(typeset -p DEFAULT_ARGS 2> /dev/null | awk '{print $2}') != x-a ]]; then
 		unset -v DEFAULT_ARGS
 		declare -a DEFAULT_ARGS
 	fi
-	exec "$NAME" "${DEFAULT_ARGS[@]}" "$@"
+	exec "$exec" "${DEFAULT_ARGS[@]}" "$@"
 else
+	! [[ -f $exec && $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || rm -f "$exec"
 	printf "%s: command not found.\n" "$NAME"
 	exit 1
 fi
