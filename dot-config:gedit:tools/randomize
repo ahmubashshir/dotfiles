@@ -1,0 +1,9 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=RandomSort
+# Input=selection
+# Output=replace-selection
+# Applicability=titled
+# Save-files=nothing
+
+sort -R
