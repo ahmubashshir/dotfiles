@@ -5,7 +5,7 @@ if [ -p ~/pipe:sh ]; then
 	set -x
 fi
 MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
-
+WIKIPEDIA_APP=${WIKIPEDIA_APP:-wike}
 if [ -z "$*" ]; then
 	echo No url specified.
 	exit 2
@@ -13,7 +13,7 @@ fi
 if
 	command -pv "$MEDIA_PLAYER" > /dev/null &&
 		echo "$1" | grep -Eq \
-			'^https?://(www\.)?youtu(\.be/|be\.com/watch\?v=)[a-zA-Z0-9_-]+($|&.*$)'
+			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?v=|playlist\?list=))[a-zA-Z0-9_-]+($|&.*$)'
 then
 	case "$MEDIA_PLAYER" in
 		mpv)
@@ -28,6 +28,13 @@ then
 				-- "$@"
 			;;
 		*) exec "$MEDIA_PLAYER" "$@" ;;
+	esac
+elif command -pv "$WIKIPEDIA_APP" > /dev/null &&
+	echo "$1" | grep -Eq \
+		'^https?://(www|[a-z]{2})\.wikipedia\.org/wiki/.+'; then
+	case "$WIKIPEDIA_APP" in
+		wike) exec wike -u "$1" ;;
+		*) exec "$WIKIPEDIA_APP" "$@" ;;
 	esac
 fi
 end=$(
