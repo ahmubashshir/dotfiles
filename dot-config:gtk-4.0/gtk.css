@@ -15,3 +15,11 @@ decoration {
 	box-shadow: none;
 	background-color: alpha(@theme_bg_color, 0.35);
 }
+
+popover contents {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	box-shadow: none;
+}
