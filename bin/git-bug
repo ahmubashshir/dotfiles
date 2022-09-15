@@ -1,0 +1,4 @@
+#!/bin/bash
+OWNER=MichaelMure
+EXTRACT=0
+source "${0%/*}/lib/git-rel"
