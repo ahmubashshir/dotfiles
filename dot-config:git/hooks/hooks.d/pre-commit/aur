@@ -1,42 +1,50 @@
 #!/bin/bash -e
 # HOOK-CONDITION: [[ $(git remote get-url origin) =~ ^ssh://aur@aur.archlinux.org/ ]]
+[[ -f $HOOKSUTIL ]] && source "$HOOKSUTIL" || :
+msg_prefix="${f[green]}==> "
+
 if [[ $1 = DIR ]] && [[ -d $2 ]]; then
 	cd "$2"
-	echo ":: Updating $2"
+	echo "${msg_prefix}Updating $2${f[reset]}"
+	msg_prefix="${f[blue]}  -> ${f[reset]}${f[bold]}"
 fi
 
 if grep -q 'git://|git+http' PKGBUILD; then
 	makepkg -o
 fi
-echo ":: Updating SRCINFO"
+
+echo "${msg_prefix}Updating SRCINFO${f[reset]}"
 makepkg --verifysource -f \
 	&& makepkg --printsrcinfo > .SRCINFO
-git add -f .SRCINFO
 
+echo "${f[green]}==> Checking PKGBUILD${f[reset]}"
+if [[ -x /usr/bin/namcap ]]; then
+	namcap -im PKGBUILD
+fi
+
+if [ ! -f .gitignore ]; then
+	echo "${f[green]}==> Initializing gitignore${f[reset]}"
+	cat > .gitignore << EOF
+*
+!PKGBUILD
+!.SRCINFO
+EOF
+else
+	echo "${f[green]}==> Updating gitignore${f[reset]}"
+fi
 IFS=$'\r\n' readarray -t STAGED < <(
 	git diff --name-only --cached \
 		| awk -F/ '{print $NF}'
 )
 
-if [ ! -f .gitignore ]; then
-	echo " -> Initializing gitignore"
-	echo '*' > .gitignore
-else
-	echo " -> Updating gitignore"
-fi
 for n in "${STAGED[@]}"; do
-	grep -q "$n$" .gitignore && continue
+	! grep -q "^\!$n$" .gitignore || continue
 	echo '!'"$n" >> .gitignore
 done
-grep '^!' .gitignore | cut -c2- | while read -r line; do
-	if ! {
-		[ -f "$line" ] || [ "$line" = "*" ]
-	}; then
-		sed -i "/^\!$line$/d" .gitignore
-	fi
-done
-git add --force .gitignore
 
-if [[ -x /usr/bin/namcap ]]; then
-	namcap -im PKGBUILD
-fi
+grep '^!' .gitignore | cut -c2- | while read -r line; do
+	[[ ! -f $line ]] || continue
+	sed -i "/^\!$line$/d" .gitignore
+done
+
+git add --force .gitignore .SRCINFO
