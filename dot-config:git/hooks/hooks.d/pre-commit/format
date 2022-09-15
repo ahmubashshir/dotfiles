@@ -1,5 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2016
+[[ -f $HOOKSUTIL ]] && source "$HOOKSUTIL" || :
+
 declare -A FORMATTERS f
 FORMATTERS=(
 	# shfmt
@@ -26,23 +28,6 @@ FORMATTERS=(
 	[xml]=xmllint
 	[lua]=lua-format
 )
-
-if tput setaf 0 &> /dev/null; then
-	f[reset]="$(tput sgr0)"
-	f[bold]="$(tput bold)"
-	f[blue]="${f[bold]}$(tput setaf 4)"
-	f[green]="${f[bold]}$(tput setaf 2)"
-	f[red]="${f[bold]}$(tput setaf 1)"
-	f[yellow]="${f[bold]}$(tput setaf 3)"
-else
-	f[reset]="\e[0m"
-	f[bold]="\e[1m"
-	f[blue]="${f[bold]}\e[34m"
-	f[green]="${f[bold]}\e[32m"
-	f[red]="${f[bold]}\e[31m"
-	f[yellow]="${f[bold]}\e[33m"
-fi
-readonly f
 
 format_file()
 {
