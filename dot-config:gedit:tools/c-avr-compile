@@ -8,7 +8,7 @@
 # Save-files=document
 # Shortcut=F4
 
-cd $GEDIT_CURRENT_DOCUMENT_DIR
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
 mmcu=$(
 	zenity --list --title=AVR-GCC --text="Select Target MCU" --column=# --column="Code" --radiolist \
 		"1" "attiny4" \
