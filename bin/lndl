@@ -1,7 +1,7 @@
 #!/bin/bash
 lib_funcs=(
 	download
-	read_header
+	read-header
 	http_code
 	cleanup
 	lock
@@ -149,7 +149,7 @@ function download
 	curl --disable "$@" -sL "$url" | pv --format "  $YELLOW->$GREEN %b %r %p %e$ALL_OFF" -CWi0.001 -s "${size:-0}" > "$name"
 }
 
-function read_header
+function read-header
 {
 	sed -nE "s/\r//g;/$1/I{s/^$1:\s*//I;s/^\s+//;s/\s+$//;p}"
 }
@@ -183,10 +183,12 @@ function lock
 	{
 		_lock u
 		_lock xn && rm -f ./lock.lck
-		unset                             _lock
+		unset                           _lock
 	}
 	_lock xn || {
-		echo " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
+		if [[ -f ./lock.lck ]]; then
+			echo   " ${RED}==>${GREEN} Already updating in another process.$ALL_OFF"
+		fi
 		return 1
 	}
 }
@@ -244,7 +246,7 @@ function drv_get
 	if [[ -z "$2" ]]; then
 		set -- "$1" "$(echo "$JSON" | jq -r .name)"
 		tput cuu1
-		tput   el
+		tput el
 		echo " $BLUE==>$GREEN Downloading '$(ellipsis $(($(tput cols) - 25)) "${2:-$1}")'...$ALL_OFF"
 	fi
 	set -- "$2" "$1"
@@ -310,12 +312,18 @@ function drv_sync
 function ng_get
 {
 	local id type name
-	if [[ "$1" =~ ^(epub|mobi|azw3):[a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12}/[[:alnum:]-]*$ ]]; then
+	if [[ "$1" =~ ^(epub|mobi|azw3):[0-9]*:[[:alnum:]-]*$ ]]; then
 		IFS=:/ read -r type id name <<< $1
 		read -r id < <(
-			curl --disable -sIXGET "https://novelget.com/download/$id/" \
-				| read_header location \
-				| sed -E 's@^.*/\*/([[:alnum:]_-]+)\?.*$@\1@'
+			curl --disable -s "https://novelget.com/${name,,}.$id/" \
+				| xmllint --html --xmlout --nowarning --xpath \
+					'string(//div[contains(@onclick, "download(") and ./div//span[contains(text(), "'"$type"'")]][1]/@onclick)' - 2> /dev/null \
+				| sed -E "s/^.* download\('([a-z0-9]{8}(-[a-z0-9]{4}){3}-[a-z0-9]{12})'\)(|; .*)\$/\1/"
+		)
+		read -r id < <(
+			curl --disable -sIXGET "https://novelget.com/download-v2/$id/" \
+				| read-header location \
+				| sed -E 's@^.*\bid=([[:alnum:]_-]+)(&.*|$)@\1@'
 		)
 		drv_get "$id" "$name.$type"
 	else
@@ -332,8 +340,8 @@ function al_get
 	until [ "$(echo "$HEADER" | http_code)" = "200" ]; do
 		HEADER=$(curl --disable -kLsIXGET "$2")
 	done
-	size="$(echo "$HEADER" | read_header content-length)"
-	date="$(echo "$HEADER" | read_header last-modified | xargs --null date +%s -d)"
+	size="$(echo "$HEADER" | read-header content-length)"
+	date="$(echo "$HEADER" | read-header last-modified | xargs --null date +%s -d)"
 	if [ -f "$(echo "$1" | tr -d $'\r')" ] && ((size == $(stat -c%s "$1"))) && ((date == $(stat -c%Y "$1"))); then
 		echo -e "  $YELLOW->$GREEN Downloaded $(ellipsis $(($(tput cols) - 34)) "$1") [$(byte_hr "$size")].$ALL_OFF"
 		sleep 2
@@ -377,7 +385,7 @@ function al_sync
 		}
 		read -rsa urls < <(al_ls "$1")
 		for n in "${urls[@]}"; do
-			name=$(curl --disable -kLsIXGET "$n" | read_header content-disposition)
+			name=$(curl --disable -kLsIXGET "$n" | read-header content-disposition)
 			if [ -z "$(echo "$name" | awk 'match($0,/filename=".* - (.*)"/,m) {print m[1]}')" ]; then
 				name=$(echo "$name" | awk 'match($0,/filename="(.*)"$/,m) {gsub(/\.zip/,"",m[1]);print m[1]}' | tr -s '<>:"/\|?*' '-')
 			else
@@ -462,7 +470,7 @@ else
 			unset "${all_funcs[@]}"
 			echo "ERROR: Unsupported command '$1'"
 			show_help
-			exit                                                                                   1
+			exit                                                                                 1
 			;;
 	esac
 fi
