@@ -41,6 +41,7 @@ REPOPATH=(
 )
 while IFS=': ' read -r repo src fork; do
 	for parent in "${REPOPATH[@]}"; do
+		declare -i stash=0
 
 		if [[ -d "$parent/$repo" ]]; then
 			git -C "$parent/$repo" rev-parse >&3 2>&1
@@ -51,6 +52,11 @@ while IFS=': ' read -r repo src fork; do
 		fi
 
 		cd "$parent/$repo" || continue
+		if [[ -n $(git config --get-regexp 'branch\.\.') ]]; then
+			git config --remove-section branch.
+		fi
+		read -r stash < <(git stash list | wc -l)
+
 		read -r path < <(
 			sed "s@$HOME@~@" <<< "$parent/$repo"
 		)
@@ -66,6 +72,7 @@ while IFS=': ' read -r repo src fork; do
 			| sed 's/^/%/;s/$/c\\\\n/' | xargs printf | tr ' ' -
 		current=$(git rev-parse --abbrev-ref HEAD 2>&3)
 		default=$(git remote show origin 2>&3 | grep "HEAD branch" | awk '{print $3}')
+		git stash push
 		if [[ $current != "$default" ]]; then
 			git switch "$default"
 		fi
@@ -73,8 +80,8 @@ while IFS=': ' read -r repo src fork; do
 			git remote rename origin upstream
 			git remote add origin "https://github.com/$fork.git"
 		fi
-		if [[ $(git config branch.$default.pushremote) != "origin" ]]; then
-			git config branch.$default.pushRemote origin
+		if [[ -n $default && $(git config branch.$default.pushremote) != "origin" ]]; then
+			git config branch."$default".pushRemote origin
 		fi
 		git pull --rebase upstream $default
 		git pull --rebase origin $default
@@ -82,6 +89,7 @@ while IFS=': ' read -r repo src fork; do
 		if [[ $current != "$default" ]]; then
 			git switch "$current"
 		fi
+		(($(git stash list | wc -l) > stash)) && git stash pop
 		cd "$OLDPWD"
 	done
 done < <(
