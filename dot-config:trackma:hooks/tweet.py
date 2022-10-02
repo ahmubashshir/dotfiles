@@ -8,13 +8,9 @@
 #########################
 
 #########################
-try:
-    from private.twitter import TwitterCreds
-    ACCESS_KEY = TwitterCreds.KEY
-    ACCESS_SECRET = TwitterCreds.SECRET
-except ImportError:
-    ACCESS_KEY = ""
-    ACCESS_SECRET = ""
+from private import Creds
+
+ACCESS_KEY, ACCESS_SECRET = Creds("twitter.com")
 
 if not ACCESS_KEY or not ACCESS_SECRET:
     raise Exception(
