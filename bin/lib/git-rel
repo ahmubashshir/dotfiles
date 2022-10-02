@@ -37,7 +37,7 @@ if [[ -z $exec ]]; then
 			fi
 			[[ ! -x $exec ]] || ltver=$(
 				version \
-					| grep -oEm1 '\sv?[[:digit:]][[:digit:].-]+' \
+					| grep -oEm1 '\s*v?[[:digit:]][[:digit:].-]+' \
 					| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
 			)
 			unset -f version
@@ -46,7 +46,7 @@ if [[ -z $exec ]]; then
 			filter='.assets[]|select(type == "object")'
 			filter()
 			{
-				test   -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
+				test -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
 			}
 
 			arch=${ARCH-$(uname -m)}
