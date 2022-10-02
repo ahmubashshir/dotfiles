@@ -86,17 +86,19 @@ div[id*="signature"][contenteditable="true"] * {
 	background-color: rgb(40, 42, 54) !important;
 }
 
+div[id*="body"],
+body.plain div,
+body.plain div * {
+	color: rgb(var(--fg)) !important;
+}
+
 div[id*="quote"],
 div[id*="quote"] *,
 div[class*="quote"],
 div[class*="quote"] *,
 div[id*="signature"],
 div[id*="signature"] * {
-	color: #50FA7B !important;
-}
-
-div[id*="body"] {
-	color: rgb(var(--fg)) !important !important;
+	--fg: 80, 250, 123;
 }
 
 div[id*="quote"],
