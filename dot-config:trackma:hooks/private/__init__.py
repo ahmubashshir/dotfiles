@@ -1,22 +1,10 @@
 """
 This package holds private credentials.
 """
+from netrc import netrc
 
-from enum import Enum, auto
 
+def Creds(site: str = None):
+    login, account, secret = netrc().authenticators(f"trackma://{site}")
 
-class Creds(str, Enum):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        attribs = dir(self.value)
-        for each in dir(Enum):
-            if each in attribs:
-                attribs.remove(each)
-        for each in attribs:
-            setattr(self, each, getattr(self.value, each))
-
-    def __str__(self):
-        if isinstance(self.value, (str,)):
-            return self.value
-        else:
-            return self.name.replace('_', ' ')
+    return (account or login, secret,)
