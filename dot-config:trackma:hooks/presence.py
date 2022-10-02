@@ -12,10 +12,11 @@ import sys
 
 from threading import Thread, Event
 from time import time, sleep
+from struct import error as StructError
 from asyncio import (new_event_loop as new_loop,
                      set_event_loop as set_loop)
 from pypresence.client import Client
-from pypresence.exceptions import InvalidID, InvalidPipe, DiscordNotFound
+from pypresence.exceptions import InvalidID, InvalidPipe, DiscordNotFound, DiscordError
 from trackma.engine import Engine
 from trackma.utils import (estimate_aired_episodes,
                            Tracker)
@@ -39,8 +40,8 @@ class DiscordRPC(Thread):
         InvalidPipe,
         FileNotFoundError,
         ConnectionResetError,
-    )
-    _fatal = (
+        StructError,
+        DiscordError,
         DiscordNotFound,
         InvalidID,
     )
@@ -68,7 +69,8 @@ class DiscordRPC(Thread):
 
     def present(
         self, engine: Engine, pos: int = None,
-        details: str = "Regretting...", state: str = None
+        details: str = "Regretting...", state: str = None,
+        url: str = None, thumb: str = "icon"
     ):
         """
         Set status for DiscordRPC.
@@ -77,6 +79,11 @@ class DiscordRPC(Thread):
             'details': details,
             'state': state,
             'pos': pos,
+            'thumb': thumb,
+            'buttons': [{
+                "label": "View %s" % engine.api_info['mediatype'].capitalize(),
+                "url": url
+            }] if url else None,
             'img': engine.account["api"],
             'txt': "{} at {}".format(
                 engine.account["username"],
@@ -97,10 +104,11 @@ class DiscordRPC(Thread):
                     else:
                         self._rpc.set_activity(
                             pid=self._pid,
-                            large_image="icon",
+                            large_image=self._details['thumb'],
                             large_text=self._details['details'],
                             small_image=self._details['img'],
                             small_text=self._details['txt'],
+                            buttons=self._details['buttons'],
                             details=self._details['details'],
                             state=self._details['state'],
                             start=time() * 1000 - int(self._details['pos'])
@@ -110,8 +118,10 @@ class DiscordRPC(Thread):
                 self._enabled = False
                 try:
                     self._rpc.close()
-                except AttributeError:
+                except:
                     pass
+        print("Trackma (%s): Closing connection to discord." %
+              (__package__ or __name__))
         sys.exit(0)
 
     def _reconnect(self):
@@ -122,9 +132,6 @@ class DiscordRPC(Thread):
                 self._enabled = True
             except self._errors:
                 self._enabled = False
-            except self._fatal:
-                self._enabled = False
-                self._quit.set()
 
 
 rpc = DiscordRPC(regret=False)
@@ -140,7 +147,6 @@ def init(engine):
 
 def destroy(engine):
     rpc.stop()
-    engine.msg.debug("presence", "Destroyed")
 
 
 def tracker_state(engine, status):
@@ -151,6 +157,8 @@ def tracker_state(engine, status):
         show = status["show"][0]
         title = show["titles"][0]
         episode = status["show"][-1]
+        url = engine.get_show_info(show['id'])["url"]
+        thumb = engine.get_show_info(show['id'])["image"]
         total = show["total"] or estimate_aired_episodes(
             engine.get_show_info(show['id'])
         ) or '?'
@@ -162,7 +170,9 @@ def tracker_state(engine, status):
                         "Paused episode {} of {}".format(
                             episode,
                             total
-                        )
+                        ),
+                        url,
+                        thumb
                         )
         else:
             rpc.present(engine,
@@ -171,7 +181,9 @@ def tracker_state(engine, status):
                         "Watching episode {} of {}".format(
                             episode,
                             total
-                        )
+                        ),
+                        url,
+                        thumb
                         )
 
     else:
