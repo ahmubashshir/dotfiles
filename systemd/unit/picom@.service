@@ -7,10 +7,14 @@ ConditionEnvironment=!XDG_SESSION_DESKTOP=GNOME
 
 [Service]
 Environment=DISPLAY="%I"
-ExecStart=/usr/bin/picom --experimental-backends
+ExecStart=/usr/bin/picom
 ExecReload=kill -USR1 $MAINPID
 RestartSec=3
 Restart=on-failure
+MemoryMax=512M
+MemoryHigh=256M
+CPUQuota=5%
+MemoryAccounting=yes
 
 [Install]
 WantedBy=graphical-session.target
