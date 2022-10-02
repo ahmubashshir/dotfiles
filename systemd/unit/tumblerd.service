@@ -1,0 +1,15 @@
+[Unit]
+Description=Thumbnailer Service
+
+[Service]
+Type=dbus
+ExecStart=/usr/lib/tumbler-1/tumblerd
+BusName=org.freedesktop.thumbnails.Cache1
+BusName=org.freedesktop.thumbnails.Manager1
+BusName=org.freedesktop.thumbnails.Thumbnailer1
+MemoryHigh=30M
+MemoryMax=60M
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

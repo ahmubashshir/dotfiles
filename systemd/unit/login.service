@@ -1,0 +1,12 @@
+[Unit]
+Description=Run things on login
+OnFailure=notify-fail@%n.service
+
+[Service]
+MemoryMax=100M
+Type=oneshot
+RemainAfterExit=true
+ExecStart=%h/.config/systemd/scripts/login
+
+[Install]
+WantedBy=default.target

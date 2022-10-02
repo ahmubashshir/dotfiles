@@ -2,7 +2,7 @@
 Description=Trakt Scrobbler Service
 
 [Service]
-ExecStart="/usr/bin/trakts" run
+ExecStart=python -m trakt_scrobbler run
 
 [Install]
 WantedBy=default.target
