@@ -472,6 +472,19 @@ Spiff = Xspf
 ##################################################################
 
 
+def replay_gain(config, file: str):
+    if not 'FFmpegExtractAudio' in (
+        post['key'] for post in config['postprocessors']
+    ):
+        return
+
+    try:
+        from rgain3.script.replaygain import do_gain
+        do_gain([file], album=False)
+    except:
+        pass
+
+
 def strip(_str):
     return re.sub(r'^\s+|\s+$', '', _str, flags=re.M)
 
@@ -610,6 +623,8 @@ def get_item(item, ydl_opts, opts):
             except Exception:
                 data = data.decode('utf-8')
             f.write(strip(data))
+
+    replay_gain(ydl_opts, _item)
     if opts and not opts.get('skip-tagging', False):
         id3_tags(item, _item)
     return _item
