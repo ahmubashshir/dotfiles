@@ -5,7 +5,7 @@ if [ -f "$1" ]; then
 
 	TS=$(git config --get trailer.separators)
 	TS="${TS:-:}"
-	DTS=$(             echo "$TS" | cut -c1)
+	DTS=$(echo "$TS" | cut -c1)
 
 	git interpret-trailers --parse --trim-empty "$1" |
 		sed "s/[$TS]\{1,\}/$DTS/" | sort -u |
