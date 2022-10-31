@@ -53,11 +53,17 @@ set_track_remote()
 	echo "Configured '$branch_name' branch to track '${ref_name}' from '$remote_name'"
 }
 
+get_default_remote()
+{
+	git for-each-ref --format "%(refname:short)" "refs/remotes/*/HEAD" |
+		grep -E '^[^\/]+' -o -m1
+}
+
 fetch_request()
 {
 	local request_number="$1"
-	local remote_name="${2:-upstream}"
-	local branch_name="$local_namespace/$request_number"
+	local remote_name="${2:-$(get_default_remote)}"
+	local branch_name="$local_namespace-$request_number"
 	local remote_ref="$remote_namespace/$request_number/head"
 
 	# fetch and checkout
