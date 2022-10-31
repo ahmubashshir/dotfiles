@@ -38,7 +38,7 @@ IFS=$'\r\n' readarray -t STAGED < <(
 )
 
 for n in "${STAGED[@]}"; do
-	! grep -q "^\!$n$" .gitignore || continue
+	! grep -q "^!$n$" .gitignore || continue
 	echo '!'"$n" >> .gitignore
 done
 
