@@ -29,9 +29,11 @@ then
 			;;
 		*) exec "$MEDIA_PLAYER" "$@" ;;
 	esac
-elif command -pv "$WIKIPEDIA_APP" > /dev/null &&
-	echo "$1" | grep -Eq \
-		'^https?://(www|[a-z]{2})\.wikipedia\.org/wiki/.+'; then
+elif
+	command -pv "$WIKIPEDIA_APP" > /dev/null &&
+		echo "$1" | grep -Eq \
+			'^https?://(www|[a-z]{2})\.(m\.)?wikipedia\.org/wiki/.+'
+then
 	case "$WIKIPEDIA_APP" in
 		wike) exec wike -u "$1" ;;
 		*) exec "$WIKIPEDIA_APP" "$@" ;;
