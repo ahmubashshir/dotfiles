@@ -2,9 +2,20 @@
 	/* url bar */
 
 	#widget-overflow-mainView,
-	#urlbar[open="true"] > #urlbar-background {
-		backdrop-filter: contrast(100%) blur(var(--bct-blur)) saturate(25%) !important;
-		border: none !important;
+	#urlbar > #urlbar-background {
+		background-color: color-mix(in srgb, transparent 50%, var(--toolbar-field-background-color)) !important;
+	}
+
+	#urlbar:is([focused], [open]) > #urlbar-background {
+		background-color: color-mix(in srgb, transparent 50%, var(--toolbar-field-focus-background-color)) !important;
+	}
+
+	#urlbar:is([focused], [open]) > vbox.urlbarView {
+		background-color: color-mix(in srgb, transparent 25%, var(--toolbar-field-focus-background-color)) !important;
+		width: 100% !important;
+		margin: unset !important;
+		border-radius: var(--toolbarbutton-border-radius);
+		margin-top: -1px !important;
 	}
 
 	/* overflow menu in customize menu */
@@ -14,20 +25,6 @@
 	}
 
 	/* window transparencies */
-	#main-window {
-		background: transparent !important;
-		-moz-appearance: -moz-win-glass !important;
-	}
-
-	/* urlbar popup */
-	#urlbar[open] #urlbar-background {
-		opacity: 0.85 !important;
-	}
-
-	#urlbar[open] #urlbar-input-container {
-		background-color: var(--toolbar-field-background-color);
-	}
-
 	menupopup,
 	panelview {
 		background-color: color-mix(in srgb, transparent 40%, var(--panel-background)) !important;
@@ -42,21 +39,16 @@
 	}
 
 	window,
+	browser,
 	#main-window,
 	#toolbar-menubar,
 	#TabsToolbar,
 	#PersonalToolbar,
 	#navigator-toolbox,
+	#nav-bar,
 	#sidebar-box {
 		background-color: transparent !important;
-		-moz-appearance: none !important;
-		background-image: none !important;
-	}
-
-	window,
-	#nav-bar {
-		background-color: transparent !important;
-		-moz-appearance: none !important;
+		-moz-appearance: -moz-win-glass !important;
 		background-image: none !important;
 	}
 
