@@ -1,0 +1,32 @@
+# Sample trakt scrobbler remap file.
+# schema:
+# there should be a toplevel key "rules", which is a list of the following-
+# [match]
+#   - one or more of path, title, season, episode, year
+#   - path should be valid a Python regex pattern
+#     - you can also capture substrings using "(?P<name>pattern)" syntax. These will override the default-extracted values from guessit.
+#   - season, episode, year support ranges.
+#       - For instance, 'season: "1:3,5"' will match any season in {1,2,3,5}
+#   - if needed, we can add a "fuzzy-title" in the future to do edit-distance based matching
+#   - specifying multiple fields means all of them should match.
+# [type]
+#   - one of "episode" or "movie"
+# [id]
+#   - one of trakt_slug, trakt_id, or title (to select top result)
+#   - can use placeholders for extracted values like "{episode}", "{title}", "{year}", etc.
+#      - the placeholder names should match the extracted guessit keys or regex capture group names
+#   - "title" can contain an optional year inside parentheses. Eg: "The Man from Earth (2007)"
+# [season]
+#   - optional. If not provided, the extracted value from path/regex will be used.
+#   - any number starting from 0
+#   - 0 corresponds to "Specials" season on Trakt
+# [episode_delta]
+#   - optional. Default is 0
+#   - any integer (positive or negative)
+#   - will be added to the episode number extracted from path/regex
+
+[[rules]]
+match.title = "Beatless-Final-Stage"
+id.trakt_slug = "beatless"
+type = "episode"
+season = 2
