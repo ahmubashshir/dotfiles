@@ -8,5 +8,6 @@ case "$(dunstctl is-paused)-$pending" in
 	false-*) icon=-new-symbolic ;;
 	true-*) icon=-disabled-new-symbolic ;;
 esac
-printf '<txt>Pending %5d </txt>\n' "$pending"
+printf '<txt>Pending %3d </txt>\n' "$pending"
 printf '<icon>notification%s</icon>\n' "$icon"
+printf '<tool>%s</tool>' "$(dunstctl count)"
