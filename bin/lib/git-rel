@@ -103,14 +103,11 @@ if [[ -z $exec ]]; then
 fi
 
 if [[ -x "$exec" && -s "$exec" ]]; then
-	#	if [[ $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]]; then
-	#		NAME="$exec"
-	#	fi
 	if [[ x$(typeset -p DEFAULT_ARGS 2> /dev/null | awk '{print $2}') != x-a ]]; then
 		unset -v DEFAULT_ARGS
 		declare -a DEFAULT_ARGS
 	fi
-	exec "$exec" "${DEFAULT_ARGS[@]}" "$@"
+	exec -a "$NAME" "$exec" "${DEFAULT_ARGS[@]}" "$@"
 else
 	! [[ -f $exec && $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || rm -f "$exec"
 	printf "%s: command not found.\n" "$NAME"
