@@ -24,6 +24,7 @@ zplug-defer forgit
 zplug-defer archlinux
 zplug-defer dotenv
 zplug-defer rbenv
+zplug-defer z
 [[ -x /usr/bin/nix ]] && {
 	zplug-defer nix
 	zplug-defer nix-shell

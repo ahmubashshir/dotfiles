@@ -88,6 +88,11 @@ function zplug:pre:git {
 	source $ZDOTDIR/omz/lib/git.zsh
 }
 
+function zplug:pre:z {
+	ZSHZ_DATA="${XDG_CACHE_HOME:-$HOME/.}${XDG_CACHE_HOME+/zsh/}z"
+	alias cd=z
+}
+
 function zplug:post:dotenv {
 	alias dotenv=source_env
 }
