@@ -46,6 +46,13 @@ else
 				fi
 			done
 			;;
+		run)
+			shift
+			id="$1"
+			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
+			shift
+			[ -x "$hook" ] && exec "$hook" "$@"
+			;;
 		exrun)
 			shift
 			while [ "$1" != "--" ] && [ "$1" != "--" ]; do
@@ -56,7 +63,7 @@ else
 			exec "$@"
 			;;
 		help)
-			echo "git-hooks commands: ls edit enable disable exrun"
+			echo "git-hooks commands: ls edit enable disable exrun run"
 			;;
 	esac
 fi
