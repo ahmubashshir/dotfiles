@@ -1,0 +1,24 @@
+#!/bin/awk -f
+function argind(val)
+{
+	for ( k in ARGV )
+	{
+		print val
+		if ( ARGV[k] == val )
+			return k
+	}
+	return -1
+}
+
+BEGIN {
+	FS="\\.| "
+	lines="TRAILER ALIASES\n"
+	while("git config --get-regexp 'trailer.*.key'" | getline line)
+	{
+		$0 = line
+		if ($0 != "") trailers[$4] = trailers[$4] " " $2
+	}
+	for(trailer in trailers) lines = lines "\n" trailer "\t" trailers[trailer]
+	close(line)
+	printf lines | "column -t"
+}

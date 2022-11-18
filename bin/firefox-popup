@@ -11,7 +11,7 @@ if [ -z "$*" ]; then
 	exit 2
 fi
 if
-	command -pv "$MEDIA_PLAYER" > /dev/null &&
+	hash "$MEDIA_PLAYER" > /dev/null &&
 		echo "$1" | grep -Eq \
 			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?v=|playlist\?list=))[a-zA-Z0-9_-]+($|&.*$)'
 then
@@ -30,7 +30,7 @@ then
 		*) exec "$MEDIA_PLAYER" "$@" ;;
 	esac
 elif
-	command -pv "$WIKIPEDIA_APP" > /dev/null &&
+	hash "$WIKIPEDIA_APP" > /dev/null &&
 		echo "$1" | grep -Eq \
 			'^https?://(www|[a-z]{2})\.(m\.)?wikipedia\.org/wiki/.+'
 then

@@ -1,0 +1,5 @@
+#!/bin/sh
+mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" || exit
+
+exec mpv --cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
+	--profile=remote --profile-append=pseudo-gui "$@"
