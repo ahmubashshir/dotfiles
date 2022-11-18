@@ -47,7 +47,7 @@ if [ -d "$hookdir" ]; then
 		else
 			run="false" # hook ends in ".optional"
 		fi
-		if "$checker" "${subhook##*/}" "$id" "$stage" "$run"; then
+		if "$checker" "${subhook##*/}" "$id" "$stage" "$run" "$@"; then
 			echo "${f[blue]}::${f[green]} Running '${f[blue]}$id${f[green]}'${f[reset]}"
 			if [ "$tempfile" ]; then
 				"$subhook" "$@" < "$tempfile"
