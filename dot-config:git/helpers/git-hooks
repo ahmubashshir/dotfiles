@@ -13,7 +13,7 @@ else
 			id="$1"
 			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
 			shift
-			if [ -x "$hook" ]; then
+			if [ -x "$hook" ] && [ "${id%%.*}" != "on-demand" ]; then
 				git config "$@" --unset "hook.$id"
 			fi
 			;;
@@ -22,7 +22,7 @@ else
 			id="$1"
 			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
 			shift
-			if [ -x "$hook" ]; then
+			if [ -x "$hook" ] && [ "${id%%.*}" != "on-demand" ]; then
 				git config "$@" "hook.$id" false
 			fi
 			;;
@@ -48,10 +48,16 @@ else
 			;;
 		run)
 			shift
-			id="$1"
-			hook="$hooks/hooks.d/${1%%.*}/${1#*.}"
-			shift
-			[ -x "$hook" ] && exec "$hook" "$@"
+			type="${1%%.*}"
+			name="${1#*.}"
+			if [ "$name" = "$type" ] || [ "$type" == "on-demand" ]; then
+				hook="$hooks/hooks.d/on-demand/$name"
+				shift
+				[ -x "$hook" ] && exec "$hook" "$@"
+			else
+				echo "ERROR: $name: not an on-demand hook." >&2
+				exit 1
+			fi
 			;;
 		exrun)
 			shift
