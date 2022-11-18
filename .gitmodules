@@ -100,10 +100,6 @@
 	path = dot-config:zsh/plugins/zinsults
 	url = https://github.com/ahmubashshir/zinsults
 	branch = master
-[submodule "dot-config:mpv/shaders/Anime4K"]
-	path = dot-config:mpv/shaders/Anime4K
-	url = https://github.com/bloc97/Anime4K
-	branch = master
 [submodule "dot-config:zsh/plugins/autocomplete"]
 	branch = main
 	path = dot-config:zsh/plugins/autocomplete
