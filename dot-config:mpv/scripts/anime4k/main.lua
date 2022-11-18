@@ -42,16 +42,15 @@ local function append_list(list, src)
     for _, shader in ipairs(src) do
         if shader then
             table.insert(list, table.concat(
-                             {
-                    shader_path, 'Anime4K', 'glsl', shaders.resolve(shader)
-                }, pathsep))
+                             {shader_path, 'anime4k', shaders.resolve(shader)},
+                             pathsep))
             msg.info('Loaded Shaders: ' .. shaders.resolve(shader))
         end
     end
 end
 
 local function load_shaders(mode)
-    local a4k_info = utils.file_info(shader_path .. '/Anime4K')
+    local a4k_info = utils.file_info(shader_path .. pathsep .. 'anime4k')
     if not (a4k_info and a4k_info.is_dir) then
         msg.info("Shaders not found.")
         return nil
