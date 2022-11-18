@@ -1,0 +1,25 @@
+#!/bin/sh
+# HOOK-CONDITION: git diff "$1" "$2" --name-status | grep -qE '\s+\.svn-map$'
+[ -f .svn-map ] || exit 0
+
+clone()
+{
+	svn checkout "$@"
+}
+
+update()
+{
+	rm -f "$1/.gitignore"
+	svn cleanup "$1"
+	svn update "$1"
+	echo '*' > "$1/.gitignore"
+}
+
+while IFS='|' read -r remote local; do
+	mkdir -p "$(dirname "$local")"
+	if [ ! -d "$local" ]; then
+		clone "$remote" "$local"
+	else
+		update "$local"
+	fi >&2
+done < .svn-map
