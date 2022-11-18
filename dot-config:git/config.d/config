@@ -2,6 +2,7 @@
 	defaultBranch = master
 [advice]
 	addIgnoredFile = false
+	skippedCherryPicks = false
 [commit]
 	gpgSign = false
 	template = ~/.config/git/commit-msg
