@@ -3,19 +3,17 @@ subhook="$1"
 id="$2"
 stage="$3"
 run="$4"
-
-shift 3
+shift 4
 [[ "$(git config --bool "hook.$id")" != "false" ]]
 [[ ! ":$GIT_DISABLED_HOOKS:" =~ :$id: ]]
 [[ ! ":$GSH:" =~ :$subhook: ]]
-
 [[ "$(
 	git config --bool hook.$id \
 		|| git config --bool hook.$id.enabled \
 		|| echo $run
 )" = "true" ]]
 
-if [ -f "${0%/*}/if.d/$stage/$subhook" ]; then
+if [[ -f "${0%/*}/if.d/$stage/$subhook" ]]; then
 	source "${0%/*}/if.d/$stage/$subhook" "$@"
 else
 	awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");print}' \
