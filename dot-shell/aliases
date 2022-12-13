@@ -40,7 +40,7 @@ if [ -x /usr/bin/dog ]; then
 	alias dig="/usr/bin/dog"
 fi
 if [ -x /usr/bin/makechrootpkg ]; then
-	alias makechrootpkg="sudo makechrootpkg -ur /var/lib/archbuild"
+	alias makechrootpkg="sudo makechrootpkg -ucnr /var/lib/archbuild"
 fi
 alias t=time
 alias k="kill"
