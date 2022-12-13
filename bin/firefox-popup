@@ -13,7 +13,7 @@ fi
 if
 	hash "$MEDIA_PLAYER" > /dev/null &&
 		echo "$1" | grep -Eq \
-			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?v=|playlist\?list=))[a-zA-Z0-9_-]+($|&.*$)'
+			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
 then
 	case "$MEDIA_PLAYER" in
 		mpv)
