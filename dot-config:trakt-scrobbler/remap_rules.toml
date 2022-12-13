@@ -30,3 +30,8 @@ match.title = "Beatless-Final-Stage"
 id.trakt_slug = "beatless"
 type = "episode"
 season = 2
+
+[[rules]]
+match.path = ".*/(?P<title>Yuusha, Yamemasu)/.*"
+id.trakt_slug = "i-m-quitting-heroing"
+type = "episode"
