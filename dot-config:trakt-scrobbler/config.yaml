@@ -5,7 +5,7 @@ players:
     - mpv
 fileinfo:
     exclude_patterns:
-    - "/mnt/Multimedia/\\.*/.*"
+    - ".*/\\.*/.*"
     whitelist:
     - /mnt/Multimedia
     - /mnt/Torrents
