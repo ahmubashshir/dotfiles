@@ -23,3 +23,4 @@ if [ -d /mnt/Games/wine ]; then
 	export WINEPREFIX=/mnt/Games/wine
 fi
 export GTK_THEME=Matcha-dark-sea
+export MEDIA_PLAYER=pipe-viewer
