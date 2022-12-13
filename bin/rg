@@ -1,0 +1,4 @@
+#!/bin/bash
+OWNER=BurntSushi
+REPO=ripgrep
+source "${0%/*}/lib/git-rel"
