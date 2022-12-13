@@ -2,6 +2,19 @@
 PROFILES="${0%/*}"
 PROFILES="${PROFILES%/*}/profiles"
 
+function git_config
+{
+	git config --local "$@"
+}
+
+function die
+{
+	local ret="$1" fmt="$2"
+	shift                    2
+	printf "$fmt\n" "$@" >&2
+	exit "$ret"
+}
+
 function show_help
 {
 	cat >&2 << EOF
@@ -12,6 +25,7 @@ subcommands:
   show		Show the selected profile
   apply		Apply the selected profile
   help		Show this help
+  reset		Reset profile
 EOF
 }
 
@@ -30,29 +44,55 @@ while (($# > 0)); do
 			exit 0
 			;;
 		show)
-			profile="$1"
-			shift
+			read -r profile < <(git_config --get profile.selected || echo "$1")
+			[[ -f $PROFILES/$profile.cfg ]] \
+				|| die 1 "Profile doesn't exist: %s" "$profile"
+
 			sed -nE 's/^# NAME: (.+)$/Name:\t\1/p;s/^# DESC: (.+)$/Info:\t\1/p' "$PROFILES/$profile.cfg"
 			sed '/^#/d' "$PROFILES/$profile.cfg"
 			exit
 			;;
-		apply)
+		reset)
 			git rev-parse --git-dir > /dev/null || exit 1
 
+			read -r profile < <(git_config --get profile.selected)
+			[[ $profile ]] || die 0 "No profile applied."
+			echo "$profile: unapplying profile." >&2
+
+			sed '/^#/d' "$PROFILES/$profile.cfg" \
+				| while read -r key op val; do
+					git_config --unset "$key" "$val"
+				done \
+				&& git_config --unset profile.selected "$profile"
+			exit 0
+			;;
+		apply)
+			git rev-parse --git-dir > /dev/null || exit 1
 			profile="$1"
 			shift
+			read -r old_profile < <(git_config --get profile.selected)
+			[[ -f $PROFILES/$profile.cfg ]] \
+				|| die 1 "%s: profile doesn't exist." "$profile"
+
+			if [[ $old_profile && $old_profile != $profile ]]; then
+				"$0" reset
+			elif [[ $old_profile == $profile ]]; then
+				die 0 "%s: profile already applied." "$profile"
+			fi
+			echo "$profile: applying profile." >&2
 			sed '/^#/d' "$PROFILES/$profile.cfg" \
 				| while read -r key op val; do
 					case "$op" in
-						=) git config --local "$key" "$val" ;;
-						+) git config --local --add "$key" "$val" ;;
+						=) git_config "$key" "$val" ;;
+						+) git_config --add "$key" "$val" ;;
+						-) git_config --unset "$key" "$val" ;;
 					esac
-				done
+				done && git_config profile.selected "$profile"
 			exit
 			;;
 		*)
 			show_help
-			exit             0
+			exit 0
 			;;
 	esac
 done
