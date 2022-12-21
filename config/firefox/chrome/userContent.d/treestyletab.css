@@ -1,6 +1,6 @@
-@-moz-document url-prefix("moz-extension://f924699f-78cc-491e-9ecb-da8b8110af4f") {
+@-moz-document url-prefix("moz-extension://") {
 
-	.contextual-identity-marker {
+	tab-item-substance > .contextual-identity-marker {
 		left: 0.5em !important;
 		right: 0.5em !important;
 		bottom: 0.1em !important;
@@ -19,7 +19,7 @@
 	}
 
 	/* Hide sound playing/muted button. */
-	.sound-button::before {
+	tab-sound-button.sound-button::before {
 		display: none !important;
 	}
 
