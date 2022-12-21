@@ -1,4 +1,4 @@
-#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #navigator-toolbox-background {
+#main-window[chromehidden=""] #navigator-toolbox-background {
 	position: fixed;
 	bottom: 0;
 	display: block;
@@ -6,16 +6,16 @@
 	width: 100% !important;
 }
 
-#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #navigator-toolbox {
+#main-window[chromehidden=""] #navigator-toolbox {
 	width: 100% !important;
 	margin-bottom: -1px;
 }
 
-#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #titlebar {
+#main-window[chromehidden=""] #titlebar {
 	padding-left: var(--thin-tab-width);
 }
 
-#main-window[chromehidden=""]:not([sizemode="fullscreen"]) #browser {
+#main-window[chromehidden=""] #browser {
 	padding-bottom: 40px;
 }
 
@@ -52,6 +52,13 @@ panel[position^="bottomcenter"] {
 #urlbar-input {
 	min-width: calc(350px + 2 * var(--toolbarbutton-inner-padding)) !important;
 	width: 100vw !important;
+}
+
+#urlbar:not([focused]) {
+	border-width: calc(var(--focus-outline-width) / 2);
+	border-style: solid;
+	border-color: var(--chrome-content-separator-color);
+	border-radius: var(--urlbar-icon-border-radius);
 }
 
 moz-input-box.urlbar-input-box {
