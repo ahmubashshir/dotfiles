@@ -36,10 +36,14 @@ user_pref("pocket.enabled", false);
 user_pref("browser.sessionhistory.max_entries", 20);
 // reduce cached page stack
 user_pref("browser.sessionhistory.max_total_viewers", 5);
+// reduce max tab close undo
+user_pref("browser.sessionstore.max_tabs_undo", 10);
 // trim on minimize
 user_pref("config.trim_on_minimize", true);
-// set in-memory cache to 200M
-user_pref("browser.cache.memory.capacity", 204800);
+// set in-memory cache to 300M
+user_pref("browser.cache.memory.capacity", 307200);
+// enable jpeg-xl
+//user_pref("image.jxl.enabled", true);
 
 
 /*
@@ -49,7 +53,7 @@ user_pref("browser.cache.memory.capacity", 204800);
  * layout.css.backdrop-filter.enabled
  * svg.context-properties.content.enabled
  */
-user_pref("browser.display.use_document_fonts", 0);
+user_pref("browser.display.use_document_fonts", 1);
 user_pref("gfx.font_rendering.opentype_svg.enabled", false);
 
 user_pref("media.navigator.enabled", false);
