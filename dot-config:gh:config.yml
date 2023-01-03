@@ -9,4 +9,5 @@ aliases:
     fork: repo fork --remote --org ahm-forks
     clone: repo clone
     create: repo create --public
+    pcreate: repo create --private
 prompt: enabled
