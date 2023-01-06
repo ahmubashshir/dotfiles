@@ -26,7 +26,8 @@
 
 	/* window transparencies */
 	menupopup,
-	panelview {
+	panelview,
+	panel {
 		background-color: color-mix(in srgb, transparent 40%, var(--panel-background)) !important;
 	}
 
@@ -38,18 +39,22 @@
 		--menubar-background-color: color-mix(in srgb, transparent 10%, var(--toolbar-bgcolor)) !important;
 	}
 
+	#navigator-toolbox {
+		background-color: color-mix(in srgb, transparent 90%, var(--lwt-accent-color)) !important;
+	}
+
 	window,
 	browser,
 	#main-window,
 	#toolbar-menubar,
 	#TabsToolbar,
 	#PersonalToolbar,
-	#navigator-toolbox,
 	#nav-bar,
-	#sidebar-box {
-		background-color: transparent !important;
+	#sidebar-box,
+	#main-window {
 		-moz-appearance: -moz-win-glass !important;
 		background-image: none !important;
+		background-color: transparent !important;
 	}
 
 	/* var(--toolbar-field-background-color) */
