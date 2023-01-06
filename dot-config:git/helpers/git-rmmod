@@ -1,12 +1,17 @@
 #!/bin/bash -e
-if [[ "$(git rev-parse --is-bare-repository)" = "false" ]]; then
+if [[ "$(git rev-parse --is-bare-repository)" = "false" ]] && [[ -d "$1" ]]; then
 	dir=$(git rev-parse --show-toplevel)
+	set "$(git ls-files --full-name "$1")" "${@:2}"
 	echo "Removing submodule $1"
-	git rm --cached "$1"
+	git rm --cached "$dir/$1"
 	git config --file "$dir/.gitmodules" --remove-section "submodule.$1"
 	rm -rf "$dir/.git/modules/$1" "$dir/$1"
 	git config --remove-section "submodule.$1"
 	git add "$dir/.gitmodules"
-else
+elif [[ "$(git rev-parse --is-bare-repository)" = "true" ]]; then
 	echo this only supports repo with a work tree.
+else
+	cat << EOF
+Usage: git rmmod <module-path>
+EOF
 fi
