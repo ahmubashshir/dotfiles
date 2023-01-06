@@ -54,13 +54,6 @@ panel[position^="bottomcenter"] {
 	width: 100vw !important;
 }
 
-#urlbar:not([focused]) {
-	border-width: calc(var(--focus-outline-width) / 2);
-	border-style: solid;
-	border-color: var(--chrome-content-separator-color);
-	border-radius: var(--urlbar-icon-border-radius);
-}
-
 moz-input-box.urlbar-input-box {
 	overflow: hidden;
 }
