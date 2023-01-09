@@ -38,6 +38,9 @@ then
 		wike) exec wike -u "$1" ;;
 		*) exec "$WIKIPEDIA_APP" "$@" ;;
 	esac
+elif hash chromium > /dev/null &&
+	echo "$1" | grep -Eq '^https?://meet\.google\.com/([a-z0-9]{3,4}(-|$)){3}$'; then
+	exec chromium --app="$@" --class="google-meet"
 fi
 end=$(
 	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line+2;exit}' "$0"
