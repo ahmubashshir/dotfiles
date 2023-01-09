@@ -22,3 +22,15 @@ decoration {
 	box-shadow: none;
 	background-color: alpha(@theme_bg_color, 0.35);
 }
+
+window.whiskermenu#whiskermenu-window iconview.view {
+	background-color: mix(transparent, @theme_bg_color, 0.3);
+}
+
+window.whiskermenu#whiskermenu-window iconview.view.cell {
+	background-color: transparent;
+}
+
+window.whiskermenu#whiskermenu-window iconview.launchers:hover {
+	background-color: mix(transparent, mix(@theme_selected_bg_color, @warning_color, 0.5), 0.5);
+}
