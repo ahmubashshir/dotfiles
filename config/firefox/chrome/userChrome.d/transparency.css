@@ -35,7 +35,8 @@
 		background: transparent !important;
 	}
 
-	#toolbar-menubar:not([inactive="true"]) {
+	#toolbar-menubar:not([inactive="true"]),
+	window#commonDialogWindow {
 		--menubar-background-color: color-mix(in srgb, transparent 10%, var(--toolbar-bgcolor)) !important;
 	}
 
@@ -43,8 +44,7 @@
 		background-color: color-mix(in srgb, transparent 90%, var(--lwt-accent-color)) !important;
 	}
 
-	window,
-	browser,
+	window:not(#commonDialogWindow),
 	#main-window,
 	#toolbar-menubar,
 	#TabsToolbar,
