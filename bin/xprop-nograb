@@ -1,0 +1,13 @@
+#!/bin/bash -e
+
+if grep -qxE '[0-9]+|--' <<< "${1:-3}"; then
+	[[ $1 == -- ]] && set 3 "${@:2}"
+
+	echo "Waiting for ${1:-3}s"
+	sleep "${1:-3}"
+	setxkbmap -option grab:break_actions
+	xdotool key XF86Ungrab
+	xprop "${@:2}"
+else
+	(exec -a "${0##*/}" xprop -help) |& sed "/^usage/s/${0##*/}/\0 [sleep|--]/"
+fi
