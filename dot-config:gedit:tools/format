@@ -1,0 +1,10 @@
+#!/bin/sh
+# [Gedit Tool]
+# Name=Format
+# Input=selection-document
+# Output=replace-selection
+# Applicability=local
+# Save-files=document
+# Languages=rust
+
+rustfmt
