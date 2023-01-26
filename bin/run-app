@@ -7,10 +7,10 @@ rotate_log()
 	done
 	[ -f "$1" ] && gzip < "$1" > "$1.1.gz"
 }
-
+CMD="${1##*/}"
 if
 	[ "$#" -ge 1 ] &&
-		command -pv "$1" > /dev/null 2>&1
+		command -pv "$CMD" > /dev/null 2>&1
 then
 
 	if echo "$*" | grep -qE '\b(sudo|su|true|false|yes|pkexec)\b'; then
@@ -20,8 +20,8 @@ then
 
 	trap 'rm -f "$PIDFILE";exit' EXIT TERM QUIT ABRT
 
-	PIDFILE="${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service/$1"
-	LOGFILE="$HOME/logs/$1.log"
+	PIDFILE="${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service/$CMD"
+	LOGFILE="$HOME/logs/$CMD.log"
 	if [ -d "${XDG_RUNTIME_DIR:-/tmp}" ]; then
 		mkdir -p "${XDG_RUNTIME_DIR:-/tmp/$(id -u)}/service" "$HOME/logs"
 		if [ -f "$PIDFILE" ]; then
