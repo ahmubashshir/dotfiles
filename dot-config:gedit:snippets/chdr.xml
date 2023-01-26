@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<snippets language="chdr">
+  <snippet override="chdr-once">
+    <text><![CDATA[#ifndef __${1:NAME}_H__
+#define __$1_H__
+
+$0
+
+#endif /* __$1_H__ */
+]]></text>
+    <description>Header Include-Guard</description>
+    <tag>once</tag>
+  </snippet>
+</snippets>
