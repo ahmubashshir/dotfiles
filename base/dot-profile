@@ -9,6 +9,6 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
-if [ -f ~/.shell/environment ]; then
-	. ~/.shell/environment
+if [ -f ~/.config/shell/environment ]; then
+	. ~/.config/shell/environment
 fi

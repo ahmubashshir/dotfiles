@@ -2,20 +2,20 @@
 
 # functions
 if [ -x /usr/bin/pacman ]; then
-    pm () {
-    	local opt
-    	(($#)) && {
-    		echo "$1" | grep -q '^-' || { opt="-$(echo "$1" | sed 's/^\(.\)/\U\1/')";shift; set -- "$opt" "$@"; }
-    	}
-    	pacman "$@"
-    }
-    spm () {
-    	local opt
-    	(($#)) && {
-    		echo "$1" | grep -q '^-' || { opt="-$(echo "$1" | sed 's/^\(.\)/\U\1/')";shift; set -- "$opt" "$@"; }
-    	}
-    	sudo pacman "$@"
-    }
+	pm () {
+		local opt
+		(($#)) && {
+			echo "$1" | grep -q '^-' || { opt="-$(echo "$1" | sed 's/^\(.\)/\U\1/')";shift; set -- "$opt" "$@"; }
+		}
+		pacman "$@"
+	}
+	spm () {
+		local opt
+		(($#)) && {
+			echo "$1" | grep -q '^-' || { opt="-$(echo "$1" | sed 's/^\(.\)/\U\1/')";shift; set -- "$opt" "$@"; }
+		}
+		sudo pacman "$@"
+	}
 fi
 
 pwdp()
