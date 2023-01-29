@@ -2,9 +2,9 @@
 . ~/.config/shell/functions
 . ~/.config/shell/aliases
 if [ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]; then
-	kitty   +kitten icat --align=left ~/.config/shell/motd.png
+	kitty +kitten icat --align=left ~/.config/shell/motd.png
 else
-	cat   > /dev/stderr << EOF
+	cat >&2 << EOF
           _————             +--------------------------------------+
          //¯¯\\\\\\\\           |    _  _     _    _ _                 |
         // _  _\\\\           |   | \| |_ _(_)__| (_)__ _            |
