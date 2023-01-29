@@ -3,6 +3,15 @@
 Assalamu Alaikum Wa Rahmatullah. <br />
 Welcome to my dotfiles repo.
 
+
+## :warning: Re~~fuck~~factor in progress :warning:
+I'm currently refactoring my dotfiles to
+be managed by stow. Don't pull until it's
+finished, and `dots` will probably be
+abandoned from now on.
+
+stow needs to be patched with aspiers/stow#70.
+
 ## `dots` dotfile manager Usage
 
 - Create a directory.
