@@ -1,8 +1,8 @@
 #!/bin/sh
-. ~/.shell/functions
-. ~/.shell/aliases
+. ~/.config/shell/functions
+. ~/.config/shell/aliases
 if [ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]; then
-	kitty   +kitten icat --align=left ~/.shell/motd.png
+	kitty   +kitten icat --align=left ~/.config/shell/motd.png
 else
 	cat   > /dev/stderr << EOF
           _————             +--------------------------------------+

@@ -99,7 +99,7 @@ if [ -z "$LS_COLORS" ]; then
 	alias egrep='grep -E --color=auto'
 	alias fgrep='fgrep --color=auto'
 fi
-if [ -n "$DISPLAY" ]; then
+if [ -n "$DISPLAY" ] && command -pv exa &> /dev/null; then
 	alias ls=exa
 	alias l='ls -F'
 fi

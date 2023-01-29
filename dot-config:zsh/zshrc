@@ -13,7 +13,7 @@ if [ -e ~/zprof ] || [ -p ~/pipe:zsh ];then
 	setopt XTRACE
 fi
 # source
-source ~/.shell/import
+source ~/.config/shell/import
 ## options
 zsh_options=(
 	extended_glob prompt_subst rematchpcre beep

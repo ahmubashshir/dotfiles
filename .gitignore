@@ -1,5 +1,5 @@
-!/bin
-!/bin/lib
+!bin/
+!bin/lib/
 !dot-config:git/include
 *.zwc
 *.swp
