@@ -1,0 +1,25 @@
+#!/bin/bash -x
+
+if ! command -pv stow > /dev/null; then
+	cat >&2 << EOF
+ERROR: stow: command not found
+
+Install and/or ensure gnu stow in in your \$PATH
+EOF
+	exit 1
+fi
+
+STOW_DIR="$(dirname "$(realpath "$0")")"
+
+function dot-file {
+	stow -d "$STOW_DIR" --dotfile -t ~ -v1 --ignore="^face\.png" --ignore='^INFO' "$@"
+}
+
+if [ "$#" -eq 0 ]; then
+	cd "$STOW_DIR"
+	[ "${STOW_DIR#$HOME}" = "$STOW_DIR" ] || STOW_DIR_REPR="~${STOW_DIR#$HOME}"
+	echo "Available packages: ${STOW_DIR_REPR-$STOW_DIR}"
+	exec find -maxdepth 1 -type d -not -name '.*' -printf '\t%f\n'
+else
+	dot-file "$@"
+fi
