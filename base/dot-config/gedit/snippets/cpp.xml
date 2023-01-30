@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <snippets language="cpp">
   <snippet override="cpp-Inc">
     <text><![CDATA[#include <${1:file}>
