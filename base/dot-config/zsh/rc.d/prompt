@@ -42,4 +42,3 @@ if [[ $ENV[color_prompt] = yes ]];then
 else
 	PROMPT='%1~ %% '
 fi
-
