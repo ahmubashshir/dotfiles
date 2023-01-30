@@ -1,0 +1,14 @@
+#!/bin/bash -e
+if [[ "$(git rev-parse --is-bare-repository)" = "false" ]] && [[ -d "$1" ]]; then
+	dir=$(git rev-parse --show-toplevel)
+	set "$(git ls-files --full-name "$1")" "${@:2}"
+	printf 'Module: %s\n' "$1"
+	git config --get "submodule.$1.url" | xargs \
+	printf '   URL: %s\n'
+elif [[ "$(git rev-parse --is-bare-repository)" = "true" ]]; then
+	echo this only supports repo with a work tree.
+else
+	cat << EOF
+Usage: git modinfo <module-path>
+EOF
+fi
