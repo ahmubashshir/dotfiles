@@ -92,10 +92,6 @@
 	path = dot-config:zsh/plugins/linus-rants
 	url = https://github.com/bhayward93/Linus-rants-zsh
 	branch = master
-[submodule "dot-config:tmux/plugins/tpm"]
-	path = dot-config:tmux/plugins/tpm
-	url = https://github.com/tmux-plugins/tpm
-	branch = master
 [submodule "dot-config:zsh/plugins/zinsults"]
 	path = dot-config:zsh/plugins/zinsults
 	url = https://github.com/ahmubashshir/zinsults
@@ -149,3 +145,6 @@
 [submodule "dot-config:zsh/plugins/nix"]
 	path = dot-config:zsh/plugins/nix
 	url = https://github.com/spwhitt/nix-zsh-completions
+[submodule "base/dot-config/tmux/plugins/tpm"]
+	path = base/dot-config/tmux/plugins/tpm
+	url = https://github.com/tmux-plugins/tpm
