@@ -1,11 +1,10 @@
 !bin/
 !bin/lib/
 !dot-config:git/include
-*.zwc
 *.swp
-/dot-config:zsh/functions/_gmtool
-/dot-config:zsh/history
-/bin/aur-autopush
-/bin/chia-dl
-/bin/youtube-dl
-/bin/faketty
+base/dot-config/zsh/functions/_gmtool
+base/dot-config/zsh/history
+#/bin/aur-autopush
+#/bin/chia-dl
+#/bin/youtube-dl
+#/bin/faketty

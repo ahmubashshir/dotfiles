@@ -4,61 +4,9 @@
 	path = dot-weeb
 	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6
 	branch = master
-[submodule "dot-config:zsh/plugins/async"]
-	path = dot-config:zsh/plugins/async
-	url = https://github.com/mafredri/zsh-async
-	branch = master
-[submodule "dot-config:zsh/plugins/gitstatus"]
-	path = dot-config:zsh/plugins/gitstatus
-	url = https://github.com/romkatv/gitstatus
-	branch = master
-[submodule "dot-config:zsh/plugins/you-should-use"]
-	path = dot-config:zsh/plugins/you-should-use
-	url = https://github.com/MichaelAquilina/zsh-you-should-use.git
-	branch = master
-[submodule "dot-config:zsh/plugins/startup-timer"]
-	path = dot-config:zsh/plugins/startup-timer
-	url = https://github.com/paulmelnikow/zsh-startup-timer.git
-	branch = master
-[submodule "dot-config:zsh/plugins/bash-completions-fallback"]
-	path = dot-config:zsh/plugins/bash-completions-fallback
-	url = https://github.com/3v1n0/zsh-bash-completions-fallback.git
-	branch = master
-[submodule "dot-config:zsh/plugins/hacker-quotes"]
-	path = dot-config:zsh/plugins/hacker-quotes
-	url = https://github.com/oldratlee/hacker-quotes.git
-	branch = master
-[submodule "dot-config:zsh/plugins/zshmarks"]
-	path = dot-config:zsh/plugins/zshmarks
-	url = https://github.com/jocelynmallon/zshmarks.git
-	branch = patch-1
-[submodule "dot-config:zsh/plugins/bd"]
-	path = dot-config:zsh/plugins/bd
-	url = https://github.com/Tarrasch/zsh-bd.git
-	branch = master
-[submodule "dot-config:zsh/plugins/auto-notify"]
-	path = dot-config:zsh/plugins/auto-notify
-	url = https://github.com/MichaelAquilina/zsh-auto-notify.git
-	branch = master
-[submodule "dot-config:zsh/plugins/lazyload"]
-	path = dot-config:zsh/plugins/lazyload
-	url = https://github.com/qoomon/zsh-lazyload.git
-	branch = master
 [submodule "submodules/transmission-trackers"]
 	path = submodules/transmission-trackers
 	url = https://github.com/blind-oracle/transmission-trackers
-	branch = master
-[submodule "dot-config:zsh/plugins/autopair"]
-	path = dot-config:zsh/plugins/autopair
-	url = https://github.com/hlissner/zsh-autopair.git
-	branch = master
-[submodule "dot-config:zsh/plugins/history-substring-search"]
-	path = dot-config:zsh/plugins/history-substring-search
-	url = https://github.com/zsh-users/zsh-history-substring-search.git
-	branch = master
-[submodule "dot-config:zsh/plugins/completions"]
-	path = dot-config:zsh/plugins/completions
-	url = https://github.com/zsh-users/zsh-completions.git
 	branch = master
 [submodule "dot-local:share:gedit/plugins/restore-minimap"]
 	path = dot-local:share:gedit/plugins/restore-minimap
@@ -76,34 +24,6 @@
 	path = dot-local:share:gedit/plugins/smart-home
 	url = https://github.com/hardpixel/gedit-smart-home
 	branch = master
-[submodule "dot-config:zsh/plugins/fast-syntax-highlighting"]
-	path = dot-config:zsh/plugins/fast-syntax-highlighting
-	url = https://github.com/zdharma-continuum/fast-syntax-highlighting
-	branch = master
-[submodule "dot-config:zsh/plugins/autoswitch_virtualenv"]
-	path = dot-config:zsh/plugins/autoswitch_virtualenv
-	url = https://github.com/MichaelAquilina/zsh-autoswitch-virtualenv
-	branch = master
-[submodule "dot-config:zsh/plugins/zsh-command-time"]
-	path = dot-config:zsh/plugins/zsh-command-time
-	url = https://github.com/popstas/zsh-command-time
-	branch = master
-[submodule "dot-config:zsh/plugins/linus-rants"]
-	path = dot-config:zsh/plugins/linus-rants
-	url = https://github.com/bhayward93/Linus-rants-zsh
-	branch = master
-[submodule "dot-config:zsh/plugins/zinsults"]
-	path = dot-config:zsh/plugins/zinsults
-	url = https://github.com/ahmubashshir/zinsults
-	branch = master
-[submodule "dot-config:zsh/plugins/autocomplete"]
-	branch = main
-	path = dot-config:zsh/plugins/autocomplete
-	url = https://github.com/marlonrichert/zsh-autocomplete
-[submodule "dot-config:zsh/plugins/defer"]
-	path = dot-config:zsh/plugins/defer
-	url = https://github.com/romkatv/zsh-defer
-	branch = master
 [submodule "submodules/git-good-commit"]
 	path = submodules/git-good-commit
 	url = https://github.com/tommarshall/git-good-commit
@@ -111,10 +31,6 @@
 [submodule "submodules/git-confirm"]
 	path = submodules/git-confirm
 	url = https://github.com/pimterry/git-confirm
-	branch = master
-[submodule "dot-config:zsh/plugins/rockz"]
-	path = dot-config:zsh/plugins/rockz
-	url = https://github.com/aperezdc/rockz
 	branch = master
 [submodule "submodules/git-extras"]
 	path = submodules/git-extras
@@ -124,27 +40,87 @@
 	path = submodules/git-secrets
 	url = https://github.com/awslabs/git-secrets
 	branch = master
-[submodule "dot-config:zsh/omz"]
-	path = dot-config:zsh/omz
-	url = https://github.com/ohmyzsh/ohmyzsh
-	branch = master
-[submodule "dot-config:zsh/plugins/rbenv"]
-	path = dot-config:zsh/plugins/rbenv
-	url = https://github.com/ecortinas/zsh-rbenv
-	branch = main
-[submodule "dot-config:zsh/plugins/autosuggestions"]
-	path = dot-config:zsh/plugins/autosuggestions
-	url = https://github.com/zsh-users/zsh-autosuggestions
-	branch = master
-[submodule "dot-config:zsh/plugins/forgit"]
-	path = dot-config:zsh/plugins/forgit
-	url = https://github.com/wfxr/forgit
-[submodule "dot-config:zsh/plugins/nix-shell"]
-	path = dot-config:zsh/plugins/nix-shell
-	url = https://github.com/chisui/zsh-nix-shell.git
-[submodule "dot-config:zsh/plugins/nix"]
-	path = dot-config:zsh/plugins/nix
-	url = https://github.com/spwhitt/nix-zsh-completions
 [submodule "base/dot-config/tmux/plugins/tpm"]
 	path = base/dot-config/tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "base/dot-config/zsh/omz"]
+	path = base/dot-config/zsh/omz
+	url = https://github.com/ohmyzsh/ohmyzsh
+[submodule "base/dot-config/zsh/plugins/async"]
+	path = base/dot-config/zsh/plugins/async
+	url = https://github.com/mafredri/zsh-async
+[submodule "base/dot-config/zsh/plugins/auto-notify"]
+	path = base/dot-config/zsh/plugins/auto-notify
+	url = https://github.com/MichaelAquilina/zsh-auto-notify.git
+[submodule "base/dot-config/zsh/plugins/autocomplete"]
+	path = base/dot-config/zsh/plugins/autocomplete
+	url = https://github.com/marlonrichert/zsh-autocomplete
+[submodule "base/dot-config/zsh/plugins/autopair"]
+	path = base/dot-config/zsh/plugins/autopair
+	url = https://github.com/hlissner/zsh-autopair.git
+[submodule "base/dot-config/zsh/plugins/autosuggestions"]
+	path = base/dot-config/zsh/plugins/autosuggestions
+	url = https://github.com/zsh-users/zsh-autosuggestions
+[submodule "base/dot-config/zsh/plugins/autoswitch_virtualenv"]
+	path = base/dot-config/zsh/plugins/autoswitch_virtualenv
+	url = https://github.com/MichaelAquilina/zsh-autoswitch-virtualenv
+[submodule "base/dot-config/zsh/plugins/bash-completions-fallback"]
+	path = base/dot-config/zsh/plugins/bash-completions-fallback
+	url = https://github.com/3v1n0/zsh-bash-completions-fallback.git
+[submodule "base/dot-config/zsh/plugins/bd"]
+	path = base/dot-config/zsh/plugins/bd
+	url = https://github.com/Tarrasch/zsh-bd.git
+[submodule "base/dot-config/zsh/plugins/completions"]
+	path = base/dot-config/zsh/plugins/completions
+	url = https://github.com/zsh-users/zsh-completions.git
+[submodule "base/dot-config/zsh/plugins/defer"]
+	path = base/dot-config/zsh/plugins/defer
+	url = https://github.com/romkatv/zsh-defer
+[submodule "base/dot-config/zsh/plugins/fast-syntax-highlighting"]
+	path = base/dot-config/zsh/plugins/fast-syntax-highlighting
+	url = https://github.com/zdharma-continuum/fast-syntax-highlighting
+[submodule "base/dot-config/zsh/plugins/forgit"]
+	path = base/dot-config/zsh/plugins/forgit
+	url = https://github.com/wfxr/forgit
+[submodule "base/dot-config/zsh/plugins/gitstatus"]
+	path = base/dot-config/zsh/plugins/gitstatus
+	url = https://github.com/romkatv/gitstatus
+[submodule "base/dot-config/zsh/plugins/hacker-quotes"]
+	path = base/dot-config/zsh/plugins/hacker-quotes
+	url = https://github.com/oldratlee/hacker-quotes.git
+[submodule "base/dot-config/zsh/plugins/history-substring-search"]
+	path = base/dot-config/zsh/plugins/history-substring-search
+	url = https://github.com/zsh-users/zsh-history-substring-search.git
+[submodule "base/dot-config/zsh/plugins/lazyload"]
+	path = base/dot-config/zsh/plugins/lazyload
+	url = https://github.com/qoomon/zsh-lazyload.git
+[submodule "base/dot-config/zsh/plugins/linus-rants"]
+	path = base/dot-config/zsh/plugins/linus-rants
+	url = https://github.com/bhayward93/Linus-rants-zsh
+[submodule "base/dot-config/zsh/plugins/nix"]
+	path = base/dot-config/zsh/plugins/nix
+	url = https://github.com/spwhitt/nix-zsh-completions
+[submodule "base/dot-config/zsh/plugins/nix-shell"]
+	path = base/dot-config/zsh/plugins/nix-shell
+	url = https://github.com/chisui/zsh-nix-shell.git
+[submodule "base/dot-config/zsh/plugins/rbenv"]
+	path = base/dot-config/zsh/plugins/rbenv
+	url = https://github.com/ecortinas/zsh-rbenv
+[submodule "base/dot-config/zsh/plugins/rockz"]
+	path = base/dot-config/zsh/plugins/rockz
+	url = https://github.com/aperezdc/rockz
+[submodule "base/dot-config/zsh/plugins/startup-timer"]
+	path = base/dot-config/zsh/plugins/startup-timer
+	url = https://github.com/paulmelnikow/zsh-startup-timer.git
+[submodule "base/dot-config/zsh/plugins/you-should-use"]
+	path = base/dot-config/zsh/plugins/you-should-use
+	url = https://github.com/MichaelAquilina/zsh-you-should-use.git
+[submodule "base/dot-config/zsh/plugins/zinsults"]
+	path = base/dot-config/zsh/plugins/zinsults
+	url = https://github.com/ahmubashshir/zinsults
+[submodule "base/dot-config/zsh/plugins/zsh-command-time"]
+	path = base/dot-config/zsh/plugins/zsh-command-time
+	url = https://github.com/popstas/zsh-command-time
+[submodule "base/dot-config/zsh/plugins/zshmarks"]
+	path = base/dot-config/zsh/plugins/zshmarks
+	url = https://github.com/jocelynmallon/zshmarks.git
