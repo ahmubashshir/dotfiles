@@ -1,28 +1,8 @@
 [submodule "*"]
 	shallow = true
-[submodule "dot-weeb"]
-	path = dot-weeb
-	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6
-	branch = master
 [submodule "submodules/transmission-trackers"]
 	path = submodules/transmission-trackers
 	url = https://github.com/blind-oracle/transmission-trackers
-	branch = master
-[submodule "dot-local:share:gedit/plugins/restore-minimap"]
-	path = dot-local:share:gedit/plugins/restore-minimap
-	url = https://github.com/johnfactotum/gedit-restore-minimap.git
-	branch = master
-[submodule "dot-local:share:gedit/plugins/wakatime"]
-	path = dot-local:share:gedit/plugins/wakatime
-	url = https://github.com/wakatime/gedit-wakatime
-	branch = master
-[submodule "dot-local:share:gedit/plugins/open-uri-context-menu"]
-	path = dot-local:share:gedit/plugins/open-uri-context-menu
-	url = https://github.com/jpfleury/open-uri-context-menu
-	branch = master
-[submodule "dot-local:share:gedit/plugins/smart-home"]
-	path = dot-local:share:gedit/plugins/smart-home
-	url = https://github.com/hardpixel/gedit-smart-home
 	branch = master
 [submodule "submodules/git-good-commit"]
 	path = submodules/git-good-commit
@@ -124,3 +104,18 @@
 [submodule "base/dot-config/zsh/plugins/zshmarks"]
 	path = base/dot-config/zsh/plugins/zshmarks
 	url = https://github.com/jocelynmallon/zshmarks.git
+[submodule "base/dot-local/share/gedit/plugins/open-uri-context-menu"]
+	path = base/dot-local/share/gedit/plugins/open-uri-context-menu
+	url = https://github.com/jpfleury/open-uri-context-menu
+[submodule "base/dot-local/share/gedit/plugins/restore-minimap"]
+	path = base/dot-local/share/gedit/plugins/restore-minimap
+	url = https://github.com/johnfactotum/gedit-restore-minimap.git
+[submodule "base/dot-local/share/gedit/plugins/smart-home"]
+	path = base/dot-local/share/gedit/plugins/smart-home
+	url = https://github.com/hardpixel/gedit-smart-home
+[submodule "base/dot-local/share/gedit/plugins/wakatime"]
+	path = base/dot-local/share/gedit/plugins/wakatime
+	url = https://github.com/wakatime/gedit-wakatime
+[submodule "base/dot-config/shell/weeb"]
+	path = base/dot-config/shell/weeb
+	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6

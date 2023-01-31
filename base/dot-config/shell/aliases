@@ -5,8 +5,9 @@ if [ -e ~/bin/libbash ]; then
 	. ~/bin/libbash
 fi
 if [ -e ~/.weeb/aliases.sh ]; then
-	. ~/.weeb/aliases.sh
+	. ~/.config/shell/weeb/aliases.sh
 fi
+
 #aliases
 exec 3> /dev/null
 if hash apt 1>&3 2>&1; then
