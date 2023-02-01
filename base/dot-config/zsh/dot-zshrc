@@ -28,25 +28,35 @@ bindkey -e
 
 ## Lazy load section
 autoload -Uz add-zsh-hook compinit
-autoload -Uz $fpath[1]/^_*~*.zwc(.:t)
+autoload -Uz "${ZDOTDIR:-$HOME/.zsh}/functions"/^_*~*.zwc(-.:t) >&3 2>&1
 
 load rc plughooks
 zplug --path "$ZDOTDIR/omz/plugins"
-if ! zplug defer;then
-	git -C "$ZDOTDIR" submodule init --quiet .
-	if ! git -C "$ZDOTDIR" submodule update --progress .
-	then
-		printf "zsh: failed to initialize plugins\n"
-		function zsh-defer {
-			"$@"
-		}
+___plugins=(
+	"$ZDOTDIR/.zshrc"(:P:h:h:h:h)
+	"$ZDOTDIR/plugins"/*(-/:P:t5)
+	"$ZDOTDIR/omz"(:P:t4)
+)
+
+if ((${#___plugins[@]} > 1));then
+	if ! zplug defer;then
+		git -C "${___plugins[1]}" submodule init --quiet "${___plugins[@]:1}"
+		if ! git -C "${___plugins[1]}" submodule update --progress "${___plugins[@]:1}"
+		then
+			printf "zsh: failed to initialize plugins\n"
+			function zsh-defer {
+				"$@"
+			}
+		else
+			printf "zsh: finished cloning modules\n"
+			zplug defer
+		fi
 	else
-		printf "zsh: finished cloning modules\n"
-		zplug defer
+		"$ZDOTDIR/ztasklocked" exec \
+			git -C "${___plugins[1]}" submodule update --progress "${___plugins[@]:1}" &!
 	fi
-else
-	"$ZDOTDIR/ztasklocked" exec git -C "$ZDOTDIR" submodule update --quiet . &!
 fi
+unset ___plugins
 
 typeset -A ENV
 #zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
