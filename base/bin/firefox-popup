@@ -7,8 +7,7 @@ fi
 MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
 WIKIPEDIA_APP=${WIKIPEDIA_APP:-wike}
 if [ -z "$*" ]; then
-	echo No url specified.
-	exit 2
+	exec firefox "$@"
 fi
 if
 	hash "$MEDIA_PLAYER" > /dev/null &&
