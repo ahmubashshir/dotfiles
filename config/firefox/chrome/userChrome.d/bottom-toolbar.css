@@ -16,7 +16,7 @@
 }
 
 #main-window[chromehidden=""] #browser {
-	padding-bottom: 40px;
+	padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding));
 }
 
 /* TOOLBAR BALLOONS HAVE TO BECOME VISIBLE AGAIN */
@@ -58,14 +58,18 @@ moz-input-box.urlbar-input-box {
 	overflow: hidden;
 }
 
-box.panel-viewstack {
+box.panel-viewstack:not(> #unified-extensions-view) {
 	min-height: min-content;
 	max-height: none !important;
 }
 
 /* That menu that appears with Alt, must not destroy the UI */
+#titlebar {
+	height: 0 !important;
+}
+
 #toolbar-menubar:not([inactive="true"]) {
-	margin-top: -28px;
+	margin-top: -19px;
 	background: linear-gradient(45deg, var(--menubar-background-color), 255px, transparent, 0, transparent) !important;
 	padding-bottom: 0 !important;
 	animation: appear 0.4s;
