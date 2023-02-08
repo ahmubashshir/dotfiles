@@ -8,15 +8,22 @@
 # Shortcut=F5
 # Input=nothing
 
-dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
-n=$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.${dext}$//)
-arg=$(zenity --name=gEdit --entry --title="gEdit" --text="Input:" 2> /dev/null)
-args=$(for n in $arg; do
-	printf "$n "
-done)
+dext="${GEDIT_CURRENT_DOCUMENT_NAME##*.}"
+TARGET="z.$(sed -e s/.${dext}$// <<< "$GEDIT_CURRENT_DOCUMENT_NAME").amd64.elf"
+TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
+
+cat > "$TMPFILE" <<EOF
+#!/bin/sh
+printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+rm -f "$TMPFILE"
+TIMEFORMAT=\$'\n========\n                      elapsed %3R'
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-if [ "$dext" = "pas" ]; then
-	xterm -e "cb_console_runner ./z.$n.linux.amd64.elf $args"
-else
-	exo-open --launch TerminalEmulator "cb_console_runner ./z.$n.amd64.elf $args"
-fi
+time "./$TARGET"
+printf '\033[A\rProcess returned %d,\n' "\$?"
+read -rsp$'Press RETURN to continue...'
+EOF
+
+chmod +x "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+
+exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
