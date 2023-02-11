@@ -32,14 +32,14 @@ if [[ $ENV[color_prompt] = yes ]];then
 	zplug-defer gitstatus-async
 	zplug-defer devprompt
 	DIR_PROMPT="${ENV[prompt_prefix]}%F{green} %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
-	RET_PROMPT="%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})"
+	RET_PROMPT='%(?|🙂|😑:%F{red}%B%?%b)'
 #	zplug gio-vfs-prompt && {
 #		GIOVFS[seperator]=$'\n├─'
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
-	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${RET_PROMPT}\b┃${GIOVFS_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
-	RPROMPT='%(?.🙂.😑)'
+	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}\b┃${GIOVFS_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	RPROMPT="${RET_PROMPT}"
 else
 	PROMPT="${DIR_PROMPT} %% "
 fi
