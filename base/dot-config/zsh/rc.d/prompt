@@ -24,13 +24,14 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
 # Prompt Setup
+DIR_PROMPT='%17>.>%1~%<<%22(l|.%14<.<%1~%<<|)'
 if [[ $ENV[color_prompt] = yes ]];then
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
 	fi
 	zplug-defer gitstatus-async
 	zplug-defer devprompt
-	DIR_PROMPT="${ENV[prompt_prefix]}%F{green} %F{cyan}%B%1~%b%F{red}${ENV[prompt_suffix]}"
+	DIR_PROMPT="${ENV[prompt_prefix]}%F{green} %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
 	RET_PROMPT="%(?..${ENV[prompt_prefix]}😑%F{red}%B%?%b${ENV[prompt_suffix]})"
 #	zplug gio-vfs-prompt && {
 #		GIOVFS[seperator]=$'\n├─'
@@ -40,5 +41,5 @@ if [[ $ENV[color_prompt] = yes ]];then
 	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${RET_PROMPT}\b┃${GIOVFS_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
 	RPROMPT='%(?.🙂.😑)'
 else
-	PROMPT='%1~ %% '
+	PROMPT="${DIR_PROMPT} %% "
 fi
