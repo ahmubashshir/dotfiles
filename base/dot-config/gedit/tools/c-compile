@@ -9,125 +9,172 @@
 # Name=Compile...
 
 export TERM=dumb
-type=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
-name=${GEDIT_CURRENT_DOCUMENT_NAME%.*}
-dext=${GEDIT_CURRENT_DOCUMENT_NAME#*.}
-case $type in
-	x-csrc)
-		compiler=gcc
-		lang=C
-		;;
-	x-c++src)
-		compiler=g++
-		lang=C++
-		;;
-	x-java)
-		compiler=javac
-		lang=Java
-		;;
-	*)
-		compiler=gcc
-		lang=C
-		;;
-esac
-if [ "$lang" = Java ]; then
-	cd "$GEDIT_CURRENT_DOCUMENT_DIR" || exit 1
-	arg=$(zenity --entry --title="Compile..." --text="Any compiler argument?\n*Optional*\n seperate each with \"- \"" --entry-text="" 2> /dev/null)
-	clear
-	if ! javac $arg "$GEDIT_CURRENT_DOCUMENT_NAME"; then
-		err=$?
-		echo Resolve the errors
-		zenity --name=Gedit --error --title="Java Compiler" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
-		exit $err
-	else
-		zenity --name=Gedit --info --title="Java Compiler" --text="$GEDIT_CURRENT_DOCUMENT_NAME compiled successfully" 2> /dev/null
-		clear
-		exit 0
-	fi
-else
-	if ! target=$(zenity --name=Gedit --list --title=$compiler --text="Select Target Platform" --column=Target Linux_x86_64 Windows_i386 Windows_x86_64 2> /dev/null); then
-		echo "Compilation is cancelled by $USER" > /dev/stderr
-		exit 1
-	fi
-	case $target in
-		Linux_x86_64)
-			cc=$compiler
-			ext=elf
-			target=amd64
+TYPE=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
+NAME=${GEDIT_CURRENT_DOCUMENT_NAME}
+DIR=${GEDIT_CURRENT_DOCUMENT_DIR}
+declare -ga args
+
+get_avr()
+{
+	local key val i
+	key="${1%%=*}"
+	val="${1#*=}"
+	case "$key" in
+		MCU | mcu)
+			declare -g MCU="${val,,}"
+			args+=("-mmcu=$MCU")
 			;;
-		Windows_x86_64)
-			cc=x86_64-w64-mingw32-$compiler-win32
-			ext=exe
-			target=w64
+		FMT | fmt)
+			case "$val" in
+				binary | bin) val=binary ;;
+				srec | srcrec) val=srec ;;
+				hex | ihex | intel | *) val=ihex ;;
+			esac
+			declare -g FMT="$val"
 			;;
-		Windows_i386)
-			cc=i686-w64-mingw32-$compiler-win32
-			ext=exe
-			target=w32
-			;;
-		*)
-			cc=$compiler
-			target=amd64
-			ext=elf
+		SECTION | section)
+			if [[ "$key" != "$val" ]]; then
+				for i in eeprom lock fuse signature sig; do
+					case ":${val^^}:" in
+						*:${i^^}:*) declare -gi "${i^^}=1" ;;
+					esac
+				done
+			else
+				__hint "Valid Sections: eeprom lock fuse signature/sig"
+			fi
 			;;
 	esac
-	if [ "$dext" != "" ]; then
-		case $type in
-			x-c++src) dext=cpp ;;
-			*) dext=c ;;
-		esac
-		dname="$name.$dext"
+	if ((${#AVR_OUT[@]} == 0)); then
+		declare -rgA AVR_OUT=(
+			["ihex"]="hex"
+			["binary"]="bin"
+			["srec"]="srec"
+		)
 	fi
-	echo -e "Target=$target\nCompiler=$cc\nExtention=$ext\nLanguage=$lang\nDocName=$name"
-	if [ -d "./$name.$target" ]; then
-		cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/$dname"
+}
+
+get_pkg()
+{
+	if pkg-config "$1"; then
+		readarray -t -O "${#args[@]}" args < <(
+			pkg-config --cflags --libs "$1" | tr -s ' ' '\n'
+		)
 	else
-		mkdir "$name.$target"
-		cp "$GEDIT_CURRENT_DOCUMENT_NAME" "./$name.$target/$dname"
+		__error "pkg-config: $1 not found."
 	fi
-	arg=$(zenity --name=Gedit --entry --title="$cc" --text="Any extra argument?\n*use oniy if sugested after 1st Compile*" 2> /dev/null)
-	arg="$arg -L."
-	if grep -q '<math.h>' "$GEDIT_CURRENT_DOCUMENT_NAME"; then
-		arg="$arg -lm"
-	fi
-	if grep -q '<gmp.h>' "$GEDIT_CURRENT_DOCUMENT_NAME"; then
-		arg="$arg -lgmp"
-	fi
-	if grep -q '<jni.h>' "$GEDIT_CURRENT_DOCUMENT_NAME"; then
-		JAVA_HOME="$(dirname "$(dirname "$(readlink /etc/alternatives/javac)")")"
-		arg="$arg -I$JAVA_HOME/include -I$JAVA_HOME/include/linux "
-		echo
-	fi
-	echo "Options:$arg"
-	shared=$(grep target: "$GEDIT_CURRENT_DOCUMENT_NAME" | cut -d: -f2)
-	# shellcheck disable=SC2086
-	if [ "$shared" = "shared" ]; then
-		arg="$arg -shared -fPIC -Wall"
-		"$cc" -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -c "$GEDIT_CURRENT_DOCUMENT_NAME" -o "$name.$target.o"
-		"$cc" -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg "$name.$target.o" -o "lib$name.$target.so"
+}
+
+get_help()
+{
+	cat >&2 << EOF
+Usage:
+   :arg           -> arg
+   @option  [arg] -> --option [arg]
+   @-option [arg] -> -option  [arg]
+   #helper  [arg]
+    ->  Modify environment by running
+        <helper> with [arg]
+    -> available helpers:
+       -> avr[avr-gcc] pkg[pkg-config]
+EOF
+	exit
+}
+
+__hint()
+{
+	while [[ $1 ]]; do
+		echo " HINT: $1"
+		shift
+	done >&2
+}
+
+__error()
+{
+	while [[ $1 ]]; do
+		echo "ERROR: $1"
+		shift
+	done >&2
+}
+
+case "$TYPE" in
+	x-arduino) FILTER="compile" ;;
+	x-csrc) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
+esac
+
+declare -i compiler_hints
+while read -r type flag arg; do
+	[[ $flag ]] || continue
+	if [[ $type = \# && $(type -t "get_$flag") = function ]]; then
+		"get_$flag" "$arg"
 	else
-		if ! "$cc" -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -Wall -c "./$name.$target/$dname" -o "$name.$target/$name.$target.o" 2> >(sed "s|\./$name.$target/$dname|$GEDIT_CURRENT_DOCUMENT_NAME|g"); then
-			err=$?
-			echo -e "Resolve the errors" > /dev/stderr 2>&1
-			cd "$GEDIT_CURRENT_DOCUMENT_DIR" || exit
-			zenity --name=Gedit --error --title="$cc" --text="compilation of $GEDIT_CURRENT_DOCUMENT_NAME failed for errors" 2> /dev/null
-			rm -rf "$name.$target" 2> /dev/null
-			exit $err
+		if [[ $type = : && -z "$filter" ]]; then
+			filter="$flag:"
+		elif [[ -z "$filter" && -n "$FILTER" ]]; then
+			filter="$FILTER:"
+		fi
+
+		[[ -z "$filter" || ! $flag =~ : || $flag =~ ^$filter ]] || continue
+		if [[ $flag =~ ^- ]]; then
+			args+=("${flag#"$filter"}")
 		else
-			# shellcheck disable=SC2086
-			(
-				cd "$name.$target" || exit 1
-				g++ -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" "$name.$target.o" -o "$name.$target.$ext" $arg
-				"$cc" -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -E "$name.$dext" -o "$name.$target.i" > /dev/null 2>&1
-				"$cc" -B "$GEDIT_CURRENT_DOCUMENT_DIR" -I "$GEDIT_CURRENT_DOCUMENT_DIR" $arg -S "$name.$dext" -o "$name.$target.s" > /dev/null 2>&1
-			) || exit
-			cp "./$name.$target/$name.$target.$ext" "z.$name.$target.$ext"
-			tar -cf "z.$name.$target.tar" "$name.$target" 2> /dev/null
-			rm -f "z.$name.$target.tgz" > /dev/null 2>&1
-			gzip "z.$name.$target.tar" 2> /dev/null
-			mv "./z.$name.$target.tar.gz" "./z.$name.$target.tgz" 2> /dev/null
-			rm -r -f "$name.$target"
-			exit 0 2> /dev/null
+			args+=("--${flag#"$filter"}")
+		fi
+		if [[ -n $arg ]]; then
+			args+=("$arg")
 		fi
 	fi
+	((++compiler_hints)) && echo "$type ${flag#"$filter"} $arg"
+done < <(
+	sed -nE -e 's%^//[ \*]+(@|:|#)(-?\w+ ?[^"]+)$%\1 \2%p' \
+		-e '/^\/\*/,/\*\/$/s/^\/?[ \*]+(@|:|#)(-?\w+ ?.+)$/\1 \2/p' "$NAME"
+)
+
+if ((compiler_hints == 0)); then
+	__hint "Add '#help' as a comment to see tool help"
 fi
+
+[[ -z "$filter" ]] || args=("${filter%:}" "${args[@]}")
+case "$TYPE" in
+	x-csrc) exec gcc -o "${NAME}.elf" "${NAME}" "${args[@]}" ;;
+	x-c++src) exec g++ -o "${NAME}.elf" "${NAME}" "${args[@]}" ;;
+	x-java)
+		cd "$DIR" || exit 1
+		exec javac "${args[@]}" "$NAME"
+		;;
+	x-arduino) exec arduino-cli "${args[@]}" --no-color "$DIR" ;;
+	x-avr-csrc)
+		set -e
+		if [[ -z "$MCU" ]]; then
+			__error "No target MCU defined"
+			__hint "Add \`# avr MCU=<MCU>\` as comment."
+			false
+		fi
+
+		if ! command -pv avr-gcc 2> /dev/null >&2; then
+			__error "avr-gcc not installed."
+			false
+		fi
+
+		avr-gcc -Wall -Os "$NAME" -o "$NAME.$MCU.out" "${args[@]}"
+		avr-size -C "--mcu=$MCU" "$NAME.$MCU.out"
+		(
+			[[ "$FMT" ]] || FMT=ihex
+			avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature \
+				-O "$FMT" "$NAME.$MCU.out" "$NAME.$MCU.${AVR_OUT["$FMT"]}"
+			avr_objcopy()
+			{
+				avr-objcopy --no-change-warnings -j ".$1" --change-section-lma ".$1=0" \
+					-O "$FMT" "$NAME.$MCU.out" "$NAME.$MCU.${2:-$1}.${AVR_OUT["$FMT"]}"
+			}
+			((!EEPROM)) || avr_objcopy eeprom
+			((!FUSE)) || avr_objcopy fuse
+			((!SIGNATURE && !SIG)) || avr_objcopy signature sig
+			((!LOCK)) || avr_objcopy lock
+		)
+		rm -f "$NAME.$MCU.out"
+		;;
+	*)
+		echo "Unsupported: text/${TYPE}" >&2
+		exit 1
+		;;
+esac
