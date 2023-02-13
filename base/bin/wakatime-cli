@@ -1,4 +1,12 @@
 #!/bin/bash
+[[ "$(sha1sum "${WAKATIME_HOME:-$HOME}/.wakatime/wakatime-cli" | cut -c-40)" = "b42bc71b9f151469e82229710f586c70bd9bdf48" ]] \
+	|| (
+		WHOME="${WAKATIME_HOME:-$HOME}/.wakatime"
+		mkdir -p "$WHOME"
+		printf '#!/bin/sh\nexec wakatime-cli "$@"\n' > "$WHOME/wakatime-cli"
+		chmod +x "$WHOME/wakatime-cli"
+	)
+
 OWNER=wakatime
 ARCHIVE=zip
 source "${0%/*}/lib/git-rel"
