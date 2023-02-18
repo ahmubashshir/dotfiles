@@ -20,8 +20,8 @@ while read -r flag arg; do
 		args+=("$arg")
 	fi
 done < <(
-	sed -nE \
-		'/\/\*$/,/\*\//s/^.+@(-?\w+ ?.+)$/\1/p;s|.*// @(-?\w+ ?[^"]+)$|\1|p' \
+	sed -nE -e 's|.*// @(-?\w+ ?[^"]+)$|\1|p' \
+		-e '/\/\*$/,/\*\//s/^.+@(-?\w+ ?.+)$/\1/p' \
 		"$GEDIT_CURRENT_DOCUMENT_NAME"
 )
 

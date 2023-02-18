@@ -7,18 +7,15 @@
 # Output=nothing
 # Shortcut=F5
 # Input=nothing
-
-dext="${GEDIT_CURRENT_DOCUMENT_NAME##*.}"
-TARGET="z.$(sed -e s/.${dext}$// <<< "$GEDIT_CURRENT_DOCUMENT_NAME").amd64.elf"
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 
-cat > "$TMPFILE" <<EOF
+cat > "$TMPFILE" << EOF
 #!/bin/sh
 printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
 TIMEFORMAT=\$'\n========\n                      elapsed %3R'
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-time "./$TARGET"
+time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf"
 printf '\033[A\rProcess returned %d,\n' "\$?"
 read -rsp$'Press RETURN to continue...'
 EOF
