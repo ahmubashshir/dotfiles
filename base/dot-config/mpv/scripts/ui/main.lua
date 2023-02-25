@@ -34,8 +34,9 @@ local tick_delay = 0.03
 if not user_opts.enable then
     mp.set_property_native('osc', true);
     return {}
+elseif user_opts.enable then
+	mp.set_property_native('osc', false)
 end
-if builtin_osc_enabled then mp.set_property_native('osc', false) end
 --
 -- Helperfunctions
 --
