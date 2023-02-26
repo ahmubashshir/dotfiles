@@ -1,5 +1,5 @@
 #!/bin/zsh
-HISTFILE=${XDG_CACHE_HOME:-$HOME/.cache/zsh}/history
+HISTFILE=${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history
 HISTSIZE=10000
 SAVEHIST=2147483647
 HISTDUP=erase
