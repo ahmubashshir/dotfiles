@@ -38,17 +38,12 @@ function load {
 		source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
 	done
 }
+
 if [ ! -d ~/.cache/zsh ];then
 	rm -f ~/.cache/zsh
 	mkdir -p ~/.cache/zsh
 fi
 # Traps
 function TRAPUSR1 { rehash; }
-function {
-	emulate -L zsh
-	setopt extendedglob nullglob
-	load env $ZDOTDIR/env.d/^gui~*.zwc(:t)
-	[[ $XDG_SESSION_TYPE =~ ^(x11|wayland)$ ]] && load env gui
-}
 
 unfunction zcompare

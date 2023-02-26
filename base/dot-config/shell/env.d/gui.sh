@@ -1,7 +1,13 @@
-#!/bin/zsh
+#!/bin/sh
+
+case "$XDG_SESSION_TYPE" in
+	x11 | wayland) ;;
+	*) return ;;
+esac
+
 export BROWSER=firefox
 export TERMINAL="xfce4-terminal"
-if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ];then
+if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ]; then
 	export QT_QPA_PLATFORMTHEME=qt5ct
 #	export QT_SCALE_FACTOR=1
 fi
