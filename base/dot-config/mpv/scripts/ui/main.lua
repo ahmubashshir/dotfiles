@@ -13,6 +13,11 @@ local icons = require('icons')
 local user_opts = require('opts')
 local styles = require('styles')
 local state = require('state')
+--- Bail out if OSC is enabled
+if mp.get_property_bool('osc') then
+    return {}
+end
+
 -- Global functions
 require 'utils'
 -- read options from config and command-line
@@ -30,13 +35,6 @@ local osc_param = { -- calculated by osc_init()
 local window_control_box_width = 138
 local tick_delay = 0.03
 
---- Automatically disable OSC
-if not user_opts.enable then
-    mp.set_property_native('osc', true);
-    return {}
-elseif user_opts.enable then
-	mp.set_property_native('osc', false)
-end
 --
 -- Helperfunctions
 --

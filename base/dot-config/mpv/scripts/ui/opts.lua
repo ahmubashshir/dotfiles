@@ -26,9 +26,6 @@ local user_opts = {
     timetotal = true, -- display total time instead of remaining time?
     visibility = 'auto', -- only used at init to set visibility_mode(...)
     windowcontrols = 'auto', -- whether to show window controls
-    enable = true,
     language = 'en' -- en=English, cn=Chinese
 }
-
-opt.read_options(user_opts, 'osc')
 return user_opts
