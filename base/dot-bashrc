@@ -7,9 +7,6 @@
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-if [ -f ~/.config/shell/environment ]; then
-	. ~/.config/shell/environment
-fi
 if [ -f ~/.config/shell/import ]; then
 	. ~/.config/shell/import
 fi
