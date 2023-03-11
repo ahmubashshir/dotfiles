@@ -38,8 +38,13 @@ then
 		*) exec "$WIKIPEDIA_APP" "$@" ;;
 	esac
 elif hash chromium > /dev/null &&
-	echo "$1" | grep -Eq '^https?://meet\.google\.com/([a-z0-9]{3,4}(-|$)){3}$'; then
-	exec chromium --app="$@" --class="google-meet"
+	echo "$1" | grep -Eq \
+		'^(https?://[a-z]+\.google\.com/.*|https?://app\.convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'; then
+	class="$(echo "$1" | sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p')"
+	exec chromium --app="$@" --class="${class:-google-chrome}"
+elif hash zoom > /dev/null && echo "$1" | grep -q 'zoom\.us/j/'; then
+	set "$(echo "$1" | sed -nE 's|.+://(.+\.zoom\.us)/j/(.+)\?(.+)|zoommtg://\1/join?action=join\&confno=\2\&\3|p')"
+	exec zoom "$@"
 fi
 end=$(
 	awk '!/^### END SCRIPT ###$/{line+=1};/^### END SCRIPT ###$/{print line+2;exit}' "$0"
