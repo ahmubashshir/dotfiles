@@ -69,12 +69,19 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 }
 
 #toolbar-menubar:not([inactive="true"]) {
-	margin-top: var(--menubar-margin-top) !important;
+	margin-top: calc(0px - var(--menubar-margin-top)) !important;
 	animation: appear 0.4s;
 	max-width: min-content;
 	padding-bottom: 0 !important;
 	--menubar-background-color: var(--toolbar-bgcolor);
-	--menubar-margin-top: calc(0px - var(--urlbar-min-height) - var(--urlbar-icon-padding));
+}
+
+:root {
+	--menubar-margin-top: calc(var(--urlbar-min-height) - var(--toolbar-start-end-padding) / 2);
+}
+
+:root[uidensity="compact"]  {
+	--menubar-margin-top: var(--urlbar-min-height);
 }
 
 #toolbar-menubar:not([inactive="true"]),
