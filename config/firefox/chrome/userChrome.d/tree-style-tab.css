@@ -46,3 +46,19 @@
 	margin-right: calc((var(--wide-tab-width) - var(--thin-tab-width)) * -1) !important;
 	opacity: 0.98 !important;
 }
+
+#statuspanel {
+	right: 0;
+	left: unset !important;
+}
+
+#statuspanel-label {
+	border-left-style: solid;
+	border-top-left-radius: .3em;
+	margin-left: 1em;
+
+	border-top-right-radius: unset !important;
+	border-right-style: unset !important;
+	margin-right: unset !important;
+	float: right;
+}
