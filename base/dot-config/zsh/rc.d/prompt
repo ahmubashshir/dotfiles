@@ -24,7 +24,7 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
 # Prompt Setup
-DIR_PROMPT='%17>.>%1~%<<%22(l|.%14<.<%1~%<<|)'
+DIR_PROMPT='%20>...>%1~%<<'
 if [[ $ENV[color_prompt] = yes ]];then
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
