@@ -24,19 +24,23 @@ if [ "$lang" = Java ]; then
 	javac $GEDIT_CURRENT_DOCUMENT_NAME
 	exo-open --launch TerminalEmulator jdb ${GEDIT_CURRENT_DOCUMENT_NAME%.*} $arg
 else
-	arg=$(zenity --name=Gedit --entry --title="GNU Debugger" --text="Any argument for debugging?" 2> /dev/null)
-	echo "Options:$arg"
-	case $lang in
-		C)
-			gcc $GEDIT_CURRENT_DOCUMENT_NAME -g -o z.$name.amd64.elf
-			;;
-		C++)
-			g++ $GEDIT_CURRENT_DOCUMENT_NAME -g -o z.$name.amd64.elf
-			;;
-	esac
-	if [ -f "core" ]; then
-		exo-open --launch TerminalEmulator gdb z.$name.amd64.elf core $arg
-	else
-		exo-open --launch TerminalEmulator gdb z.$name.amd64.elf $arg
-	fi
+
+	TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
+
+	cat > "$TMPFILE" << EOF
+#!/bin/bash
+printf '\e]2;Debug: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+rm -f "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+set "\$@" "./$GEDIT_CURRENT_DOCUMENT_NAME.elf"
+if [[ -f core ]];then
+set "\$@" core
+fi
+exec cgdb "\$@"
+EOF
+
+	chmod +x "$TMPFILE"
+
+	exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
+
 fi
