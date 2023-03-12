@@ -42,7 +42,7 @@ _aur_repo_cache() {
 _aur_list_repos() {
     local lastcache
     local -a repos
-    _aur_repo_cache aur-own-repos aur list-repos
+    _aur_repo_cache aur-own-repos aur-cli list-repos
     if (($#repos));then
         _values name $repos
         unset repos
