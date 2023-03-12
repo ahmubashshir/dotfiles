@@ -14,7 +14,7 @@ import codecs
 import os
 import sys
 import markdown
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 
 # Configuration.
 
@@ -28,7 +28,7 @@ else:
 
 confDir =  os.path.join(xdgConfigHome, "gedit")
 confFile =  os.path.join(confDir, "gedit-markdown.ini")
-parser = SafeConfigParser()
+parser = ConfigParser()
 
 if os.path.isfile(confFile):
 	parser.read(confFile)
@@ -42,5 +42,4 @@ print("<!-- Markdown => HTML -->")
 if markdownVersion == "standard":
 	print(markdown.markdown(text, smart_emphasis=False))
 else:
-	print(markdown.markdown(text, extensions=["extra",
-	                        "headerid(forceid=False)"]))
+	print(markdown.markdown(text, extensions=["extra"]))

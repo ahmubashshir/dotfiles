@@ -1,16 +1,17 @@
 #!/bin/bash
 # [Gedit Tool]
-# Name=Run......
+# Name=Run
 # Applicability=local
 # Languages=c,cpp,pascal
 # Save-files=nothing
 # Output=nothing
 # Shortcut=F5
 # Input=nothing
+
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 
 cat > "$TMPFILE" << EOF
-#!/bin/sh
+#!/bin/bash
 printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
 TIMEFORMAT=\$'\n========\n                      elapsed %3R'

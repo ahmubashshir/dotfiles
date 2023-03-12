@@ -9,13 +9,25 @@
 # Output=output-panel
 
 v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
-file=$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME
-if [ "$v" != "" ]; then
-	if [ "$v" == "python" ]; then
-		python2 $file
-	else
-		python3 $file
-	fi
-else
-	python3 $file
+intrp=python3
+
+if [ "$v" == "python" ]; then
+	intrp=python2
 fi
+TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
+
+cat > "$TMPFILE" << EOF
+#!/bin/bash
+printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+rm -f "$TMPFILE"
+TIMEFORMAT=\$'\n========\n                      elapsed %3R'
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+time "$intrp" "./$GEDIT_CURRENT_DOCUMENT_NAME"
+printf '\033[A\rProcess returned %d,\n' "\$?"
+read -rsp$'Press RETURN to continue...'
+EOF
+
+chmod +x "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+
+exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
