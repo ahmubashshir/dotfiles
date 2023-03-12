@@ -1,6 +1,6 @@
-!bin/
-!bin/lib/
-!dot-config:git/include
+!*/bin/
+!*/bin/lib/
+!*/dot-config:git/include
 *.swp
 base/dot-config/zsh/functions/_gmtool
 base/dot-config/zsh/history
