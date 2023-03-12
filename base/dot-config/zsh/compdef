@@ -1,4 +1,11 @@
 #!/bin/zsh
-compdef port=netcat
-compdef {pm,spm}=pacman
-compdef gpg-yay=gpg
+() {
+	local -a defs
+	defs=(
+		port=netcat
+		{pm,spm}=pacman
+		gpg-{yay,jadupc}=gpg
+		jpc=exec
+	)
+	compdef "${defs[@]}"
+}

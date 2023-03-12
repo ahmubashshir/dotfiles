@@ -1,0 +1,18 @@
+#!/bin/bash
+NAME="${0##*/}"
+SRC="$NAME.${SRC:-c}"
+
+[[ -d ${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
+
+if [[ ! -x "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" ||
+	"${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" -ot "${0%/*}/srcs/$SRC" ]]; then
+	case "$SRC" in
+		*.c) CC=gcc ;;
+		*.cpp | *.cc | *.cxx) CC=g++ ;;
+	esac
+	"$CC" "${0%/*}/srcs/$SRC" \
+		-o "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" \
+		"${CCARG[@]}" || exit $?
+fi
+
+exec -a "$NAME" "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" "$@"
