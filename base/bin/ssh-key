@@ -1,25 +1,29 @@
 #!/bin/sh
 cleanup()
 {
-	! [ -f "$HOME/.ssh/keys/$key.pub" ] || rm -f "$HOME/.ssh/keys/$key.pub"
+	! [ -f "$1.pub" ] || rm -f "$1.pub"
 }
-if [ "$#" -eq 0 ]; then
+if [ "$#" -eq 0 ] || echo "$*" | grep -qE -- '\s?-(-help|h)\b'; then
 	cat >&2 << EOF
-Usage: ${0##*/} key-name
+Usage: ${0##*/} key-name [ssh-keygen args]
 
 This command shows public key if private key exists
 otherwise it generates the key first.
 
 Available keys:
 EOF
-	find ~/.ssh/keys/ -name '*.sec' -printf '\t%f\n' | sed 's/\.sec$//'
+	find ~/.ssh/id/ -type f -not -name '.*' -printf '\t%f\n' | sed 's/\.sec$//'
 	exit
 fi
 
-trap 'cleanup' TERM QUIT INT EXIT
-key="$1.sec"
-if ! [ -f "$HOME/.ssh/keys/$key" ]; then
-	ssh-keygen   -f "$HOME/.ssh/keys/$key"
+trap 'cleanup $1' TERM QUIT INT EXIT
+k="$HOME/.ssh/id/$1"
+shift
+set -- "$k" -C "$USER:${k##*/}" "$@"
+unset                                       k
+
+if ! [ -f "$1" ]; then
+	ssh-keygen -q -C '' -f "$@"
 fi
 
-ssh-keygen -yf "$HOME/.ssh/keys/$key"
+ssh-keygen -yf "$1"
