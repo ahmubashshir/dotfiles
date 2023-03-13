@@ -1,5 +1,4 @@
 #!/bin/zsh
-set -x
 export PATH="$(
 	mkpath () {
 		tr -s ':' '\n' \
@@ -17,5 +16,3 @@ $XDG_CONFIG_HOME/git/helpers
 $XDG_CONFIG_HOME/git/helpers/extras/bin
 EOF
 )"
-
-set +x
