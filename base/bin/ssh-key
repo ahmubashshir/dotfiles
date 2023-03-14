@@ -26,4 +26,5 @@ if ! [ -f "$1" ]; then
 	ssh-keygen -q -C '' -f "$@"
 fi
 
+ssh-keygen -lvf "$1"
 ssh-keygen -yf "$1"
