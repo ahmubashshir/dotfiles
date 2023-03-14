@@ -3,7 +3,8 @@ Include private.d/*.conf
 
 HashKnownHosts yes
 IdentitiesOnly yes
-UserKnownHostsFile ${XDG_CACHE_HOME}/ssh/known.hosts
+UserKnownHostsFile ${XDG_CACHE_HOME}/ssh/hosts
+VisualHostKey yes
 
 Host *
 	IdentityFile ~/.ssh/id/default
