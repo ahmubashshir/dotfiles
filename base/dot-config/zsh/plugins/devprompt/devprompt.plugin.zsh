@@ -26,9 +26,10 @@ function __devprompt_precmd {
 	emulate -L zsh
 	setopt hist_subst_pattern extendedglob
 	DEVPROMPT_PROMPT=''
+	__devprompt_env $'\xef\x83\x82' "${SSH_CLIENT%% *}"  # nf-fa-cloud::f0c2
+	__devprompt_env $'\xee\xae\x9e' "${CONTAINER_ID}"    # nf-cod-run_all::eb9e
 	__devprompt_env $'\xee\x98\x86' ${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@} # nf-seti-python::e606
 	__devprompt_env $'\xee\x98\xa0' "${ROCK_ENV_NAME}" # nf-seti-lua::e620
 	__devprompt_env $'\xee\x98\x85' "${RBENV_VERSION}" # nf-seti-ruby::e605
 	__devprompt_env $'\xef\x8c\x93' "${IN_NIX_SHELL}"  # nf-linux-nixos::f313
-	__devprompt_env $'\xee\xae\x9e' "${CONTAINER_ID}"  # nf-cod-run_all::eb9e
 }
