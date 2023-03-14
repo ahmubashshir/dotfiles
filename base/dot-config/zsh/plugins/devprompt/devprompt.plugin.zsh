@@ -26,8 +26,8 @@ function __devprompt_precmd {
 	emulate -L zsh
 	setopt hist_subst_pattern extendedglob
 	DEVPROMPT_PROMPT=''
-	__devprompt_env $'\ue606' ${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@} # nf-seti-python:
-	__devprompt_env $'\ue620' "${ROCK_ENV_NAME}" # nf-seti-lua:
-	__devprompt_env $'\ue605' "${RBENV_VERSION}" # nf-seti-ruby:
-	__devprompt_env $'\uf313' "${IN_NIX_SHELL}" # nf-linux-nixos:
+	__devprompt_env $'\xee\x98\x86' ${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@} # nf-seti-python::e606
+	__devprompt_env $'\xee\x98\xa0' "${ROCK_ENV_NAME}" # nf-seti-lua::e620
+	__devprompt_env $'\xee\x98\x85' "${RBENV_VERSION}" # nf-seti-ruby::e605
+	__devprompt_env $'\xef\x8c\x93' "${IN_NIX_SHELL}"  # nf-linux-nixos::f313
 }
