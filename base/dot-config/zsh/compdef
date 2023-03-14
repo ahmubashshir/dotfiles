@@ -7,5 +7,5 @@
 		gpg-{yay,jadupc}=gpg
 		jpc=exec
 	)
-	compdef "${defs[@]}"
+	compdef "${defs[@]}" 2> /dev/null
 }
