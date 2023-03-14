@@ -2,7 +2,7 @@
 export PATH="$(
 	mkpath () {
 		tr -s ':' '\n' \
-		| awk '!a[$0]++ {if(NR > 1) printf ":"; printf "%s", $0} END{print ""}'
+		| awk '!( a[$0]++ || system("test -d \"" $0 "\"")) {if(NR > 1) printf ":"; printf "%s", $0} END{print ""}'
 	}
 
 	cat <<EOF | mkpath
