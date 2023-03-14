@@ -30,4 +30,5 @@ function __devprompt_precmd {
 	__devprompt_env $'\xee\x98\xa0' "${ROCK_ENV_NAME}" # nf-seti-lua::e620
 	__devprompt_env $'\xee\x98\x85' "${RBENV_VERSION}" # nf-seti-ruby::e605
 	__devprompt_env $'\xef\x8c\x93' "${IN_NIX_SHELL}"  # nf-linux-nixos::f313
+	__devprompt_env $'\xee\xae\x9e' "${CONTAINER_ID}"  # nf-cod-run_all::eb9e
 }
