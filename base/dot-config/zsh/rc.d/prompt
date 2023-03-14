@@ -25,6 +25,7 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 fi
 # Prompt Setup
 DIR_PROMPT='%20>...>%1~%<<'
+PROMPT=''
 if [[ $ENV[color_prompt] = yes ]];then
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT="${ENV[prompt_seperator]}${ENV[prompt_prefix]}%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
@@ -38,8 +39,14 @@ if [[ $ENV[color_prompt] = yes ]];then
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
-	PROMPT=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}\b┃${GIOVFS_PROMPT}\b┃\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
-	RPROMPT="${RET_PROMPT}"
+	PROMPT+=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}${DATE_TIME_PROMPT}'
+	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}\b┃${GIOVFS_PROMPT}\b┃'
+	PROMPT+=$'\n╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	RPROMPT='${RET_PROMPT}'
 else
-	PROMPT="${DIR_PROMPT} %% "
+	PROMPT+='${DIR_PROMPT} %% '
+fi
+## distrobox fucks up prompt
+if [[ $CONTAINER_ID && $container ]];then
+	PROMPT+=$'  '
 fi
