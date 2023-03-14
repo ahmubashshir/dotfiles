@@ -8,11 +8,10 @@ case "$TERM" in
 esac
 
 function xterm_title_precmd {
-	print -Pnf '\e]2;[%s idle]\a' -- '%1~'
+	print -Pnf '\e]2;[%s] <idle>\a' -- '%m %3~'
 }
 function xterm_title_preexec {
-	print -Pnf '\e]2;[%s run]' -- '%1~'
-	printf ' %s\a' "$1"
+	print -Pnf '\e]2;[%s] %s\a' -- '%m %2~' "${1:gs+%+%%+}"
 }
 function reset_broken_terminal {
 	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
