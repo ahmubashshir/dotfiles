@@ -1,3 +1,4 @@
 #!/bin/bash
 OWNER=dandavison
+FILTER=musl
 source "${0%/*}/lib/git-rel"
