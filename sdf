@@ -10,13 +10,16 @@ EOF
 fi
 
 STOW_DIR="$(dirname "$(realpath "$0")")"
-
-function dot-file {
-	stow -d "$STOW_DIR" --dotfile -t ~ -v1 --ignore="^face\.png" --ignore='^INFO' "$@"
+STOW_IGNORE="^(face\.png|INFO)|\.swp"
+function dot-file
+{
+	stow -d "$STOW_DIR" --dotfile -t ~ -v1 \
+		--ignore="$STOW_IGNORE" "$@"
 }
 
-function stow-system {
-	sudo stow -d "$STOW_DIR/system" -t / -v1 --ignore='^INFO' "$@"
+function stow-system
+{
+	sudo stow -d "$STOW_DIR/system" -t / -v1 --ignore="$STOW_IGNORE" "$@"
 }
 
 if [ "$#" -eq 0 ]; then
@@ -24,8 +27,9 @@ if [ "$#" -eq 0 ]; then
 	[ "${STOW_DIR#$HOME}" = "$STOW_DIR" ] || STOW_DIR_REPR="~${STOW_DIR#$HOME}"
 	echo "Available packages: ${STOW_DIR_REPR-$STOW_DIR}"
 	exec find -maxdepth 1 -type d -not -name '.*' -printf '\t%f\n'
-elif [ "$1" = "system" ];then
-	shift; stow-system "$@"
+elif [ "$1" = "system" ]; then
+	shift
+	stow-system      "$@"
 else
 	dot-file "$@"
 fi
