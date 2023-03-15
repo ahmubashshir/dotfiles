@@ -8,3 +8,8 @@ export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.defaultlaf=com.su
 if [ "$ZSH_ARGZERO" = "zsh" ];then
 	export LS_COLORS=${(@f)$(dircolors -c ~/.config/shell/dircolors 2>/dev/null || dircolors -c 2>/dev/null)[3]//\'/}
 fi
+
+## distrobox fucks up prompt otherwise
+if [ "$CONTAINER_ID" ] && [ "$container" ];then
+	export LANG=C.UTF-8
+fi
