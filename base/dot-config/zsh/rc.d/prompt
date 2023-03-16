@@ -52,7 +52,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 	PROMPT+=$'${GITSTATUS_PROMPT}'
 	PROMPT+=$'${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
 	PROMPT+=$'${PS_PADDING}${DATE_TIME_PROMPT}╮ '
-	PROMPT+=$'%{\n%}%{\r%}╰─%(?..%F{cyan})%Bλ%b%F{lightgreen} '
+	PROMPT+=$'%{\n%}%{\r%}╰─%(?..%F{cyan})%B${ENV[prompt_prefix]} %b%F{lightgreen}'
 	RPROMPT='${RET_PROMPT}'
 else
 	PROMPT+='${DIR_PROMPT} %% '
