@@ -12,4 +12,6 @@ export MEDIA_PLAYER=mpv-buffered
 export GPG_TTY="${TTY:-$(tty)}"
 if command -pv systemctl 2> /dev/null  >&2 && systemctl is-active -q docker.socket && false;then
 	export DOCKER_HOST="unix:///var$(systemctl cat docker.socket|awk -F = '/^ListenStream/{print $2;exit}')"
+elif command -pv systemctl 2> /dev/null  >&2 && systemctl --user is-active -q podman.socket && false;then
+	export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 fi
