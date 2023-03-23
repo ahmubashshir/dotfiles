@@ -14,6 +14,10 @@ if command -pv xcape > /dev/null 2>&1; then
 		xcape -e "$(cat)"
 fi
 
+if command -pv xmodmap > /dev/null 2>&1 && test -f "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"; then
+	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"
+fi
+
 if [ "$XDG_SESSION_DESKTOP" = "plasma" ]; then
 	unset QT_AUTO_SCREEN_SCALE_FACTOR QT_SCALE_FACTOR QT_QPA_PLATFORMTHEME
 fi
