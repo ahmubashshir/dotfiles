@@ -1,0 +1,4 @@
+keycode 94  = ISO_Level3_Shift NoSymbol ISO_Level3_Shift
+keycode 108 = Alt_R Meta_R Alt_R Meta_R
+clear mod1
+add mod1 = Alt_L Alt_R Alt_L Meta_L
