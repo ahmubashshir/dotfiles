@@ -51,9 +51,15 @@ else
 			type="${1%%.*}"
 			name="${1#*.}"
 			if [ "$name" = "$type" ] || [ "$type" == "on-demand" ]; then
+				if git config --type bool core.bare 2> /dev/null >&2; then
+					echo "ERROR: Running on-demand hooks on bare repo is not possible!" >&2
+					exit 1
+				else
+					cd "$(git rev-parse --show-toplevel)"
+				fi
 				hook="$hooks/hooks.d/on-demand/$name"
 				shift
-				[ -x "$hook" ] && exec "$hook" "$@"
+				[ -x "$hook" ] && exec git run "$hook" "$@"
 			else
 				echo "ERROR: $name: not an on-demand hook." >&2
 				exit 1
