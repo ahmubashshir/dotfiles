@@ -23,7 +23,7 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
 # Prompt Setup
-DIR_PROMPT='%20>...>%1~%<<'
+DIR_PROMPT='%20>…>%1~%<<'
 PS_PADDING=$'%-14<─<'
 () {
 	local i
@@ -53,7 +53,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 	PROMPT+=$'${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
 	PROMPT+=$'${PS_PADDING}${DATE_TIME_PROMPT}╮ '
 	PROMPT+=$'%{\n%}%{\r%}╰─%(?..%F{cyan})%B${ENV[prompt_prefix]} %b%F{lightgreen}'
-	TPROMPT=$'%E%B%F{red}%(?..%F{cyan})%2~ %# %f%b' # transient prompt
+	TPROMPT=$'%E%B%F{red}%(?..%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b' # transient prompt
 	RPROMPT='${RET_PROMPT}'
 else
 	PROMPT+='${DIR_PROMPT} %% '
