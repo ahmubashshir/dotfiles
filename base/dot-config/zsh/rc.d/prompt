@@ -53,37 +53,8 @@ if [[ $ENV[color_prompt] = yes ]];then
 	PROMPT+=$'${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
 	PROMPT+=$'${PS_PADDING}${DATE_TIME_PROMPT}╮ '
 	PROMPT+=$'%{\n%}%{\r%}╰─%(?..%F{cyan})%B${ENV[prompt_prefix]} %b%F{lightgreen}'
+	TPROMPT=$'%E%B%F{red}%(?..%F{cyan})%2~ %# %f%b' # transient prompt
 	RPROMPT='${RET_PROMPT}'
-
-	prompt:zle-line-init() {
-		[[ $CONTEXT == start ]] || return 0
-
-		__prompt_prune() {
-			if [[ $1 == "restore" ]] && ((${+__PROMPT}))
-			then PROMPT="${__PROMPT[L]}"; RPROMPT="${__PROMPT[R]}"; unset __PROMPT
-			else typeset -gA __PROMPT;__PROMPT=([L]="$PROMPT" [R]="$RPROMPT")
-					PROMPT=$'%2~ %% '; RPROMPT=''
-			fi
-		}
-
-		(( $+zle_bracketed_paste )) &&
-			print -r -n - $zle_bracketed_paste[1]
-		zle .recursive-edit; local -i ret=$?
-		(( $+zle_bracketed_paste )) &&
-				print -r -n - $zle_bracketed_paste[2]
-		__prompt_prune
-		zle .reset-prompt
-		[[ $ret == 0 && $KEYS == $'\4' ]] && exit
-		__prompt_prune restore
-		if (( ret ))
-		then zle .send-break
-		else zle .accept-line
-		fi
-
-		unset -f __prompt_prune
-		return ret
-	}
-	zle -N zle-line-init prompt:zle-line-init
 else
 	PROMPT+='${DIR_PROMPT} %% '
 fi
