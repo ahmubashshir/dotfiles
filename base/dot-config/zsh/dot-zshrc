@@ -60,7 +60,7 @@ unset ___plugins
 
 typeset -A ENV
 #zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
-load rc completion keymap history modules plugins prompt
+load rc completion keymap history modules plugins prompt transient-prompt
 zsh-defer source "$ZDOTDIR/env.d/path"
 
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
