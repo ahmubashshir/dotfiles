@@ -62,7 +62,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 			if [[ $1 == "restore" ]] && ((${+__PROMPT}))
 			then PROMPT="${__PROMPT[L]}"; RPROMPT="${__PROMPT[R]}"; unset __PROMPT
 			else typeset -gA __PROMPT;__PROMPT=([L]="$PROMPT" [R]="$RPROMPT")
-					PROMPT=$'%{\n%}%2~ %% '; RPROMPT=''
+					PROMPT=$'%2~ %% '; RPROMPT=''
 			fi
 		}
 
