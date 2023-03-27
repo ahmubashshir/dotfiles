@@ -1,0 +1,35 @@
+#!/bin/zsh
+# Transient prompt implementation
+# Modify transient prompt via TPROMPT
+if [[ $ENV[color_prompt] = yes ]];then
+	prompt:zle-line-init() {
+		[[ $CONTEXT == start ]] || return 0
+
+		__prompt_prune() {
+			if [[ $1 == "restore" ]] && ((${+__PROMPT}))
+			then PROMPT="${__PROMPT[L]}"; RPROMPT="${__PROMPT[R]}"; unset __PROMPT
+			else typeset -gA __PROMPT;__PROMPT=([L]="$PROMPT" [R]="$RPROMPT")
+					PROMPT="${TPROMPT:-%1~ %# }"; RPROMPT=''
+			fi
+		}
+
+		(( $+zle_bracketed_paste )) &&
+			print -r -n - $zle_bracketed_paste[1]
+		zle .recursive-edit; local -i ret=$?
+		(( $+zle_bracketed_paste )) &&
+				print -r -n - $zle_bracketed_paste[2]
+		__prompt_prune
+		zle .reset-prompt
+		[[ $ret == 0 && $KEYS == $'\4' ]] && exit
+		__prompt_prune restore
+		if (( ret ))
+		then zle .send-break
+		else zle .accept-line
+		fi
+
+		unset -f __prompt_prune
+		return ret
+	}
+
+	zle -N zle-line-init prompt:zle-line-init
+fi
