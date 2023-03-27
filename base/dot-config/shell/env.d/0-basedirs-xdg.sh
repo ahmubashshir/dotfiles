@@ -60,7 +60,7 @@ export NOTMUCH_CONFIG="$XDG_CONFIG_HOME"/notmuch/notmuchrc
 export NMBGIT="$XDG_DATA_HOME"/notmuch/nmbug
 # node:npm
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME"/npm/npmrc
-export NODE_REPL_HISTORY="$XDG_DATA_HOME"/node/history
+export NODE_REPL_HISTORY="$XDG_STATE_HOME"/node/history
 export TS_NODE_HISTORY="$XDG_STATE_HOME"/node/ts.history
 
 # opam
