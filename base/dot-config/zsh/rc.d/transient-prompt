@@ -17,7 +17,8 @@ if [[ $ENV[color_prompt] = yes ]];then
 			print -r -n - $zle_bracketed_paste[1]
 		zle .recursive-edit; local -i ret=$?
 		(( $+zle_bracketed_paste )) &&
-				print -r -n - $zle_bracketed_paste[2]
+			print -r -n - $zle_bracketed_paste[2]
+
 		__prompt_prune
 		zle .reset-prompt
 		[[ $ret == 0 && $KEYS == $'\4' ]] && exit
@@ -31,5 +32,6 @@ if [[ $ENV[color_prompt] = yes ]];then
 		return ret
 	}
 
-	zle -N zle-line-init prompt:zle-line-init
+	autoload -Uz add-zle-hook-widget
+	add-zle-hook-widget -Uz zle-line-init prompt:zle-line-init
 fi
