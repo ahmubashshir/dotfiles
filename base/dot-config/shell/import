@@ -1,4 +1,7 @@
 #!/bin/sh
+# FD 3w /dev/null
+exec 3> /dev/null
+
 . ~/.config/shell/functions
 . ~/.config/shell/aliases
 if
