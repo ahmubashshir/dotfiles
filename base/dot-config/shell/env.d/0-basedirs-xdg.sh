@@ -93,3 +93,5 @@ export ICEAUTHORITY="$XDG_CACHE_HOME"/ICEauthority
 export RANDFILE="$XDG_STATE_HOME/rnd"
 # w3m
 export W3M_DIR="$XDG_DATA_HOME"/w3m
+# wine
+export WINEPREFIX="$XDG_DATA_HOME"/wine
