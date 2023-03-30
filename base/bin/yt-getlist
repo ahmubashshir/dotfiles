@@ -714,11 +714,13 @@ if __name__ == '__main__':
         with open('.list.yml', 'r') as f:
             file = yaml.load(f, Loader=yaml.FullLoader)
         ydl = file.get('ydl', dict())
-        ydl['quiet'] = True
-        ydl['noprogress'] = False
-        ydl['progress_hooks'] = [info.progess]
-        ydl['logtostderr'] = True
-        ydl['logger'] = info
+        ydl.update({
+            'quiet': True,
+            'noprogress': False,
+            'progress_hooks': info.progess,
+            'logtostderr': True,
+            'logger': info,
+        })
 
         if len(argv) > 1 and 'skip-dl' in argv:
             ydl['skip_download'] = True
