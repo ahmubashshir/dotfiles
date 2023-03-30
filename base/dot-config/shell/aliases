@@ -9,21 +9,56 @@ if [ -e ~/.weeb/aliases.sh ]; then
 fi
 
 #aliases
-exec 3> /dev/null
-if hash apt 1>&3 2>&1; then
-	alias apt-i="apt install"
-	alias আপ্ত='apt'
-	alias apt-r="apt remove"
-	alias apt-ri="apt reinstall"
-	alias apt-fu="apt full-upgrade"
-	alias apt-du="apt dist-upgrade"
-	alias apt-uu="apt upgrade"
-	alias apt-u="apt update"
-fi
-alias cls="rm -f ~/.bash_history"
 alias gist='gist -sc --skip-empty'
 alias q="exit"
 alias c="clear"
+alias t=time
+alias k="kill"
+alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
+alias yt-mp3="youtube-dl --restrict-filenames --xattrs --add-metadata --audio-format best -ir 1M -R 10 -x -o '%(title)s.%(ext)s' --audio-format mp3 --embed-thumbnail --convert-subs lrc -c"
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias sign='gpg --detach-sign'
+alias clearsign='gpg --clearsign'
+alias failunlock='faillock --reset --user $USER'
+alias tree='tree --dirsfirst'
+alias prime='env DRI_PRIME=1'
+alias pytrace='python -m trace --trace --ignore-dir /usr --ignore-dir "$HOME/.local"'
+alias mprime='mprime -s'
+alias sudo='sudo -H'
+alias spider='curl -ILksXGET'
+alias dd='dd status=progress'
+
+# wormhole
+if [ -x /usr/bin/wormhole ]; then
+	alias send='wormhole send'
+	alias recv='wormhole receive'
+elif [ -x /usr/bin/wormhole-william ]; then
+	alias send='wormhole-william send'
+	alias recv='wormhole-william recv'
+fi
+# xfce4-pane-backup
+if command -v xfce4-panel-profiles 2>&3 1>&2; then
+	alias panbackup='xfce4-panel-profiles save "$XDG_DATA_HOME"/xfce4-panel-profiles/Default.tar.bz2'
+	alias panload='xfce4-panel-profiles load "$XDG_DATA_HOME"/xfce4-panel-profiles/Default.tar.bz2'
+fi
+# exa
+if [ "${TERM%-*}" = "xterm" ] && command -v exa 2>&3 1>&2; then
+	alias ls=exa
+	alias l='ls -F'
+	alias tree='ls -T'
+fi
+# tldr
+if hash tldr 1>&3 2>&1; then
+	alias '?'=tldr
+	alias h=tldr
+	alias run-help=tldr
+fi
+# x11 alias
+if [ -z "$XAUTHORITY" ]; then
+	alias minimize='xdotool getactivewindow windowminimize;chvt 7'
+fi
 if [ -x /usr/bin/yay ]; then
 	alias add='yay -S --needed'
 	alias del='yay -Rcsn'
@@ -43,70 +78,13 @@ fi
 if [ -x /usr/bin/makechrootpkg ]; then
 	alias makechrootpkg="sudo makechrootpkg -ucnr /var/lib/archbuild"
 fi
-alias t=time
-alias k="kill"
-alias yt-dl="youtube-dl --xattrs --add-metadata --restrict-filenames -ir 1M -o '%(title)s.%(height)sp.%(ext)s' -R 10 -c "
-alias yt-mp3="youtube-dl --restrict-filenames --xattrs --add-metadata --audio-format best -ir 1M -R 10 -x -o '%(title)s.%(ext)s' --audio-format mp3 --embed-thumbnail --convert-subs lrc -c"
-if hash tldr 1>&3 2>&1; then
-	alias '?'=tldr
-	alias h=tldr
-	alias run-help=tldr
-fi
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-alias sign='gpg --detach-sign'
-alias clearsign='gpg --clearsign'
-alias ..='cd ..'
-alias ...='cd ..; cd ..'
-alias ....='cd ..; cd ..; cd ..'
-if hash gcp 1>&3 2>&1; then
-	alias cp='gcp'
-fi
-alias failunlock='faillock --reset --user $USER'
-alias panbackup='xfce4-panel-profiles save $HOME/.local/share/xfce4-panel-profiles/Default.tar.bz2'
-alias panload='xfce4-panel-profiles load $HOME/.local/share/xfce4-panel-profiles/Default.tar.bz2'
-alias tree='tree --dirsfirst'
-alias prime='env DRI_PRIME=1'
-if [ -x /usr/bin/wormhole ]; then
-	alias send='wormhole send'
-	alias recv='wormhole receive'
-elif [ -x /usr/bin/wormhole-william ]; then
-	alias send='wormhole-william send'
-	alias recv='wormhole-william recv'
-fi
-alias pytrace='python -m trace --trace --ignore-dir /usr --ignore-dir '$HOME'/.local'
-alias mprime='mprime -s'
-if hash git 2> /dev/null; then
-	for n in g gut giy hut; do
-		alias "$n=git"
-	done
-	alias commit='git commit'
-	alias pull='git pull'
-	alias clone='git clone'
-fi
-alias sudo='sudo -H'
-alias spider='curl -ILksXGET'
-alias dd='dd status=progress'
-### Colored Output
-if [ -z "$LS_COLORS" ]; then
-	alias ip='ip -color=auto'
-	alias ls='ls --color=auto'
-	alias dir='dir --color=auto'
-	alias diff='diff --color=auto'
-	alias vdir='vdir --color=auto'
-	alias grep='grep --color=auto'
-	alias egrep='egrep --color=auto'
-	alias egrep='grep -E --color=auto'
-	alias fgrep='fgrep --color=auto'
-fi
-if [ "${TERM%-*}" = "xterm" ] && command -v exa &> /dev/null; then
-	alias ls=exa
-	alias l='ls -F'
-fi
-if [ -z "$XAUTHORITY" ]; then
-	alias minimize='xdotool getactivewindow windowminimize;chvt 7'
-fi
+# Specific aliases
+for __alias_def__ in ~/.config/shell/aliases.d/*.sh; do
+	command -v "${__alias_def__%.sh}" 1>&3 2>&1 || continue
+	source "${__alias_def__}"
+done
+unset __alias_def__
+
 # Zsh suffix aliases
 if [ -n "${ZSH_VERSION}" ] && [ -n "${ZSH_NAME}" ]; then
 	alias -s tmate=ssh
