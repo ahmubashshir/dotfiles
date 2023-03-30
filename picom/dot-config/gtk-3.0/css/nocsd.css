@@ -1,0 +1,24 @@
+decoration {
+	border-radius: 6px 6px 0 0;
+	border-width: 0px;
+	box-shadow: none;
+	margin: 0;
+}
+
+.window-frame:backdrop {
+	box-shadow: none;
+}
+
+.titlebar,
+.titlebar headerbar,
+.titlebar HdyHeaderBar {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.5);
+}
+
+.titlebar:backdrop,
+.titlebar headerbar:backdrop,
+.titlebar HdyHeaderBar:backdrop {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.35);
+}
