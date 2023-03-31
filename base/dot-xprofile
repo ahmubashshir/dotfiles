@@ -27,6 +27,6 @@ systemctl_user_start()
 	systemctl --user start "$1${2:+@}$2"
 }
 
-systemctl_user_start picom "$DISPLAY"
+systemctl_user_start picom "${DISPLAY%.*}"
 
 unset -f systemctl_user_start
