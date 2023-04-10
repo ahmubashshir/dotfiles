@@ -78,23 +78,24 @@ if [[ -z $exec ]]; then
 							| jq 'select(.name|test("(?i).'"${ARCHIVE:-tar}"'"))'
 					)
 				fi
-				curl --disable -L -# "$(
+				if curl --disable --fail -L -# "$(
 					printf '%s' "$data" \
 						| jq -r '.browser_download_url' \
 						| head -n 1
-				)" -o "$file"
-				if ((EXTRACT)); then
-					bsdtar -xOf "$file" "${FILE:-$(
-						bsdtar -tvf "$file" \
-							| rev | cut -d ' ' -f1 \
-							| rev | grep -iE "(^|/)$NAME(-($os|$arch))*$"
-					)}"
-				else
-					cat "$file"
-				fi > "$exec"
-				chmod +x "$exec"
-				rm -f "$file"
-				trap - TERM QUIT EXIT INT
+				)" -o "$file"; then
+					if ((EXTRACT)); then
+						bsdtar -xOf "$file" "${FILE:-$(
+							bsdtar -tvf "$file" \
+								| rev | cut -d ' ' -f1 \
+								| rev | grep -iE "(^|/)$NAME(-($os|$arch))*$"
+						)}"
+					else
+						cat "$file"
+					fi > "$exec"
+					chmod +x "$exec"
+					rm -f "$file"
+					trap - TERM QUIT EXIT INT
+				fi
 			fi
 		else
 			printf "%s: can't check for update.\n" "$NAME"
