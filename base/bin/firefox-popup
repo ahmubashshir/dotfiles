@@ -12,7 +12,7 @@ fi
 if
 	hash "$MEDIA_PLAYER" > /dev/null &&
 		echo "$1" | grep -Eq \
-			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
+			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
 then
 	if echo "$1" | grep -Eq '/live/'; then
 		url="https://youtu.be/$(echo "$1" | cut -d/ -f5)"
