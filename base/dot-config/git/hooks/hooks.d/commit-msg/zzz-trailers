@@ -24,10 +24,10 @@ if [ -f "$1" ]; then
 							-e '/^$/d'
 				)
 			fi
-			if ! echo "$key" | grep -q "[$TS]$"; then
-				key="$key$DTS "
+			if [ -n "$key" ]; then
+				echo "$key" | grep -q "[$TS]$" || key="$key$DTS "
+				sed -Ei "/^$trailer[$TS]+$(echo "$arg" | sed 's@/@\\/@g')$/c\\$key${rep:-$arg}" "$1"
 			fi
-			sed -Ei "/^$trailer[$TS]+$(echo "$arg" | sed 's@/@\\/@g')$/c\\$key${rep:-$arg}" "$1"
 			unset token rep generator key
 		done
 fi
