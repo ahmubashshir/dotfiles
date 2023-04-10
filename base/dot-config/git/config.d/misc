@@ -34,7 +34,7 @@
 	key = See-also
 	generator = git log -1 --oneline --format=\"%h (%s)\" --abbrev-commit --abbrev=14
 [trailer "author"]
-	key = Co-Authored-By
+	key = Co-authored-by
 	generator = git-author
 [trailer "suggest"]
 	key = Suggested-by
