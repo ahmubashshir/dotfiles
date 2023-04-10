@@ -1,6 +1,13 @@
 #!/bin/zsh
-HISTFILE=${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history
-[[ -d $HISTFILE:h ]] || mkdir -p $HISTFILE:h
+function -hist:set:file {
+	[[ -d $1:h ]] || mkdir -p $1:h
+	[[ -z $HISTFILE ]] || fc -R
+	HISTFILE="$1"
+}
+
+-hist:set:file "${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+[[ "${HOST:r}" == "$HOST" ]] || -hist:set:file "${HISTFILE:r:h}/${HOST:r}/history"
+
 HISTSIZE=10000
 SAVEHIST=2147483647
 HISTDUP=erase
@@ -19,3 +26,14 @@ setopt \
 	hist_save_no_dups \
 	hist_no_functions \
 	hist_verify
+
+function -hist:pwd:file {
+	if [[ -f "$PWD/hist" ]]
+	then [[ $HISTFILE:t = "history" ]] || fc -P; local OLDHIST="$HISTFILE"
+		fc -p "$PWD/hist"; fc -R "$OLDHIST"; fc -R
+	elif [[ $HISTFILE:t = "hist" && ! $PWD -pcre-match ^${HISTFILE:h} ]]
+	then fc -P
+	fi
+}
+
+add-zsh-hook -Uz chpwd -hist:pwd:file
