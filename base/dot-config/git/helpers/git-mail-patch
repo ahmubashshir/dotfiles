@@ -30,7 +30,7 @@ if [ -z "$to" ]; then
 fi
 
 if [ -n "$1" ]; then
-	if [ -f "$REPO/refs/heades/$1" ] || [ -f "$REPO/refs/remotes/$1" ]; then
+	if [ -f "$REPO/refs/heads/$1" ] || [ -f "$REPO/refs/remotes/$1" ]; then
 		REF=$1
 		shift
 	fi
