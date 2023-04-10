@@ -1,0 +1,20 @@
+defaults
+port 587
+tls on
+tls_starttls on
+auth on
+tls_starttls on
+
+#   secret-tool store --label=msmtp host smtp.gmail.com service smtp user ahmubashshir
+account ahmubashshir@gmail.com
+host smtp.gmail.com
+user ahmubashshir
+from ahmubashshir@gmail.com
+
+#   secret-tool store --label=msmtp host disroot.org service smtp user ahm
+account ahm@disroot.org
+host disroot.org
+user ahm
+from ahm@disroot.org
+
+account default : ahmubashshir@gmail.com
