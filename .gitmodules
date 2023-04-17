@@ -79,7 +79,7 @@
 [submodule "base/dot-config/zsh/plugins/gitstatus"]
 	path = base/dot-config/zsh/plugins/gitstatus
 	url = https://github.com/romkatv/gitstatus
-	branch = HEAD
+	branch = master
 [submodule "base/dot-config/zsh/plugins/hacker-quotes"]
 	path = base/dot-config/zsh/plugins/hacker-quotes
 	url = https://github.com/oldratlee/hacker-quotes.git
