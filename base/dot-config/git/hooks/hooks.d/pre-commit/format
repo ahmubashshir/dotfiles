@@ -43,7 +43,7 @@ format_file()
 			case $1 in
 				c | cpp | cxx)
 					mode=c
-					style=allman
+					style=linux
 					;;
 				cs | java)
 					mode=$1
