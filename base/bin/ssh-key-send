@@ -1,0 +1,30 @@
+#!/bin/sh
+cleanup()
+{
+	! [ -f "$1.pub" ] || rm -f "$1.pub"
+}
+if [ "$#" -eq 0 ] || echo "$*" | grep -qE -- '\s?-(-help|h)\b'; then
+	cat >&2 << EOF
+Usage: ${0##*/} key-name [user@]server [ssh-copy-id args]
+
+Use locally available keys to authorise logins on a remote machine
+
+Available keys:
+EOF
+	find ~/.ssh/id/ -type f -not -name '.*' -printf '\t%f\n' | sed 's/\.sec$//'
+	exit
+fi
+
+trap 'cleanup $1' TERM QUIT INT EXIT
+k="$HOME/.ssh/id/$1"
+s="$2"
+if ! [ -f "$k" ]; then
+	echo "Error: Identity doesn't exist: $1" >&2
+	exit 1
+fi
+
+shift 2
+set -- "$k" "$@" "$s"
+
+ssh-keygen -yf "$1" > "$1.pub"
+ssh-copy-id -i "$@"
