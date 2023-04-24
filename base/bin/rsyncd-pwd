@@ -1,0 +1,9 @@
+#!/usr/bin/env -S rsync --daemon --no-detach --log-file /dev/stderr --config
+use chroot = no
+port = 1234
+max verbosity = 4
+[pwd]
+	path = %PWD%/
+	comment = %PWD%
+	read only = yes
+	fake super = yes
