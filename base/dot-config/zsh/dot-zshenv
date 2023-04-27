@@ -1,5 +1,9 @@
 #!/bin/zsh
-fpath=(${ZDOTDIR:-$HOME/.zsh}/functions $fpath)
+fpath=(
+	${ZDOTDIR:-$HOME/.zsh}/functions
+	${ZDOTDIR:-$HOME/.zsh}/function/compdefs
+	$fpath
+)
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 ZSH="$ZDOTDIR/omz"
 ZSH_COMPDUMP="$ZSH_CACHE_DIR/compdump"
