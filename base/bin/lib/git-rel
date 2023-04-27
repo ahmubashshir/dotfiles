@@ -5,6 +5,21 @@ EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
 exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^$HOME" | head -n1)
 if [[ -z $exec ]]; then
+	function do_as_root
+	{
+		if command -pv sudo 2> /dev/null >&2; then
+			sudo   "$@"
+		elif command -pv doas 2> /dev/null >&2; then
+			doas   "$@"
+		elif command -pv su 2> /dev/null >&2; then
+			su   root -- -c 'exec "$@"' -- "$@"
+		else
+			cat   >&2 << EOF
+warning: no su helpers found, run the below text as root
+"$@"
+EOF
+		fi
+	}
 	last_modified=0
 	diff=0
 	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
@@ -93,6 +108,9 @@ if [[ -z $exec ]]; then
 						cat "$file"
 					fi > "$exec"
 					chmod +x "$exec"
+					if [[ "$SETCAPS" ]]; then
+						do_as_root setcap "$SETCAPS" "$exec"
+					fi
 					rm -f "$file"
 					trap - TERM QUIT EXIT INT
 				fi
