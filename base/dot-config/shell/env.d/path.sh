@@ -13,6 +13,6 @@ $XDG_DATA_HOME/go/bin
 $PATH
 /usr/lib/surfraw
 $XDG_CONFIG_HOME/git/helpers
-$XDG_CONFIG_HOME/git/helpers/extras/bin
+$XDG_CONFIG_HOME/git/helpers/extras
 EOF
 )"
