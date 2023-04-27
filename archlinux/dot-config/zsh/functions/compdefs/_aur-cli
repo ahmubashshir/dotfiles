@@ -1,4 +1,4 @@
-#compdef aur
+#compdef aur-cli
 _aur_list_tasks() {
     local -a tasks
     tasks=(
