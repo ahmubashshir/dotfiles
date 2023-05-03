@@ -1,6 +1,7 @@
 #!/bin/bash
+set -x
 NAME="${0##*/}"
-SRC="$NAME.${SRC:-c}"
+SRC="$(find bin/srcs/ -name "$NAME"'.*' -exec basename '{}' \; | head -n1)"
 
 [[ -d ${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
 
