@@ -37,7 +37,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 	fi
 	zplug-defer gitstatus-async
 	zplug-defer devprompt
-	DIR_PROMPT="${ENV[prompt_prefix]}%F{green} %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
+	DIR_PROMPT="${ENV[prompt_prefix]}%F{green}"$'\xef\x81\xbb\x00'" %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
 	RET_PROMPT='%F{red}%(?..%B%?%b%F{cyan}┃)%(?|🙂|😑)┠╯%f'
 #	zplug gio-vfs-prompt && {
 #		GIOVFS[seperator]=$'\n├─'
