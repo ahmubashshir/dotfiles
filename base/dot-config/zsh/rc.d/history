@@ -28,6 +28,8 @@ setopt \
 	hist_verify
 
 function -hist:pwd:file {
+	[[ $PWD != $HOME ]] || return
+
 	if [[ -f "$PWD/hist" ]]
 	then [[ $HISTFILE:t = "history" ]] || fc -P; local OLDHIST="$HISTFILE"
 		fc -p "$PWD/hist"; fc -R "$OLDHIST"; fc -R
@@ -37,3 +39,4 @@ function -hist:pwd:file {
 }
 
 add-zsh-hook -Uz chpwd -hist:pwd:file
+! [[ -f "$PWD/hist" ]] || -hist:pwd:file
