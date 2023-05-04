@@ -1,12 +1,20 @@
 #!/bin/zsh
+function histfile:local {
+	[[ $PWD != $HOME ]] || return
+	local OLDHIST="$HISTFILE"
+	fc -p "$PWD/hist"
+	fc -R "$OLDHIST"
+}
+
 function -hist:set:file {
-	[[ -d $1:h ]] || mkdir -p $1:h
+	[[ -d ${1:a:h} ]] || mkdir -p ${1:a:h}
 	[[ -z $HISTFILE ]] || fc -R
-	HISTFILE="$1"
+	HISTFILE="${1:a}"
 }
 
 -hist:set:file "${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
 [[ "${HOST:r}" == "$HOST" ]] || -hist:set:file "${HISTFILE:r:h}/${HOST:r}/history"
+unfunction -- -hist:set:file
 
 HISTSIZE=10000
 SAVEHIST=2147483647
@@ -29,12 +37,16 @@ setopt \
 
 function -hist:pwd:file {
 	[[ $PWD != $HOME ]] || return
-
-	if [[ -f "$PWD/hist" ]]
-	then [[ $HISTFILE:t = "history" ]] || fc -P; local OLDHIST="$HISTFILE"
-		fc -p "$PWD/hist"; fc -R "$OLDHIST"; fc -R
-	elif [[ $HISTFILE:t = "hist" && ! $PWD -pcre-match ^${HISTFILE:h} ]]
-	then fc -P
+	if [[ -f "$PWD/hist" && $HISTFILE:t == "history" || $HISTFILE:t = "hist" && ! $PWD -pcre-match ^${HISTFILE:h} ]]
+	then
+		fc -P
+		if [[ -f "$PWD/hist" ]]
+		then
+			local OLDHIST="$HISTFILE"
+			fc -p "$PWD/hist"
+			fc -R "$OLDHIST"
+		fi
+		fc -R
 	fi
 }
 
