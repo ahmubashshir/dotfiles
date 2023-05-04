@@ -29,18 +29,21 @@ function gl_fork
 {
 	:
 }
-
+REPO_SPEC='[[:alnum:]_-]+/[[:alnum:]._-]+(\.git|$)'
 if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
 	if git remote get-url upstream \
-		| grep -xqE '(https://|git@)github\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
+		| grep -xqE '(https://|git@)github\.com(/|:)'"$REPO_SPEC"; then
 		case $(git config --get user.email) in
 			ahmubashshir@*) gh_fork --org ahm-forks "$@" ;;
-			*)   gh_fork "$@" ;;
+			*) gh_fork "$@" ;;
 		esac
 	elif git remote get-url upstream \
-		| grep -xqE '(https://|git@)gitlab\.com(/|:)[[:alnum:]_-]+/[[:alnum:]_-]+(\.git|$)'; then
+		| grep -xqE '(https://|git@)gitlab\.com(/|:)'"$REPO_SPEC"; then
 		gl_fork "$@"
+	else
+		echo "I don't know how to fork this remote:" >&2
+		echo "   $(git remote get-url upstream)" >&2
 	fi
 	if ! git remote | grep -xqw origin; then
 		git remote rename upstream origin
