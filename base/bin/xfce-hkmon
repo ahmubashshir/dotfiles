@@ -1,5 +1,4 @@
 #!/bin/bash
-SRC=cpp
 CCARG=(-std=c++0x -O3 -lrt)
 
 source "${0%/*}/lib/compile"
