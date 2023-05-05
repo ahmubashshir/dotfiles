@@ -1,4 +1,3 @@
-#!/bin/bash
-CCARG=(-std=c++0x -O3 -lrt)
-
-source "${0%/*}/lib/compile"
+#!/usr/bin/make -rsif
+FLAGS = -std=c++0x -O3 -lrt
+include $(HOME)/bin/lib/compile

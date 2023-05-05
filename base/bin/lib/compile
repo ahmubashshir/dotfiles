@@ -1,19 +1,25 @@
-#!/bin/bash
-set -x
-NAME="${0##*/}"
-SRC="$(find bin/srcs/ -name "$NAME"'.*' -exec basename '{}' \; | head -n1)"
+#!/usr/bin/make -f
 
-[[ -d ${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
+FLAGS ?=
+XDG_CACHE_HOME ?= $(HOME)/.cache
 
-if [[ ! -x "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" ||
-	"${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" -ot "${0%/*}/srcs/$SRC" ]]; then
-	case "$SRC" in
-		*.c) CC=gcc ;;
-		*.cpp | *.cc | *.cxx) CC=g++ ;;
-	esac
-	"$CC" "${0%/*}/srcs/$SRC" \
-		-o "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" \
-		"${CCARG[@]}" || exit $?
-fi
+BINDIR := $(XDG_CACHE_HOME)/bin
+SRCDIR := $(HOME)/bin/srcs
+SHELL  := /bin/bash
+NAME   := $(basename $(notdir $(firstword $(MAKEFILE_LIST))))
 
-exec -a "$NAME" "${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME" "$@"
+all: $(BINDIR)/$(NAME)
+	@exec -a $(NAME) $(<) $(MAKECMDGOALS)
+
+$(BINDIR)/%: $(SRCDIR)/%.c
+	$(CC) $(^) -o $(@) $(FLAGS)
+
+$(BINDIR)/%: $(SRCDIR)/%.cpp
+	$(CXX) $(^) -o $(@) $(FLAGS)
+
+@@clean@@:
+	rm -f $(BINDIR)/$(NAME)
+
+ifeq ($(firstword $(filter @@clean@@,$(MAKECMDGOALS))),)
+$(MAKECMDGOALS): all
+endif
