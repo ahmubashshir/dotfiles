@@ -36,18 +36,24 @@ setopt \
 	hist_verify
 
 function -hist:pwd:file {
-	[[ $PWD != $HOME ]] || return
-	if [[ -f "$PWD/hist" && $HISTFILE:t == "history" || $HISTFILE:t = "hist" && ! $PWD -pcre-match ^${HISTFILE:h} ]]
-	then
-		fc -P
-		if [[ -f "$PWD/hist" ]]
+	local DIR="$PWD"
+	until [[ ! -w $DIR || $DIR == '/' || $DIR == "$HOME" ]]; do
+		if
+			[[ -f "$DIR/hist" && $HISTFILE:t == "history" ]] ||
+			[[ $HISTFILE:t = "hist" && ! $DIR -pcre-match ^${HISTFILE:h} ]]
 		then
-			local OLDHIST="$HISTFILE"
-			fc -p "$PWD/hist"
-			fc -R "$OLDHIST"
+			fc -P
+			if [[ -f "$DIR/hist" ]]
+			then
+				local OLDHIST="$HISTFILE"
+				fc -p "$DIR/hist"
+				fc -R "$OLDHIST"
+			fi
+			fc -R
+			return
 		fi
-		fc -R
-	fi
+		DIR="${DIR:h}"
+	done
 }
 
 add-zsh-hook -Uz chpwd -hist:pwd:file
