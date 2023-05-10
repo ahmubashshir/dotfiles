@@ -18,18 +18,28 @@ function __devprompt_env {
 	[[ -z $2 ]] && return 0
 
 	DEVPROMPT_PROMPT+="${DEVPROMPT[seperator]}${DEVPROMPT[prefix]}"
-	DEVPROMPT_PROMPT+="${DEVPROMPT[icon]}$1%B ${DEVPROMPT[text]}$2%b"
+	DEVPROMPT_PROMPT+="${DEVPROMPT[icon]}$B%{${icons[$1]}%G%} ${DEVPROMPT[text]}$2%b"
 	DEVPROMPT_PROMPT+="${DEVPROMPT[default]}${DEVPROMPT[suffix]}"
 }
 
 function __devprompt_precmd {
 	emulate -L zsh
-	setopt hist_subst_pattern extendedglob
+	setopt hist_subst_pattern extendedglob rematchpcre
+	local -A icons
+	icons=(
+		['ssh']=$'\xef\x92\x89'     # f489		nf-oct-terminal
+		['pod']=$'\xee\xae\x9e'     # eb9e		nf-cod-run_all
+		['py3']=$'\xee\x98\x86'     # e606		nf-seti-python
+		['lua']=$'\xee\x98\xa0'     # e620		nf-seti-lua
+		['rby']=$'\xee\x98\x85'     # e605		nf-seti-ruby
+		['nix']=$'\xef\x8c\x93'     # f313		nf-linux-nixos
+	)
+
 	DEVPROMPT_PROMPT=''
-	__devprompt_env $'\xef\x83\x82' "${SSH_CLIENT%% *}"  # nf-fa-cloud::f0c2
-	__devprompt_env $'\xee\xae\x9e' "${CONTAINER_ID}"    # nf-cod-run_all::eb9e
-	__devprompt_env $'\xee\x98\x86' ${VIRTUAL_ENV:t:s@'%-[^-]##-py[0-9.]##'@@} # nf-seti-python::e606
-	__devprompt_env $'\xee\x98\xa0' "${ROCK_ENV_NAME}" # nf-seti-lua::e620
-	__devprompt_env $'\xee\x98\x85' "${RBENV_VERSION}" # nf-seti-ruby::e605
-	__devprompt_env $'\xef\x8c\x93' "${IN_NIX_SHELL}"  # nf-linux-nixos::f313
+	__devprompt_env ssh "${${=SSH_CONNECTION}[3]}"
+	__devprompt_env pod "${CONTAINER_ID}"
+	__devprompt_env py3 "${VIRTUAL_ENV+${VIRTUAL_ENV:t:gs+-+/+:h:h:gs+/+-+}}"
+	__devprompt_env lua "${ROCK_ENV_NAME}"
+	__devprompt_env rby "${RBENV_VERSION}"
+	__devprompt_env nix "${IN_NIX_SHELL}"
 }
