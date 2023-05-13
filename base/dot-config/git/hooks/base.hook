@@ -76,6 +76,11 @@ if [ -x "$GIT_DIR/hooks/$stage" ]; then
 	}
 fi
 
+if [[ -x ${0%/*}/trailers.hook && $stage == commit-msg && "$(git config --bool "hook.$stage.trailers")" != "false" ]]; then
+	echo "${f[blue]}::${f[green]} Running '${f[blue]}commit-msg.trailers${f[green]}'${f[reset]}"
+	"${0%/*}/trailers.hook" "$@"
+fi
+
 # all the hooks have run; perform some cleanup.
 case "$stage" in
 	post-update)
