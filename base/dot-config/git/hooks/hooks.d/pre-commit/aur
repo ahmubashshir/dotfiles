@@ -15,8 +15,8 @@ fi
 
 echo "${msg_prefix}Updating SRCINFO${f[reset]}"
 
-makepkg --verifysource -f --skippgpcheck \
-	&& makepkg --printsrcinfo > .SRCINFO
+makepkg --verifysource -f --skippgpcheck
+makepkg --printsrcinfo > .SRCINFO
 
 echo "${f[green]}==> Checking PKGBUILD${f[reset]}"
 if [[ -x /usr/bin/namcap ]]; then
