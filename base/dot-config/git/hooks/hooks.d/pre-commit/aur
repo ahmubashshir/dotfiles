@@ -14,7 +14,8 @@ if grep -q 'git://|git+http' PKGBUILD; then
 fi
 
 echo "${msg_prefix}Updating SRCINFO${f[reset]}"
-makepkg --verifysource -f \
+
+makepkg --verifysource -f --skippgpcheck \
 	&& makepkg --printsrcinfo > .SRCINFO
 
 echo "${f[green]}==> Checking PKGBUILD${f[reset]}"
