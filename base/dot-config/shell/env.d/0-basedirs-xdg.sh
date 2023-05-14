@@ -30,6 +30,8 @@ export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 # haskell:cabal
 export CABAL_CONFIG="$XDG_CONFIG_HOME"/cabal/config
 export CABAL_DIR="$XDG_CACHE_HOME"/cabal
+# cgdb
+export CGDB_DIR="$XDG_CONFIG_HOME"/cgdb
 # rust:cargo
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
 # nvidia:cuda
@@ -44,7 +46,7 @@ export GOPATH="$XDG_DATA_HOME"/go
 export HUGO_CACHEDIR="$XDG_CACHE_HOME"/hugo
 # java:gradle
 export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
-export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="$XDG_CONFIG_HOME"/java
+export _JAVA_OPTIONS="-Djava.util.prefs.userRoot='$XDG_CONFIG_HOME/java'${_JAVA_OPTIONS+ $_JAVA_OPTIONS}"
 # GTK 1,2
 export GTK_RC_FILES="$XDG_CONFIG_HOME"/gtk-1.0/gtkrc
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
@@ -71,6 +73,7 @@ export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
 # ruby:rbenv
 export RBENV_ROOT="$XDG_DATA_HOME"/rbenv
+export RBENV_HOME="$XDG_DATA_HOME"/rbenv/rbenv
 # rust:rustup
 export RUSTUP_HOME="$XDG_DATA_HOME"/rustup
 # gnu:screen
