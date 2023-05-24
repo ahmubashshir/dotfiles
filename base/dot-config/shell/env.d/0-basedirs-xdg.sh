@@ -71,6 +71,8 @@ export OPAMROOT="$XDG_DATA_HOME/opam"
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 # pass
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
+# python:venv
+export WORKON_HOME="$XDG_DATA_HOME/virtualenvs"
 # ruby:rbenv
 export RBENV_ROOT="$XDG_DATA_HOME"/rbenv
 export RBENV_HOME="$XDG_DATA_HOME"/rbenv/rbenv
