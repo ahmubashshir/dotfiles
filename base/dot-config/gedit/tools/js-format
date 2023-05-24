@@ -11,7 +11,7 @@
 check()
 {
 	for n in "$@"; do
-		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n 2>&1 > /dev/null; then
+		if ! /bin/which --skip-tilde --skip-dot --skip-alias --skip-functions $n > /dev/null 2>&1; then
 			echo "$n is not installed" >&2
 			exit 1
 		fi
