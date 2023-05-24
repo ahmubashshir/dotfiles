@@ -1,0 +1,36 @@
+#!/bin/sh
+has()
+{
+	command -pv "$@" 2> /dev/null >&2
+}
+
+run_in_terminal()
+{
+	if has xfce4-terminal; then
+		exec xfce4-terminal --disable-server \
+			-T 'Performing upgrades' \
+			--dynamic-title-mode=none \
+			--hide-menubar --hide-toolbar \
+			--show-borders --show-scrollbar \
+			-I system-upgrade -e "$*"
+	fi
+}
+
+if ! tty -s; then
+	run_in_terminal "$0"
+fi
+
+if test -f /etc/arch-release; then
+	if has aur; then
+		env -u SSH_AUTH_SOCK AUR_SYNC_USE_NINJA=1 \
+			aur sync \
+			--keep-going=0 \
+			--no-view \
+			--upgrades \
+			--rebase \
+			--chroot \
+			--no-confirm \
+			--pkgver
+	fi
+	sudo pacman -Syu
+fi
