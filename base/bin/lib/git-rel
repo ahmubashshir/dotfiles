@@ -8,13 +8,13 @@ if [[ -z $exec ]]; then
 	function do_as_root
 	{
 		if command -pv sudo 2> /dev/null >&2; then
-			sudo   "$@"
+			sudo "$@"
 		elif command -pv doas 2> /dev/null >&2; then
-			doas   "$@"
+			doas "$@"
 		elif command -pv su 2> /dev/null >&2; then
-			su   root -- -c 'exec "$@"' -- "$@"
+			su root -- -c 'exec "$@"' -- "$@"
 		else
-			cat   >&2 << EOF
+			cat >&2 << EOF
 warning: no su helpers found, run the below text as root
 "$@"
 EOF
@@ -39,11 +39,9 @@ EOF
 					"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
 		)
 		if [[ -n $relinfo ]]; then
-			rtver=$(
-				printf '%s' "$relinfo" \
-					| jq -r '.tag_name'
-			)
-			rtver="${rtver#*v}"
+			rtver=$(jq -r '.tag_name' <<< "$relinfo")
+			rtver="${rtver#*v.}"
+			[[ ${rtver:0:1} =~ [0-9] ]] || rtver=${rtver:1}
 			if ! declare -Fp version |& grep -q '^declare -f'; then
 				version()
 				{
