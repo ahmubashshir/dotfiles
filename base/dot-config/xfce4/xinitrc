@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if test -f "${XDG_CONFIG_HOME:-$HOME/.config}/X11/xinitrc"
+then . "${XDG_CONFIG_HOME:-$HOME/.config}/X11/xinitrc"
+done
+
+. /etc/xdg/xfce4/xinitrc
