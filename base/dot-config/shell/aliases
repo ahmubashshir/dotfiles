@@ -37,6 +37,7 @@ alias mprime='mprime -s'
 alias sudo='sudo -H'
 alias spider='curl -ILksXGET'
 alias dd='dd status=progress'
+alias dbx=distrobox
 
 # wormhole
 if [ -x /usr/bin/wormhole ]; then
