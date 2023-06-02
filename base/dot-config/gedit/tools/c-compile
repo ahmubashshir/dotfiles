@@ -12,7 +12,8 @@ export TERM=dumb
 TYPE=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
 NAME=${GEDIT_CURRENT_DOCUMENT_NAME}
 DIR=${GEDIT_CURRENT_DOCUMENT_DIR}
-declare -ga args
+declare -ga args files
+files=("$NAME")
 
 get_avr()
 {
@@ -52,7 +53,10 @@ get_avr()
 		)
 	fi
 }
-
+get_file()
+{
+	files+=("$1")
+}
 get_pkg()
 {
 	if pkg-config "$1"; then
@@ -116,6 +120,8 @@ while read -r type flag arg; do
 		[[ -z "$filter" || ! $flag =~ : || $flag =~ ^$filter ]] || continue
 		if [[ $flag =~ ^- ]]; then
 			args+=("${flag#"$filter"}")
+		elif [[ $type == : ]]; then
+			args+=("${flag#"$filter"}")
 		else
 			args+=("--${flag#"$filter"}")
 		fi
@@ -129,17 +135,17 @@ done < <(
 	FILTER='-?\w+ ?[^"]+?'
 	PREFIX='[ \*]+'
 	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
-		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME"
+		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
 )
 
 if ((compiler_hints == 0)); then
 	__hint "Add '#help' as a comment to see tool help"
 fi
-
+typeset -p files
 [[ -z "$filter" ]] || args=("${filter%:}" "${args[@]}")
 case "$TYPE" in
-	x-csrc) exec gcc -o "${NAME}.elf" "${NAME}" "${args[@]}" ;;
-	x-c++src) exec g++ -o "${NAME}.elf" "${NAME}" "${args[@]}" ;;
+	x-csrc) exec gcc "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
+	x-c++src) exec g++ "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
 	x-java)
 		cd "$DIR" || exit 1
 		exec javac "${args[@]}" "$NAME"
@@ -158,7 +164,7 @@ case "$TYPE" in
 			false
 		fi
 
-		avr-gcc -Wall -Os "$NAME" -o "$NAME.$MCU.out" "${args[@]}"
+		avr-gcc -Wall -Os "${files[@]}" -o "$NAME.$MCU.out" "${args[@]}"
 		avr-size -C "--mcu=$MCU" "$NAME.$MCU.out"
 		(
 			[[ "$FMT" ]] || FMT=ihex
