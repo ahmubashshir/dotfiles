@@ -1,6 +1,13 @@
 if ! (($+functions[zsh-defer]));then
 	zplug defer || function zsh-defer {
+		while [[ $1 =~ ^[+-] ]];do shift; done
 		"$@"
 	}
 fi
-zsh-defer zplug "$@"
+
+local -a defer_opts
+while [[ $1 =~ ^[+-] ]]; do defer_opts+=("$1"); shift;done
+if (($#defer_opts == 0)); then defer_opts=(-a +12);fi
+
+zsh-defer "${defer_opts[@]}" zplug "$@"
+# vim: ft=bash
