@@ -4,6 +4,8 @@ exec 3> /dev/null
 
 . ~/.config/shell/functions
 . ~/.config/shell/aliases
+
+tty -s || return
 if
 	([ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]) &&
 		command -pv kitty 2> /dev/null 1>&2
