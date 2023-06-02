@@ -3,3 +3,4 @@
 for env__e in ~/.config/shell/env.d/*.sh; do
 	. "$env__e"
 done
+unset env__e
