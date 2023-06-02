@@ -20,8 +20,7 @@ GITSTATUS[untracked]='%F{cyan}'   	# blue foreground
 GITSTATUS[conflicted]='%F{red}'  	# red foreground
 
 GITSTATUS[default]='%F{red}'
-GITSTATUS[seperator]='-'
-GITSTATUS[prefix]='['
+GITSTATUS[prefix]='-['
 GITSTATUS[suffix]=']'
 
 function _git_prompt_update_async {
@@ -118,7 +117,7 @@ function _git_prompt_update_async {
 		# 'merge' if the repo is in an unusual state.
 		[[ -n $VCS_STATUS_ACTION     ]] && head+="${GITSTATUS[conflicted]} %{󱄊%G%}"
 	}
-	printf '%s' "${GITSTATUS[seperator]}${GITSTATUS[prefix]}" \
+	printf '%s' "${GITSTATUS[prefix]}" \
 				"${head}${state:+ $state}" \
 				"${GITSTATUS[default]}${GITSTATUS[suffix]}"
 }
@@ -126,9 +125,10 @@ function _git_prompt_update_async {
 function _git_prompt_update {
 	[[ $1 != _git_prompt_update_async ]] && return
 	if [[ "$GITSTATUS_PROMPT" != "$3" ]];then
+		local promptesc='%([BSUbfksu]|([FK]|){*})'
 		emulate -L zsh
 		GITSTATUS_PROMPT="$3"
-		GITSTATUS_PROMPT_LEN="${(m)#${${GITSTATUS_PROMPT//\%\%/x}//\%(f|<->F)}}"
+		GITSTATUS_PROMPT_LEN="${#${(S%%)GITSTATUS_PROMPT//$~promptesc/}}"
 		# The length of GITSTATUS_PROMPT after removing %f and %F.
 		(($6==0)) && zle && zle reset-prompt
 	fi
