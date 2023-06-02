@@ -56,4 +56,4 @@ function -hist:pwd:file {
 }
 
 add-zsh-hook -Uz chpwd -hist:pwd:file
-! [[ -f "$PWD/hist" ]] || -hist:pwd:file
+cd "$PWD"
