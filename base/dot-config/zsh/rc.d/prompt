@@ -1,8 +1,9 @@
 #!/bin/zsh
-
+ENV[prompt_filter]='%([BUbfku]|([FK]){*})'
 ENV[prompt_suffix]='%(?..%F{cyan})┠'
 ENV[prompt_prefix]='%(?..%F{cyan})┨'
 ENV[prompt_seperator]='%(?..%F{cyan})'
+
 case "$TERM" in
 	xterm|xterm-color|*-256color|*-kitty) ENV[color_prompt]=yes;;
 esac
@@ -27,30 +28,29 @@ DIR_PROMPT='%20>...>%1~%<<'
 PROMPT=''
 
 if [[ $ENV[color_prompt] = yes ]];then
-	PS_PADDING=$'%-2<─<'
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
 		DATE_TIME_PROMPT=''
-		DATE_TIME_PROMPT+="${ENV[prompt_seperator]}${ENV[prompt_prefix]}"
+		DATE_TIME_PROMPT+="${ENV[prompt_prefix]}"
 		DATE_TIME_PROMPT+="%B%F{blue}%D{%I}%F{green}:%F{blue}%D{%M}%F{green}:"
 		DATE_TIME_PROMPT+="%F{blue}%D{%S}%F{green}%D{%p}%b%F{red}${ENV[prompt_suffix]}"
-		PS_PADDING=$'%-14<─<'
 	fi
 	zplug-defer gitstatus-async
 	zplug-defer devprompt
-	DIR_PROMPT="${ENV[prompt_prefix]}%F{green}"$'\xef\x81\xbb\x00'" %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
-	RET_PROMPT='%F{red}%(?..%B%?%b%F{cyan}┃)%(?|🙂|😑)┠╯%f'
+	DIR_PROMPT="${ENV[prompt_prefix]}%F{green}%1{"$'\xef\x81\xbb\x00'"%} %F{cyan}%B${DIR_PROMPT}%b%F{red}${ENV[prompt_suffix]}"
+	RET_PROMPT='%(?.%F{red}.%B%?%b%F{cyan}┃)%(?.:).:|)%2{┠╯%}%f'
 #	zplug gio-vfs-prompt && {
 #		GIOVFS[seperator]=$'\n├─'
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
-	PROMPT+=$'%E%F{red}%(?..%F{cyan})╭─${DIR_PROMPT}'
-	PROMPT+=$'${GITSTATUS_PROMPT}'
-	PROMPT+=$'${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
-	PROMPT+=$'${PS_PADDING}${(pl:COLUMNS::─:)}%<<${DATE_TIME_PROMPT}╮ '
-	PROMPT+=$'%{\n%}%{\r%}╰─%(?..%F{cyan})%B${ENV[prompt_prefix]} %b%F{lightgreen}'
-	TPROMPT=$'%E%B%F{red}%(?..%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b' # transient prompt
-	RPROMPT='${RET_PROMPT}'
+	PROMPT+=$'%0{\r%}%E%(?.%F{red}.%F{cyan})╭─${DIR_PROMPT}'
+	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
+	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT//$~ENV[prompt_filter]/}}))>─>${(pl:COLUMNS::─:)}%<<'
+	PROMPT+=$'${DATE_TIME_PROMPT}╮%1{\n\r%}'
+	PROMPT+=$'%0{\r%}%E╰─%(?..%F{cyan})%B${ENV[prompt_prefix]}%1{%} %b%F{lightgreen}'
+	# transient prompt
+	TPROMPT=$'%0{\r%}%E%B%(?.%F{red}.%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b'
+	RPROMPT=$'${RET_PROMPT}'
 else
 	PROMPT+='${DIR_PROMPT} %% '
 fi
