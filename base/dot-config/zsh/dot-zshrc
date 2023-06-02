@@ -45,6 +45,7 @@ if ((${#___plugins[@]} > 1));then
 		then
 			printf "zsh: failed to initialize plugins\n"
 			function zsh-defer {
+				while [[ $1 =~ ^[+-] ]];do shift; done
 				"$@"
 			}
 		else
@@ -61,6 +62,9 @@ unset ___plugins
 typeset -A ENV
 #zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
 load rc completion keymap history modules plugins prompt transient-prompt
+
+# reset state : required when using deferred loading
+zsh-defer -a +rpszm :
 
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
 
