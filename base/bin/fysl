@@ -10,13 +10,9 @@ while test $# -gt 0; do
 	if printf '%s\n' "$1" | grep -qE '^https?://'; then
 		printf '%s: crawling' "$1"
 		url=$(
-			curl    https://redirectdetective.com/ld.px \
-				--disable --compressed -s \
-				--data-urlencode "w=$1" \
-				--data-urlencode 'f=false' \
-				-H 'Origin: https://redirectdetective.com' \
-				-H 'Referer: https://redirectdetective.com' |
-				xmllint --html --xmlout --xpath 'string((//a)[last()]/@href)' -
+			curl --disable -s "https://api.toksaver.com/bypass/$1" \
+				--user-agent 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0' \
+				--compressed --referer 'https://thebypasser.com/' -H 'Origin: https://thebypasser.com' -H 'Sec-Fetch-Dest: empty' | jq -r '.link'
 		)
 		printf '\33[2K\r%s: found\n  %s\n' "$1" "$url"
 	else
