@@ -1,5 +1,6 @@
 @-moz-document url-prefix(about:home),
-url-prefix(about:newtab) {
+url-prefix(about:newtab),
+url-prefix(about:privatebrowsing) {
 	body {
 		background: var(--backdrop) no-repeat center center fixed !important;
 		background-size: cover !important;
