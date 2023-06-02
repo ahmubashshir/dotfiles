@@ -5,9 +5,8 @@ autoload -U add-zsh-hook
 
 typeset -gA DEVPROMPT
 
-DEVPROMPT[prefix]='['
+DEVPROMPT[prefix]='-['
 DEVPROMPT[suffix]=']'
-DEVPROMPT[seperator]='-'
 DEVPROMPT[icon]='%F{blue}'
 DEVPROMPT[text]='%F{green}'
 DEVPROMPT[default]='%F{red}'
@@ -17,7 +16,7 @@ add-zsh-hook precmd __devprompt_precmd
 function __devprompt_env {
 	[[ -z $2 ]] && return 0
 
-	DEVPROMPT_PROMPT+="${DEVPROMPT[seperator]}${DEVPROMPT[prefix]}"
+	DEVPROMPT_PROMPT+="${DEVPROMPT[prefix]}"
 	DEVPROMPT_PROMPT+="${DEVPROMPT[icon]}$B%{${icons[$1]}%G%} ${DEVPROMPT[text]}$2%b"
 	DEVPROMPT_PROMPT+="${DEVPROMPT[default]}${DEVPROMPT[suffix]}"
 }
