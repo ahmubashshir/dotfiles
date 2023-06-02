@@ -43,6 +43,16 @@ if [[ $ENV[color_prompt] = yes ]];then
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
+	if ! [[ $TERM == xterm-kitty ]]; then
+		typeset -gi OLDCOLUMNS=COLUMNS
+		TRAPWINCH () {
+			if (( COLUMNS < OLDCOLUMNS)); then
+				tput cuu $((OLDCOLUMNS / COLUMNS))
+				zle reset-prompt
+			fi
+			OLDCOLUMNS=COLUMNS
+		}
+	fi
 	PROMPT+=$'%0{\r%}%E%(?.%F{red}.%F{cyan})╭─${DIR_PROMPT}'
 	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
 	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT//$~ENV[prompt_filter]/}}))>─>${(pl:COLUMNS::─:)}%<<'
