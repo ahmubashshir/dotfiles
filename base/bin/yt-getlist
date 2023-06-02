@@ -12,7 +12,15 @@ import yaml
 import stagger
 import requests as r
 
-from youtube_dl import YoutubeDL as YDL
+try:
+    from yt_dlp import YoutubeDL as YDL
+except ImportError:
+    try:
+        from youtube_dl import YoutubeDL as YDL
+    except ImportError:
+        print("Install either youtube-dl or yt-dlp.")
+        exit(1)
+
 from stagger.errors import NoTagError
 
 #########################################################################
@@ -717,7 +725,7 @@ if __name__ == '__main__':
         ydl.update({
             'quiet': True,
             'noprogress': False,
-            'progress_hooks': info.progess,
+            'progress_hooks': [info.progess],
             'logtostderr': True,
             'logger': info,
         })
