@@ -6,15 +6,14 @@ function histfile:local {
 	fc -R "$OLDHIST"
 }
 
-function -hist:set:file {
+() {
+	[[ "${HOST:r}" == "$HOST" ]] || set "${${HOST:r}/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"
+	set "${XDG_STATE_HOME:-$HOME/.local/state}/zsh${1+/$1}/history"
+
 	[[ -d ${1:a:h} ]] || mkdir -p ${1:a:h}
-	[[ -z $HISTFILE ]] || fc -R
+	[[ "${HOST:r}" == "$HOST" ]] || fc -R "${1:a:h:h}/history"
 	HISTFILE="${1:a}"
 }
-
--hist:set:file "${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
-[[ "${HOST:r}" == "$HOST" ]] || -hist:set:file "${HISTFILE:r:h}/${HOST:r}/history"
-unfunction -- -hist:set:file
 
 HISTSIZE=10000
 SAVEHIST=2147483647
