@@ -20,6 +20,13 @@ if ! tty -s; then
 	run_in_terminal "$0"
 fi
 
+if [ -n "$DISPLAY" ]; then
+	sudo()
+	{
+		pkexec "$@"
+	}
+fi
+
 if test -f /etc/arch-release; then
 	if has aur; then
 		env -u SSH_AUTH_SOCK AUR_SYNC_USE_NINJA=1 \
@@ -34,3 +41,4 @@ if test -f /etc/arch-release; then
 	fi
 	sudo pacman -Syu
 fi
+read -rsp $'Press RETURN to continue...'
