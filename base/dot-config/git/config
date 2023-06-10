@@ -19,3 +19,5 @@
 	helper = !$HOME/bin/gh auth git-credential
 [credential "https://gist.github.com"]
 	helper = !$HOME/bin/gh auth git-credential
+[fork "github.com"]
+	org = ahm-forks
