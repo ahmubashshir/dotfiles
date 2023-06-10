@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# made with NANO, the right way
+
+# depends on bash, curl, jq, and your support :)
+
+# support: https://github.com/tempmail-lol/tempmail-cli
+
+BASE_URL="https://api.tempmail.lol"
+
+# temporarily disable ifs
+IFS_OLD=$IFS
+IFS=
+
+HELP_STR="TempMail CLI
+Generate temporary email addresses from the command line!
+
+For help, visit https://github.com/tempmail-lol/tempmail-cli
+
+ARGUMENTS:
+    --help          Show this help menu.
+    --rush -r       Use Rush Mode.
+    --verbose -v    Enable verbose mode.
+    --lynx -l       Render email HTML (requires lynx).
+
+Copyright (C) Alexander Epolite
+"
+
+function debug()
+{
+	[ "$VERBOSE" == "true" ] && echo "[VERBOSITY] $1"
+}
+
+RUSH=""
+VERBOSE=false
+LYNX=false
+
+# command line args
+while [ 1=1 ]; do
+	case $1 in
+		--help)   echo $HELP_STR && exit 0 ;;
+		--rush | -r)
+			RUSH="/rush"
+			shift
+			;;
+		--verbose | -v)
+			VERBOSE=true
+			shift
+			;;
+		--lynx | -l)
+			LYNX=true
+			shift
+			;;
+		*) break ;;
+	esac
+done
+
+# reset ifs
+IFS=$IFS_OLD
+
+debug "Rush Mode: $RUSH"
+
+GENERATION_TEMP="$(curl -s $BASE_URL/generate$RUSH)"
+
+debug "Generation data: $GENERATION_TEMP"
+
+ADDRESS=$(echo $GENERATION_TEMP | jq -r ".address")
+TOKEN=$(echo $GENERATION_TEMP | jq -r ".token")
+
+echo "Your temporary email is $ADDRESS"
+
+# since users will be copying, prevent ctrl c from exiting
+
+term()
+{
+	echo "To copy, hover over the text, right click, and press copy."
+	echo "To exit, press 'q'.  Your inbox will be lost on exit."
+}
+
+debug "Token: $TOKEN"
+
+trap term INT
+
+# if lynx is enabled, make sure that it exists
+if [ "$LYNX" == "true" ]; then
+	if ! command -v lynx &> /dev/null; then
+		echo "Could not find lynx, it has been disabled."
+		LYNX=false
+	fi
+fi
+
+while [ 1=1 ]; do
+	# break on the q character
+	read -N 1 -t 5 -r -s && [[ $REPLY == 'q' ]] && exit 0
+
+	EC=$?
+
+	# if the result is not a timeout, continue (so the api
+	# isn't spammed if someone holds down a certain character)
+	[ $EC -ne 142 ] && continue
+
+	CHECK=$(curl "$BASE_URL/auth/$TOKEN" -s)
+	debug "HTTP result: $CHECK"
+	PARSE_A=$(echo $CHECK | jq -r ".email")
+
+	[ "$PARSE_A" == "[]" ] && continue
+
+	FROM=$(echo $CHECK | jq -r ".email[].from")
+	BODY=$(echo $CHECK | jq -r ".email[].body")
+	HTML=$(echo $CHECK | jq -r ".email[].html")
+	IP=$(echo $CHECK | jq -r ".email[].ip")
+
+	debug "HTML: $HTML"
+
+	if [ "$LYNX" == "true" ]; then
+		if [ "$HTML" != "null" ]; then
+			echo $HTML | lynx -stdin
+			continue
+		fi
+	fi
+
+	echo "You got a new email!"
+
+	IFS=
+
+	echo "
+	From: $FROM
+	To: $ADDRESS
+	Originating IP: $IP
+	Body: $BODY"
+
+	IFS=$IFS_OLD
+done
