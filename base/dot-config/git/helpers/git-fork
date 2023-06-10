@@ -1,4 +1,15 @@
 #!/bin/bash
+function repo_exists
+{
+	git ls-remote -q "$1" HEAD 2> /dev/null 1>&2
+}
+
+function match_remote
+{
+	# match_remote <remote> <hostspec-regex>
+	git remote get-url "${1}" | grep -xqE "${2}"'[[:alnum:]_-]+/[[:alnum:]._-]+(\.git|$)'
+}
+
 function fork_setup
 {
 	default=$(
@@ -10,50 +21,60 @@ function fork_setup
 	git config branch.$default.remote upstream
 	git config branch.$default.pushRemote origin
 	git config remote.pushDefault origin
-	case "$1" in
-		gh)
-			git remote get-url upstream \
-				| cut -d/ -f4- \
-				| xargs gh repo set-default
-			;;
-	esac
 	echo "configured the fork" >&2
 }
 
 function gh_fork
 {
-	gh repo fork --remote --remote-name origin "$@"
+	local org repo user upstream
+	read -r org < <(git config --get "fork.github.com.org")
+	read -r user < <(gh api user --jq '.login')
+	read -r repo < <(while (($# > 0)); do
+		[[ $1 == --fork-name ]] && echo "$2" && break
+		shift
+	done)
+	read -r upstream < <(
+		git remote get-url upstream \
+			| sed -nE 's;^.*[/:]([^/]+/[^/]+)(.git$|.)$;\1;gp'
+	)
+	[[ -n "$repo" ]] || set -- --fork-name "${REPO_NAME%.git}" "$@"
+	[[ -z "$org" ]] || set -- --org "$org" "$@"
+
+	if ! repo_exists "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"; then
+		gh repo fork --remote --remote-name origin "$@"
+	else
+		printf '\e[32m✓\e[m Fork exists \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
+		git remote add origin "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"
+		printf '\e[32m✓\e[m Added remote \e[1m%s\e[m\n' "origin"
+		gh repo set-default "$upstream"
+	fi
 }
 
-function gl_fork
-{
-	:
-}
-REPO_SPEC='[[:alnum:]_-]+/[[:alnum:]._-]+(\.git|$)'
 if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
-	if git remote get-url upstream \
-		| grep -xqE '(https://|git@)github\.com(/|:)'"$REPO_SPEC"; then
-		case $(git config --get user.email) in
-			ahmubashshir@*) gh_fork --org ahm-forks "$@" ;;
-			*) gh_fork "$@" ;;
-		esac
-	elif git remote get-url upstream \
-		| grep -xqE '(https://|git@)gitlab\.com(/|:)'"$REPO_SPEC"; then
-		gl_fork "$@"
+	read -r REPO_NAME < <(
+		git remote get-url upstream \
+			| sed -nE 's;^.*/([^/]+)(.git$|.)$;\1;gp'
+	)
+
+	if match_remote upstream '(https://|git@)github\.com(/|:)'; then
+		gh_fork "$@"
+		#	elif match_remote upstream '(https://|git@)gitlab\.com(/|:)'; then
+		#		gl_fork "$@"
 	else
 		echo "I don't know how to fork this remote:" >&2
 		echo "   $(git remote get-url upstream)" >&2
 	fi
+
 	if ! git remote | grep -xqw origin; then
 		git remote rename upstream origin
 		echo "Failed to fork" >&2
 		exit
 	fi
-	fork_setup gh
+	fork_setup
 elif git remote | grep -xqw upstream; then
 	echo "Already has upstream" >&2
-	fork_setup gh
+	fork_setup
 else
 	echo "No upstream remote available" >&2
 fi
