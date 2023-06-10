@@ -1,4 +1,4 @@
-[credential]
+[credential "*"]
 	helper = netrc
 [instaweb]
 	browser = xdg-open
