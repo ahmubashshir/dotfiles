@@ -286,3 +286,5 @@ extendsyntax makefile tabgives "	"
 #bind ^U undo main
 #bind ^E redo main
 #set multibuffer
+
+# vim: ft=sh
