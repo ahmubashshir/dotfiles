@@ -61,6 +61,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 	# transient prompt
 	TPROMPT=$'%0{\r%}%E%B%(?.%F{red}.%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b'
 	RPROMPT=$'${RET_PROMPT}'
+	RPS1="$RPROMPT"
 else
 	PROMPT+='${DIR_PROMPT} %% '
 fi
