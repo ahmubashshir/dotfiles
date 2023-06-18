@@ -41,4 +41,6 @@ if test -f /etc/arch-release; then
 	fi
 	sudo pacman -Syu
 fi
-read -rsp $'Press RETURN to continue...'
+
+stty -echo echonl
+read -p 'Press RETURN to continue...' _ > /dev/null
