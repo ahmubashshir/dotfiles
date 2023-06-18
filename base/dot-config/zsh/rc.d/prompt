@@ -43,11 +43,19 @@ if [[ $ENV[color_prompt] = yes ]];then
 #		GIOVFS[prefix]="${ENV[prompt_prefix]}"
 #		GIOVFS[suffix]="${ENV[prompt_suffix]}"
 #	}
-	if ! [[ $TERM == xterm-kitty ]]; then
-		typeset -gi OLDCOLUMNS=COLUMNS
+	if ! [[ $TERM == xterm-kitty && $_ksi_fd -gt 2 ]]; then
+		typeset -gi OLDCOLUMNS=COLUMNSs
+		__prompt_up_1_line () { unset __ZSH_WINCH_ONCE; }
+		add-zsh-hook precmd __prompt_up_1_line
+
 		TRAPWINCH () {
-			if (( COLUMNS < OLDCOLUMNS)); then
-				tput cuu $((OLDCOLUMNS / COLUMNS))
+			if (( OLDCOLUMNS - COLUMNS == 1)); then
+				echoti cr
+				echoti el
+				echoti cr
+				zle reset-prompt
+			elif (( OLDCOLUMNS / COLUMNS > 0)); then
+				echoti cuu $(( (OLDCOLUMNS / COLUMNS) + (__ZSH_WINCH_ONCE++ == 0) ))
 				zle reset-prompt
 			fi
 			OLDCOLUMNS=COLUMNS
