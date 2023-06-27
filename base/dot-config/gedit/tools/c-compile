@@ -132,7 +132,7 @@ while read -r type flag arg; do
 	((++compiler_hints)) && echo "$type ${flag#"$filter"} $arg"
 done < <(
 	TYPE='@|:|#'
-	FILTER='-?\w+ ?[^"]+?'
+	FILTER='-?\w+ ?.+?'
 	PREFIX='[ \*]+'
 	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
 		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
