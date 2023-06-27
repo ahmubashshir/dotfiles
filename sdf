@@ -10,7 +10,7 @@ EOF
 fi
 
 STOW_DIR="$(dirname "$(realpath "$0")")"
-STOW_IGNORE="^(face\.png|INFO)|\.swp"
+STOW_IGNORE="^(face\.png|.info)|\.swp"
 function dot-file
 {
 	stow -d "$STOW_DIR" --dotfile -t ~ -v1 \
@@ -29,7 +29,7 @@ if [ "$#" -eq 0 ]; then
 	exec find -maxdepth 1 -type d -not -name '.*' -printf '\t%f\n'
 elif [ "$1" = "system" ]; then
 	shift
-	stow-system      "$@"
+	stow-system    "$@"
 else
 	dot-file "$@"
 fi
