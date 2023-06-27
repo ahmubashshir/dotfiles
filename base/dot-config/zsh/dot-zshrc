@@ -72,6 +72,7 @@ zcompinit
 if [ -e zprof ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
+	exec 2>/dev/stderr 3>/dev/null
 fi
 
 # zplug startup-timer
