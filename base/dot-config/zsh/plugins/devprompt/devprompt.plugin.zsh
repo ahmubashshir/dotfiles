@@ -23,8 +23,10 @@ function __devprompt_env {
 
 function __devprompt_precmd {
 	emulate -L zsh
-	setopt hist_subst_pattern extendedglob rematchpcre
+	setopt extendedglob
 	local -A icons
+	local pyvenvfilter='-([^-](#c8)-py[0-9].[0-9]##|[a-z]##)(#e)'
+
 	icons=(
 		['ssh']=$'\xef\x92\x89'     # f489		nf-oct-terminal
 		['pod']=$'\xee\xae\x9e'     # eb9e		nf-cod-run_all
@@ -37,7 +39,7 @@ function __devprompt_precmd {
 	DEVPROMPT_PROMPT=''
 	__devprompt_env ssh "${${=SSH_CONNECTION}[3]}"
 	__devprompt_env pod "${CONTAINER_ID}"
-	__devprompt_env py3 "${VIRTUAL_ENV+${VIRTUAL_ENV:t:gs+-+/+:h:h:gs+/+-+}}"
+	__devprompt_env py3 "${${VIRTUAL_ENV:t}//$~pyvenvfilter/}"
 	__devprompt_env lua "${ROCK_ENV_NAME}"
 	__devprompt_env rby "${RBENV_VERSION}"
 	__devprompt_env nix "${IN_NIX_SHELL}"
