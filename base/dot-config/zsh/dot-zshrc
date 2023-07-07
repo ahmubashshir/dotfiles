@@ -64,7 +64,7 @@ typeset -A ENV
 load rc completion keymap history modules plugins prompt transient-prompt
 
 # reset state : required when using deferred loading
-zsh-defer -a +dmszrp :
+zsh-defer +a :
 
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
 
