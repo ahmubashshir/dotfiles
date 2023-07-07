@@ -1,0 +1,160 @@
+#!/bin/bash
+# variables
+if [[ -p ~/pipe:sh ]]; then
+	exec 2> ~/pipe:sh
+	set -x
+fi
+
+MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
+WIKIPEDIA_APP=${WIKIPEDIA_APP:-wike}
+[[ $# -gt 0 ]] || exec firefox "$@"
+
+if
+	hash "$MEDIA_PLAYER" > /dev/null \
+		&& echo "$1" | grep -Eq \
+			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
+then
+	if echo "$1" | grep -Eq '/live/'; then
+		url="https://youtu.be/$(echo "$1" | cut -d/ -f5)"
+		shift
+		set "$url" "$@"
+		unset url
+	fi
+	case "$MEDIA_PLAYER" in
+		mpv)
+			mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv"
+			exec mpv \
+				--script-opts=ontop-enable=no \
+				--player-operation-mode=pseudo-gui \
+				--cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
+				--cache=yes --cache-on-disk \
+				--cache-unlink-files=whendone \
+				--cache-pause-initial \
+				-- "$@"
+			;;
+		*) exec "$MEDIA_PLAYER" "$@" ;;
+	esac
+elif
+	hash "$WIKIPEDIA_APP" > /dev/null \
+		&& echo "$1" | grep -Eq \
+			'^https?://(www|[a-z]{2})\.(m\.)?wikipedia\.org/wiki/.+'
+then
+	case "$WIKIPEDIA_APP" in
+		wike) exec wike -u "$1" ;;
+		*) exec "$WIKIPEDIA_APP" "$@" ;;
+	esac
+elif hash chromium > /dev/null \
+	&& echo "$1" | grep -Eq \
+		'^(https?://([a-z]+\.google\.com|(app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'; then
+	class="$(echo "$1" | sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p')"
+	exec chromium --app="$@" --class="${class:-google-chrome}"
+elif hash zoom > /dev/null && echo "$1" | grep -q 'zoom\.us/j/'; then
+	set "$(echo "$1" | sed -nE 's|.+://(.+\.zoom\.us)/j/(.+)\?(.+)|zoommtg://\1/join?action=join\&confno=\2\&\3|p')"
+	exec zoom "$@"
+fi
+
+DENTRY()
+{
+	local -a common base exo
+	cm=('[Desktop Entry]'
+		'Icon=internet-web-browser'
+		'Name=HTTP(S) URL Handler')
+
+	bs=('Comment=Open HTTP(S) URLs with appropriate apps'
+		'GenericName=Open HTTP(S) URLs with appropriate apps'
+		'Type=Application'
+		'TryExec=/usr/bin/qutebrowser'
+		'Exec=http-open %U')
+	xf=('Type=X-XFCE-Helper'
+		'X-XFCE-Category=WebBrowser'
+		'X-XFCE-CommandsWithParameter=http-open "%s"'
+		'X-XFCE-Commands=http-open')
+
+	local desktop="${XDG_DATA_HOME:-$HOME/.local/share}/applications/http-open.desktop"
+	local exodent="${XDG_DATA_HOME:-$HOME/.local/share}/xfce4/helpers/http-open.desktop"
+	[[ -f $desktop ]] || printf '%s\n' "${cm[@]}" "${bs[@]}" > "$desktop"
+	[[ -f $exodent ]] || printf '%s\n' "${cm[@]}" "${xf[@]}" > "$exodent"
+}
+
+QBCALL()
+{
+	local config cache data base
+	base="${XDG_RUNTIME_DIR:-/run/user/$UID}/http-open"
+	config="${XDG_CONFIG_HOME:-$HOME/.config}/http-open"
+	cache="${XDG_CACHE_HOME:-$HOME/.cache}/http-open"
+	data="${XDG_DATA_HOME:-$HOME/.local/share}/http-open"
+
+	mkdir -p "$base" "$config" "$cache" "$data"
+	ln -fsT "$config" "$base/config"
+	ln -fsT "$data" "$base/data"
+	ln -fsT "$cache" "$base/cache"
+
+	local -a cfg=(
+		'config.load_autoconfig()'
+		'# config'
+		'c.auto_save.interval = 15000'
+		'c.auto_save.session = True'
+		'c.content.headers.user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"'
+		'c.qt.chromium.process_model = "process-per-site"'
+		'c.scrolling.smooth = True'
+		'c.session.lazy_restore = True'
+		'c.tabs.position = "bottom"'
+		'c.tabs.show = "always"'
+		'c.tabs.last_close = "close"'
+		'c.new_instance_open_target = "tab"'
+		'c.content.plugins = True'
+		'c.window.title_format = "{perc}{current_title}{title_sep}HTTP(S) Handler"'
+	)
+
+	local -a exe=(
+		'#!/usr/bin/env python3'
+		'import sys'
+		'import os'
+		''
+		'from inspect import getsource'
+		'from qutebrowser import app'
+		'from qutebrowser.qutebrowser import main'
+		''
+		'exec("\n".join(map('
+		'	lambda x: x \'
+		'		if x.find("app.setApplicationName") == -1 \'
+		'		else x.replace("qutebrowser", "http-open"),'
+		'	getsource(app.run).splitlines()'
+		'	)), vars(app)'
+		')'
+		''
+		'if sys.argv[0]:'
+		'	os.remove(sys.argv[0])'
+		''
+		'if __name__ == "__main__":'
+		'	sys.exit(main())'
+		''
+		'# vim: ft=python'
+	)
+
+	exec=$(mktemp -u "$base/exec.XXXXX")
+	[[ -f "$config/config.py" ]] || printf '%s\n' "${cfg[@]}" > "$config/config.py"
+
+	printf '%s\n' "${exe[@]}" > "$exec"
+	chmod +x "$exec"
+
+	exec 2> /dev/null
+	exec -a http-open \
+		"$exec" --basedir "$base" \
+		--desktop-file-name http-open.desktop \
+		--qt-arg name http-open \
+		--qt-arg qwindowicon 'internet-web-browser' \
+		--untrusted-args "$@"
+}
+
+if [[ ! -x /usr/bin/qutebrowser ]]; then
+	notify-send -u critical \
+		-a "HTTP(S) URL Handler" \
+		-i internet-web-browser \
+		"HTTP(S) URL Handler" \
+		"Qutebrowser is missing, please install it."
+	exit 1
+fi
+
+DENTRY
+QBCALL "$@"
