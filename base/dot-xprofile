@@ -3,12 +3,24 @@ if [ -f ~/.config/shell/environment ]; then
 	. ~/.config/shell/environment
 fi
 
-export GTK_IM_MODULE=ibus
-export QT_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
-ibus-daemon -drx --panel ~/bin/ibus-ui-appindicator
-dbus-update-activation-environment --all --systemd
+if [ -x /usr/bin/fcitx5 ]; then
+	CURRENT_IM_MODULE=fcitx
+elif [ -x /usr/bin/ibus ]; then
+	CURRENT_IM_MODULE=ibus
+fi
 
+if [ -n "$CURRENT_IM_MODULE" ]; then
+	export "GTK_IM_MODULE=$CURRENT_IM_MODULE"
+	export "QT_IM_MODULE=$CURRENT_IM_MODULE"
+	export "XMODIFIERS=@im=$CURRENT_IM_MODULE"
+	export "GLFW_IM_MODULE=ibus" # needed by kitty
+
+	case "$CURRENT_IM_MODULE" in
+		ibus) ibus-daemon -drx --panel ~/bin/ibus-ui-appindicator ;;
+		fcitx) fcitx5 -dr ;;
+	esac
+	dbus-update-activation-environment --all --systemd
+fi
 if command -pv xcape > /dev/null 2>&1; then
 	awk '{if(NR>1) printf ";";if(length($0) > 1)printf "%s", $0} END{print ""}' "${XDG_CONFIG_HOME:-$HOME/.config}/X11/xcape.rc" |
 		xcape -e "$(cat)"
