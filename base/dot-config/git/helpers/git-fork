@@ -4,6 +4,11 @@ function repo_exists
 	git ls-remote -q "$1" HEAD 2> /dev/null 1>&2
 }
 
+function repostrip
+{
+	sed -nE -e "s;$1;\1;g" -e 's;\.git$;;;p'
+}
+
 function match_remote
 {
 	# match_remote <remote> <hostspec-regex>
@@ -35,11 +40,10 @@ function gh_fork
 	done)
 	read -r upstream < <(
 		git remote get-url upstream \
-			| sed -nE 's;^.*[/:]([^/]+/[^/]+)(.git$|.)$;\1;gp'
+			| repostrip '^.*[/:]([^/]+/[^/]+)$'
 	)
 	[[ -n "$repo" ]] || set -- --fork-name "${REPO_NAME%.git}" "$@"
 	[[ -z "$org" ]] || set -- --org "$org" "$@"
-
 	if ! repo_exists "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"; then
 		gh repo fork --remote --remote-name origin "$@"
 	else
@@ -54,7 +58,7 @@ if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
 	read -r REPO_NAME < <(
 		git remote get-url upstream \
-			| sed -nE 's;^.*/([^/]+)(.git$|.)$;\1;gp'
+			| repostrip '^.*/([^/]+)$'
 	)
 
 	if match_remote upstream '(https://|git@)github\.com(/|:)'; then
