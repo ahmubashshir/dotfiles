@@ -1,11 +1,16 @@
-#!/bin/zsh
+#!/bin/sh
 export PATH="$(
-	mkpath () {
-		tr -s ':' '\n' \
-		| awk '!( a[$0]++ || system("test -d \"" $0 "\"")) {if(NR > 1) printf ":"; printf "%s", $0} END{print ""}'
+	mkpath()
+	{
+		tr -s ':' '\n' |
+			awk '! a[$0]++ {
+			line = line ((NR > 1)?":":"") $0
+		} END {
+			print line
+		}'
 	}
 
-	cat <<EOF | mkpath
+	cat << EOF | mkpath
 $HOME/.local/bin
 $HOME/bin
 $XDG_DATA_HOME/cargo/bin
