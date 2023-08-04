@@ -8,6 +8,20 @@
 # Shortcut=F5
 # Input=nothing
 
+FILTER=run
+## start args
+source "${0%/*}/.lib/args"
+## end args
+
+case "$TYPE/${NAME##*.}" in
+	x-csrc/ino) TYPE=x-arduino ;;
+	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
+esac
+
+case "$TYPE" in
+	x-arduino) exec arduino-cli upload --verbose --verify "${args[@]}" --no-color "$DIR" ;;
+esac
+
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 
 cat > "$TMPFILE" << EOF
@@ -16,7 +30,7 @@ printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
 TIMEFORMAT=\$'\n========\n                      elapsed %3R'
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf"
+time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf" "${args[@]}"
 printf '\033[A\rProcess returned %d,\n' "\$?"
 read -rsp$'Press RETURN to continue...'
 EOF
