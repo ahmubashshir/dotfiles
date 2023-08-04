@@ -1,0 +1,79 @@
+#!/bin/bash
+export TERM=dumb
+declare -ga args files
+
+TYPE=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
+NAME=${GEDIT_CURRENT_DOCUMENT_NAME}
+DIR=${GEDIT_CURRENT_DOCUMENT_DIR}
+files=("$NAME")
+
+__hint()
+{
+	while [[ $1 ]]; do
+		echo " HINT: $1"
+		shift
+	done >&2
+}
+
+__error()
+{
+	while [[ $1 ]]; do
+		echo "ERROR: $1"
+		shift
+	done >&2
+}
+
+get_help()
+{
+	cat >&2 << EOF
+Usage:
+   :arg           -> arg
+   @option  [arg] -> --option [arg]
+   @-option [arg] -> -option  [arg]
+   #helper  [arg]
+    ->  Modify environment by running
+        <helper> with [arg]
+EOF
+	((${#HELPERS[@]} == 0)) || {
+		printf '    -> available helpers:\n'
+		printf '       -> %s\n' "${HELPERS[@]}"
+	} >&2
+	exit
+}
+
+declare -i compiler_hints
+while read -r type flag arg; do
+	[[ $flag ]] || continue
+	if [[ $type = \# && $(type -t "get_$flag") = function ]]; then
+		"get_$flag" "$arg"
+	else
+		if [[ $type = : && -z "$filter" ]]; then
+			filter="$flag:"
+		elif [[ -z "$filter" && -n "$FILTER" ]]; then
+			filter="$FILTER:"
+		fi
+
+		[[ -z "$filter" || ! $flag =~ : || $flag =~ ^$filter ]] || continue
+		if [[ $flag =~ ^- ]]; then
+			args+=("${flag#"$filter"}")
+		elif [[ $type == : ]]; then
+			args+=("${flag#"$filter"}")
+		else
+			args+=("--${flag#"$filter"}")
+		fi
+		if [[ -n $arg ]]; then
+			args+=("$arg")
+		fi
+	fi
+	((++compiler_hints)) && echo "$type ${flag#"$filter"} $arg"
+done < <(
+	TYPE='@|:|#'
+	FILTER='-?\w+ ?.+?'
+	PREFIX='[ \*]+'
+	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
+		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
+)
+
+if ((compiler_hints == 0)); then
+	__hint "Add '#help' as a comment to see tool help"
+fi
