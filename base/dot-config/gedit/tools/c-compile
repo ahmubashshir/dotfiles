@@ -8,13 +8,6 @@
 # Languages=c,cpp,java
 # Name=Compile...
 
-export TERM=dumb
-TYPE=${GEDIT_CURRENT_DOCUMENT_TYPE#*/}
-NAME=${GEDIT_CURRENT_DOCUMENT_NAME}
-DIR=${GEDIT_CURRENT_DOCUMENT_DIR}
-declare -ga args files
-files=("$NAME")
-
 get_avr()
 {
 	local key val i
@@ -53,10 +46,7 @@ get_avr()
 		)
 	fi
 }
-get_file()
-{
-	files+=("$1")
-}
+
 get_pkg()
 {
 	if pkg-config "$1"; then
@@ -67,82 +57,30 @@ get_pkg()
 		__error "pkg-config: $1 not found."
 	fi
 }
-
-get_help()
+get_file()
 {
-	cat >&2 << EOF
-Usage:
-   :arg           -> arg
-   @option  [arg] -> --option [arg]
-   @-option [arg] -> -option  [arg]
-   #helper  [arg]
-    ->  Modify environment by running
-        <helper> with [arg]
-    -> available helpers:
-       -> avr[avr-gcc] pkg[pkg-config]
-EOF
-	exit
+	files+=("$1")
 }
 
-__hint()
-{
-	while [[ $1 ]]; do
-		echo " HINT: $1"
-		shift
-	done >&2
-}
-
-__error()
-{
-	while [[ $1 ]]; do
-		echo "ERROR: $1"
-		shift
-	done >&2
-}
-
-case "$TYPE" in
-	x-arduino) FILTER="compile" ;;
-	x-csrc) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
-esac
-
-declare -i compiler_hints
-while read -r type flag arg; do
-	[[ $flag ]] || continue
-	if [[ $type = \# && $(type -t "get_$flag") = function ]]; then
-		"get_$flag" "$arg"
-	else
-		if [[ $type = : && -z "$filter" ]]; then
-			filter="$flag:"
-		elif [[ -z "$filter" && -n "$FILTER" ]]; then
-			filter="$FILTER:"
-		fi
-
-		[[ -z "$filter" || ! $flag =~ : || $flag =~ ^$filter ]] || continue
-		if [[ $flag =~ ^- ]]; then
-			args+=("${flag#"$filter"}")
-		elif [[ $type == : ]]; then
-			args+=("${flag#"$filter"}")
-		else
-			args+=("--${flag#"$filter"}")
-		fi
-		if [[ -n $arg ]]; then
-			args+=("$arg")
-		fi
-	fi
-	((++compiler_hints)) && echo "$type ${flag#"$filter"} $arg"
-done < <(
-	TYPE='@|:|#'
-	FILTER='-?\w+ ?.+?'
-	PREFIX='[ \*]+'
-	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
-		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
+HELPERS=(
+	'file[files]: Add another file to compile/run with this file'
+	'avr[avr-gcc]: AVR Specific arguments'
+	'    (required) mcu=<microcontroller>'
+	'    (optional) fmt=<bin|srec|hex>   (default: hex)'
+	'    (optional) section=<eeprom|lock|fuse|sig> (default: empty)'
+	'pkg[pkg-config] PKG-CONFIG cflags and ldflags'
 )
+FILTER=compile
+## start args
+source "${0%/*}/.lib/args"
+## end args
 
-if ((compiler_hints == 0)); then
-	__hint "Add '#help' as a comment to see tool help"
-fi
+case "$TYPE/${NAME##*.}" in
+	x-csrc/ino) TYPE=x-arduino ;;
+	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
+esac
 typeset -p files
-[[ -z "$filter" ]] || args=("${filter%:}" "${args[@]}")
+
 case "$TYPE" in
 	x-csrc) exec gcc "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
 	x-c++src) exec g++ "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
@@ -150,7 +88,7 @@ case "$TYPE" in
 		cd "$DIR" || exit 1
 		exec javac "${args[@]}" "$NAME"
 		;;
-	x-arduino) exec arduino-cli "${args[@]}" --no-color "$DIR" ;;
+	x-arduino) exec arduino-cli compile "${args[@]}" --no-color "$DIR" ;;
 	x-avr-csrc)
 		set -e
 		if [[ -z "$MCU" ]]; then
