@@ -45,7 +45,7 @@ then
 	esac
 elif hash chromium > /dev/null \
 	&& echo "$1" | grep -Eq \
-		'^(https?://([a-z]+\.google\.com|(app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'; then
+		'^(https?://([a-z]+\.google\.com|(([a-z]+\.)?app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'; then
 	class="$(echo "$1" | sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p')"
 	exec chromium --app="$@" --class="${class:-google-chrome}"
 elif hash zoom > /dev/null && echo "$1" | grep -q 'zoom\.us/j/'; then
