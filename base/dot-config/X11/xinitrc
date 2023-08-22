@@ -1,11 +1,18 @@
 #!/bin/sh
 setxkbmap -query |
-	awk  '/^options:/{
-        line = $2
-    } END {
-        split(line ",lv3:lsgt_switch,lv3:ralt_alt", dat, ",")
-        printf "\0"
-        for (i in dat)
-            print dat[i] | "sort -r -u | sed \"/^$/d\" | tr -s \\\\n , | sed \"s/,$//\""
-    }' |
-	xargs  -0n1 setxkbmap -option
+	awk '/^variant:/ {
+		variant = $2
+	}
+	/^options:/{
+		line = $2
+	} END {
+		if (variant == "altgr-intl")
+			split(line ",lv3:lsgt_switch,lv3:ralt_alt", dat, ",")
+		else
+			split(line, dat, ",")
+
+		printf "\0"
+		for (i in dat)
+			print dat[i] | "sort -r -u | sed \"/^$/d\" | tr -s \\\\n , | sed \"s/,$//\""
+	}' |
+	xargs -0n1 setxkbmap -option
