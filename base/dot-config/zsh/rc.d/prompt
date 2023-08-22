@@ -23,6 +23,20 @@ if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) 
 	add-zsh-hook -Uz precmd xterm_title_precmd
 	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
+
+function check_stderr {
+	emulate -L zsh
+	setopt histsubstpattern
+	local out err
+	err=/dev/fd/2
+	out=/dev/fd/1
+
+	if [[ ! $err -ef $out ]]; then
+		print -P "%B%F{green}INFO:%f %F{blue}stderr%f -> %F{red}${err:P:s+#/dev/+dev+}%f%b"
+	fi
+}
+add-zsh-hook -Uz precmd check_stderr
+
 # Prompt Setup
 DIR_PROMPT='%20>...>%1~%<<'
 PROMPT=''
