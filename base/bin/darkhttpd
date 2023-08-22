@@ -1,0 +1,8 @@
+#!/usr/bin/make -rsif
+FLAGS = -O
+
+ifeq ($(shell uname),SunOS)
+FLAGS += -lsocket -lnsl -lsendfile
+endif
+
+include $(HOME)/bin/lib/compile
