@@ -17,6 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+/*
+ * @-std=c++0x
+ * @-O3
+ * @-lrt
+ */
+
 // g++ -std=c++0x -O3 -lrt xfce-hkmon.cpp -o xfce-hkmon (gcc >= 4.6 or clang++)
 // Recommended 1 second period and "Bitstream Vera Sans Mono" font on the applet
 
@@ -39,7 +45,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define APP_VERSION "2.1"
+#define APP_VERSION "2.2"
 
 #define VA_STR(x) dynamic_cast<std::ostringstream const&>(std::ostringstream().flush() << x).str()
 
@@ -49,6 +55,81 @@ auto constexpr GB_i = 1000000000LL;
 auto constexpr GB_f = 1000000000.0;
 auto constexpr TB_i = 1000000000000LL;
 auto constexpr TB_f = 1000000000000.0; // only C++14 has a readable alternative
+
+// Icons
+enum ICON: unsigned int {
+	// state
+	ACTIVE   = 1 << 0,
+	SELECTED = 1 << 1,
+	UNUSED1  = 1 << 2,
+	UNUSED2  = 1 << 3,
+	// name
+	UP       = 1 << 4,
+	DOWN     = 1 << 5,
+	CHECKMARK= 1 << 6,
+	GEAR     = 1 << 7,
+	DISK     = 1 << 8,
+	// stateful icons
+	_UP_ACT  = UP   | ACTIVE,
+	_DN_ACT  = DOWN | ACTIVE,
+	_UP_S    = UP   | SELECTED,
+	_DN_S    = DOWN | SELECTED,
+	_UP_ACTS = UP   | ACTIVE | SELECTED,
+	_DN_ACTS = DOWN | ACTIVE | SELECTED,
+};
+
+constexpr ICON operator| (ICON x, ICON y)
+{
+	typedef std::underlying_type<ICON>::type ucast;
+	return ICON(ucast(x) | ucast(y));
+}
+
+inline ICON& operator|= (ICON& x, ICON y)
+{
+	typedef std::underlying_type<ICON>::type ucast;
+	return x = ICON(ucast(x) | ucast(y));
+}
+
+std::ostream& operator<<(std::ostream& os, ICON icon)
+{
+	switch (icon) {
+	case ICON::UP:
+	case ICON::UP | ICON::SELECTED:
+		os << "\u25B3";
+		break;
+	case ICON::UP | ICON::ACTIVE:
+		os << "\u25B4";
+		break;
+	case ICON::UP | ICON::ACTIVE | ICON::SELECTED:
+		os << "\u25B2";
+		break;
+
+	case ICON::DOWN:
+	case ICON::DOWN | ICON::SELECTED:
+		os << "\u25BD";
+		break;
+	case ICON::DOWN | ICON::ACTIVE:
+		os << "\u25BE";
+		break;
+	case ICON::DOWN | ICON::ACTIVE | ICON::SELECTED:
+		os << "\u25BC";
+		break;
+
+	case ICON::CHECKMARK:
+		os << "\u2713";
+		break;
+	case ICON::GEAR:
+		os << "\u2699";
+		break;
+	case ICON::DISK:
+		os << "\u26C1";
+		break;
+	default:
+		os << " ";
+		break;
+	}
+	return os;
+}
 
 void abortApp(const char* reason)
 {
@@ -60,22 +141,17 @@ void abortApp(const char* reason)
 bool readFile(const char* inputFile, std::vector<char>& buffer, bool mustExist = true)
 {
 	int fd = open(inputFile, O_RDONLY);
-	if (fd < 0)
-	{
+	if (fd < 0) {
 		if (mustExist) abortApp(inputFile);
 		return false;
-	}
-	else
-	{
+	} else {
 		buffer.resize(4000);
-		for (std::size_t offset = 0;;)
-		{
+		for (std::size_t offset = 0;;) {
 			int bytes = ::read(fd, &buffer[offset], buffer.size() - offset - 1);
 			if (bytes < 0) abortApp(inputFile);
 			offset += bytes;
 			if (offset + 1 == buffer.size()) buffer.resize(buffer.size() * 2);
-			else if (bytes == 0)
-			{
+			else if (bytes == 0) {
 				close(fd);
 				buffer[offset] = 0;
 				buffer.resize(offset);
@@ -89,8 +165,7 @@ bool writeFile(const char* outputFile, const std::ostringstream& data)
 {
 	bool success = false;
 	int fd = open(outputFile, O_CREAT | O_WRONLY | O_TRUNC, 0640);
-	if (fd >= 0)
-	{
+	if (fd >= 0) {
 		const std::string& buffer = data.str();
 		if (write(fd, buffer.c_str(), buffer.length()) == (ssize_t) buffer.length()) success = true;
 		close(fd);
@@ -117,15 +192,12 @@ template <> bool fromString(const std::string& from, std::string& to)
 
 template <typename K, typename V> std::istream& operator>>(std::istream& in, std::map<K,V>& container)
 {
-	while (!in.eof() && !in.fail() && (in.peek() != '\n')) // read from storage
-	{
+	while (!in.eof() && !in.fail() && (in.peek() != '\n')) { // read from storage
 		std::string skey;
-		if (std::getline(in, skey, '|'))
-		{
+		if (std::getline(in, skey, '|')) {
 			K key;
 			V value;
-			if (fromString(skey, key) && (in >> value))
-			{
+			if (fromString(skey, key) && (in >> value)) {
 				container.insert( { key, value } );
 				in.ignore(); // tab
 			}
@@ -134,12 +206,10 @@ template <typename K, typename V> std::istream& operator>>(std::istream& in, std
 	return in.ignore();
 }
 
-struct CPU
-{
+struct CPU {
 	typedef int16_t Number; // -1 for all cores summary and 0,1,2,... for each core
 
-	struct Core
-	{
+	struct Core {
 		int64_t user, nice, system, idle, iowait, irq, softirq, steal, guest, guestnice;
 		uint64_t freq_hz;
 		int64_t cpuUsed()  const
@@ -154,8 +224,7 @@ struct CPU
 		{
 			int64_t roundUserFix = user == that.user-1? 1 : 0; // compensate for physical host & virtual
 			int64_t roundNiceFix = nice == that.nice-1? 1 : 0; // guests counters evil rounding
-			return
-			{
+			return {
 				user - that.user + roundUserFix, nice - that.nice + roundNiceFix, system - that.system,
 				idle - that.idle, iowait - that.iowait, irq - that.irq, softirq - that.softirq,
 				steal - that.steal, guest - that.guest + roundUserFix, guestnice - that.guestnice + roundNiceFix,
@@ -173,10 +242,8 @@ struct CPU
 		std::istringstream cpustat(&buffer[0]);
 		std::string name;
 		Number number;
-		while (cpustat >> name)
-		{
-			if (name.find("cpu") == 0)
-			{
+		while (cpustat >> name) {
+			if (name.find("cpu") == 0) {
 				name.erase(0,3);
 				if (name.empty()) number = -1;
 				else if (!fromString(name, number)) continue;
@@ -201,13 +268,10 @@ struct CPU
 		std::string skip;
 		uint64_t sum_freq = 0;
 		number = -1;
-		while (cpuinfo >> key)
-		{
+		while (cpuinfo >> key) {
 			if (key == "processor") cpuinfo >> skip >> number;
-			else if ((key == "cpu") && (number >= 0))
-			{
-				if ((cpuinfo >> skip) && (skip == "MHz"))
-				{
+			else if ((key == "cpu") && (number >= 0)) {
+				if ((cpuinfo >> skip) && (skip == "MHz")) {
 					double mhz;
 					cpuinfo >> skip >> mhz;
 					cores[number].freq_hz = uint64_t(mhz * MB_i);
@@ -235,10 +299,8 @@ std::istream& operator>>(std::istream& in, CPU::Core& core) // read from storage
 	       >> core.softirq >> core.steal >> core.guest >> core.guestnice >> core.freq_hz;
 }
 
-struct Memory
-{
-	struct RAM
-	{
+struct Memory {
+	struct RAM {
 		uint64_t total;
 		uint64_t available;
 		uint64_t free;
@@ -258,46 +320,30 @@ struct Memory
 		std::istringstream meminfo(&buffer[0]);
 		bool hasAvailable = false;
 		std::string key;
-		for (int count = 0; meminfo >> key;)
-		{
-			if      (key == "MemTotal:")
-			{
+		for (int count = 0; meminfo >> key;) {
+			if      (key == "MemTotal:") {
 				count++;
 				meminfo >> ram.total;
-			}
-			else if (key == "MemFree:")
-			{
+			} else if (key == "MemFree:") {
 				count++;
 				meminfo >> ram.free;
-			}
-			else if (key == "MemAvailable:")
-			{
+			} else if (key == "MemAvailable:") {
 				count++;
 				meminfo >> ram.available;
 				hasAvailable = true;
-			}
-			else if (key == "Buffers:")
-			{
+			} else if (key == "Buffers:") {
 				count++;
 				meminfo >> ram.buffers;
-			}
-			else if (key == "Cached:")
-			{
+			} else if (key == "Cached:") {
 				count++;
 				meminfo >> ram.cached;
-			}
-			else if (key == "SwapTotal:")
-			{
+			} else if (key == "SwapTotal:") {
 				count++;
 				meminfo >> ram.swapTotal;
-			}
-			else if (key == "SwapFree:")
-			{
+			} else if (key == "SwapFree:") {
 				count++;
 				meminfo >> ram.swapFree;
-			}
-			else if (key == "Shmem:")
-			{
+			} else if (key == "Shmem:") {
 				count++;
 				meminfo >> ram.shared;
 			}
@@ -320,20 +366,17 @@ std::istream& operator>>(std::istream& in, Memory::RAM& ram)
 	       >> ram.buffers >> ram.cached >> ram.swapTotal >> ram.swapFree;
 }
 
-struct IO
-{
+struct IO {
 	typedef std::string Name;
 
-	struct Device
-	{
+	struct Device {
 		uint64_t bytesRead;
 		uint64_t bytesWritten;
 		uint32_t ioMsecs;
 		uint64_t bytesSize;
 	};
 
-	struct Bandwidth
-	{
+	struct Bandwidth {
 		double bytesPerSecond;
 	};
 
@@ -344,14 +387,12 @@ struct IO
 		std::vector<char> buffer;
 		readFile("/proc/diskstats", buffer);
 		std::string name, prev;
-		for (std::istringstream diskinfo(&buffer[0]);;) // search physical devices
-		{
+		for (std::istringstream diskinfo(&buffer[0]);;) { // search physical devices
 			uint64_t skip;
 			if (!(diskinfo >> skip >> skip >> name)) break;
 			if (!name.empty()
-			        && (prev.empty() || (name.find(prev) != 0)) // skip partitions
-			        && (name.find("dm") != 0)) // skip device mapper
-			{
+			    && (prev.empty() || (name.find(prev) != 0)) // skip partitions
+			    && (name.find("dm") != 0)) { // skip device mapper
 				prev = name;
 				Device& device = devices[name];
 				uint64_t sectorsRd, sectorsWr;
@@ -370,8 +411,7 @@ struct IO
 		std::string skip;
 		bool hasData = false;
 		while (!hasData && std::getline(partinfo, skip)) if (skip.empty()) hasData = true;
-		if (hasData) while (partinfo >> skip >> skip >> blocks >> name)
-			{
+		if (hasData) while (partinfo >> skip >> skip >> blocks >> name) {
 				auto pdev = devices.find(name);
 				if (pdev != devices.end()) pdev->second.bytesSize = blocks * 1024;
 				partinfo.ignore(buffer.size(), '\n');
@@ -398,12 +438,10 @@ std::ostream& operator<<(std::ostream& out, const IO::Bandwidth& data)
 	return out << std::fixed << std::setprecision(3) << data.bytesPerSecond / GB_f << " GB/s";
 }
 
-struct Network
-{
+struct Network {
 	typedef std::string Name;
 
-	struct Interface
-	{
+	struct Interface {
 		uint64_t bytesRecv;
 		uint64_t bytesSent;
 		uint64_t traffic() const
@@ -412,8 +450,7 @@ struct Network
 		}
 	};
 
-	struct Bandwidth
-	{
+	struct Bandwidth {
 		enum class Unit { bit, byte } unit;
 		int64_t perSecond;
 	};
@@ -426,8 +463,7 @@ struct Network
 		readFile("/proc/net/dev", buffer);
 		std::istringstream netinfo(&buffer[0]);
 		netinfo.ignore(buffer.size(), '\n');
-		for (;;)
-		{
+		for (;;) {
 			netinfo.ignore(buffer.size(), '\n');
 			std::string name;
 			if (!std::getline(netinfo, name, ':')) break; // also handles kernels not having a space after ':'
@@ -458,12 +494,10 @@ std::ostream& operator<<(std::ostream& out, const Network::Bandwidth& speed)
 	return out << std::fixed << std::setprecision(3) << speed.perSecond / MB_f << " M" << unit << "ps";
 }
 
-struct Health
-{
+struct Health {
 	typedef std::string Name;
 
-	struct Thermometer
-	{
+	struct Thermometer {
 		int32_t tempMilliCelsius;
 	};
 
@@ -472,29 +506,24 @@ struct Health
 	void readProc()
 	{
 		std::string coretemp;
-		for (int hwmon = 0; hwmon < 256; hwmon++)
-		{
+		for (int hwmon = 0; hwmon < 256; hwmon++) {
 			std::string base = VA_STR("/sys/class/hwmon/hwmon" << hwmon);
 			std::vector<char> buffer;
-			if (!readFile(VA_STR(base << "/name").c_str(), buffer, false)) // pre-3.15 kernel?
-			{
+			if (!readFile(VA_STR(base << "/name").c_str(), buffer, false)) { // pre-3.15 kernel?
 				base.append("/device");
 				if (!readFile(VA_STR(base << "/name").c_str(), buffer, false)) break;
 			}
 			std::istringstream sname(&buffer[0]);
 			std::string name;
-			if ((sname >> name) && (name == "coretemp"))
-			{
+			if ((sname >> name) && (name == "coretemp")) {
 				coretemp = base;
 				break;
 			}
 		}
 
-		if (!coretemp.empty()) for (int ic = 1; ic < 64; ic++)
-			{
+		if (!coretemp.empty()) for (int ic = 1; ic < 64; ic++) {
 				std::vector<char> buffer;
-				if (!readFile(VA_STR(coretemp << "/temp" << ic << "_label").c_str(), buffer, false))
-				{
+				if (!readFile(VA_STR(coretemp << "/temp" << ic << "_label").c_str(), buffer, false)) {
 					if (thermometers.empty()) continue;
 					else break; // Atom CPU may start at 2 (!?)
 				}
@@ -520,8 +549,7 @@ std::istream& operator>>(std::istream& in, Health::Thermometer& thm)
 	return in >> thm.tempMilliCelsius;
 }
 
-struct DataSize
-{
+struct DataSize {
 	uint64_t bytes;
 };
 
@@ -539,16 +567,14 @@ std::ostream& operator<<(std::ostream& out, const DataSize& data)
 	return out << std::fixed << std::setprecision(decimals) << data.bytes / TB_f << " TB";
 }
 
-template <typename T> struct Padded
-{
+template <typename T> struct Padded {
 	uint64_t max;
 	T value;
 };
 
 template <typename T> std::ostream& operator<<(std::ostream& out, const Padded<T>& data)
 {
-	if (!std::isnan(data.value)) for (T div = data.max;; div /= 10) // avoid infinite loop with NaN numbers
-		{
+	if (!std::isnan(data.value)) for (T div = data.max;; div /= 10) { // avoid infinite loop with NaN numbers
 			if ((data.value >= div) && (data.value >= 1)) break;
 			if ((data.value < 1) && (div <= 1)) break;
 			out << "  "; // two spaces in place of each missing digit (same width in XFCE Generic Monitor applet)
@@ -558,8 +584,7 @@ template <typename T> std::ostream& operator<<(std::ostream& out, const Padded<T
 
 int main(int argc, char** argv)
 {
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		std::cerr << "usage: " << argv[0] << " [NET|<network_interface>] [CPU] [TEMP] [IO] [RAM]" << std::endl;
 		return 1;
 	}
@@ -575,8 +600,7 @@ int main(int argc, char** argv)
 	bool singleLine = false;
 	int posRam = 0;
 	int posTemp = 0;
-	for (int i = 1; i < argc; i++)
-	{
+	for (int i = 1; i < argc; i++) {
 		std::string arg(argv[i]);
 		if      ((arg == "LINE")) singleLine = true;
 		else if ((arg == "CPU"))  new_CPU.reset(new CPU());
@@ -585,8 +609,7 @@ int main(int argc, char** argv)
 		else if ((arg == "NET"))  new_Network.reset(new Network());
 		else if ((arg == "NET8")) new_Network.reset(new Network()), netSpeedUnit = Network::Bandwidth::Unit::byte;
 		else if ((arg == "TEMP")) posTemp = i, new_Health.reset(new Health());
-		else
-		{
+		else {
 			new_Network.reset(new Network());
 			selectedNetworkInterface = argv[i];
 		}
@@ -599,32 +622,26 @@ int main(int argc, char** argv)
 
 	std::ostringstream newState;
 	newState << APP_VERSION << " " << nowIs << "\n";
-	if (new_CPU)
-	{
+	if (new_CPU) {
 		new_CPU->readProc();
 		newState << "CPU|"     << new_CPU->cores;
 	}
-	if (new_Memory)
-	{
+	if (new_Memory) {
 		new_Memory->readProc();
 	}
-	if (new_IO)
-	{
+	if (new_IO) {
 		new_IO->readProc();
 		newState << "IO|"      << new_IO->devices;
 	}
-	if (new_Network)
-	{
+	if (new_Network) {
 		new_Network->readProc();
 		newState << "Network|" << new_Network->interfaces;
 	}
-	if (new_Health)
-	{
+	if (new_Health) {
 		new_Health->readProc();
 	}
 
-	for (int locTry = 0;; locTry++) // read the previous state from disk and store the new state
-	{
+	for (int locTry = 0;; locTry++) { // read the previous state from disk and store the new state
 		std::vector<char> oldStateData;
 		std::ostringstream stateFileName;
 
@@ -635,35 +652,26 @@ int main(int argc, char** argv)
 		else
 			abortApp("can't write tmpfile");
 
-		if (readFile(stateFileName.str().c_str(), oldStateData, false))
-		{
+		if (readFile(stateFileName.str().c_str(), oldStateData, false)) {
 			std::istringstream oldState(&oldStateData[0]);
 			std::string version;
 			uint64_t previouslyWas;
 			oldState >> version >> previouslyWas;
 			nsecsElapsed = nowIs - previouslyWas;
 			oldState.ignore(oldStateData.size(), '\n');
-			if (version == APP_VERSION)
-			{
+			if (version == APP_VERSION) {
 				std::string category;
-				while (std::getline(oldState, category, '|'))
-				{
-					if      (category == "CPU")
-					{
+				while (std::getline(oldState, category, '|')) {
+					if      (category == "CPU") {
 						old_CPU.reset(new CPU());
 						oldState >> old_CPU->cores;
-					}
-					else if (category == "IO")
-					{
+					} else if (category == "IO") {
 						old_IO.reset(new IO());
 						oldState >> old_IO->devices;
-					}
-					else if (category == "Network")
-					{
+					} else if (category == "Network") {
 						old_Network.reset(new Network());
 						oldState >> old_Network->interfaces;
-					}
-					else oldState.ignore(oldStateData.size(), '\n');
+					} else oldState.ignore(oldStateData.size(), '\n');
 				}
 			}
 		}
@@ -674,22 +682,18 @@ int main(int argc, char** argv)
 	std::ostringstream reportStd, reportDetail;
 	double secsElapsed = nsecsElapsed / GB_f;
 
-	if (new_Network && old_Network && nsecsElapsed) // NET report
-	{
-		if (selectedNetworkInterface.empty())
-		{
+	if (new_Network && old_Network && nsecsElapsed) { // NET report
+		if (selectedNetworkInterface.empty()) {
 			int64_t maxBandwidth = -1;
 			uint64_t selectedTraffic = 0;
-			for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn)
-			{
+			for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn) {
 				if (itn->first == "lo") continue;
 				auto ito = old_Network->interfaces.find(itn->first);
 				if (ito == old_Network->interfaces.end()) continue;
 				int64_t transferred = itn->second.bytesRecv - ito->second.bytesRecv;
 				transferred += itn->second.bytesSent - ito->second.bytesSent;
 				if (transferred < maxBandwidth) continue;
-				if ((transferred > maxBandwidth) || (itn->second.traffic() > selectedTraffic))
-				{
+				if ((transferred > maxBandwidth) || (itn->second.traffic() > selectedTraffic)) {
 					maxBandwidth = transferred;
 					selectedTraffic = itn->second.traffic();
 					selectedNetworkInterface = itn->first;
@@ -697,8 +701,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn)
-		{
+		for (auto itn = new_Network->interfaces.cbegin(); itn != new_Network->interfaces.cend(); ++itn) {
 			auto ito = old_Network->interfaces.find(itn->first);
 			if (ito == old_Network->interfaces.end()) continue;
 			const Network::Interface& nif = itn->second;
@@ -706,39 +709,37 @@ int main(int argc, char** argv)
 			bool isSelectedInterface = itn->first == selectedNetworkInterface;
 			if (!nif.traffic() && !isSelectedInterface) continue;
 
-			auto dumpNet = [&](const char* iconIdle, const char* iconBusy, uint64_t newBytes, uint64_t oldBytes)
-			{
+			auto dumpNet = [&](ICON icon, uint64_t newBytes, uint64_t oldBytes) {
 				int64_t delta = newBytes - oldBytes;
+				icon |= ICON(bool(delta));
 				int64_t speed = (netSpeedUnit == Network::Bandwidth::Unit::byte? 1 : 8) * delta / secsElapsed;
-				const char* icon = delta? iconBusy : iconIdle;
-				reportDetail << "    " << icon << "  " << DataSize { newBytes };
-				if (speed > 0) reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
+				reportDetail << "    " << icon
+				             << "  " << DataSize { newBytes };
+				reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
 				reportDetail << " \n";
 				if (isSelectedInterface)
-					reportStd << "   " << icon << std::setw(8) << Network::Bandwidth { netSpeedUnit, speed }
+					reportStd << "   " << (icon | ICON(isSelectedInterface << 1)) << std::setw(8)
+					          << Network::Bandwidth { netSpeedUnit, speed }
 					          << (singleLine? " " : " \n");
 			};
 
 			reportDetail << " " << itn->first << ": ";
-			if (isSelectedInterface) reportDetail << "\u2713"; // "check mark" character
+			if (isSelectedInterface) reportDetail << ICON::CHECKMARK; // "check mark" character
 			reportDetail << "\n";
-			dumpNet("\u25B3", "\u25B2", nif.bytesSent, oif.bytesSent); // white/black up pointing triangles
-			dumpNet("\u25BD", "\u25BC", nif.bytesRecv, oif.bytesRecv); // down pointing triangles
+			dumpNet(ICON::UP, nif.bytesSent, oif.bytesSent); // white/black up pointing triangles
+			dumpNet(ICON::DOWN, nif.bytesRecv, oif.bytesRecv); // down pointing triangles
 		}
 	}
 
-	if (new_CPU && old_CPU) // CPU report
-	{
-		struct CpuStat
-		{
+	if (new_CPU && old_CPU) { // CPU report
+		struct CpuStat {
 			CPU::Number number;
 			double percent;
 			double ghz;
 		};
 		std::multimap<double, CpuStat> rankByGhzUsage;
 		double cum_weighted_ghz = 0;
-		for (auto itn = new_CPU->cores.cbegin(); itn != new_CPU->cores.cend(); ++itn)
-		{
+		for (auto itn = new_CPU->cores.cbegin(); itn != new_CPU->cores.cend(); ++itn) {
 			if (itn->first < 0) continue;
 			auto ito = old_CPU->cores.find(itn->first);
 			if (ito == old_CPU->cores.end()) continue;
@@ -753,26 +754,23 @@ int main(int argc, char** argv)
 
 		auto allnew = new_CPU->cores.find(-1);
 		auto allold = old_CPU->cores.find(-1);
-		if ((allnew != new_CPU->cores.end()) && (allold != old_CPU->cores.end()))
-		{
+		if ((allnew != new_CPU->cores.end()) && (allold != old_CPU->cores.end())) {
 			const CPU::Core& ncpu = allnew->second;
 			const CPU::Core& ocpu = allold->second;
 			CPU::Core diff = ncpu - ocpu;
 			auto cpuTotal = diff.cpuTotal();
-			if (cpuTotal > 0)
-			{
+			if (cpuTotal > 0) {
 				auto cpuTotalSinceBoot = ncpu.cpuTotal();
 				double usagePercent = 100.0 * diff.cpuUsed() / cpuTotal;
 
-				auto dumpPercent = [&](const char* title, int64_t user_hz, int64_t user_hz__sinceBoot)
-				{
+				auto dumpPercent = [&](const char* title, int64_t user_hz, int64_t user_hz__sinceBoot) {
 					reportDetail << "   " << Padded<double> { 100, 100.0 * user_hz / cpuTotal } << "% " << title
 					             << "  (" << 100.0 * user_hz__sinceBoot / cpuTotalSinceBoot << "%) \n";
 				};
 
 				//reportStd << std::setw(6) << std::fixed << std::setprecision(1) << usagePercent << "%";
 
-				reportDetail << " CPU \u2699 " << std::fixed << std::setprecision(2) << usagePercent << "% \u2248 ";
+				reportDetail << " CPU " << ICON::GEAR << " " << std::fixed << std::setprecision(2) << usagePercent << "% \u2248 ";
 
 				if (cum_weighted_ghz < 1)
 					reportDetail << uint64_t(cum_weighted_ghz * 1000) << " MHz:\n" << std::setprecision(2);
@@ -791,8 +789,7 @@ int main(int argc, char** argv)
 				if (ncpu.guestnice) dumpPercent("guest nice", diff.guestnice, ncpu.guestnice);
 
 				int maxCpu = 8;
-				for (auto itc = rankByGhzUsage.crbegin(); maxCpu-- && (itc != rankByGhzUsage.crend()); ++itc)
-				{
+				for (auto itc = rankByGhzUsage.crbegin(); maxCpu-- && (itc != rankByGhzUsage.crend()); ++itc) {
 					reportDetail << "   " << std::fixed
 					             << std::setprecision(2) << Padded<double> { 100, itc->second.percent } << "% cpu "
 					             << Padded<CPU::Number> { uint64_t(new_CPU->cores.size() > 10? 10 : 1), itc->second.number }
@@ -802,8 +799,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	if (new_Memory) // RAM report
-	{
+	if (new_Memory) { // RAM report
 		if (new_CPU && (!posTemp || (posRam < posTemp)))
 			//reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
 
@@ -820,34 +816,30 @@ int main(int argc, char** argv)
 			             << " MiB swap of " << new_Memory->ram.swapTotal/1024 << " \n";
 	}
 
-	if (new_IO && old_IO && nsecsElapsed) // IO report
-	{
-		for (auto nitd = new_IO->devices.cbegin(); nitd != new_IO->devices.cend(); ++nitd)
-		{
+	if (new_IO && old_IO && nsecsElapsed) { // IO report
+		for (auto nitd = new_IO->devices.cbegin(); nitd != new_IO->devices.cend(); ++nitd) {
 			const IO::Device& device = nitd->second;
 			auto prevdev = old_IO->devices.find(nitd->first);
-			if ((device.bytesRead || device.bytesWritten) && (prevdev != old_IO->devices.end()))
-			{
-				reportDetail << " " << nitd->first << " \u26C1 " << DataSize { device.bytesSize } << ":\n";
+			if ((device.bytesRead || device.bytesWritten) && (prevdev != old_IO->devices.end())) {
+				reportDetail << " " << nitd->first << ICON::DISK << DataSize { device.bytesSize } << ":\n";
 
-				auto dumpIO = [&](const char* iconIdle, const char* iconBusy, uint64_t newBytes, uint64_t oldBytes)
-				{
+				auto dumpIO = [&](ICON icon, uint64_t newBytes, uint64_t oldBytes) {
 					auto transferred = newBytes - oldBytes;
-					reportDetail << "    " << (transferred? iconBusy : iconIdle) << "  " << DataSize { newBytes };
+					icon |= ICON(bool(transferred));
+					reportDetail << "    " << icon
+					             << "  " << DataSize { newBytes };
 					if (transferred) reportDetail << " - " << IO::Bandwidth { transferred / secsElapsed };
 					reportDetail << " \n";
 				};
 
-				dumpIO("\u25B3", "\u25B2", device.bytesWritten, prevdev->second.bytesWritten);
-				dumpIO("\u25BD", "\u25BC", device.bytesRead, prevdev->second.bytesRead);
+				dumpIO(ICON::UP, device.bytesWritten, prevdev->second.bytesWritten);
+				dumpIO(ICON::DOWN, device.bytesRead, prevdev->second.bytesRead);
 			}
 		}
 	}
 
-	if (new_Health) // TEMP report
-	{
-		struct ThermalStat
-		{
+	if (new_Health) { // TEMP report
+		struct ThermalStat {
 			ThermalStat() : min(std::numeric_limits<int32_t>::max()),
 				max(std::numeric_limits<int32_t>::min()),
 				avg(0), count(0)
@@ -861,14 +853,12 @@ int main(int argc, char** argv)
 
 		std::map<std::string, ThermalStat> statByCategory;
 		int32_t maxAbsTemp = std::numeric_limits<int32_t>::min();
-		for (const auto& itt : new_Health->thermometers)
-		{
+		for (const auto& itt : new_Health->thermometers) {
 			std::string key = itt.first;
 			auto catEnd = key.find(" ");
 			if (catEnd != std::string::npos) key.erase(catEnd);
 			auto its = statByCategory.find(key);
-			if (its == statByCategory.end())
-			{
+			if (its == statByCategory.end()) {
 				its = statByCategory.insert( { key, ThermalStat() } ).first;
 				its->second.firstName = itt.first;
 			}
@@ -885,8 +875,7 @@ int main(int argc, char** argv)
 
 			if (!statByCategory.empty()) reportDetail << " Temperature: \n";
 
-		for (auto its = statByCategory.crbegin(); its != statByCategory.crend(); ++its)
-		{
+		for (auto its = statByCategory.crbegin(); its != statByCategory.crend(); ++its) {
 			if (its->second.count == 1)
 				reportDetail << "    " << its->second.firstName << ": " << its->second.max / 1000 << "ºC \n";
 			else
