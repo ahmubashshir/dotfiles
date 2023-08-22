@@ -11,4 +11,16 @@ $0
     <description>Header Include-Guard</description>
     <tag>once</tag>
   </snippet>
+  <snippet override="chdr-inc">
+    <text><![CDATA[#include "${1:file}"
+$0]]></text>
+    <description>#include ".."</description>
+    <tag>i</tag>
+  </snippet>
+  <snippet override="chdr-Inc">
+    <text><![CDATA[#include <${1:file}>
+$0]]></text>
+    <description>#include &lt;..&gt;</description>
+    <tag>I</tag>
+  </snippet>
 </snippets>
