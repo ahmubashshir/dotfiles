@@ -104,10 +104,6 @@
 	path = base/dot-config/zsh/plugins/nix-shell
 	url = https://github.com/chisui/zsh-nix-shell.git
 	branch = master
-[submodule "base/dot-config/zsh/plugins/rbenv"]
-	path = base/dot-config/zsh/plugins/rbenv
-	url = https://github.com/ecortinas/zsh-rbenv
-	branch = main
 [submodule "base/dot-config/zsh/plugins/rockz"]
 	path = base/dot-config/zsh/plugins/rockz
 	url = https://github.com/aperezdc/rockz
@@ -152,3 +148,7 @@
 	path = base/dot-config/shell/weeb
 	url = https://gist.github.com/thblckjkr/a5715793e30254f86f2207eff88dfcb6
 	branch = master
+[submodule "base/dot-config/zsh/plugins/rbenv"]
+	path = base/dot-config/zsh/plugins/rbenv
+	url = https://github.com/ahmubashshir/zsh-rbenv
+	branch = main
