@@ -18,6 +18,7 @@ function histfile:local {
 HISTSIZE=10000
 SAVEHIST=2147483647
 HISTDUP=erase
+
 setopt \
 	hist_fcntl_lock \
 	inc_append_history \
@@ -25,12 +26,11 @@ setopt \
 	hist_no_store \
 	hist_reduce_blanks \
 	share_history \
-	hist_expire_dups_first \
-	hist_ignore_dups \
 	hist_ignore_all_dups \
 	hist_ignore_space \
 	hist_find_no_dups \
 	hist_save_no_dups \
+	hist_no_store \
 	hist_no_functions \
 	hist_verify
 
