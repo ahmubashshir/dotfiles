@@ -34,15 +34,14 @@ setopt \
 	hist_no_functions \
 	hist_verify
 
-function -hist:pwd:file {
+function →zsh/pwd/hist {
 	local DIR="$PWD"
-	until [[ ! -w $DIR || $DIR == '/' || $DIR == "$HOME" ]]; do
+	until [[ ! -w $DIR ]]; do
 		if
-			[[ -f "$DIR/hist" && $HISTFILE:t == "history" ]] ||
-			[[ $HISTFILE:t = "hist" && ! $DIR -pcre-match ^${HISTFILE:h} ]]
+			[[ -f "$DIR/hist" && $HISTFILE != $DIR/hist || $DIR == $HOME && $HISTFILE:t = hist ]]
 		then
 			fc -P
-			if [[ -f "$DIR/hist" ]]
+			if [[ -f "$DIR/hist" && $DIR != $HOME ]]
 			then
 				local OLDHIST="$HISTFILE"
 				fc -p "$DIR/hist"
@@ -55,5 +54,5 @@ function -hist:pwd:file {
 	done
 }
 
-add-zsh-hook -Uz chpwd -hist:pwd:file
+add-zsh-hook -Uz chpwd →zsh/pwd/hist
 cd "$PWD"
