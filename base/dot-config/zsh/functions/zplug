@@ -7,9 +7,6 @@ if (( ! $+functions[____zplug_run_hook]));then
 	if (( ! ${+zsh_loaded_plugins} )); then
 		typeset -gA zsh_loaded_plugins
 	fi
-	if (( ! ${+zplug_hooks} )); then
-		typeset -gA zplug_hooks
-	fi
 	for plugpath in "${ZDOTDIR:-$HOME/.zsh}/plugins" "/usr/share/zsh/plugins";do
 		if ! [[ ${zplugdirs[(r)$plugpath]} == $plugpath ]]; then
 			zplugdirs+=("$plugpath")
@@ -17,7 +14,7 @@ if (( ! $+functions[____zplug_run_hook]));then
 	done
 	while read -r plug _;do
 		if (($+functions[$plug]));then
-			zplug_hooks[${plug#zplug:}]=$functions[$plug]
+			functions -c $plug →zplug/hooks/${${plug#zplug:}:s+:+/+}
 			unset -f $plug
 		fi
 	done < <(
@@ -39,14 +36,8 @@ fi
 
 function ____zplug_run_hook {
 	local when=$1 plugin=$2;shift
-	if (($+functions[zplug:$when:$plugin]));then
-		zplug_hooks[$when:$plugin]=$functions[zplug:$when:$plugin]
-		unset -f zplug:$when:$plugin
-	fi
-	if (($+zplug_hooks[$when:$plugin]));then
-		functions[____zplug_hook:$when:$plugin]=$zplug_hooks[$when:$plugin]
-		____zplug_hook:$when:$plugin "$@"
-		unset -f ____zplug_hook:$when:$plugin
+	if (($+functions[→zplug/hooks/$when/$plugin]));then
+		→zplug/hooks/$when/$plugin "$@"
 	fi
 }
 
