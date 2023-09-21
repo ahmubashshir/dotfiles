@@ -49,14 +49,15 @@ elif hash chromium > /dev/null \
 elif hash zoom > /dev/null && echo "$1" | grep -q 'zoom\.us/j/'; then
 	read -r meeting < <(
 		meeting=${1#*://}
+		meetingwithpass=${meeting##*/}
 		exec 2> /dev/null 0<&2
 		curl "https://$meeting" -s \
 			| sed -nE 's|^.*\bwindow\.launchBase64\s*=\s* "([A-Za-z0-9+/=]+)"\s*\;.*$|\1|p' \
 			| base64 -d | xxd -p -c0 \
-			| sed -nE 's|^.*8a016d(.+)920120(.+)d20125(.+)$|757469643d\3267573733d\1267469643d\20a|p' \
+			| sed -nE 's|^.*8a016[0-9a-f](.+)920120(.+)d20125(.+)$|757469643d\3267573733d\1267469643d\20a|p' \
 			| xxd -p -c0 -r | base64 -w0 \
 			| perl -MURI::Escape -wlne 'print uri_escape $_' \
-			| xargs printf 'zoommtg://%s/join?action=join&confno=%s&confid=%s\n' ${meeting%%/*} "${meeting##*/}"
+			| xargs printf 'zoommtg://%s/join?action=join&confno=%s&confid=%s\n' "${meeting%%/*}" "${meetingwithpass//\?/\&}"
 	)
 	! [[ "$meeting" ]] || exec zoom "$meeting"
 	unset meeting
