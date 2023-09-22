@@ -36,10 +36,6 @@
 	path = base/dot-config/zsh/plugins/auto-notify
 	url = https://github.com/MichaelAquilina/zsh-auto-notify.git
 	branch = master
-[submodule "base/dot-config/zsh/plugins/autocomplete"]
-	path = base/dot-config/zsh/plugins/autocomplete
-	url = https://github.com/marlonrichert/zsh-autocomplete
-	branch = main
 [submodule "base/dot-config/zsh/plugins/autopair"]
 	path = base/dot-config/zsh/plugins/autopair
 	url = https://github.com/hlissner/zsh-autopair.git
