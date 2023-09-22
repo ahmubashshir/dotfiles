@@ -1,9 +1,22 @@
 #!/bin/zsh
-function histfile:local {
+[[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE && return
+
+function dirhist {
 	[[ $PWD != $HOME ]] || return
 	local OLDHIST="$HISTFILE"
 	fc -p "$PWD/hist"
 	fc -R "$OLDHIST"
+}
+
+function nullhist {
+	if [[ $HISTFILE == /dev/null ]]; then
+		fc -P
+		fc -R
+	else
+		local OLDHIST="$HISTFILE"
+		fc -p /dev/null
+		fc -R "$OLDHIST"
+	fi
 }
 
 () {
@@ -36,9 +49,9 @@ setopt \
 
 function →zsh/pwd/hist {
 	local DIR="$PWD"
-	until [[ ! -w $DIR ]]; do
+	until [[ $DIR == / || $DIR == $HOME && ! $HISTFILE:t == hist || $HISTFILE == /dev/null ]]; do
 		if
-			[[ -f "$DIR/hist" && $HISTFILE != $DIR/hist || $DIR == $HOME && $HISTFILE:t = hist ]]
+			[[ -f "$DIR/hist" && $HISTFILE != $DIR/hist || $DIR == $HOME && $HISTFILE:t == hist ]]
 		then
 			fc -P
 			if [[ -f "$DIR/hist" && $DIR != $HOME ]]
