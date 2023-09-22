@@ -1,5 +1,6 @@
 #!/bin/zsh
-sed -E 's/^\./dot-/;s/(.*)/zcompile: \1/' <<<"${@[-1]:t}" >&2
+emulate -L zsh -o hist_subst_pattern -o extended_glob
+echo "zcompile: ${${Z_COMPILE_TARGET:s:/load(#e)::}:-${@[-1]:t:s:(#s)\.:dot-:}}"
 (
 	cd "${@[-1]:h}"
 	builtin zcompile "${@:1:-1}" -- "${@[-1]:t}" || touch "${@[-1]:t}.ignore.zwc"
