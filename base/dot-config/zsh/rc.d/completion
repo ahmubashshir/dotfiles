@@ -42,3 +42,5 @@ zstyle ':completion:*:kill:*' force-list always
 #zstyle ':completion:*:match:*' original only
 #zstyle -e ':completion:*:approximate:*' \
 	#max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
+
+zcompinit
