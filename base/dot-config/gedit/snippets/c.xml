@@ -18,8 +18,8 @@ $0]]></text>
 	$0
 	return 0;
 }]]></text>
-    <tag>main</tag>
-    <description>main</description>
+    <tag>margs</tag>
+    <description>main-args</description>
   </snippet>
   <snippet>
     <tag>def</tag>
@@ -32,5 +32,14 @@ $0]]></text>
     <tag>decl</tag>
     <text><![CDATA[${1:type} ${2:name}(${3:signature});]]></text>
     <description>function declaration</description>
+  </snippet>
+  <snippet>
+    <tag>main</tag>
+    <text><![CDATA[int main()
+{
+	$0
+	return 0;
+}]]></text>
+    <description>main</description>
   </snippet>
 </snippets>
