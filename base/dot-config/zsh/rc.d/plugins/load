@@ -6,7 +6,6 @@ zplug-defer lazyload
 zplug-defer completions
 zplug-defer auto-notify
 zplug-defer systemd
-#zplug-defer autocomplete
 zplug-defer fast-syntax-highlighting
 zplug-defer autosuggestions
 zplug-defer autopair
@@ -29,3 +28,6 @@ zplug-defer z
 	zplug-defer nix
 	zplug-defer nix-shell
 }
+
+# reset zle after loading plugins: required when using deferred loading
+zsh-defer +a builtin :

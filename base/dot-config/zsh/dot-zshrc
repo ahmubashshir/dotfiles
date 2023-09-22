@@ -30,49 +30,15 @@ bindkey -e
 autoload -Uz add-zsh-hook compinit
 autoload -Uz "${ZDOTDIR:-$HOME/.zsh}/functions"/^_*~*.zwc(-.:t) >&3 2>&1
 
-load rc plughooks
+load rc plugins/hooks plugins/init
 zplug --path "$ZDOTDIR/omz/plugins"
-___plugins=(
-	"$ZDOTDIR/.zshrc"(:P:h:h:h:h)
-	"$ZDOTDIR/plugins"/*(-/:P:t5)
-	"$ZDOTDIR/omz"(:P:t4)
-)
 
-if ((${#___plugins[@]} > 1));then
-	if ! zplug defer;then
-		git -C "${___plugins[1]}" submodule init --quiet "${___plugins[@]:1}"
-		if ! git -C "${___plugins[1]}" submodule update --progress "${___plugins[@]:1}"
-		then
-			printf "zsh: failed to initialize plugins\n"
-			function zsh-defer {
-				while [[ $1 =~ ^[+-] ]];do shift; done
-				"$@"
-			}
-		else
-			printf "zsh: finished cloning modules\n"
-			zplug defer
-		fi
-	else
-		"$ZDOTDIR/ztasklocked" exec \
-			git -C "${___plugins[1]}" submodule update --progress "${___plugins[@]:1}" &!
-	fi
-fi
-unset ___plugins
+typeset -A ENV # base config variable
+load rc completion keymap history modules \
+		prompt prompt/transient plugins <&- # close input
 
-typeset -A ENV
-#zsh-defer source /usr/share/doc/pkgfile/command-not-found.zsh
-load rc completion keymap history modules plugins prompt transient-prompt
-
-# reset state : required when using deferred loading
-zsh-defer +a builtin :
-
-[[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE
-
-zcompinit
 if [ -e zprof ];then
 	unsetopt XTRACE
 	exec 2>&3 3>&-
 	exec 2>/dev/stderr 3>/dev/null
 fi
-
-# zplug startup-timer

@@ -21,7 +21,10 @@ function zplug:post:hacker-quotes {
 }
 
 function zplug:post:bd {
-	unalias .. ... ....
+	local each
+	for each in .. ... ....; do
+		[[ -z $aliases[$each] ]] || unalias $e
+	done
 }
 
 function zplug:post:auto-notify {
