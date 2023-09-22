@@ -6,12 +6,15 @@ fpath=(
 )
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 ZSH="$ZDOTDIR/omz"
-ZSH_COMPDUMP="$ZSH_CACHE_DIR/compdump"
 
-function source {
-	if [ -f "$1" ];then
-		builtin source "$@"
+() {
+	[[ "${HOST:r}" == "$HOST" ]] || ZSH_COMPDUMP="${${HOST:r}/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"
+	if [[ $ZSH_COMPDUMP == distrobox-ephemeral ]]; then
+		ZSH_COMPDUMP=/tmp/zsh/compdump
+	else
+		ZSH_COMPDUMP="$ZSH_CACHE_DIR/${ZSH_COMPDUMP+$ZSH_COMPDUMP/}compdump"
 	fi
+	[[ -d ${ZSH_COMPDUMP:a:h} ]] || mkdir -p ${ZSH_COMPDUMP:a:h}
 }
 
 function compinit {
@@ -39,8 +42,9 @@ function load {
 	from=$1;shift
 	for each in "$@";do
 		[[ ! -d "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" ]] || each="$each/load"
+		[[ -f "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" ]] || continue
 		Z_COMPILE_TARGET="$from/$each" zcompare "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" -UMz
-		builtin source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
+		source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
 	done
 }
 
