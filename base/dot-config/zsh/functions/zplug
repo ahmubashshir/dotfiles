@@ -54,8 +54,8 @@ for plugpath in $zplugdirs[@];do
 		"$plugname/$plugname" \
 		"zsh-$plugname/$plugname" \
 		"zsh-$plugname/zsh-$plugname" \
-		"$plugname/init.zsh" \
-		"zsh-$plugname/init.zsh"
+		"$plugname/init" \
+		"zsh-$plugname/init"
 	do
 		plugin="$plugpath/${plugpkg+$plugpkg/}$plug.zsh"
 		if [ -f "$plugin" ]
@@ -63,7 +63,7 @@ for plugpath in $zplugdirs[@];do
 			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
 			then
 				rm -f "$plugin.zwc"
-				zcompile "$plugin"
+				Z_COMPILE_TARGET="${plugpath:t2:h1}-$plugname" zcompile "$plugin"
 			fi
 			____zplug_run_hook pre $plugname "$@"
 			builtin source "$plugin" "$@"
