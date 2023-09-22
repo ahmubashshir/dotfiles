@@ -15,7 +15,7 @@
 	padding-left: var(--thin-tab-width);
 }
 
-#main-window[chromehidden=""] #browser {
+#main-window[chromehidden=""]:not([inDOMFullscreen="true"]) #browser {
 	padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding));
 }
 
@@ -73,14 +73,14 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 	animation: appear 0.4s;
 	max-width: min-content;
 	padding-bottom: 0 !important;
-	--menubar-background-color: var(--toolbar-bgcolor);
+	background-color: var(--menubar-background-color) !important;
 }
 
 :root {
 	--menubar-margin-top: calc(var(--urlbar-min-height) - var(--toolbar-start-end-padding) / 2);
 }
 
-:root[uidensity="compact"]  {
+:root[uidensity="compact"] {
 	--menubar-margin-top: var(--urlbar-min-height);
 }
 
