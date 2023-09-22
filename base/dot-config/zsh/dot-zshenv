@@ -38,8 +38,9 @@ function load {
 	local each from
 	from=$1;shift
 	for each in "$@";do
-		zcompare "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" -UMz
-		source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
+		[[ ! -d "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" ]] || each="$each/load"
+		Z_COMPILE_TARGET="$from/$each" zcompare "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each" -UMz
+		builtin source "${ZDOTDIR:-$HOME/.zsh}/$from.d/$each"
 	done
 }
 
