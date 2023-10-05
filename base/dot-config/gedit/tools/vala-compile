@@ -25,4 +25,4 @@ done < <(
 		"$GEDIT_CURRENT_DOCUMENT_NAME"
 )
 
-valac "$GEDIT_CURRENT_DOCUMENT_NAME" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.out"
+valac --Xcc=-w "$GEDIT_CURRENT_DOCUMENT_NAME" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.elf"
