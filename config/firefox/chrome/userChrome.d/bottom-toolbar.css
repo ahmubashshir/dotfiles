@@ -1,22 +1,39 @@
-#main-window[chromehidden=""] #navigator-toolbox-background {
-	position: fixed;
-	bottom: 0;
-	display: block;
-	z-index: 1;
-	width: 100% !important;
-}
+#main-window[chromehidden=""] {
 
-#main-window[chromehidden=""] #navigator-toolbox {
-	width: 100% !important;
-	margin-bottom: -1px;
-}
+	/* ff < 119.0 */
+	&:has(#navigator-toolbox-background) {
+		& #navigator-toolbox-background {
+			position: fixed;
+			bottom: 0;
+			display: block;
+			z-index: 1;
+			width: 100% !important;
+		}
 
-#main-window[chromehidden=""] #titlebar {
-	padding-left: var(--thin-tab-width);
-}
+		& #navigator-toolbox {
+			width: 100% !important;
+			margin-bottom: -1px;
+		}
+	}
 
-#main-window[chromehidden=""]:not([inDOMFullscreen="true"]) #browser {
-	padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding));
+	/* ff >= 119.0 */
+	&:not(:has(#navigator-toolbox-background)) {
+		& #navigator-toolbox {
+			position: fixed;
+			bottom: 0;
+			display: block;
+			z-index: 1;
+			width: 100% !important;
+		}
+	}
+
+	&:not([inDOMFullscreen="true"]) #browser {
+		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding));
+	}
+
+	& #titlebar {
+		padding-left: var(--thin-tab-width);
+	}
 }
 
 /* TOOLBAR BALLOONS HAVE TO BECOME VISIBLE AGAIN */
@@ -34,19 +51,21 @@ panel[position^="bottomcenter"] {
 	bottom: 0px !important;
 }
 
-#urlbar[open] .urlbarView-body-inner {
-	margin-top: 42px;
-	border-top: none !important;
-}
+#urlbar[open] {
+	& .urlbarView-body-inner {
+		margin-top: 42px;
+		border-top: none !important;
+	}
 
-#urlbar[open] #urlbar-input-container {
-	display: inline-flex;
-	position: absolute !important;
-	bottom: 0 !important;
-}
+	& #urlbar-input-container {
+		display: inline-flex;
+		position: absolute !important;
+		bottom: 0 !important;
+	}
 
-#urlbar[searchmode][open] #urlbar-search-mode-indicator {
-	min-width: fit-content !important;
+	&[searchmode] #urlbar-search-mode-indicator {
+		min-width: fit-content !important;
+	}
 }
 
 #urlbar-input {
