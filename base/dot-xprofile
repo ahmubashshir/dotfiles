@@ -16,7 +16,7 @@ if [ -n "$CURRENT_IM_MODULE" ]; then
 	export "GLFW_IM_MODULE=ibus" # needed by kitty
 
 	case "$CURRENT_IM_MODULE" in
-		ibus) ibus-daemon -drx --panel ~/bin/ibus-ui-appindicator ;;
+		ibus) ibus-daemon -Rdrx --panel ~/bin/ibus-ui-appindicator ;;
 		fcitx) fcitx5 -dr ;;
 	esac
 	dbus-update-activation-environment --all --systemd
