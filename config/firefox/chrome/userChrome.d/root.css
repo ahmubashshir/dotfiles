@@ -20,4 +20,5 @@
 	--tabbar-bg: var(--theme-colors-frame, hsl(235, 33%, 19%)
 			/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/browser/themes/windows/browser-aero.css#59 */
 		);
+	--menubar-background-color: var(--toolbar-bgcolor);
 }
