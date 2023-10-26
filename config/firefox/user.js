@@ -61,7 +61,7 @@ user_pref("webgl.enable-debug-renderer-info", false);
 
 /* 1=only base system fonts, 2=also fonts from optional language packs, 3=also user-installed fonts */
 user_pref("layout.css.font-visibility.private", 1);
-user_pref("layout.css.font-visibility.private", 1);
+user_pref("layout.css.has-selector.enabled", true);
 user_pref("layout.css.font-visibility.trackingprotection", 1);
 
 /* 2022: disable all DRM content (EME: Encryption Media Extension) */
