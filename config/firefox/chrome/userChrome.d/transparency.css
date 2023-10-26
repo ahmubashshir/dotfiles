@@ -6,16 +6,19 @@
 		background-color: color-mix(in srgb, transparent 50%, var(--toolbar-field-background-color)) !important;
 	}
 
-	#urlbar:is([focused], [open]) > #urlbar-background {
-		background-color: color-mix(in srgb, transparent 50%, var(--toolbar-field-focus-background-color)) !important;
-	}
+	#urlbar:is([focused], [open]) {
+		& > #urlbar-background {
+			background-color: color-mix(in srgb, transparent 50%, var(--toolbar-field-focus-background-color)) !important;
+		}
 
-	#urlbar:is([focused], [open]) > vbox.urlbarView {
-		background-color: color-mix(in srgb, transparent 25%, var(--toolbar-field-focus-background-color)) !important;
-		width: 100% !important;
-		margin: unset !important;
-		border-radius: var(--toolbarbutton-border-radius);
-		margin-top: -1px !important;
+		& > vbox.urlbarView {
+			background-color: color-mix(in srgb, transparent 25%, var(--toolbar-field-focus-background-color)) !important;
+			width: 100% !important;
+			margin: unset !important;
+			border-radius: var(--toolbarbutton-border-radius);
+			margin-top: -1px !important;
+		}
+
 	}
 
 	/* overflow menu in customize menu */

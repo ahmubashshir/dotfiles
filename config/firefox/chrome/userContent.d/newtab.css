@@ -6,44 +6,53 @@ url-prefix(about:privatebrowsing) {
 		background-size: cover !important;
 	}
 
-	div.search-inner-wrapper {
-		display: none !important;
-		visibility: collapse !important;
+	div {
+		&.search-inner-wrapper {
+			display: none !important;
+			visibility: collapse !important;
+		}
+
+		&.non-collapsible-section,
+		&.search-wrapper,
+		&.logo-and-wordmark,
+		&.search-inner-wrapper {
+			padding: 0px !important;
+			margin: 0px !important;
+
+			& .wordmark {
+				fill: var(--newtab-background-color-secondary) !important;
+				;
+			}
+		}
 	}
 
 	.top-sites-list .hide-for-narrow {
 		display: inline-block !important;
 	}
 
-	@media(max-width: 609px) {
-		.top-sites-list li:nth-child(n+5) {
+	a.top-site-button {
+		& div.tile {
+			border-radius: 50% !important;
+			background-color: rgba(38, 48, 52, 0.7) !important;
+
+			&:is(.active, :focus, :hover) {
+				background-color: rgba(56, 70, 75, 0.7) !important;
+			}
+		}
+
+		& div.top-site-icon {
+			border-radius: 50% !important;
+			width: 100% !important;
+			height: 100% !important;
+			position: unset !important;
+			background-color: transparent !important;
+		}
+
+		& div.title,
+		& div.screenshot.active {
 			display: none !important;
+			visibility: collapse !important;
 		}
-
-		ul.top-sites-list {
-			grid-template-columns: auto auto !important;
-		}
-	}
-
-	div.non-collapsible-section,
-	div.search-wrapper,
-	div.logo-and-wordmark,
-	div.search-inner-wrapper {
-		padding: 0px !important;
-		margin: 0px !important;
-	}
-
-	a.top-site-button div.tile {
-		border-radius: 50% !important;
-		background-color: rgba(38, 48, 52, 0.7) !important;
-	}
-
-	a.top-site-button div.top-site-icon {
-		border-radius: 50% !important;
-		width: 100% !important;
-		height: 100% !important;
-		position: unset !important;
-		background-color: transparent !important;
 	}
 
 	ul.top-sites-list {
@@ -55,29 +64,29 @@ url-prefix(about:privatebrowsing) {
 		transform: translate(-50%, 25%);
 	}
 
-	a.top-site-button div.tile:is(.active, :focus, :hover) {
-		background-color: rgba(56, 70, 75, 0.7) !important;
-	}
-
 	button.personalize-button {
 		opacity: 0.1 !important;
-	}
 
-	button.personalize-button:hover {
-		opacity: 0.5 !important;
-	}
-
-	a.top-site-button div.title,
-	a.top-site-button div.screenshot.active {
-		display: none !important;
-		visibility: collapse !important;
+		&:hover {
+			opacity: 0.5 !important;
+		}
 	}
 
 	li.top-site-outer:is(.active, :focus, :hover) {
 		background: none !important;
+
+		& button.context-menu-button {
+			opacity: 0.5 !important;
+		}
 	}
 
-	li.top-site-outer:is(.active, :focus, :hover) button.context-menu-button {
-		opacity: 0.5 !important;
+	@media(max-width: 609px) {
+		ul.top-sites-list {
+			grid-template-columns: auto auto !important;
+
+			& li:nth-child(n+5) {
+				display: none !important;
+			}
+		}
 	}
 }
