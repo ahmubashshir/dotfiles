@@ -1,3 +1,15 @@
+:root {
+	--menubar-margin-top: calc(var(--urlbar-min-height) - var(--toolbar-start-end-padding) / 2);
+
+	&[uidensity="compact"] {
+		--menubar-margin-top: var(--urlbar-min-height);
+	}
+
+	&:not([chromehidden~="location"]):not([chromehidden~="toolbar"]) #customization-footer {
+		margin-bottom: 42px;
+	}
+}
+
 #main-window[chromehidden=""] {
 
 	/* ff < 119.0 */
@@ -46,25 +58,27 @@ panel[position^="bottomcenter"] {
 	bottom: 40px !important;
 }
 
-#urlbar[breakout-extend] {
-	top: auto !important;
-	bottom: 0px !important;
-}
-
-#urlbar[open] {
-	& .urlbarView-body-inner {
-		margin-top: 42px;
-		border-top: none !important;
+#urlbar {
+	&[breakout-extend] {
+		top: auto !important;
+		bottom: 0px !important;
 	}
 
-	& #urlbar-input-container {
-		display: inline-flex;
-		position: absolute !important;
-		bottom: 0 !important;
-	}
+	&[open] {
+		& .urlbarView-body-inner {
+			margin-top: 42px;
+			border-top: none !important;
+		}
 
-	&[searchmode] #urlbar-search-mode-indicator {
-		min-width: fit-content !important;
+		& #urlbar-input-container {
+			display: inline-flex;
+			position: absolute !important;
+			bottom: 0 !important;
+		}
+
+		&[searchmode] #urlbar-search-mode-indicator {
+			min-width: fit-content !important;
+		}
 	}
 }
 
@@ -95,22 +109,10 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 	background-color: var(--menubar-background-color) !important;
 }
 
-:root {
-	--menubar-margin-top: calc(var(--urlbar-min-height) - var(--toolbar-start-end-padding) / 2);
-}
-
-:root[uidensity="compact"] {
-	--menubar-margin-top: var(--urlbar-min-height);
-}
-
 #toolbar-menubar:not([inactive="true"]),
 toolbarspring,
 #titlebar {
 	-moz-window-dragging: no-drag !important;
-}
-
-:root:not([chromehidden~="location"]):not([chromehidden~="toolbar"]) #customization-footer {
-	margin-bottom: 42px;
 }
 
 /* FIX YOUTUBE FULLSCREEN VIDEO */

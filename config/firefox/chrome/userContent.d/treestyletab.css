@@ -1,14 +1,5 @@
 @-moz-document url-prefix("moz-extension://") {
 
-	tab-item-substance > .contextual-identity-marker {
-		left: 0.5em !important;
-		right: 0.5em !important;
-		bottom: 0.1em !important;
-		width: auto !important;
-		height: calc(var(--favicon-size) / 10) !important;
-		top: auto !important;
-	}
-
 	/* autohide css  */
 	#tabbar {
 		scrollbar-width: none !important;
@@ -25,61 +16,70 @@
 
 	tab-item {
 		margin: 3px !important;
-	}
 
-	tab-item:not([data-child-ids]) tab-twisty {
-		visibility: collapsed !important;
-	}
+		& :not([data-child-ids]) tab-twisty {
+			visibility: collapsed !important;
+		}
 
-	/* Adjust style for tab that is muted. */
-	tab-item.muted {
-		opacity: 0.5 !important;
-	}
+		/* Adjust style for tab that is muted. */
+		&.muted {
+			opacity: 0.5 !important;
+		}
 
-	/* personal customizations */
-	/* Auto hide close buttons on tabs. */
-	tab-item .closebox {
-		border-radius: 1em;
-		height: 1.75em;
-		width: 2em;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-left: 0.25em !important;
-		background: rgb(244, 96, 103) !important;
-		visibility: collapse;
-	}
+		/* personal customizations */
+		/* Auto hide close buttons on tabs. */
+		& .closebox {
+			border-radius: 1em;
+			height: 1.75em;
+			width: 2em;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-left: 0.25em !important;
+			background: rgb(244, 96, 103) !important;
+			visibility: collapse;
+		}
 
-	tab-item:hover tab-closebox {
-		visibility: initial;
+		&:hover {
+			& tab-closebox {
+				visibility: initial;
+			}
+
+			& tab-label {
+				color: var(--theme-colors-popup_highlight_text) !important;
+				font-weight: bold;
+			}
+		}
+
+		&.discarded {
+			opacity: 0.75 !important;
+
+			& tab-favicon {
+				opacity: 0.5 !important;
+			}
+		}
+
+		&.active {
+			& tab-item-substance {
+				background: var(--theme-colors-toolbar) !important;
+			}
+
+			& .label-content {
+				font-weight: bold !important;
+				font-size: 14px !important;
+			}
+
+			& tab-twisty,
+			& .label-content,
+			& tab-counter {
+				color: var(--theme-colors-tab_text) !important;
+			}
+		}
 	}
 
 	div.after-tabs,
 	tab-item:not(.pinned).collapsed {
 		display: none !important;
-	}
-
-	tab-item.discarded {
-		opacity: 0.75 !important;
-	}
-
-	tab-item.discarded tab-favicon {
-		opacity: 0.5 !important;
-	}
-
-	tab-item.active tab-item-substance {
-		background: var(--theme-colors-toolbar) !important;
-	}
-
-	tab-item.active .label-content {
-		font-weight: bold !important;
-		font-size: 14px !important;
-	}
-
-	tab-item.active tab-twisty,
-	tab-item.active .label-content,
-	tab-item.active tab-counter {
-		color: var(--theme-colors-tab_text) !important;
 	}
 
 	tab-item.unread .label-content {
@@ -91,19 +91,21 @@
 		border-radius: 5px 0px 0px 5px;
 		border-left: 1px solid !important;
 		padding-left: 0.3em !important;
-	}
 
-	tab-item-substance:hover {
-		background: var(--theme-colors-popup_highlight) !important;
-	}
+		&:hover {
+			background: var(--theme-colors-popup_highlight) !important;
+			filter: opacity(80%) drop-shadow(0px 0px 0px #3498DB);
+		}
 
-	tab-item:hover tab-label {
-		color: var(--theme-colors-popup_highlight_text) !important;
-		font-weight: bold;
-	}
+		& > .contextual-identity-marker {
+			left: 0.5em !important;
+			right: 0.5em !important;
+			bottom: 0.1em !important;
+			width: auto !important;
+			height: calc(var(--favicon-size) / 10) !important;
+			top: auto !important;
+		}
 
-	tab-item-substance:hover {
-		filter: opacity(80%) drop-shadow(0px 0px 0px #3498DB);
 	}
 
 	#subpanel-selector-anchor .icon {
@@ -113,15 +115,6 @@
 
 
 	@media screen and (width <=70px) {
-
-		tab-item:not(:hover) tab-twisty {
-			visibility: collapse !important;
-		}
-
-		tab-item:not(:hover) tab-favicon {
-			margin: 0.25em !important;
-		}
-
 		.left tab-item {
 			margin-left: 0 !important;
 		}
@@ -130,8 +123,20 @@
 			margin-right: 0 !important;
 		}
 
-		tab-item .extra-items-container.indent {
-			width: calc(var(--tab-indent) * 0.45) !important;
+		tab-item {
+			&:not(:hover) {
+				& tab-twisty {
+					visibility: collapse !important;
+				}
+
+				& tab-favicon {
+					margin: 0.25em !important;
+				}
+			}
+
+			& .extra-items-container.indent {
+				width: calc(var(--tab-indent) * 0.45) !important;
+			}
 		}
 
 		tab-item-substance {
