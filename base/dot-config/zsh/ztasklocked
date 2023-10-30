@@ -7,9 +7,14 @@ case "$task" in
 	*) LOCK="$*";;
 esac
 
-LOCKFILE="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/$LOCK.lck"
+LOCKFILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/ztasklocked/$LOCK"
+if ! [[ -d "${LOCKFILE:h}" ]]; then
+	rm -rf "${LOCKFILE:h}"
+	mkdir -p "${LOCKFILE:h}"
+fi
+
 touch "$LOCKFILE"
-exec 2> /dev/null
+exec <&- 2>&-
 zsystem flock -t 0 -f fd "$LOCKFILE" || exit
 trap 'rm -f "$LOCKFILE"' EXIT
 
@@ -45,5 +50,5 @@ case "$task" in
 		zcompare "$target" -Mz
 	done
 	;;
-	(exec) "$@";;
+	(exec) "$@" 1>&-;;
 esac
