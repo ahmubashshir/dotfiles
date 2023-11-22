@@ -1,3 +1,12 @@
-window.csd.maximized windowcontrols {
+window.csd.maximized windowcontrols.start {
+	margin-left: calc(3 * -36px);
+}
+
+window.csd.maximized windowcontrols.end {
 	margin-right: calc(3 * -36px);
+}
+
+window.csd.maximized headerbar > box.vertical > label.title:not(:only-child),
+window.csd.maximized headerbar > box.vertical > label.subtitle {
+	opacity: 0;
 }
