@@ -1,0 +1,19 @@
+.csd.maximized headerbar > box.right,
+.csd.maximized headerbar > box.left {
+	opacity: 0;
+	min-height: 0;
+	min-width: 0;
+}
+
+.csd.maximized headerbar > box.right {
+	margin-right: calc(3 * -36px - 3px);
+}
+
+.csd.maximized headerbar > box.left {
+	margin-left: calc(3 * -36px - 3px);
+}
+
+.csd.maximized headerbar > box.vertical > label.title:not(:only-child),
+.csd.maximized headerbar > box.vertical > label.subtitle {
+	opacity: 0;
+}
