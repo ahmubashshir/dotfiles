@@ -47,16 +47,71 @@ get_avr()
 	fi
 }
 
+for_triplet()
+{
+	local cmd="$1" exec=''
+	shift
+	if [[ $cmd == exec ]]; then
+		cmd="$1"
+		shift
+		exec=exec
+	fi
+	if ((STRIP_OUTPUT)) && [[ $exec == exec ]]; then
+		exec=''
+		set -e
+	fi
+
+	if hash "$TARCH-$TSYSTEM-$TABI-$cmd"; then
+		$exec "$TARCH-$TSYSTEM-$TABI-$cmd" "$@"
+	else
+		echo "'$TARCH-$TSYSTEM-$TABI-$cmd' not found" >&2
+		echo "Using '$cmd'" >&2
+		$exec "$cmd" "$@"
+	fi
+}
+
 get_pkg()
 {
 	if pkg-config "$1"; then
 		readarray -t -O "${#args[@]}" args < <(
-			pkg-config --cflags --libs "$1" | tr -s ' ' '\n'
+			for_triplet pkg-config --cflags --libs "$1" | tr -s ' ' '\n'
 		)
 	else
 		__error "pkg-config: $1 not found."
 	fi
 }
+
+get_triplet()
+{
+	[[ -z $1 ]] || read -r TARCH TSYSTEM TABI <<< "$1"
+
+	case "$TARCH" in
+		amd64)
+			TARCH=x86_64
+			HFTARCH=amd64
+			;;
+		i?86 | x86)
+			TARCH=i686
+			HFTARCH=i386
+			;;
+	esac
+
+	case "$TSYSTEM/$TABI" in
+		w64/mingw32) OUTPUT=exe ;;
+	esac
+}
+
+get_output()
+{
+	[[ -z $1 ]] || OUTPUT="$1"
+}
+
+get_strip()
+{
+	[[ $1 == "false" ]] || STRIP_OUTPUT=1
+	[[ $1 == "false" ]] || read -ra STRIP_ARGS <<< "$1"
+}
+
 get_file()
 {
 	files+=("$1")
@@ -69,6 +124,9 @@ HELPERS=(
 	'    (optional) fmt=<bin|srec|hex>   (default: hex)'
 	'    (optional) section=<eeprom|lock|fuse|sig> (default: empty)'
 	'pkg[pkg-config] PKG-CONFIG cflags and ldflags'
+	'triplet: Specify system triplet'
+	'output : Specify output extension'
+	'strip  : Strip program after compilation [pass arguments to strip with this]'
 )
 FILTER=compile
 ## start args
@@ -81,9 +139,10 @@ case "$TYPE/${NAME##*.}" in
 esac
 typeset -p files
 
+ONAME="${NAME}${TARCH:+.${HFTARCH:-$TARCH}}.${OUTPUT:-elf}"
 case "$TYPE" in
-	x-csrc) exec gcc "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
-	x-c++src) exec g++ "${files[@]}" -o "${NAME}.elf" "${args[@]}" ;;
+	x-csrc) for_triplet exec gcc "${files[@]}" -o "${ONAME}" "${args[@]}" ;;
+	x-c++src) for_triplet exec g++ "${files[@]}" -o "${ONAME}" "${args[@]}" ;;
 	x-java)
 		cd "$DIR" || exit 1
 		exec javac "${args[@]}" "$NAME"
@@ -125,3 +184,8 @@ case "$TYPE" in
 		exit 1
 		;;
 esac
+
+if ((STRIP_OUTPUT)) && [[ $TYPE =~ ^x-c(|\+\+)src$ ]]; then
+	unset STRIP_OUTPUT
+	for_triplet exec strip "${STRIP_ARGS[@]}" "${ONAME}"
+fi
