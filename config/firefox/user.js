@@ -1,4 +1,45 @@
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+/* key: browser.uiCustomization.state | use `jq 'tostring'` to encode
+{
+  "placements": {
+    "nav-bar": [
+      "sidebar-button",
+      "firefox-view-button",
+      "back-button",
+      "stop-reload-button",
+      "forward-button",
+      "customizableui-special-spring1",
+      "urlbar-container",
+      "new-tab-button",
+      "customizableui-special-spring2",
+      "downloads-button",
+      "unified-extensions-button",
+      "fxa-toolbar-menu-button"
+    ],
+    "TabsToolbar": [
+      "alltabs-button",
+      "tabbrowser-tabs"
+    ]
+  },
+  "seen": [
+    "_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action",
+    "ublock0_raymondhill_net-browser-action"
+  ],
+  "dirtyAreaCache": [
+    "unified-extensions-area",
+    "TabsToolbar"
+  ],
+  "currentVersion": 99999999,
+  "newElementCount": 0
+}
+ */
+user_pref("browser.toolbars.bookmarks.visibility", "never");
+user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
+user_pref("browser.compactmode.show", true);
+user_pref("browser.uidensity", 1);
+user_pref("browser.display.use_system_colors", true);
+// end UI Customizations
+
 user_pref("browser.urlbar.update1", false);
 user_pref("ui.systemUsesDarkTheme", true);
 user_pref("layout.css.color-mix.enabled", true);
@@ -42,9 +83,15 @@ user_pref("browser.sessionstore.max_tabs_undo", 10);
 user_pref("config.trim_on_minimize", true);
 // set in-memory cache to 300M
 user_pref("browser.cache.memory.capacity", 307200);
+// download to temp dir unless explicitly saved
+user_pref("browser.download.start_downloads_in_tmp_dir", true);
 // enable jpeg-xl
 //user_pref("image.jxl.enabled", true);
 
+// enable HTTP/3
+//user_pref();
+// keyboard zoom steps
+user_pref("toolkit.zoomManager.zoomValues", "0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.00,1.05,1.10,1.15,1.20,1.25,1.30,1.35,1.40,1.45,1.50,1.55,1.60,1.65,1.70,1.75,1.80,1.85,1.90,1.95,2.00,2.05,2.10,2.15,2.20,2.25,2.30,2.35,2.40,2.45,2.50,2.55,2.60,2.65,2.70,2.75,2.80,2.85,2.90,2.95,3.00,3.05,3.10,3.15,3.20,3.25,3.30,3.35,3.40,3.45,3.50");
 
 /*
  * layers.acceleration.force-enabled
@@ -55,7 +102,10 @@ user_pref("browser.cache.memory.capacity", 307200);
  */
 user_pref("browser.display.use_document_fonts", 1);
 user_pref("gfx.font_rendering.opentype_svg.enabled", false);
-
+// allow maximum font substitution rules
+user_pref("gfx.font_rendering.fontconfig.max_generic_substitutions", 127);
+// use system emoji font
+user_pref("font.name-list.emoji", "emoji");
 user_pref("media.navigator.enabled", false);
 user_pref("webgl.enable-debug-renderer-info", false);
 
@@ -84,15 +134,43 @@ user_pref("browser.link.open_newwindow", 3); // [DEFAULT: 3]
 /* 4513: set all open window methods to abide by "browser.link.open_newwindow" (4512)
  * [1] https://searchfox.org/mozilla-central/source/dom/tests/browser/browser_test_new_window_from_content.js ***/
 user_pref("browser.link.open_newwindow.restriction", 0);
-
-/* 4520: disable WebGL (Web Graphics Library)
- * [SETUP-WEB] If you need it then override it. RFP still randomizes canvas for naive scripts ***/
-
 user_pref("app.shield.optoutstudies.enabled", false);
 user_pref("app.normandy.user_id", "");
-user_pref("browser.compactmode.show", true);
 user_pref("browser.contentblocking.category", "strict");
-user_pref("browser.display.use_system_colors", true);
+/* use `jq 'tostring'` to encode
+[
+  {
+    "url": "https://stackoverflow.com/",
+    "label": "stackoverflow"
+  },
+  {
+    "url": "https://github.com/notifications",
+    "label": "github"
+  },
+  {
+    "url": "https://twitter.com/",
+    "label": "twitter"
+  },
+  {
+    "url": "https://www.reddit.com/",
+    "label": "reddit"
+  },
+  {
+    "url": "https://kitsu.io/",
+    "label": "kitsu"
+  },
+  {
+    "url": "https://myanimelist.net/"
+  },
+  {
+    "url": "https://mangadex.org/"
+  },
+  {
+    "url": "https://web.archive.org/",
+    "label": "web.archive"
+  }
+]
+ */
 user_pref("browser.newtabpage.pinned", "[{\"url\":\"https://stackoverflow.com/\",\"label\":\"stackoverflow\"},{\"url\":\"https://github.com/notifications\",\"label\":\"github\"},{\"url\":\"https://twitter.com/\",\"label\":\"twitter\"},{\"url\":\"https://www.reddit.com/\",\"label\":\"reddit\"},{\"url\":\"https://kitsu.io/\",\"label\":\"kitsu\"},{\"url\":\"https://myanimelist.net/\"},{\"url\":\"https://mangadex.org/\"},{\"url\":\"https://web.archive.org/\",\"label\":\"web.archive\"}]");
 user_pref("browser.pagethumbnails.capturing_disabled", false);
 user_pref("browser.tabs.unloadOnLowMemory", true);
