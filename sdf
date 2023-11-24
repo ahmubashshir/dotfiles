@@ -1,26 +1,73 @@
 #!/bin/bash
+function find-bin
+{
+	local -i missing
+	while [[ -n "$1" ]]; do
+		if ! hash "$1" 2> /dev/null; then
+			((++missing))
+			printf 'ERROR: %s: command not found.\n\n' "$1"
+			printf '\tInstall and/or ensure `%s` is in your $PATH.\n' "$1"
+		fi
+		shift
+	done >&2
+	((missing == 0)) || exit 1
+}
 
-if ! command -pv stow > /dev/null; then
-	cat >&2 << EOF
-ERROR: stow: command not found
+function patch-stow
+{
+	local stow
+	read -r stow < <(perl -MStow -e 'print $INC{"Stow.pm"}')
 
-Install and/or ensure gnu stow in in your \$PATH
-EOF
-	exit 1
-fi
+	if
+		sed -nE '/^#patch@ .+ @patch#$/s/^#patch@ (.+) @patch#/\1/p' "$BASH_ARGV0" \
+			| patch -sN --dry-run --read-only=ignore "$stow" > /dev/null 2>&1
+	then
+		if ! sha512sum -c .git/stow/.sha512sum > /dev/null 2>&1; then
+			echo "INFO: Patching stow for dotfiles..."
+			[[ -d .git/stow ]] || mkdir .git/stow
+			sed -nE '/^#patch@ .+ @patch#$/s/^#patch@ (.+) @patch#/\1/p' "$BASH_ARGV0" \
+				| patch "$stow" -o .git/stow/Stow.pm > /dev/null 2>&1
+			sha512sum .git/stow/Stow.pm "$stow" > .git/stow/.sha512sum
+		fi
+		export PERL5LIB=$PWD/.git/stow
+	elif [[ -f .git/stow/Stow.pm ]]; then
+		echo "INFO: Reverting stow dotfiles patch..."
+		rm -rf .git/stow
+	fi
+}
 
-STOW_DIR="$(dirname "$(realpath "$0")")"
-STOW_IGNORE="^(face\.png|.info)|\.swp"
+function unpatch-stow
+{
+	local -a perl5lib
+	read -ra perl5lib <<< "$PERL5LIB"
+	unset PERL5LIB
+	if ((${#perl5lib[@]} > 0)); then
+		for each in "${perl5lib[@]}"; do
+			[[ $each == "$PWD/.git/stow" ]] || PERL5LIB="${PERL5LIB:+:}$each"
+		done
+		export PERL5LIB
+	fi
+}
+
 function dot-file
 {
+	patch-stow
 	stow -d "$STOW_DIR" --dotfile -t ~ -v1 \
 		--ignore="$STOW_IGNORE" "$@"
+	unpatch-stow
 }
 
 function stow-system
 {
 	sudo stow -d "$STOW_DIR/system" -t / -v1 --ignore="$STOW_IGNORE" "$@"
 }
+
+## start ##
+
+find-bin stow sed patch sha512sum
+
+STOW_DIR="$(dirname "$(realpath "$0")")"
+STOW_IGNORE="^(face\.png|.info)|\.swp"
 
 if [ "$#" -eq 0 ]; then
 	cd "$STOW_DIR"
@@ -29,7 +76,128 @@ if [ "$#" -eq 0 ]; then
 	exec find -maxdepth 1 -type d -not -name '.*' -printf '\t%f\n'
 elif [ "$1" = "system" ]; then
 	shift
-	stow-system    "$@"
+	stow-system "$@"
 else
 	dot-file "$@"
 fi
+
+#patch@ --- a/lib/Stow.pm @patch#
+#patch@ +++ b/lib/Stow.pm @patch#
+#patch@ @@ -284,6 +284,7 @@ sub plan_unstow { @patch#
+#patch@                      $self->{stow_path}, @patch#
+#patch@                      $package, @patch#
+#patch@                      '.', @patch#
+#patch@ +		    $path, @patch#
+#patch@                  ); @patch#
+#patch@              } @patch#
+#patch@              debug(2, "Planning unstow of package $package... done"); @patch#
+#patch@ @@ -316,6 +317,7 @@ sub plan_stow { @patch#
+#patch@                  $package, @patch#
+#patch@                  '.', @patch#
+#patch@                  $path, # source from target @patch#
+#patch@ +		0, @patch#
+#patch@              ); @patch#
+#patch@              debug(2, "Planning stow of package $package... done"); @patch#
+#patch@              $self->{action_count}++; @patch#
+#patch@ @@ -367,10 +369,12 @@ sub within_target_do { @patch#
+#patch@  #============================================================================ @patch#
+#patch@  sub stow_contents { @patch#
+#patch@      my $self = shift; @patch#
+#patch@ -    my ($stow_path, $package, $target, $source) = @_; @patch#
+#patch@ - @patch#
+#patch@ -    my $path = join_paths($stow_path, $package, $target); @patch#
+#patch@ +    my ($stow_path, $package, $target, $source, $level) = @_; @patch#
+#patch@   @patch#
+#patch@ +    # Remove leading $level times .. from $source @patch#
+#patch@ +    my $n = 0; @patch#
+#patch@ +    my $path = join '/', map { (++$n <= $level) ? ( ) : $_ } (split m{/+}, $source); @patch#
+#patch@ +     @patch#
+#patch@      return if $self->should_skip_target_which_is_stow_dir($target); @patch#
+#patch@   @patch#
+#patch@      my $cwd = getcwd(); @patch#
+#patch@ @@ -407,6 +411,7 @@ sub stow_contents { @patch#
+#patch@              $package, @patch#
+#patch@              $node_target,                 # target @patch#
+#patch@              join_paths($source, $node),   # source @patch#
+#patch@ +	    $level @patch#
+#patch@          ); @patch#
+#patch@      } @patch#
+#patch@  } @patch#
+#patch@ @@ -429,7 +434,7 @@ sub stow_contents { @patch#
+#patch@  #============================================================================ @patch#
+#patch@  sub stow_node { @patch#
+#patch@      my $self = shift; @patch#
+#patch@ -    my ($stow_path, $package, $target, $source) = @_; @patch#
+#patch@ +    my ($stow_path, $package, $target, $source, $level) = @_; @patch#
+#patch@   @patch#
+#patch@      my $path = join_paths($stow_path, $package, $target); @patch#
+#patch@   @patch#
+#patch@ @@ -499,12 +504,14 @@ sub stow_node { @patch#
+#patch@                      $existing_package, @patch#
+#patch@                      $target, @patch#
+#patch@                      join_paths('..', $existing_source), @patch#
+#patch@ +		    $level + 1, @patch#
+#patch@                  ); @patch#
+#patch@                  $self->stow_contents( @patch#
+#patch@                      $self->{stow_path}, @patch#
+#patch@                      $package, @patch#
+#patch@                      $target, @patch#
+#patch@                      join_paths('..', $source), @patch#
+#patch@ +		    $level + 1, @patch#
+#patch@                  ); @patch#
+#patch@              } @patch#
+#patch@              else { @patch#
+#patch@ @@ -531,6 +538,7 @@ sub stow_node { @patch#
+#patch@                  $package, @patch#
+#patch@                  $target, @patch#
+#patch@                  join_paths('..', $source), @patch#
+#patch@ +		$level + 1, @patch#
+#patch@              ); @patch#
+#patch@          } @patch#
+#patch@          else { @patch#
+#patch@ @@ -554,6 +562,7 @@ sub stow_node { @patch#
+#patch@              $package, @patch#
+#patch@              $target, @patch#
+#patch@              join_paths('..', $source), @patch#
+#patch@ +	    $level + 1, @patch#
+#patch@          ); @patch#
+#patch@      } @patch#
+#patch@      else { @patch#
+#patch@ @@ -740,9 +749,7 @@ sub unstow_node_orig { @patch#
+#patch@  #============================================================================ @patch#
+#patch@  sub unstow_contents { @patch#
+#patch@      my $self = shift; @patch#
+#patch@ -    my ($stow_path, $package, $target) = @_; @patch#
+#patch@ - @patch#
+#patch@ -    my $path = join_paths($stow_path, $package, $target); @patch#
+#patch@ +    my ($stow_path, $package, $target, $path) = @_; @patch#
+#patch@   @patch#
+#patch@      return if $self->should_skip_target_which_is_stow_dir($target); @patch#
+#patch@   @patch#
+#patch@ @@ -778,7 +785,7 @@ sub unstow_contents { @patch#
+#patch@              $node_target = $adj_node_target; @patch#
+#patch@          } @patch#
+#patch@   @patch#
+#patch@ -        $self->unstow_node($stow_path, $package, $node_target); @patch#
+#patch@ +        $self->unstow_node($stow_path, $package, $node_target, join_paths($path, $node)); @patch#
+#patch@      } @patch#
+#patch@      if (-d $target) { @patch#
+#patch@          $self->cleanup_invalid_links($target); @patch#
+#patch@ @@ -798,7 +805,7 @@ sub unstow_contents { @patch#
+#patch@  #============================================================================ @patch#
+#patch@  sub unstow_node { @patch#
+#patch@      my $self = shift; @patch#
+#patch@ -    my ($stow_path, $package, $target) = @_; @patch#
+#patch@ +    my ($stow_path, $package, $target, $source) = @_; @patch#
+#patch@   @patch#
+#patch@      my $path = join_paths($stow_path, $package, $target); @patch#
+#patch@   @patch#
+#patch@ @@ -872,7 +879,7 @@ sub unstow_node { @patch#
+#patch@      elsif (-e $target) { @patch#
+#patch@          debug(4, "  Evaluate existing node: $target"); @patch#
+#patch@          if (-d $target) { @patch#
+#patch@ -            $self->unstow_contents($stow_path, $package, $target); @patch#
+#patch@ +            $self->unstow_contents($stow_path, $package, $target, $source); @patch#
+#patch@   @patch#
+#patch@              # This action may have made the parent directory foldable @patch#
+#patch@              if (my $parent = $self->foldable($target)) { @patch#
