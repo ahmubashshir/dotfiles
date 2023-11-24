@@ -1,0 +1,28 @@
+#!/usr/bin/awk -f
+function basename(file, a, n) {
+	n = split(file, a, "/")
+	return a[n]
+}
+
+function rangemod(n, r) {
+		return (n + ((n < 0)?r:0)) % r;
+}
+
+function delta(cmd) {
+	return ((cmd == "next")?1:-1)
+}
+
+BEGIN {
+	if(ARGC == 2 && (ARGV[1] == "prev" || ARGV[1] == "next")) {
+		LC = 0
+		WS = 0
+		ws = "wmctrl -d"
+		while((ws | getline) > 0 && (LC++ || LC))
+			if($2 == "*")
+				WS = $1
+		close(ws)
+		system ("wmctrl -s "rangemod(WS + delta(ARGV[1]), LC))
+	} else {
+		print "Usage: "basename(PROCINFO["argv"][2])" <prev|next>"
+	}
+}
