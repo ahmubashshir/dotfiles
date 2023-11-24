@@ -1,6 +1,12 @@
 #!/bin/bash
-PROFILES="${0%/*}"
-PROFILES="${PROFILES%/*}/profiles"
+PROFILES="${XDG_CONFIG_HOME:-$HOME/.config}/git/profiles"
+
+# Profile format
+# # NAME: JaduPC
+# # DESC: JaduPC Developer profile
+# property	=	value ; set value
+# property	+	value ; add value to array
+# property	-	value ; unset property with value
 
 function git_config
 {
@@ -10,7 +16,7 @@ function git_config
 function die
 {
 	local ret="$1" fmt="$2"
-	shift                    2
+	shift                  2
 	printf "$fmt\n" "$@" >&2
 	exit "$ret"
 }
@@ -37,14 +43,18 @@ while (($# > 0)); do
 			find "$PROFILES" -not -type d -not -xtype l \
 				| sed -E "s|^$PROFILES/(.+).cfg$|\1|" \
 				| while read -r profile; do
-					sed -nE 's/^# NAME: (.+)$/\1/p' "$PROFILES/$profile.cfg" \
-						| xargs -d $'\n' printf '%s\n' "$profile" \
-						| tac | xargs -d $'\n' printf '%s:\t%s\n'
-				done
+					printf '%s\t' "$profile"
+					sed -nE 's/^# NAME: (.+)$/\1/p' "$PROFILES/$profile.cfg"
+				done \
+				| column -s $'\t' -o $':\t' -dt
 			exit 0
 			;;
 		show)
-			read -r profile < <(git_config --get profile.selected || echo "$1")
+			read -r profile < <(git_config --get profile.selected 2> /dev/null || echo "$1")
+			if [[ -z $profile ]]; then
+				echo "A profile must be applied or passed in commandline" >&2
+				exit 1
+			fi
 			[[ -f $PROFILES/$profile.cfg ]] \
 				|| die 1 "Profile doesn't exist: %s" "$profile"
 
