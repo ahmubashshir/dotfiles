@@ -1,0 +1,12 @@
+window#XfcePanelWindow > widget > widget > grid > #xfce-panel-toggle-button {
+	border-radius: 50%;
+	margin: 2px;
+}
+
+window#XfcePanelWindow > widget > widget > grid > #xfce-panel-toggle-button:hover:not(:checked) {
+	box-shadow: 0px 0px 1px 2px alpha(@selected_bg_color, 0.5);
+}
+
+window#XfcePanelWindow > widget > widget > grid > #xfce-panel-toggle-button:checked {
+	box-shadow: 0px 0px 1px 2px alpha(@selected_bg_color, 0.75);
+}
