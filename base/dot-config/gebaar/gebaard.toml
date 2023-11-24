@@ -1,0 +1,22 @@
+[swipe.commands.three]
+left = "xdotool key Alt+Left"
+right= "xdotool key Alt+Right"
+up   = "xfce4-popup-whiskermenu"
+down = "xfdashboard -t"
+
+[swipe.commands.four]
+left = "workspace prev"
+right= "workspace next"
+
+[pinch.commands.two]
+out = "xdotool key Ctrl+plus"
+in =  "xdotool key Ctrl+minus"
+
+[pinch.settings]
+threshold = 0.25
+one_shot = false
+
+[swipe.settings]
+threshold = 0.5
+one_shot = true
+trigger_on_release = false

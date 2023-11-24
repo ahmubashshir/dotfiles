@@ -25,6 +25,9 @@ if command -pv xcape > /dev/null 2>&1; then
 	awk '{if(NR>1) printf ";";if(length($0) > 1)printf "%s", $0} END{print ""}' "${XDG_CONFIG_HOME:-$HOME/.config}/X11/xcape.rc" |
 		xcape -e "$(cat)"
 fi
+if command -pv gebaard  > /dev/null 2>&1; then
+	gebaard -b
+fi
 
 if command -pv xmodmap > /dev/null 2>&1 && test -f "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"; then
 	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"
