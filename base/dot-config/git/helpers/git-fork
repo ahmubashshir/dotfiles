@@ -50,6 +50,8 @@ function gh_fork
 		printf '\e[32m✓\e[m Fork exists \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
 		git remote add origin "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"
 		printf '\e[32m✓\e[m Added remote \e[1m%s\e[m\n' "origin"
+	fi
+	if [[ $(gh repo set-default --view) != "$upstream" ]]; then
 		gh repo set-default "$upstream"
 	fi
 }
