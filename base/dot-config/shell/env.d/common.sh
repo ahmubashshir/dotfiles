@@ -10,6 +10,7 @@ export GPGID=56DB0538F60D951C
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export MEDIA_PLAYER=mpv-buffered
 export GPG_TTY="${TTY:-$(tty)}"
+export WINETRICKS_DOWNLOADER=curl
 export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 
 if command -pv systemctl && systemctl is-system-running -q && systemctl is-active -q docker.socket;then
