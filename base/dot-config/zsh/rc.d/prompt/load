@@ -1,5 +1,5 @@
 #!/bin/zsh
-ENV[prompt_filter]='%([BUbfku]|([FK]){*})'
+ENV[prompt_filter]='[[:cntrl:]]\[((<->([ABCDEFGJKST]|;<->[Hf]))|[su]|\?<->[hl]|<->(;<->(;<->(;<->|)|)|)m)'
 ENV[prompt_suffix]='%(?..%F{cyan})┠'
 ENV[prompt_prefix]='%(?..%F{cyan})┨'
 ENV[prompt_seperator]='%(?..%F{cyan})'
@@ -35,7 +35,6 @@ function check_stderr {
 		print -P "%B%F{green}INFO:%f %F{blue}stderr%f -> %F{red}${err:P:s+#/dev/+dev+}%f%b"
 	fi
 }
-add-zsh-hook -Uz precmd check_stderr
 
 # Prompt Setup
 DIR_PROMPT='%20>...>%1~%<<'
@@ -77,9 +76,9 @@ if [[ $ENV[color_prompt] = yes ]];then
 	fi
 	PROMPT+=$'%0{\r%}%E%(?.%F{red}.%F{cyan})╭─${DIR_PROMPT}'
 	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
-	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT//$~ENV[prompt_filter]/}}))>─>${(pl:COLUMNS::─:)}%<<'
+	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT}//$~ENV[prompt_filter]/}))>─>${(pl:COLUMNS::─:)}%<<'
 	PROMPT+=$'${DATE_TIME_PROMPT}╮%1{\n\r%}'
-	PROMPT+=$'%0{\r%}%E╰─%(?..%F{cyan})%B${ENV[prompt_prefix]}%1{%} %b%F{lightgreen}'
+	PROMPT+=$'%0{\r%}%E╰─%(?..%F{cyan})${ENV[prompt_prefix]}%1{\xEE\xAE\x89%} %F{lightgreen}'
 	# transient prompt
 	TPROMPT=$'%0{\r%}%E%B%(?.%F{red}.%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b'
 	RPROMPT=$'${RET_PROMPT}'
