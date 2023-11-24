@@ -4,6 +4,33 @@ REPO=${REPO:-${NAME:-${0##*/}}}
 EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
 exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^$HOME" | head -n1)
+(
+	deps=(
+		jq@pacman:jq@apt:jq
+		bsdtar@pacman:libarchive@apt:libarchive-tools
+		curl@pacman:curl@apt:curl
+	)
+	declare -i missing
+	for dep in "${deps[@]}"; do
+		read -ra parts <<< "${dep//@/ }"
+		set -- "${parts[@]}"
+		unset parts
+		if ! hash "$1" 2> /dev/null >&2; then
+			missing+=1
+			printf 'ERROR: %s: command not found.\n' "$1"
+			printf "  Install and/or ensure \`%s' is in your \$PATH.\n" "$1"
+			shift
+			if (($# > 0)); then
+				printf '  Available in :\n'
+				for dep in "$@"; do
+					printf '    %s \t-> %s\n' "${dep%:*}" "${dep#*:}"
+				done
+			fi
+		fi
+	done >&2
+	exit $missing
+) || exit 1 # missing dependency
+
 if [[ -z $exec ]]; then
 	function do_as_root
 	{
