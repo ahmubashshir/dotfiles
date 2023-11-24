@@ -74,11 +74,11 @@ EOF
 			filter "$abi"
 			filter "$FILTER"
 
-			if ! [[ -f $exec && $(printf '%s\n' "$ltver" "$rtver" | sort -V | head -n 1) == "$rtver" ]]; then
+			if ! [[ -f $exec && $(printf '%s\n' "${ltver#*v}" "${rtver#*v}" | sort -V | head -n 1) == "${rtver#*v}" ]]; then
 				if [[ $ltver == 0.0.0 ]]; then
-					echo >&2 "Downloading ${0##*/}: $rtver"
+					echo >&2 "Downloading ${0##*/}: ${rtver#*v}"
 				else
-					echo >&2 "Updating ${0##*/}: $ltver -> $rtver"
+					echo >&2 "Updating ${0##*/}: ${ltver#*v} -> ${rtver#*v}"
 				fi
 				file=$(mktemp /tmp/bin.XXXXXXXX)
 				trap 'rm -f $file' TERM QUIT EXIT INT
