@@ -16,3 +16,11 @@ export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 if command -pv systemctl && systemctl is-system-running -q && systemctl is-active -q docker.socket;then
 	export DOCKER_HOST="unix:///var$(systemctl cat docker.socket|awk -F = '/^ListenStream/{print $2;exit}')"
 fi 2> /dev/null >&2
+
+if test -z "$KITTY_PID" \
+&& test -n "${SSH_TTY:-$SSH2_TTY$KITTY_WINDOW_ID}" \
+&& test -n "$KITTY_SHELL_INTEGRATION" \
+&& test -d "${XDG_DATA_HOME}/kitty-ssh-kitten"
+then
+	export PATH="${PATH:+$PATH:}${XDG_DATA_HOME}/kitty-ssh-kitten/kitty/bin"
+fi
