@@ -8,9 +8,9 @@ exec 3> /dev/null
 tty -s || return
 if
 	([ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]) &&
-		command -pv kitty 2> /dev/null 1>&2
+		hash kitten 2> /dev/null
 then
-	kitty +kitten icat --align=left ~/.config/shell/motd.png
+	kitten icat --align=left ~/.config/shell/motd.png
 else
 	cat >&2 << EOF
           _————             +--------------------------------------+
