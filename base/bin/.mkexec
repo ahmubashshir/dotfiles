@@ -1,0 +1,47 @@
+#!/usr/bin/make -sirf
+XDG_CACHE_HOME ?= $(HOME)/.cache
+ARGS           ?=
+include $(firstword $(MAKECMDGOALS))
+
+BINDIR := $(XDG_CACHE_HOME)/bin
+SRCDIR := $(HOME)/bin/srcs
+SHELL  := /bin/bash
+NAME   := $(basename $(notdir $(firstword $(MAKECMDGOALS))))
+ARGS   += $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+
+ifneq ($(filter guile,$(.FEATURES)),)
+define execl
+(use-modules (ice-9 string-fun))
+(apply
+	execl
+	(map-in-order
+		(lambda
+			(str)
+			(string-replace-substring str "%20" " ")
+		)
+		(string-split
+			"${BINDIR}/${NAME} ${NAME} ${ARGS}" #\ )
+	)
+)
+endef
+all:
+	$(guile $(execl))
+else
+all: $(BINDIR)/$(NAME)
+	exec -a $(NAME) $(BINDIR)/$(NAME) $(ARGS)
+endif
+
+$(BINDIR)/%: $(SRCDIR)/%.c
+	$(CC) $(^) -o $(@) $(FLAGS)
+
+$(BINDIR)/%: $(SRCDIR)/%.cpp
+	$(CXX) $(^) -o $(@) $(FLAGS)
+
+--delete-cache:
+	rm -f $(BINDIR)/$(NAME)
+
+.PHONY: $(ARGS)
+
+ifeq ($(filter --delete-cache,$(ARGS)),)
+$(firstword $(ARGS)): all
+endif
