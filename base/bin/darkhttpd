@@ -1,8 +1,5 @@
-#!/usr/bin/make -rsif
+#!/usr/bin/env -S .mkexec --
 FLAGS = -O
-
 ifeq ($(shell uname),SunOS)
 FLAGS += -lsocket -lnsl -lsendfile
 endif
-
-include $(HOME)/bin/lib/compile

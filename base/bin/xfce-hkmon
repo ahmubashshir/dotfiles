@@ -1,3 +1,2 @@
-#!/usr/bin/make -rsif
+#!/usr/bin/env -S .mkexec --
 FLAGS = -std=c++0x -O3 -lrt
-include $(HOME)/bin/lib/compile
