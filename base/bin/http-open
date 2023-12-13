@@ -1,30 +1,72 @@
 #!/bin/bash
 # variables
-if [[ -p ~/pipe:sh ]]; then
-	exec 2> ~/pipe:sh
-	set -x
-fi
+# default apps
+: "${MEDIA_PLAYER:=mpv}"
+: "${WIKIPEDIA_APP:=wike}"
+# default env
+: "${XDG_CACHE_HOME:=$HOME/.cache}"
+: "${XDG_CONFIG_HOME:=$HOME/.config}"
+: "${XDG_RUNTIME_DIR:=/run/user/$UID}"
+: "${XDG_DATA_HOME:=$HOME/.local/share}"
 
-MEDIA_PLAYER=${MEDIA_PLAYER:-mpv}
-WIKIPEDIA_APP=${WIKIPEDIA_APP:-wike}
-[[ $# -eq 0 ]]  || if
-	hash "$MEDIA_PLAYER" > /dev/null \
-		&& echo "$1" | grep -Eq \
-			'^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
-then
-	if echo "$1" | grep -Eq '/live/'; then
-		url="https://youtu.be/$(echo "$1" | cut -d/ -f5)"
-		shift
-		set "$url" "$@"
-		unset url
+URL="$1"
+shift
+
+declare -A urlre=(
+	['youtube']='^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
+	['ytshorts']='/(live|shorts)/'
+	['redd.it']='https?://redd.it/'
+	['wikipedia']='^https?://((www|[a-z]{2})\.)?(m\.)?wikipedia\.org/wiki/.+'
+	['goolag']='^(https?://([a-z]+\.google(apis|)\.com|(([a-z]+\.)?app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'
+	['zoom']='zoom\.us/j/'
+)
+
+abort()
+{
+	notify-send -e -u critical \
+		-a "HTTP(S) URL Handler" \
+		-i internet-web-browser \
+		"HTTP(S) URL Handler" \
+		"Error: $1"
+	exit 1
+}
+
+warn()
+{
+	notify-send -e -u normal \
+		-a "HTTP(S) URL Handler" \
+		-i internet-web-browser \
+		"HTTP(S) URL Handler" \
+		"Warning: $1"
+	return 1
+}
+
+match/url()
+{
+	grep -Eq "${urlre["$1"]}" <<< "$URL" || return 1
+	declare -F "handlers/$1" > /dev/null || return 1
+	"handlers/$1"
+}
+
+match/bin()
+{
+	if ! command -pv "$1" > /dev/null; then
+		! [[ $ERROR == "abort" ]] || abort "Command not found: $1"
+		warn "Command not found: $1"
 	fi
+}
+
+handlers/youtube()
+{
+	match/bin "$MEDIA_PLAYER" || return 0
+	match/url ytshorts || URL="${URL##*/}"
 	case "$MEDIA_PLAYER" in
 		mpv)
-			mkdir -p "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv"
+			mkdir -p "$XDG_RUNTIME_DIR/mpv"
 			exec mpv \
 				--script-opts=ontop-enable=no \
 				--player-operation-mode=pseudo-gui \
-				--cache-dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpv" \
+				--cache-dir="$XDG_RUNTIME_DIR/mpv" \
 				--cache=yes --cache-on-disk \
 				--cache-unlink-files=whendone \
 				--cache-pause-initial \
@@ -32,40 +74,53 @@ then
 			;;
 		*) exec "$MEDIA_PLAYER" "$@" ;;
 	esac
-elif
-	hash "$WIKIPEDIA_APP" > /dev/null \
-		&& echo "$1" | grep -Eq \
-			'^https?://(www|[a-z]{2})\.(m\.)?wikipedia\.org/wiki/.+'
-then
+}
+
+handlers/redd.it()
+{
+	declare -g URL="https://www.reddit.com/comments/${URL##*/}"
+}
+
+handlers/wikipedia()
+{
+	match/bin "$WIKIPEDIA_APP" || return 0
 	case "$WIKIPEDIA_APP" in
-		wike) exec wike -u "$1" ;;
+		wike) exec wike -u "$URL" ;;
 		*) exec "$WIKIPEDIA_APP" "$@" ;;
 	esac
-elif hash chromium > /dev/null \
-	&& echo "$1" | grep -Eq \
-		'^(https?://([a-z]+\.google(apis|)\.com|(([a-z]+\.)?app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'; then
-	class="$(echo "$1" | sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p')"
-	exec chromium --app="$@" --class="${class:-google-chrome}"
-elif hash zoom > /dev/null && echo "$1" | grep -q 'zoom\.us/j/'; then
+}
+
+handlers/goolag()
+{
+	ERROR=abort match/bin chromium
+	local class
+	class="$(sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p' <<< "$URL")"
+	exec chromium --app="$URL" --class="${class:-google-chrome}"
+}
+
+handlers/zoom()
+{
+	ERROR=abort match/bin zoom
+	local meeting
+	local -I URL
 	read -r meeting < <(
-		meeting=${1#*://}
-		meetingwithpass=${meeting##*/}
+		URL=${URL#*://}
+		PASS=${URL##*/}
 		exec 2> /dev/null 0<&2
-		curl "https://$meeting" -s \
+		curl "https://$URL" -s \
 			| sed -nE 's|^.*\bwindow\.launchBase64\s*=\s* "([A-Za-z0-9+/=]+)"\s*\;.*$|\1|p' \
 			| base64 -d | xxd -p -c0 \
 			| sed -nE 's|^.*8a016[0-9a-f](.+)920120(.+)d20125(.+)$|757469643d\3267573733d\1267469643d\20a|p' \
 			| xxd -p -c0 -r | base64 -w0 \
 			| perl -MURI::Escape -wlne 'print uri_escape $_' \
-			| xargs printf 'zoommtg://%s/join?action=join&confno=%s&confid=%s\n' "${meeting%%/*}" "${meetingwithpass//\?/\&}"
+			| xargs printf 'zoommtg://%s/join?action=join&confno=%s&confid=%s\n' "${URL%%/*}" "${PASS//\?/\&}"
 	)
-	! [[ "$meeting" ]] || exec zoom "$meeting"
-	unset meeting
-fi
+	[[ "$meeting" ]] && exec zoom "$meeting"
+}
 
 DENTRY()
 {
-	local -a common base exo
+	local -a cm bs xf
 	cm=('[Desktop Entry]'
 		'Icon=internet-web-browser'
 		'Name=HTTP(S) URL Handler')
@@ -89,10 +144,10 @@ DENTRY()
 QBCALL()
 {
 	local config cache data base
-	base="${XDG_RUNTIME_DIR:-/run/user/$UID}/http-open"
-	config="${XDG_CONFIG_HOME:-$HOME/.config}/http-open"
-	cache="${XDG_CACHE_HOME:-$HOME/.cache}/http-open"
-	data="${XDG_DATA_HOME:-$HOME/.local/share}/http-open"
+	base="$XDG_RUNTIME_DIR/http-open"
+	config="$XDG_CONFIG_HOME/http-open"
+	cache="$XDG_CACHE_HOME/http-open"
+	data="$XDG_DATA_HOME/http-open"
 
 	mkdir -p "$base" "$config" "$cache" "$data"
 	ln -fsT "$config" "$base/config"
@@ -116,6 +171,7 @@ QBCALL()
 		'c.window.title_format = "{perc}{current_title}{title_sep}HTTP(S) Handler"'
 	)
 
+	# shellcheck disable=SC1003
 	local -a exe=(
 		'#!/usr/bin/env python3'
 		'import sys'
@@ -164,14 +220,13 @@ QBCALL()
 		--untrusted-args "$@"
 }
 
-if [[ ! -x /usr/bin/qutebrowser ]]; then
-	notify-send -u critical \
-		-a "HTTP(S) URL Handler" \
-		-i internet-web-browser \
-		"HTTP(S) URL Handler" \
-		"Qutebrowser is missing, please install it."
-	exit 1
-fi
+[[ -x /usr/bin/qutebrowser ]] || abort "Qutebrowser is missing, please install it."
 
-DENTRY
-QBCALL "$@"
+[[ -z "$URL" ]] \
+	|| match/url youtube \
+	|| match/url redd.it \
+	|| match/url wikipedia \
+	|| match/url goolag \
+	|| match/url zoom
+
+QBCALL "$@" "$URL"
