@@ -1,4 +1,4 @@
-#!/usr/bin/env -S .mkexec --
+#!/usr/bin/env -S${HOME}/bin/lib/mksrc --
 FLAGS = -O
 ifeq ($(shell uname),SunOS)
 FLAGS += -lsocket -lnsl -lsendfile
