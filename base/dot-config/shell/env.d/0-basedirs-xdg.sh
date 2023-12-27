@@ -64,7 +64,6 @@ export NMBGIT="$XDG_DATA_HOME"/notmuch/nmbug
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME"/npm/npmrc
 export NODE_REPL_HISTORY="$XDG_STATE_HOME"/node/history
 export TS_NODE_HISTORY="$XDG_STATE_HOME"/node/ts.history
-
 # opam
 export OPAMROOT="$XDG_DATA_HOME/opam"
 # parallel
@@ -94,8 +93,12 @@ export LESSHISTFILE="$XDG_STATE_HOME"/less/history
 export DVDCSS_CACHE="$XDG_DATA_HOME"/dvdcss
 # ICEauthority
 export ICEAUTHORITY="$XDG_CACHE_HOME"/ICEauthority
+# sqlite:history
+export SQLITE_HISTORY="$XDG_STATE_HOME"/sqlite.history
 # openssl:random-seed
 export RANDFILE="$XDG_STATE_HOME/rnd"
+# vagrant
+export VAGRANT_HOME="$XDG_DATA_HOME"/vagrant
 # w3m
 export W3M_DIR="$XDG_DATA_HOME"/w3m
 # wine
