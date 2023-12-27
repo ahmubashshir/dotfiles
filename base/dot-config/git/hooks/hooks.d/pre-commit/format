@@ -23,6 +23,7 @@ FORMATTERS=(
 	[cxx]=astyle
 	[cs]=astyle
 	[java]=astyle
+	[vala]=astyle
 	# misc
 	[js]=js-beautify
 	[xml]=xmllint
@@ -38,19 +39,16 @@ format_file()
 		python | python3) autopep8 -i "$2" ;;
 		python2) autopep8-python2 -i "$2" ;;
 		sass | scss) sass-convert --in-place "$2" ;;
-		c | cpp | cxx | cs | java)
+		c | cpp | cxx | cs | java | vala)
 			local mode style
 			case $1 in
-				c | cpp | cxx)
-					mode=c
-					style=linux
-					;;
+				c | cpp | cxx | vala) style=linux ;;
 				cs | java)
 					mode=$1
 					style=gnu
 					;;
 			esac
-			args=(--mode="$mode")
+			args=(--mode="${mode:-c}")
 
 			if ! [[ -f .astylerc || -f _astylerc ]]; then
 				args+=(
@@ -68,7 +66,7 @@ format_file()
 			astyle "${args[@]}" "$2"
 			rm -f "$2.orig"
 			;;
-		js) js-beautify --quiet -tjakxnr "$2" 2>&1 > /dev/null ;;
+		js) js-beautify --quiet -ijtCkx -r "$2" 2>&1 > /dev/null ;;
 		css) css-beautify -rnt --space-around-combinator "$2" > /dev/null ;;
 		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
 		lua) lua-format -i "$2" 2>&1 > /dev/null ;;
