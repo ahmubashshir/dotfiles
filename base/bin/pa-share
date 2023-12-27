@@ -57,15 +57,18 @@ if ((share_sink && local_sink)); then
 	mapfile -t loopback < <(
 		# remap share-sink.monitor to share-source
 		pactl load-module module-remap-source "master=share-sink.monitor" \
-			"source_name=share-source"  source_properties="device.description=ShareSource"
+			"source_name=share-source" source_properties="device.description=ShareSource"
 		pactl set-default-source share-source
 		# create loopbacks
 		pactl load-module module-loopback \
-			"adjust_time=6" "latency_msec=60" "source=$default_source" "sink=share-sink"
+			"adjust_time=6" "latency_msec=60" "source=$default_source" "sink=share-sink" \
+			"sink_dont_move=yes"
 		pactl load-module module-loopback \
-			"adjust_time=6" "latency_msec=60" "source=local-sink.monitor" "sink=share-sink"
+			"adjust_time=6" "latency_msec=60" "source=local-sink.monitor" "sink=share-sink" \
+			"source_dont_move=yes" "sink_dont_move=yes"
 		pactl load-module "module-loopback" \
-			"adjust_time=6" "latency_msec=60" "source=local-sink.monitor" "sink=$default_sink"
+			"adjust_time=6" "latency_msec=60" "source=local-sink.monitor" "sink=$default_sink" \
+			"source_dont_move=yes"
 	)
 	echo "Set Player output to \"LocalSink\" in pavucontrol."
 	echo ""
