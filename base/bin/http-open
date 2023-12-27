@@ -45,7 +45,7 @@ match/url()
 {
 	grep -Eq "${urlre["$1"]}" <<< "$URL" || return 1
 	declare -F "handlers/$1" > /dev/null || return 1
-	"handlers/$1"
+	((HANDLED)) || HANDLED=1 "handlers/$1"
 }
 
 match/bin()
@@ -59,7 +59,7 @@ match/bin()
 handlers/youtube()
 {
 	match/bin "$MEDIA_PLAYER" || return 0
-	match/url ytshorts || URL="${URL##*/}"
+	! match/url ytshorts || URL="${URL##*/}"
 	case "$MEDIA_PLAYER" in
 		mpv)
 			mkdir -p "$XDG_RUNTIME_DIR/mpv"
@@ -70,9 +70,12 @@ handlers/youtube()
 				--cache=yes --cache-on-disk \
 				--cache-unlink-files=whendone \
 				--cache-pause-initial \
-				-- "$@"
+				-- "$URL"
 			;;
-		*) exec "$MEDIA_PLAYER" "$@" ;;
+		*pipe-viewer)
+			exec "$MEDIA_PLAYER" --std-input=:q "$URL"
+			;;
+		*) exec "$MEDIA_PLAYER" "$URL" ;;
 	esac
 }
 
@@ -86,7 +89,7 @@ handlers/wikipedia()
 	match/bin "$WIKIPEDIA_APP" || return 0
 	case "$WIKIPEDIA_APP" in
 		wike) exec wike -u "$URL" ;;
-		*) exec "$WIKIPEDIA_APP" "$@" ;;
+		*) exec "$WIKIPEDIA_APP" "$URL" ;;
 	esac
 }
 
