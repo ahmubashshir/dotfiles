@@ -1,4 +1,5 @@
-position=middle-left
+position=bottom-right
 font_size=16
-alpha=0.75
+alpha=0.2
+reload_cfg=Shift_R+F12
 #legacy_layout=true
