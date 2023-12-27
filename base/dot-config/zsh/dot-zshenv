@@ -1,4 +1,6 @@
 #!/bin/zsh
+skip_global_compinit=1
+
 fpath=(
 	${ZDOTDIR:-$HOME/.zsh}/functions
 	${ZDOTDIR:-$HOME/.zsh}/functions/compdefs
