@@ -65,3 +65,5 @@
 	clean-up = "! git gc;git fsck;git fsclr;git repack -d -a"
 	z--hr = "!printf '%-80s\n' ''|tr ' ' -"
 	clean-up-r = "! git clean-up; echo;git submodule foreach 'git z--hr;git clean-up;echo'"
+	trigger-build = commit --allow-empty --message 'Trigger Build'
+	fold = ! gfold \"$@\"
