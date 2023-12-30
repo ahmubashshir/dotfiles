@@ -1,0 +1,21 @@
+#xfwm-tabwin {
+	background-color: mix(transparent, @theme_bg_color, 0.4);
+}
+
+#xfwm-tabwin,
+#xfwm-tabwin * {
+	border: none;
+}
+
+#xfwm-tabwin.tabwin-app-grid > box > label {
+	border: 1pt @theme_selected_bg_color solid;
+	min-height: 2em;
+	border-radius: 5px;
+	font-weight: bolder;
+	font-size: larger;
+	background-color: mix(transparent, @theme_bg_color, 0.75);
+	text-shadow: -1px 1px 2px @theme_bg_color,
+		1px 1px 2px @theme_bg_color,
+		1px -1px 2px @theme_bg_color,
+		-1px -1px 2px @theme_bg_color;
+}
