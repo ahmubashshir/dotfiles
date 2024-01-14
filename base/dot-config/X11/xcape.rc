@@ -1,2 +1,2 @@
-Super_L=Shift_L|Super_L|s
-Super_R=Shift_R|Super_R|s
+Super_L=Shift_L+Super_L+s
+Super_R=Shift_R+Super_R+s
