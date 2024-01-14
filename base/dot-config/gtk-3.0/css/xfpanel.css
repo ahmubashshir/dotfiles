@@ -1,5 +1,5 @@
 window.whiskermenu#whiskermenu-window .view {
-	background-color: mix(transparent, @theme_bg_color, 0.3);
+	background-color: mix(transparent, @theme_bg_color, 0.5);
 }
 
 window.whiskermenu#whiskermenu-window .view.cell {
@@ -7,10 +7,11 @@ window.whiskermenu#whiskermenu-window .view.cell {
 }
 
 window.whiskermenu#whiskermenu-window .launchers:hover {
-	background-color: mix(transparent, mix(@theme_selected_bg_color, @warning_color, 0.5), 0.5);
+	border: 2px dotted @theme_selected_bg_color;
+	border-radius: 5px;
 }
 
 window.whiskermenu#XfcePanelWindowWrapper,
 window#XfcePanelWindowWrapper decoration {
-	background-color: mix(transparent, @theme_bg_color, 0.5);
+	background-color: mix(transparent, @theme_bg_color, 0.75);
 }

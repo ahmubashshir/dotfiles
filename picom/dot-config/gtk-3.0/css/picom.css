@@ -1,0 +1,21 @@
+.titlebar,
+.titlebar headerbar,
+headerbar.titlebar.windowhandle {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.5);
+}
+
+.titlebar:backdrop,
+.titlebar headerbar:backdrop,
+headerbar.titlebar.windowhandle:backdrop {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.35);
+}
+
+window.background.unified {
+	background-color: transparent;
+}
+
+window.background.unified leaflet > box > *:not(headerbar) {
+	background-color: @theme_bg_color;
+}

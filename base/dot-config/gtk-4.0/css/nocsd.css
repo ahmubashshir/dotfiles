@@ -4,18 +4,6 @@ decoration {
 	margin: 0;
 }
 
-.titlebar,
-.titlebar headerbar {
-	box-shadow: none;
-	background-color: alpha(@theme_bg_color, 0.5);
-}
-
-.titlebar:backdrop,
-.titlebar headerbar:backdrop {
-	box-shadow: none;
-	background-color: alpha(@theme_bg_color, 0.35);
-}
-
 popover contents {
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
