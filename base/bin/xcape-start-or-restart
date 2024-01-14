@@ -1,0 +1,28 @@
+#!/usr/bin/awk -f
+@load "filefuncs";
+
+function configfile(path) {
+	if (ENVIRON["XDG_CONFIG_HOME"] == "")
+		ENVIRON["XDG_CONFIG_HOME"] = ENVIRON["HOME"] "/.config";
+	return ENVIRON["XDG_CONFIG_HOME"] "/" path;
+
+}
+
+function is_file(path) {
+	ret = stat(path, data);
+	if (ret == -1 || data["type"] != "file") return 0;
+	return 1;
+}
+
+BEGIN {
+	cfg = configfile("X11/xcape.rc");
+
+	if(is_file(cfg)) {
+		while(getline < cfg) {
+			gsub("+", "|");
+			line = ((line == "")?"":line";") $0;
+		}
+		if(line != "")
+			system("pkill --older 1 xcape;command -p xcape -e \"" line "\"&");
+	}
+}
