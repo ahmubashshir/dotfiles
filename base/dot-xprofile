@@ -21,27 +21,16 @@ if [ -n "$CURRENT_IM_MODULE" ]; then
 	esac
 	dbus-update-activation-environment --all --systemd
 fi
-if command -pv xcape > /dev/null 2>&1; then
-	awk '{if(NR>1) printf ";";if(length($0) > 1)printf "%s", $0} END{print ""}' "${XDG_CONFIG_HOME:-$HOME/.config}/X11/xcape.rc" |
-		xcape -e "$(cat)"
-fi
-if command -pv gebaard  > /dev/null 2>&1; then
-	gebaard -b
-fi
-
-if command -pv xmodmap > /dev/null 2>&1 && test -f "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"; then
-	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"
-fi
-
-if [ "$XDG_SESSION_DESKTOP" = "plasma" ]; then
-	unset QT_AUTO_SCREEN_SCALE_FACTOR QT_SCALE_FACTOR QT_QPA_PLATFORMTHEME
-fi
+path_find()
+{
+	command -pv "$1" > /dev/null 2>&1
+}
 systemctl_user_start()
 {
-	command -pv "$1" 2> /dev/null >&2 || return 0
+	path_find "$1" || return 0
 	systemctl --user start "$1${2:+@}$2"
 }
 
-systemctl_user_start picom "${DISPLAY%.*}"
+! [ "$(xfconf-query -c xfwm4 -p /general/use_compositing)" = "false" ] || systemctl_user_start picom "${DISPLAY%.*}"
 
-unset -f systemctl_user_start
+unset -f systemctl_user_start path_find
