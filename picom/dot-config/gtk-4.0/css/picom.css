@@ -1,0 +1,27 @@
+.titlebar,
+.titlebar headerbar,
+headerbar {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.5);
+}
+
+.titlebar:backdrop,
+.titlebar headerbar:backdrop,
+headerbar:backdrop {
+	box-shadow: none;
+	background-color: alpha(@theme_bg_color, 0.35);
+}
+
+window.background.csd,
+navigation-split-view > widget {
+	background-color: transparent;
+}
+
+navigation-split-view > navigation-view scrolledwindow,
+.content-pane navigation-view-page scrolledwindow {
+	background-color: @theme_bg_color;
+}
+
+.sidebar-pane navigation-view-page scrolledwindow {
+	background-color: rgba(48, 59, 62, 0.95);
+}
