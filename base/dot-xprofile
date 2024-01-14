@@ -8,7 +8,6 @@ if [ -x /usr/bin/fcitx5 ]; then
 elif [ -x /usr/bin/ibus ]; then
 	CURRENT_IM_MODULE=ibus
 fi
-
 if [ -n "$CURRENT_IM_MODULE" ]; then
 	export "GTK_IM_MODULE=$CURRENT_IM_MODULE"
 	export "QT_IM_MODULE=$CURRENT_IM_MODULE"
@@ -31,6 +30,17 @@ systemctl_user_start()
 	systemctl --user start "$1${2:+@}$2"
 }
 
+! path_find xcape   || xcape-start-or-restart
+! path_find gebaard || gebaard -b
+
+! path_find xmodmap ||
+	! test -f "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap" ||
+	xmodmap "${XDG_CONFIG_HOME:-$HOME/.config}/X11/default.Xmodmap"
+
+! [ "$XDG_SESSION_DESKTOP" = "plasma" ] || unset QT_AUTO_SCREEN_SCALE_FACTOR QT_SCALE_FACTOR QT_QPA_PLATFORMTHEME
 ! [ "$(xfconf-query -c xfwm4 -p /general/use_compositing)" = "false" ] || systemctl_user_start picom "${DISPLAY%.*}"
+
+systemctl_user_start activate-linux "${DISPLAY%.*}"
+systemctl_user_start needrestart "${DISPLAY%.*}"
 
 unset -f systemctl_user_start path_find
