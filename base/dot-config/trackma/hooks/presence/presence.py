@@ -16,6 +16,7 @@ from struct import error as StructError
 from asyncio import (new_event_loop as new_loop,
                      set_event_loop as set_loop)
 from pypresence.client import Client
+
 from pypresence.exceptions import InvalidID, InvalidPipe, DiscordNotFound, DiscordError
 from trackma.engine import Engine
 from trackma.utils import (estimate_aired_episodes,
