@@ -10,7 +10,6 @@ from base64 import b64decode
 
 import yaml
 import stagger
-import requests as r
 
 try:
     from yt_dlp import YoutubeDL as YDL
@@ -506,24 +505,14 @@ def file_name(item):
 
 
 class playlist:
-    _list = None
-    _name = 'base'
-    _fmt = 'xspf'
     _fmts = ['m3u', 'xspf']
-    _ids = []
 
     def __init__(self, name='base', fmt='xspf'):
-        if fmt in self._fmts:
-            self._fmt = fmt
-        if isinstance(name, (str, )):
-            self._name = name
-
-        if self._fmt == 'm3u':
-            self._list = list()
-        elif self._fmt == 'xspf':
-            self._list = Xspf(title=name, creator="getlist.py")
-
-        self.save()
+        self._ids = []
+        self._fmt = fmt if fmt in self._fmts else 'xspf'
+        self._name = name if isinstance(name, (str, )) else 'base'
+        self._list = list() if self._fmt == 'm3u' else Xspf(
+            title=name, creator="yt-getlist")
 
     @property
     def name(self):
@@ -557,7 +546,6 @@ class playlist:
                 _list.append(data)
 
             self._ids.append(item['id'])
-            self.save()
 
     def save(self):
         with open('{}.{}'.format(self.name, self._fmt), 'w') as f:
@@ -584,15 +572,6 @@ def id3_tags(item, file):
                 (' / '.join(item[key].values())
                  if key == 'text' else ' '.join(item[key].values())))
     tags.write()
-
-
-def copy_filename(d, to):
-    if d['status'] == 'finished':
-        to.n = d['filename']
-
-
-def get_item_slider(item, opts):
-    pass
 
 
 def get_item(item, ydl_opts, opts):
@@ -638,42 +617,43 @@ def get_item(item, ydl_opts, opts):
     return _item
 
 
+class PlaylistFactory(dict):
+    def __init__(self, fmt):
+        self.fmt = fmt
+
+    def __getitem__(self, key):
+        if not key in self:
+            self[key] = playlist(name=key, fmt=self.fmt)
+        return super().__getitem__(key)
+
+    def save(self):
+        for item in self.values():
+            item.save()
+
+
 def get_list(_list,
              _lists,
              ydl_opts: dict,
              opts: dict,
              current_list='base',
              lvl=0):
-    if 'base' not in _lists:
-        _lists['base'] = playlist(fmt=opts.get('list', 'xspf'))
-    elif not (current_list == 'base' or current_list in _lists):
-        _lists[current_list] = playlist(current_list,
-                                        fmt=opts.get('list', 'xspf'))
 
     for item in _list:
-        if 'id' in item:
-            try:
-                ydl_opts['outtmpl'] = file_name(item)
-                name = get_item(item, ydl_opts, opts)
-                pass
-            except Exception as _e:
-                print(_e)
-                continue
-            _lists[current_list].append(item, name)
-            if current_list != 'base':
-                _lists['base'].append(item, name)
+        _ilists = item.pop('list', [])
+        if isinstance(_ilists, (str,)):
+            _ilists = [_ilists]
+        if not 'base' in _ilists:
+            _ilists.append('base')
 
-        elif len(item) == 1 and lvl == 0:
-            clist = next(n for n in item.keys())
-            get_list(item[clist],
-                     _lists,
-                     ydl_opts,
-                     opts,
-                     current_list=clist,
-                     lvl=1)
+        try:
+            ydl_opts['outtmpl'] = file_name(item)
+            name = get_item(item, ydl_opts, opts)
+            for clist in _ilists:
+                _lists[clist].append(item, name)
 
-        elif len(item) == 1 and lvl > 0:
-            raise ValueError("Nested Playlists are not supported")
+        except Exception as _e:
+            print(_e)
+            continue
 
 
 class info:
@@ -700,9 +680,9 @@ class info:
         print(*_msg, file=sys.stderr, sep='\n')
 
     @staticmethod
-    def progess(d):
+    def progress(d):
         if d['status'] == 'downloading':
-            print("\r\x1B[KProgess: {} of {} at {} ETA {}".format(
+            print("\r\x1B[KProgress: {} of {} at {} ETA {}".format(
                 d['_percent_str'],
                 d['_total_bytes_str'],
                 d['_speed_str'],
@@ -710,7 +690,7 @@ class info:
             ), end='', flush=True)
 
         elif d['status'] == 'finished':
-            print('\r\x1B[KProgess: 100% of {} in {}, converting ...'.format(
+            print('\r\x1B[KProgress: 100% of {} in {}, converting ...'.format(
                 d['_total_bytes_str'],
                 d['_elapsed_str'],
             ), flush=True)
@@ -725,7 +705,7 @@ if __name__ == '__main__':
         ydl.update({
             'quiet': True,
             'noprogress': False,
-            'progress_hooks': [info.progess],
+            'progress_hooks': [info.progress],
             'logtostderr': True,
             'logger': info,
         })
@@ -733,8 +713,12 @@ if __name__ == '__main__':
         if len(argv) > 1 and 'skip-dl' in argv:
             ydl['skip_download'] = True
 
-        lists = dict()
+        lists = PlaylistFactory(
+            file.get('opts', dict()).get('list', 'xspf'))
+
         get_list(file['list'], lists, ydl, file.get('opts', dict()))
+        lists.save()
+
     except FileNotFoundError:
         print('.list.yml: file not found.')
     except KeyboardInterrupt:
