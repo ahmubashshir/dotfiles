@@ -24,7 +24,7 @@ define execl
 	)
 )
 endef
-all:
+all: $(BINDIR)/$(NAME)
 	$(guile $(execl))
 else
 all: $(BINDIR)/$(NAME)
