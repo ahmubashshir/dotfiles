@@ -46,10 +46,7 @@ export GOPATH="$XDG_DATA_HOME"/go
 export HUGO_CACHEDIR="$XDG_CACHE_HOME"/hugo
 # java:gradle
 export GRADLE_USER_HOME="$XDG_DATA_HOME"/gradle
-case " ${_JAVA_OPTIONS}" in
-	(*\ -Djava.util.prefs.userRoot=*) ;;
-	(*) export _JAVA_OPTIONS="-Djava.util.prefs.userRoot='$XDG_CONFIG_HOME/java'${_JAVA_OPTIONS+ $_JAVA_OPTIONS}";;
-esac
+add_java_option "java.util.prefs.userRoot='$XDG_CONFIG_HOME/java'"
 # GTK 1,2
 export GTK_RC_FILES="$XDG_CONFIG_HOME"/gtk-1.0/gtkrc
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
