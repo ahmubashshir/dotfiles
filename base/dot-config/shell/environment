@@ -1,6 +1,16 @@
 #!/bin/sh
+add_java_option()
+{
+	case "$_JAVA_OPTIONS" in
+		*"-D$1"*) ;;
+		*) _JAVA_OPTIONS="-D$1${_JAVA_OPTIONS+ $_JAVA_OPTIONS}" ;;
+	esac
+	export _JAVA_OPTIONS
+}
 
 for env__e in ~/.config/shell/env.d/*.sh; do
 	. "$env__e"
 done
+
 unset env__e
+unset -f add_java_option
