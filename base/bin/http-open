@@ -17,7 +17,7 @@ declare -A urlre=(
 	['ytshorts']='/(live|shorts)/'
 	['redd.it']='https?://redd.it/'
 	['wikipedia']='^https?://((www|[a-z]{2})\.)?(m\.)?wikipedia\.org/wiki/.+'
-	['goolag']='^(https?://([a-z]+\.google(apis|)\.com|(([a-z]+\.)?app\.|)goo\.gl)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'
+	['goolag']='^(https?://([a-z]+\.google(apis|)\.com|(([a-z]+\.)?app\.|)goo\.gl|(.+\.|)youtube.com)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'
 	['zoom']='zoom\.us/j/'
 )
 
