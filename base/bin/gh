@@ -1,0 +1,4 @@
+#!/bin/bash
+OWNER=cli
+REPO=cli
+source "${0%/*}/lib/git-rel"
