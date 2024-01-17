@@ -54,9 +54,9 @@ if command -v xfce4-panel-profiles 2>&3 1>&2; then
 fi
 # exa
 if [ "${TERM%-*}" = "xterm" ] && command -v exa 2>&3 1>&2; then
-	alias ls=exa
-	alias l='exa -F'
-	alias tree='exa -T'
+	alias ls=eza
+	alias l='eza -F'
+	alias tree='eza -T'
 fi
 # tldr
 if hash tldr 1>&3 2>&1; then
