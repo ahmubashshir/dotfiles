@@ -1,5 +1,2 @@
 #!/bin/bash
-OWNER=ogham
-ARCHIVE=zip
-[[ -n $DISPLAY ]] && DEFAULT_ARGS=(--icons --git)
-source "${0%/*}/lib/git-rel"
+exec eza "$@"
