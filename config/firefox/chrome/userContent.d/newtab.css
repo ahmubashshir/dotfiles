@@ -19,9 +19,12 @@ url-prefix(about:privatebrowsing) {
 			padding: 0px !important;
 			margin: 0px !important;
 
-			& .wordmark {
-				fill: var(--newtab-background-color-secondary) !important;
-				;
+			html:is(.private) & .wordmark {
+				fill: var(--in-content-page-color) !important;
+			}
+
+			html:not(.private) & .wordmark {
+				fill: var(--newtab-text-primary-color) !important;
 			}
 		}
 	}
