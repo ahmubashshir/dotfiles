@@ -1,2 +1,2 @@
 #!/bin/sh
-exec gpg --keyserver hkps://keyserver.ubuntu.com:443 "$@"
+exec gpg --no-default-keyring --keyring makepkg.kbx --keyserver hkps://keyserver.ubuntu.com:443 "$@"
