@@ -1,40 +1,61 @@
 #compdef reboot-to
 __reboot_to_list_targets() {
+	local ALL_OFF BOLD BLUE GREEN RED YELLOW
+
+	BOLD=$'\e[1m'
+	BLUE="${BOLD}"$'\e[34m'
+	GREEN="${BOLD}"$'\e[32m'
+	RED="${BOLD}"$'\e[31m'
+	YELLOW="${BOLD}"$'\e[33m'
+	ALL_OFF=$'\e[0m'
+
 	[[ $(bootctl is-installed) == "yes" ]] || return
 	local -A targets
 	local ID bootdir espdir bctl_hash bctl_hash_cached
 	ID=$(awk -v FS== '/^ID=/{print $2}' /etc/os-release)
 	bootdir=$(bootctl -x)
 	espdir=$(bootctl -p)
-	bctl_hash=$(bootctl list|sha256sum|cut -c1-64)
+	bctl_hash=${"$(bootctl list|sha256sum)":0:63}
+	fun_hash=${"$(sha256sum <<< ${functions[__reboot_to_list_targets]})":0:63}
 
 	# retrive and check cache
 	_retrieve_cache reboot-to
-	if [[ $bctl_hash != $bctl_hash_cached ]];then
+	if ! [[ $bctl_hash == $bctl_hash_cached && $fun_hash == $fun_hash_cached  ]];then
 		# reset variables
-		unset targets bctl_hash_cached
+		unset targets bctl_hash_cached fun_hash_cached
 		local -A desc targets
-		local id source fsroot file title bctl_hash_cached
+		local id source fsroot file title bctl_hash_cached fun_hash_cached
 		desc=(
 			[windows]="Windows Boot Manager"
 			[shell]="EFI Shell"
 			[firmware]="EFI Settings"
 		)
 		bctl_hash_cached=$bctl_hash
+		fun_hash_cached=$fun_hash
 
 		# rebuild data
 		while read -r id;do
 			case $id in
-				(windows|shell|firmware) targets+=(["$id"]="$id:${desc[$id]}");;
+				(windows|shell|firmware)
+					case "$id" in
+						(windows)	COLOR="$GREEN";;
+						(*)			COLOR="$RED";;
+					esac
+					targets+=(["$id"]="$id:${COLOR}${desc[$id]}${ALL_OFF}");;
 				(*)
 					source=$(
+						if [[ $id =~ ^linux-* ]]; then
+							id="$ID-$id"
+						fi
+
+						id="${id:gs:\+:\\+::gs:\?:\\?:}"
 						bootctl list \
-							| if [[ $id =~ ^linux-* ]]; then
-								awk '/^\s+id: '"$ID-$id.conf"'/,/^$/ { if($1 == "source:") print $2}'
-							else
-								awk '/^\s+id: '"$id.conf"'/,/^$/ { if($1 == "source:") print $2}'
-							fi
+							| awk '/^\s+id: '"$id\\.conf"'/,/^$/ { if($1 == "source:") print $2}'
 					)
+					case "$id" in
+						(memtest*) COLOR="$YELLOW";;
+						(*) COLOR="$BLUE";;
+					esac
 					case $source in
 						(${bootdir}*) fsroot="$bootdir";;
 						(${espdir}*) fsroot="$espdir";;
@@ -49,12 +70,12 @@ __reboot_to_list_targets() {
 						awk '/^(initrd|linux|efi)/ {print $2}' "$source"
 					)
 					title=$(awk '/^title/ {for (i=2; i<NF; i++) printf $i " "; print $NF}' "$source")
-					targets+=(["$id"]="$id:$title")
+					targets+=(["$id"]="$id:${COLOR}$title${ALL_OFF}")
 				;;
 			esac
 			# store cache
 			_cache_invalid reboot-to
-			_store_cache reboot-to targets bctl_hash_cached
+			_store_cache reboot-to targets bctl_hash_cached fun_hash_cached
 		done < <(
 			bootctl list \
 				| sed -nE '/^[[:blank:]]*id: /{
