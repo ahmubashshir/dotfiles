@@ -24,3 +24,4 @@ if test -z "$KITTY_PID" \
 then
 	export PATH="${PATH:+$PATH:}${XDG_DATA_HOME}/kitty-ssh-kitten/kitty/bin"
 fi
+export PYENV_ROOT="${XDG_DATA_HOME}/pyenv"
