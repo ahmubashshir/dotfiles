@@ -6,6 +6,8 @@ exec 3> /dev/null
 . ~/.config/shell/aliases
 
 tty -s || return
+! test "${_SHELL_LINUS_FINGER_SHOWN}" = "in-$TERM" || return
+
 if
 	([ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]) &&
 		hash kitten 2> /dev/null
@@ -30,3 +32,5 @@ else
      \    /  /|;   \    |  \'
 EOF
 fi
+
+export _SHELL_LINUS_FINGER_SHOWN=in-$TERM
