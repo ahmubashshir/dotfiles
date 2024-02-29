@@ -32,7 +32,7 @@ case "$stage" in
 		# These hooks are unique in that they are provided by git with data on
 		# standard input. Dump this data into a temporary file, and replay it
 		# as standard input to each of the hooks.
-		tempfile="$(mktemp "${TMPDIR:-/tmp}"/tmp.XXXXXXXXXX)"
+		tempfile="$(mktemp /tmp/git-hook.XXXXXXXXXX)"
 		trap 'rm -f "$tempfile"' EXIT
 		cat > "$tempfile"
 		;;
