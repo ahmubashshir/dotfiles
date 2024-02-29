@@ -1,12 +1,33 @@
 #!/bin/bash
-if [ ! -x /usr/bin/datediff ]; then
-	timespan='{"datediff -f \"%F %0Hh %0Mm %0Ss\" "$2" "$3 | getline line;print $1"\t"line}'
-else
-	timespan='{d=h=m=s=0;"expr $(date +%s --date="$3") - $(date +%s --date="$2")"|getline l;if((l>59)){((s=l%60));((l=(l-s)/60));if((l>59)){((m=l%60));((l=(l-m)/60));if((l>23)){((h=l%24));((d=(l-h)/24))}else{((h=l))}}else{((m=l))}}else{((s=l))};l=sprintf("%dd %02dh %02dm %02ds",d,h,m,s);print $1"\t"l}'
-fi
-journalctl --list-boots --utc |
-	tr -s '—' ' ' |
-	awk '{if($1 != "0" )print $1";"$4"T"$5$6";"$8"T"$9$10;else {"echo $(date --iso-8601=seconds --date=\"$(uptime -s)\") $(date --iso-8601=seconds)"|getline $0;print "0;"$1";"$2}}' |
-	awk -F';' "$timespan" |
-	awk '{lines[a++]=$0};END{while(a--) print lines[a]}' |
-	column -R IDX -tN IDX,UPTIME -s $'\t'
+journalctl --list-boots --utc \
+	| gawk '
+	@load "time";
+
+	function epoch(stmp) {
+		return strptime(stmp, "%Y-%m-%dT%0H:%0M:%0S%Z");
+	}
+
+	$1 != "IDX" {
+		ret = ""
+		len = epoch($8 "T" $9$10) - epoch($4 "T"  $5$6)
+
+		mod = len % 60
+		len = (len - mod) / 60
+		ret = sprintf("% 3d%c%s", mod, "s", ret)
+
+		mod = len % 60
+		len = (len - mod) / 60
+		ret = sprintf("% 3d%c%s", mod, "m", ret)
+
+		mod = len % 24
+		len = (len - mod) / 24
+		ret = sprintf("% 3d%c%s", mod, "h", ret)
+		ret = sprintf("% 3d%c%s", len, "d", ret)
+
+		lines[a++] = sprintf ("%d\t%s\n", $1, ret);
+	}
+	END {
+		while(a--)
+			print lines[a]
+	}' \
+	| column -R IDX -tN IDX,UPTIME -s $'\t'
