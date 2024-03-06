@@ -2,15 +2,17 @@
 export PATH="$(
 	mkpath()
 	{
-		tr -s ':' '\n' |
-			awk '! a[$0]++ {
-			line = line ((NR > 1)?":":"") $0
-		} END {
-			print line
-		}'
+		local pth= line=
+		while read -r line; do
+			case ":$pth:" in
+				*":$line:"*) ;;
+				*) ! test -d "$line" || pth="${pth:+$pth:}$line" ;;
+			esac
+		done
+		echo "$pth"
 	}
 
-	cat << EOF | mkpath
+	tr : '\n' << EOF | mkpath
 $HOME/.local/bin
 $HOME/bin
 $XDG_DATA_HOME/cargo/bin
