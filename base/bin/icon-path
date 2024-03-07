@@ -1,13 +1,67 @@
-#!/usr/bin/env python2
-from gtk import icon_theme_get_default
+#!/usr/bin/env python3
 from sys import argv
-if len(argv) > 1:
-	icon_theme = icon_theme_get_default()
-	for icon_name in argv[1:]:
-		icon = icon_theme.lookup_icon(icon_name, 256, 0)
-		if icon:
-		    print "%s: %s" % (icon_name, icon.get_filename()) if len(argv) > 2 else icon.get_filename()
-		else:
-		    print "'%s' not found" % icon_name
+from os import environ as env
+
+
+def get_gtk_icon_theme():
+    try:
+        import gtk
+        gtkver = 2
+        return (gtk.icon_theme_get_default(), 2, gtk)
+    except ImportError:
+        pass
+
+    if env.get('GTK_VERSION', None):
+        import gi
+        gi.require_version('Gtk', '%2.1lf' % int(env['GTK_VERSION']) if len(
+            env['GTK_VERSION']) == 1 else env['GTK_VERSION'])
+
+    import warnings
+    from gi import PyGIWarning
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter(
+                "ignore", category=(PyGIWarning, ImportWarning))
+            from gi.repository import Gtk
+
+        def _get_icon_tuple(ver):
+            if ver == 3:
+                return (Gtk.IconTheme.get_default(), ver, Gtk)
+            elif ver == 4:
+                from gi.repository import Gdk
+                return (
+                    Gtk.IconTheme.get_for_display(
+                        Gdk.Display.get_default()
+                    ), ver, Gtk
+                )
+        return _get_icon_tuple(Gtk.get_major_version())
+
+    except ImportError as e:
+        raise e
+
+
+icon_theme, gtkver, gtk = get_gtk_icon_theme()
+if gtkver == 4:
+    def get_icon(name, size):
+        return icon_theme\
+            .lookup_icon(name, [], size, 1, gtk.TextDirection.LTR, 0)\
+            .get_file()\
+            .get_path()
+elif 4 > gtkver > 1:
+    def get_icon(name, size):
+        return icon_theme\
+            .lookup_icon(icon_name, size, 0)\
+            .get_filename()
 else:
-	print "no args"
+    print(f"Unknown Gtk version: {gtkver}.0")
+    exit(1)
+
+if len(argv) > 1:
+    for icon_name in argv[1:]:
+        icon = get_icon(icon_name, 256)
+        if icon:
+            print("%s: %s" % (icon_name, icon) if len(argv) > 2 else icon)
+        else:
+            print("'%s' not found" % icon_name)
+else:
+    print("no args")
