@@ -2,15 +2,30 @@
 # Transient prompt implementation
 # Modify transient prompt via TPROMPT
 if [[ $ENV[color_prompt] = yes ]];then
+	typeset -gA __TPROMPT_ORIG
+	typeset -gi __TPROMPT_CRET
+	(( ${+TPROMPT} )) || typeset -g TPROMPT="%1~ %# "
+
+	prompt:save-exit-status() {
+		local -i ret="$?"
+		((__TPROMPT_CRET == ret )) || __TPROMPT_CRET=ret
+	}
+
 	prompt:zle-line-init() {
 		[[ $CONTEXT == start ]] || return 0
 
 		__prompt_prune() {
-			if [[ $1 == "restore" ]] && ((${+__PROMPT}))
-			then PROMPT="${__PROMPT[L]}"; RPROMPT="${__PROMPT[R]}"; unset __PROMPT
-			else typeset -gA __PROMPT;__PROMPT=([L]="$PROMPT" [R]="$RPROMPT")
-					PROMPT="${TPROMPT:-%1~ %# }"; RPROMPT=''
+			if [[ $1 == "restore" ]] && ((${+__TPROMPT_ORIG}))
+			then
+				PROMPT="${__TPROMPT_ORIG[L]}"
+				RPROMPT="${__TPROMPT_ORIG[R]}"
+				return
 			fi
+
+			__TPROMPT_ORIG=([L]="$PROMPT" [R]="$RPROMPT")
+			PROMPT="${TPROMPT:-%1~ %# }"
+			RPROMPT=''
+			return
 		}
 
 		(( $+zle_bracketed_paste )) &&
@@ -21,7 +36,16 @@ if [[ $ENV[color_prompt] = yes ]];then
 
 		__prompt_prune
 		zle .reset-prompt
-		[[ $ret == 0 && $KEYS == $'\4' ]] && exit
+		if [[ $ret == 0 && $KEYS == $'\4' ]]; then
+			((${#jobstates} == 0)) || {
+				__prompt_prune restore
+				zle -R
+				"$ZSH_ARGZERO"() { unset -f "$ZSH_ARGZERO"; exit ${__TPROMPT_CRET}; }
+				"$ZSH_ARGZERO" # show error messages as $ZSH_ARGZERO
+			}
+			exit ${__TPROMPT_CRET}
+		fi
+
 		__prompt_prune restore
 		if (( ret ))
 		then zle .send-break
@@ -32,6 +56,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 		return ret
 	}
 
-	autoload -Uz add-zle-hook-widget
+	autoload -Uz add-zle-hook-widget add-zsh-hook
+	add-zsh-hook 		-Uz precmd prompt:save-exit-status
 	add-zle-hook-widget -Uz zle-line-init prompt:zle-line-init
 fi
