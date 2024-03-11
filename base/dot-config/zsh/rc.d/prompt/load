@@ -38,7 +38,7 @@ function check_stderr {
 
 # Prompt Setup
 DIR_PROMPT='%20>...>%1~%<<'
-PROMPT=''
+PROMPT='${DIR_PROMPT} %% '
 
 if [[ $ENV[color_prompt] = yes ]];then
 	if [[ -z "$TMUX" && -z "$TMUX_PLUGIN_MANAGER_PATH" ]];then
@@ -74,6 +74,10 @@ if [[ $ENV[color_prompt] = yes ]];then
 			OLDCOLUMNS=COLUMNS
 		}
 	fi
+	# init
+	RPS1=''
+	PROMPT=''
+	# setup
 	PROMPT+=$'%0{\r%}%E%(?.%F{red}.%F{cyan})╭─${DIR_PROMPT}'
 	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
 	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT}//$~ENV[prompt_filter]/}))>─>${(pl:COLUMNS::─:)}%<<'
@@ -82,7 +86,4 @@ if [[ $ENV[color_prompt] = yes ]];then
 	# transient prompt
 	TPROMPT=$'%0{\r%}%E%B%(?.%F{red}.%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b'
 	RPROMPT=$'${RET_PROMPT}'
-	RPS1="$RPROMPT"
-else
-	PROMPT+='${DIR_PROMPT} %% '
 fi
