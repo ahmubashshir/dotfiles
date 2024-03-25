@@ -6,6 +6,7 @@ zplug-defer lazyload
 zplug-defer completions
 zplug-defer auto-notify
 zplug-defer systemd
+zplug-defer fzf-tab
 zplug-defer fast-syntax-highlighting
 zplug-defer autosuggestions
 zplug-defer autopair
