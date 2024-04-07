@@ -19,6 +19,7 @@ fi
 export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
 export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
 export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
+export ANDROID_USER_HOME="$XDG_DATA_HOME"/android
 # ack
 export ACKRC="$XDG_CONFIG_HOME/ack/ackrc"
 # atom editor
@@ -70,6 +71,8 @@ export OPAMROOT="$XDG_DATA_HOME/opam"
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 # pass
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
+# python:hist
+export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
 # python:venv
 export WORKON_HOME="$XDG_DATA_HOME/virtualenvs"
 # ruby:rbenv
@@ -103,3 +106,5 @@ export VAGRANT_HOME="$XDG_DATA_HOME"/vagrant
 export W3M_DIR="$XDG_DATA_HOME"/w3m
 # wine
 export WINEPREFIX="$XDG_DATA_HOME"/wine
+# renpy
+export RENPY_PATH_TO_SAVES="$XDG_DATA_HOME"/renpy
