@@ -1,17 +1,17 @@
 #!/bin/bash
-((def_libbash)) && return 0 || def_libbash=1
-function check_up_server()
+[ $((def_libbash)) -gt 0 ] && return 0 || def_libbash=1
+check_up_server()
 {
 	t_efbec206=$2
 	t_efbec206=${t_efbec206:=3}
-	[ $t_efbec206 -gt 3 ] && echo "Resolving $1,wait $t_efbec206 seconds" 1>&2
-	resp_efbec206=$(curl -m $t_efbec206 -sIXGET "$1" | head -1 | tr -d \  | cut -d/ -f1)
-	if [[ $resp_efbec206 = 'HTTP' ]]; then
+	[ "$t_efbec206" -gt 3 ] && echo "Resolving $1,wait $t_efbec206 seconds" 1>&2
+	resp_efbec206=$(curl -m "$t_efbec206" -sIXGET "$1" | head -1 | tr -d \  | cut -d/ -f1)
+	if [[ "$resp_efbec206" = 'HTTP' ]]; then
 		return 0
 	fi
 	return 1
 }
-function goto()
+goto()
 {
 	label=$1
 	cmd=$(sed -n "/#$label:/,/#$label:end/p" "$0" | grep -v ':$')
@@ -22,7 +22,7 @@ function goto()
 	eval "$cmd"
 	return
 }
-function byte_hr()
+byte_hr()
 {
 	local size_670b2dbb
 	local unit_670b2dbb
@@ -39,7 +39,7 @@ function byte_hr()
 	done
 	printf '%s %s' "$size_670b2dbb" "$unit_670b2dbb"
 }
-function fget()
+fget()
 {
 	url_933be66d="$1"
 	name_933be66d="$2"
@@ -85,14 +85,16 @@ function fget()
 					elif [ ! -e "$name_933be66d" ]; then
 						echo -e "Writing to '$name_933be66d'\nFile Size: $(byte_hr "$dlsize_933be66d")"
 					fi
-					wget --referer="$url_933be66d" "$@" --show-progress -qcO "$name_933be66d" "$url_933be66d" || ([ "$?" = "5" ] && wget "$@" --show-progress -qcO "$name_933be66d" --no-check-certificate "$url_933be66d" || (exit $?))
+					wget --referer="$url_933be66d" "$@" --show-progress -qcO "$name_933be66d" "$url_933be66d" || {
+						[                                                                                             "$?" = "5" ] && wget "$@" --show-progress -qcO "$name_933be66d" --no-check-certificate "$url_933be66d" || (exit $?)
+					}
 				else
 					(exit 10)
 				fi
 			else
 				echo "$response_933be66d $(server_responce "$response_933be66d")"
-				[[ $response_933be66d =~ 40. ]] && ${SHOW_URL:-false} && echo "$url_933be66d"
-				[[ "${response_933be66d:0:1}${response_933be66d:2:3}" =~ ^[[:digit:],-]+$ ]] && return "${response_933be66d:0:1}${response_933be66d:2:3}" || (echo ${response_933be66d:0:1}${response_933be66d:2:3} && return 99)
+				[[ $response_933be66d =~ 40. ]] && "${SHOW_URL:-false}" && echo "$url_933be66d"
+				[[ "${response_933be66d:0:1}${response_933be66d:2:3}" =~ ^[[:digit:],-]+$ ]] && return "${response_933be66d:0:1}${response_933be66d:2:3}" || (echo "${response_933be66d:0:1}${response_933be66d:2:3}" && return 99)
 			fi
 		fi
 	else
@@ -143,14 +145,14 @@ function fget()
 		return $ex_933be66d
 	else
 		if ((dlsize_933be66d == size_933be66d)); then
-			echo -e "Already downloaded $name_933be66d [$(byte_hr $size_933be66d)]."
+			echo -e "Already downloaded $name_933be66d [$(byte_hr "$size_933be66d")]."
 		else
-			echo -e "Already downloaded $name_933be66d [$(byte_hr $size_933be66d)],\nbut size doesn't match.[size on server $(byte_hr "$dlsize_933be66d")]"
+			echo -e "Already downloaded $name_933be66d [$(byte_hr "$size_933be66d")],\nbut size doesn't match.[size on server $(byte_hr "$dlsize_933be66d")]"
 		fi
 		return 0
 	fi
 }
-function server_responce()
+server_responce()
 {
 	case $1 in
 		100) echo "Continue" ;;
@@ -220,7 +222,7 @@ function server_responce()
 	esac
 	return 0
 }
-function vbar()
+vbar()
 {
 	w=$(tput cols)
 	print=$1
@@ -229,7 +231,7 @@ function vbar()
 	char=$(printf "%s" "$print" | sed 's|[＂﹖]|\n|g' | wc -l)
 	strlen=$((strlen + char))
 	if [ "$print" != "" ]; then
-		if (((w - strlen - 8) / 2 < 0)); then
+		if [ $(((w - strlen - 8) / 2)) -lt 0 ]; then
 			print=$( (echo "$1" | tr ' ' '\n' | {
 				mapfile -tn $((-3 * ((w - strlen - 8) / 2))) a
 				printf "%s " "${a[@]}" ...
@@ -243,28 +245,28 @@ function vbar()
 			len=$(((w - strlen - 2) / 2))
 		fi
 
-		for ((i = 0; i < len; i++)); do
+		for i in $(seq 0 "$len"); do
 			printf "─"
 		done
 
 		if [ "$title" = "true" ]; then
 			echo -n "--- $print ---"
-			for ((i = 0; i < (w - (len * 2 + strlen + 8)); i++)); do
+			for i in $(seq 0 $((w - (len * 2 + strlen + 8)))); do
 				printf "─"
 			done
 		else
 			printf ' %s ' "$print"
-			for ((i = 0; i < (w - (len * 2 + strlen + 2)); i++)); do
+			for i in $(seq 0 $((w - (len * 2 + strlen + 2)))); do
 				printf "─"
 			done
 		fi
 
-		for ((i = 0; i < len; i++)); do
+		for i in $(seq 0 $len); do
 			printf "─"
 		done
 
 	else
-		for ((i = 0; i < w; i++)); do
+		for i in $(seq 0 $w); do
 			printf "─"
 		done
 	fi
