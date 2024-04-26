@@ -1,4 +1,4 @@
-@-moz-document url-prefix("moz-extension://") {
+@-moz-document regexp("moz-extension://.+/sidebar/sidebar.html.*") {
 
 	/* autohide css  */
 	#tabbar {
@@ -16,6 +16,7 @@
 
 	tab-item {
 		margin: 3px !important;
+		margin-top: 0 !important;
 
 		& :not([data-child-ids]) tab-twisty {
 			visibility: collapsed !important;
