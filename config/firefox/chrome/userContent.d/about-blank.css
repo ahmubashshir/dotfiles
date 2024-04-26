@@ -1,8 +1,33 @@
-@-moz-document url(about:blank){
+@-moz-document url(about:blank),
+url(about:blank){
 
 html:not(#ublock0-epicker),
 html:not(#ublock0-epicker) body,
 #newtab-customize-overlay {
-	background: var(--backdrop) no-repeat center center fixed !important;
+	background: var(--backdrop) !important;
 }
+}
+
+@-moz-document regexp("moz-extension://[0-9a-f-]+/html/tab.html.*") {
+	body {
+		background: var(--backdrop) !important;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		min-height: 100vh;
+		padding: 40px 48px;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+
+		& p {
+			font-size: 2em;
+			font-weight: bold;
+			font-style: oblique;
+			background: light-dark(var(--light-canvas), var(--dark-canvas));
+			padding: 1em;
+			border-radius: 0.75em;
+			max-width: min-content;
+		}
+	}
 }

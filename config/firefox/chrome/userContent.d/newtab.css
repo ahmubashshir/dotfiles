@@ -1,95 +1,121 @@
-@-moz-document url-prefix(about:home),
-url-prefix(about:newtab),
-url-prefix(about:privatebrowsing) {
-	body {
-		background: var(--backdrop) no-repeat center center fixed !important;
-		background-size: cover !important;
+@-moz-document url(about:home),
+url(about:newtab),
+url(about:privatebrowsing){
+
+body {
+	background: var(--backdrop) !important;
+	background-size: cover !important;
+}
+
+div {
+	&.search-inner-wrapper {
+		display: none !important;
+		visibility: collapse !important;
 	}
 
-	div {
-		&.search-inner-wrapper {
-			display: none !important;
-			visibility: collapse !important;
+	&.showPrivate.container,
+	& main:has(&.search-wrapper) {
+		background: light-dark(var(--light-canvas), var(--dark-canvas));
+		border-radius: 0.75em;
+	}
+
+	& main:has(&.search-wrapper) {
+		padding: 2.5em !important;
+	}
+
+	&.showPrivate.container {
+		padding: 1em !important;
+	}
+
+	&.non-collapsible-section,
+	&.search-wrapper,
+	&.logo-and-wordmark,
+	&.search-inner-wrapper {
+		padding: 0px !important;
+		margin: 0px !important;
+
+		html:is(.private) & .wordmark {
+			fill: var(--in-content-page-color) !important;
 		}
 
-		&.non-collapsible-section,
-		&.search-wrapper,
-		&.logo-and-wordmark,
-		&.search-inner-wrapper {
-			padding: 0px !important;
-			margin: 0px !important;
+		html:not(.private) & .wordmark {
+			fill: var(--newtab-text-primary-color) !important;
+		}
+	}
+}
 
-			html:is(.private) & .wordmark {
-				fill: var(--in-content-page-color) !important;
-			}
+.top-sites-list .hide-for-narrow {
+	display: inline-block !important;
+}
 
-			html:not(.private) & .wordmark {
-				fill: var(--newtab-text-primary-color) !important;
-			}
+a.top-site-button {
+	& div.tile {
+		border-radius: 50% !important;
+		--button-bg: color-mix(in srgb, currentColor 40%, canvas), color-mix(in srgb, currentColor 25%, canvas);
+		background-color: color-mix(in srgb, transparent 40%, light-dark(var(--button-bg))) !important;
+
+		&:is(.active, :focus, :hover) {
+			--button-bg: color-mix(in srgb, currentColor 15%, canvas), color-mix(in srgb, currentColor 70%, canvas);
 		}
 	}
 
-	.top-sites-list .hide-for-narrow {
-		display: inline-block !important;
+	& div.top-site-icon {
+		border-radius: 50% !important;
+		width: 100% !important;
+		height: 100% !important;
+		position: unset !important;
+		background-color: transparent !important;
 	}
 
-	a.top-site-button {
-		& div.tile {
-			border-radius: 50% !important;
-			background-color: rgba(38, 48, 52, 0.7) !important;
-
-			&:is(.active, :focus, :hover) {
-				background-color: rgba(56, 70, 75, 0.7) !important;
-			}
-		}
-
-		& div.top-site-icon {
-			border-radius: 50% !important;
-			width: 100% !important;
-			height: 100% !important;
-			position: unset !important;
-			background-color: transparent !important;
-		}
-
-		& div.title,
-		& div.screenshot.active {
-			display: none !important;
-			visibility: collapse !important;
-		}
+	& div.title,
+	& div.screenshot.active {
+		display: none !important;
+		visibility: collapse !important;
 	}
+}
 
+ul.top-sites-list {
+	display: inline-grid !important;
+	grid-template-columns: auto auto auto auto;
+	grid-gap: 1em;
+	position: relative !important;
+	left: 50% !important;
+	transform: translate(-50%, 25%);
+}
+
+button.personalize-button {
+	opacity: 0.1 !important;
+
+	&:hover {
+		opacity: 0.5 !important;
+	}
+}
+
+li.top-site-outer:is(.active, :focus, :hover) {
+	background: none !important;
+
+	& button.context-menu-button {
+		opacity: 0.5 !important;
+	}
+}
+
+@media(max-width: 609px) {
 	ul.top-sites-list {
-		display: inline-grid !important;
-		grid-template-columns: auto auto auto auto;
-		grid-gap: 1em;
-		position: relative !important;
-		left: 50% !important;
-		transform: translate(-50%, 25%);
-	}
+		grid-template-columns: auto auto !important;
 
-	button.personalize-button {
-		opacity: 0.1 !important;
-
-		&:hover {
-			opacity: 0.5 !important;
+		& li:nth-child(n+5) {
+			display: none !important;
 		}
 	}
+}
 
-	li.top-site-outer:is(.active, :focus, :hover) {
-		background: none !important;
-
-		& button.context-menu-button {
-			opacity: 0.5 !important;
-		}
-	}
-
-	@media(max-width: 609px) {
-		ul.top-sites-list {
-			grid-template-columns: auto auto !important;
-
-			& li:nth-child(n+5) {
-				display: none !important;
+@media(prefers-color-scheme: dark) {
+	a.top-site-button {
+		&[href*="github.com"] {
+			& > .tile > .icon-wrapper > .top-site-icon.rich-icon {
+				filter: invert();
 			}
 		}
 	}
+}
 }
