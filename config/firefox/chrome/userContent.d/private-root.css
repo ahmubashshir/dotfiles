@@ -1,0 +1,12 @@
+@-moz-document url(about:home),
+url(about:newtab),
+url(about:privatebrowsing),
+regexp("moz-extension://[0-9a-f-]+/html/tab.html.*") {
+
+	:root {
+		color-scheme: light dark;
+		--backdrop: -webkit-image-set(url(../backdrop.png), url(backdrop.png)) no-repeat center center fixed;
+		--light-canvas: color-mix(in srgb, transparent 60%, canvas);
+		--dark-canvas: color-mix(in srgb, transparent 20%, canvas);
+	}
+}

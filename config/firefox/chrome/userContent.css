@@ -1,10 +1,10 @@
 @import url('userContent.d/newtab.css');
 @import url('userContent.d/about-blank.css');
 @import url('userContent.d/treestyletab.css');
+@import url('userContent.d/private-root.css');
 
 /* Sets up minimal scrollbar */
 :root {
 	scrollbar-width: thin !important;
 	scrollbar-color: rgb(161, 161, 161) transparent !important;
-	--backdrop: -webkit-image-set(url(../backdrop.png), url(backdrop.png));
 }
