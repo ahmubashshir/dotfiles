@@ -1,8 +1,9 @@
 #unified-extensions-view {
 	& #unified-extensions-area {
 		display: grid;
-		grid-template-columns: repeat(8, 1fr);
+		grid-template-columns: repeat(auto-fill, minmax(calc(var(--size-item-large) + var(--size-item-small)), 1fr));
 		justify-content: space-between;
+		grid-auto-flow: row;
 
 		& toolbaritem {
 			& .unified-extensions-item-action-button {
