@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ Author: Gilles Coissac <info@gillescoissac.fr>
+ Copyright (C) 2021 Gilles Coissac <info@gillescoissac.fr>
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ MA 02110-1301, USA.
+
+-->
+<language id="cython" name="Cython" version="2.0" _section="Script">
+  <metadata>
+    <property name="globs">*.pyx;*.pxd;*.pxi</property>
+    <property name="line-comment-start">#</property>
+  </metadata>
+
+  <styles>
+    <style id="module-handler"    name="Module Handler"        map-to="python3:module-handler"/>
+    <style id="keyword"           name="Keyword"               map-to="python3:keyword"/>
+    <style id="multiline-string"  name="Multiline string"      map-to="python3:multiline-string"/>
+    <style id="string"            name="String"                map-to="python3:string"/>
+    <style id="escaped-char"      name="Escaped Character"     map-to="python3:escaped-char"/>
+    <style id="format"            name="Format"                map-to="python3:format"/>
+    <style id="string-conversion" name="String Conversion"     map-to="python3:string-conversion"/>
+    <style id="special-variable"  name="Special Variable"      map-to="python3:special-variable"/>
+    <style id="boolean"           name="Boolean"               map-to="python3:boolean"/>
+    <style id="floating-point"    name="Floating point number" map-to="python3:floating-point"/>
+    <style id="decimal"           name="Decimal number"        map-to="python3:decimal"/>
+    <style id="base-n-integer"    name="Base-N number"         map-to="python3:base-n-integer"/>
+    <style id="complex"           name="Complex number"        map-to="python3:complex"/>
+    <style id="builtin-constant"  name="Builtin Constant"      map-to="python3:builtin-constant"/>
+    <style id="builtin-object"    name="Builtin Object"        map-to="python3:builtin-object"/>
+    <style id="builtin-function"  name="Builtin Function"      map-to="python3:builtin-function"/>
+    <style id="function-name"     name="Function Name"         map-to="def:function"/>
+    <style id="class-name"        name="Class Name"            map-to="python3:class-name"/>
+    <style id="decorator"         name="Decorator"             map-to="python3:decorator"/>
+    <style id="c-type"            name="Type"                  map-to="c:type"/>
+    <style id="preprocessor"      name="Preprocessor"          map-to="c:preprocessor"/>
+    <style id="annotation"        name="Annotation"            map-to="def:comment"/>
+  </styles>
+
+  <definitions>
+    <!-- https://docs.python.org/3/reference/lexical_analysis.html#identifiers
+         Underscore (U+005F LOW LINE) is a member of \p{Pc},
+         and so included in def:unicode-xid-continue
+    -->
+    <define-regex id="identifier" extended="true">
+      (?&gt; (?: _ | \%{def:unicode-xid-start} ) \%{def:unicode-xid-continue}* )
+    </define-regex>
+    <define-regex id="number">[1-9][0-9]*</define-regex>
+
+    <define-regex id="identifier-path" extended="true">
+      (\%{identifier}\.)*\%{identifier}
+    </define-regex>
+    <define-regex id="relative-path" extended="true">
+      (\.*\%{identifier-path}|\.+)
+    </define-regex>
+
+    <!-- http://docs.python.org/lib/typesseq-strings.html -->
+    <context id="format" style-ref="format" extend-parent="false">
+      <match extended="true">
+        %                       # leading % sign
+        \(\%{identifier}\)?     # mapping key
+        [#0\-\ \+]*             # conversion flags
+        (\-?\%{number}|\*)?     # minimum field width
+        (\.(\-?\%{number}|\*))? # precision
+        (hlL)?                  # lentgh modifier
+        [diouxXeEfFgGcrs%]      # conversion type
+      </match>
+    </context>
+
+    <define-regex id="valid-python" extended="true">
+      (\%{identifier-path}|)
+    </define-regex>
+
+    <context id="fstring" style-ref="format" extend-parent="true">
+      <match extended="true">
+        {
+        \%{valid-python} (\( (\%{valid-python})? \))?
+        }
+      </match>
+    </context>
+
+    <define-regex id="string-prefix">(b|B|u|U)?</define-regex>
+
+    <context id="multiline-double-quoted-string" style-ref="multiline-string" class="string" class-disabled="no-spell-check">
+      <start>\%{string-prefix}"""</start>
+      <end>"""</end>
+      <include>
+        <context ref="format"/>
+        <context ref="fstring"/>
+        <context ref="python:escaped-char"/>
+      </include>
+    </context>
+
+    <context id="multiline-single-quoted-string" style-ref="multiline-string" class="string" class-disabled="no-spell-check">
+      <start>\%{string-prefix}'''</start>
+      <end>'''</end>
+      <include>
+        <context ref="format"/>
+        <context ref="fstring"/>
+        <context ref="python:escaped-char"/>
+      </include>
+    </context>
+
+    <context id="double-quoted-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
+      <start>\%{string-prefix}"</start>
+      <end>"</end>
+      <include>
+        <context ref="format"/>
+        <context ref="fstring"/>
+        <context ref="python:escaped-char"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
+    <context id="single-quoted-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
+      <start>\%{string-prefix}'</start>
+      <end>'</end>
+      <include>
+        <context ref="format"/>
+        <context ref="fstring"/>
+        <context ref="python:escaped-char"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
+    <context id="module-handler" style-ref="module-handler">
+      <keyword>import</keyword>
+      <keyword>cimport</keyword>
+      <keyword>from</keyword>
+      <keyword>as</keyword>
+    </context>
+
+    <context id="compile-time-statements" style-ref="preprocessor">
+      <keyword>DEF</keyword>
+      <keyword>ELIF</keyword>
+      <keyword>ELSE</keyword>
+      <keyword>IF</keyword>
+    </context>
+
+    <define-regex id="ctype">(char|int|short|long|float|double|void|Py_ssize_t|bint)</define-regex>
+    <context id="cython-type">
+      <match extended="true">
+        (\%{ctype})(?!\s*\()
+      </match>
+      <include>
+        <context sub-pattern="1" style-ref="c-type"/>
+      </include>
+    </context>
+
+    <context id="cython-class-definition">
+      <match extended="true">
+        (class)
+        \s+
+        (\%{identifier})
+      </match>
+      <include>
+        <context sub-pattern="1" style-ref="keyword"/>
+        <context sub-pattern="2" style-ref="class-name"/>
+      </include>
+    </context>
+
+    <!--'def', 'cdef', 'cpdef' are also present in the 'keyword' context, but has a lower
+     priority, so they are highlighted even if the function name doesn't match.
+     Pattern is more complex than in Python because it could mimic c function declaration,
+     and cdef serve also to c type not only function.
+    -->
+    <context id="function-definition">
+      <match extended="true">
+        (def|cdef|cpdef)                    # a def Keywords
+        (?!\sclass)                         # don't match if 'class' keyword
+        (?:                                 #
+          (\s+public|\s+extern|\s+inline)?  # [public|extern|inline]
+          (\s+api)?                         # [api]
+          (\s+.+)?                          # [function return type]
+          (\s+\%{identifier})               # indentifier
+          (?:\s*)(?:\()                     # an open parenthesis
+        )
+      </match>
+      <include>
+        <context sub-pattern="1" style-ref="keyword"/>
+        <context sub-pattern="2" style-ref="keyword"/>
+        <context sub-pattern="3" style-ref="keyword"/>
+        <context sub-pattern="4" style-ref="c-type"/>
+        <context sub-pattern="5" style-ref="function-name"/>
+      </include>
+    </context>
+
+    <define-regex id="list" extended="true">
+      (\[[\w.,\s]*?\])
+    </define-regex>
+
+    <context id="annotation">
+      <match extended="true">
+        (:\s+)
+        ([\w.]* \%{list}?)
+        (\s+=)?
+      </match>
+      <include>
+        <context sub-pattern="2" style-ref="annotation"/>
+      </include>
+    </context>
+
+    <context id="annotation-return">
+      <match extended="true">
+        (\)\s+)
+        (\->\s+[\w.]* \%{list}?)
+        (:)
+      </match>
+      <include>
+        <context sub-pattern="2" style-ref="annotation"/>
+      </include>
+    </context>
+
+    <context id="cython" class="no-spell-check">
+      <include>
+        <context ref="def:shebang"/>
+        <context ref="def:shell-like-comment"/>
+
+        <context ref="multiline-double-quoted-string"/>
+        <context ref="multiline-single-quoted-string"/>
+        <context ref="double-quoted-string"/>
+        <context ref="single-quoted-string"/>
+
+        <context ref="python3:multiline-double-quoted-raw-string"/>
+        <context ref="python3:multiline-single-quoted-raw-string"/>
+        <context ref="python3:double-quoted-raw-string"/>
+        <context ref="python3:single-quoted-raw-string"/>
+
+        <context ref="python:special-variables"/>
+        <context ref="python:boolean"/>
+        <context ref="python:complex"/>
+        <context ref="python:float"/>
+        <context ref="python:decimal"/>
+        <context ref="python:hex"/>
+        <context ref="python3:binary"/>
+        <context ref="python3:octal"/>
+
+        <context ref="python3:module-handler-from"/>
+        <context ref="module-handler"/>
+        <context ref="cython-class-definition"/>
+        <context ref="function-definition"/>
+        <context ref="python3:decorator"/>
+        <context ref="annotation"/>
+        <context ref="annotation-return"/>
+
+        <context ref="cython-type"/>
+        <context ref="python:keywords"/>
+        <context ref="python3:3x-only-keywords"/>
+        <context ref="compile-time-statements"/>
+        <context id="cython-only-keywords" style-ref="keyword">
+          <keyword>cdef</keyword>
+          <keyword>cpdef</keyword>
+          <keyword>ctypedef</keyword>
+          <keyword>cppclass</keyword>
+
+          <keyword>const</keyword>
+          <keyword>unsigned</keyword>
+
+          <keyword>api</keyword>
+          <keyword>public</keyword>
+          <keyword>readonly</keyword>
+          <keyword>inline</keyword>
+          <keyword>extern</keyword>
+          <keyword>static</keyword>
+
+          <keyword>gil</keyword>
+          <keyword>nogil</keyword>
+
+          <keyword>include</keyword>
+          <keyword>namespace</keyword>
+
+          <keyword>enum</keyword>
+          <keyword>fused</keyword>
+          <keyword>struct</keyword>
+          <keyword>union</keyword>
+        </context>
+
+        <context ref="python:builtin-constants"/>
+        <context id="cython-only-builtin-constants" style-ref="builtin-constant">
+          <prefix>(?&lt;![\w\.])</prefix>
+          <keyword>UNAME_SYSNAME</keyword>
+          <keyword>UNAME_NODENAME</keyword>
+          <keyword>UNAME_RELEASE</keyword>
+          <keyword>UNAME_VERSION</keyword>
+          <keyword>UNAME_MACHINE</keyword>
+          <keyword>NULL</keyword>
+        </context>
+        <context ref="python:builtin-objects"/>
+        <context ref="python3:3x-only-builtin-objects"/>
+
+        <context ref="python:builtin-functions"/>
+        <context ref="python3:3x-only-builtin-functions"/>
+        <context id="cython-only-builtin-functions" style-ref="builtin-function">
+          <prefix>(?&lt;![\w\.])</prefix>
+          <keyword>reload</keyword>
+          <keyword>intern</keyword>
+          <keyword>unicode</keyword>
+        </context>
+
+      </include>
+    </context>
+  </definitions>
+</language>

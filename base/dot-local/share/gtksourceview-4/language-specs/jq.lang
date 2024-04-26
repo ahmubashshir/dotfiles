@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="jq" name="jq" version="2.0" _section="Script">
+  <metadata>
+    <property name="mimetypes">application/x-jq</property>
+    <property name="globs">*.jq</property>
+    <property name="line-comment-start">#</property>
+  </metadata>
+
+  <styles>
+    <style id="shebang"           name="Shebang"               map-to="def:comment"/>
+    <style id="comment"           name="Comment"               map-to="def:comment"/>
+    <style id="keyword"           name="Keyword"               map-to="def:keyword"/>
+    <style id="builtin-statement" name="Builtin Statement"     map-to="def:statement"/>
+    <style id="builtin-function"  name="Builtin Function"      map-to="def:builtin"/>
+    <style id="function"          name="Function"              map-to="def:function"/>
+    <style id="variable"          name="Variable"              map-to="def:type"/>
+    <style id="keyname"           name="Key"                   map-to="def:constant"/>
+    <style id="special-char"      name="Escaped Character"     map-to="js:escape"/>
+    <style id="string"            name="String"                map-to="js:string"/>
+    <style id="null-value"        name="Null Value"            map-to="js:null-value"/>
+    <style id="boolean"           name="Boolean Value"         map-to="js:boolean"/>
+    <style id="error"             name="Error"                 map-to="def:error"/>
+    <style id="float"             name="Floating point number" map-to="def:floating-point"/>
+    <style id="decimal"           name="Decimal"               map-to="def:decimal"/>
+  </styles>
+
+  <definitions>
+    <define-regex id="identifier">[a-zA-Z_][a-zA-Z0-9_]*</define-regex>
+
+    <context id="variables" style-ref="variable">
+      <match>\$\%{identifier}</match>
+    </context>
+
+    <context id="keywords" style-ref="keyword">
+      <keyword>__loc__</keyword>
+      <keyword>include</keyword>
+      <keyword>foreach</keyword>
+      <keyword>reduce</keyword>
+      <keyword>module</keyword>
+      <keyword>import</keyword>
+      <keyword>label</keyword>
+      <keyword>catch</keyword>
+      <keyword>break</keyword>
+      <keyword>then</keyword>
+      <keyword>else</keyword>
+      <keyword>elif</keyword>
+      <keyword>try</keyword>
+      <keyword>end</keyword>
+      <keyword>and</keyword>
+      <keyword>or</keyword>
+      <keyword>if</keyword>
+      <keyword>as</keyword>
+    </context>
+
+    <context id="builtin-statements" style-ref="keyword">
+      <keyword>input_line_number</keyword>
+      <keyword>scalars_or_empty</keyword>
+      <keyword>get_search_list</keyword>
+      <keyword>get_prog_origin</keyword>
+      <keyword>fromdateiso8601</keyword>
+      <keyword>utf8bytelength</keyword>
+      <keyword>input_filename</keyword>
+      <keyword>ascii_downcase</keyword>
+      <keyword>todateiso8601</keyword>
+      <keyword>keys_unsorted</keyword>
+      <keyword>get_jq_origin</keyword>
+      <keyword>recurse_down</keyword>
+      <keyword>from_entries</keyword>
+      <keyword>combinations</keyword>
+      <keyword>ascii_upcase</keyword>
+      <keyword>significand</keyword>
+      <keyword>to_entries</keyword>
+      <keyword>modulemeta</keyword>
+      <keyword>leaf_paths</keyword>
+      <keyword>isinfinite</keyword>
+      <keyword>halt_error</keyword>
+      <keyword>transpose</keyword>
+      <keyword>nearbyint</keyword>
+      <keyword>localtime</keyword>
+      <keyword>iterables</keyword>
+      <keyword>tostring</keyword>
+      <keyword>tostream</keyword>
+      <keyword>tonumber</keyword>
+      <keyword>lgamma_r</keyword>
+      <keyword>isnormal</keyword>
+      <keyword>isfinite</keyword>
+      <keyword>infinite</keyword>
+      <keyword>fromjson</keyword>
+      <keyword>fromdate</keyword>
+      <keyword>builtins</keyword>
+      <keyword>booleans</keyword>
+      <keyword>strings</keyword>
+      <keyword>scalars</keyword>
+      <keyword>reverse</keyword>
+      <keyword>recurse</keyword>
+      <keyword>objects</keyword>
+      <keyword>numbers</keyword>
+      <keyword>normals</keyword>
+      <keyword>implode</keyword>
+      <keyword>flatten</keyword>
+      <keyword>finites</keyword>
+      <keyword>explode</keyword>
+      <keyword>values</keyword>
+      <keyword>unique</keyword>
+      <keyword>tojson</keyword>
+      <keyword>todate</keyword>
+      <keyword>tgamma</keyword>
+      <keyword>stderr</keyword>
+      <keyword>mktime</keyword>
+      <keyword>lgamma</keyword>
+      <keyword>length</keyword>
+      <keyword>inputs</keyword>
+      <keyword>gmtime</keyword>
+      <keyword>arrays</keyword>
+      <keyword>trunc</keyword>
+      <keyword>round</keyword>
+      <keyword>pow10</keyword>
+      <keyword>paths</keyword>
+      <keyword>nulls</keyword>
+      <keyword>log1p</keyword>
+      <keyword>log10</keyword>
+      <keyword>isnan</keyword>
+      <keyword>input</keyword>
+      <keyword>gamma</keyword>
+      <keyword>frexp</keyword>
+      <keyword>floor</keyword>
+      <keyword>first</keyword>
+      <keyword>expm1</keyword>
+      <keyword>exp10</keyword>
+      <keyword>error</keyword>
+      <keyword>empty</keyword>
+      <keyword>debug</keyword>
+      <keyword>atanh</keyword>
+      <keyword>asinh</keyword>
+      <keyword>acosh</keyword>
+      <keyword>type</keyword>
+      <keyword>tanh</keyword>
+      <keyword>sqrt</keyword>
+      <keyword>sort</keyword>
+      <keyword>sinh</keyword>
+      <keyword>rint</keyword>
+      <keyword>modf</keyword>
+      <keyword>logb</keyword>
+      <keyword>log2</keyword>
+      <keyword>last</keyword>
+      <keyword>keys</keyword>
+      <keyword>halt</keyword>
+      <keyword>fabs</keyword>
+      <keyword>exp2</keyword>
+      <keyword>erfc</keyword>
+      <keyword>cosh</keyword>
+      <keyword>ceil</keyword>
+      <keyword>cbrt</keyword>
+      <keyword>atan</keyword>
+      <keyword>asin</keyword>
+      <keyword>acos</keyword>
+      <keyword>tan</keyword>
+      <keyword>sin</keyword>
+      <keyword>now</keyword>
+      <keyword>not</keyword>
+      <keyword>nan</keyword>
+      <keyword>min</keyword>
+      <keyword>max</keyword>
+      <keyword>log</keyword>
+      <keyword>exp</keyword>
+      <keyword>erf</keyword>
+      <keyword>env</keyword>
+      <keyword>cos</keyword>
+      <keyword>any</keyword>
+      <keyword>all</keyword>
+      <keyword>add</keyword>
+      <keyword>y0</keyword>
+      <keyword>j1</keyword>
+      <keyword>j0</keyword>
+      <keyword>y1</keyword>
+    </context>
+
+    <context id="builtin-functions" style-ref="keyword">
+      <keyword>truncate_stream</keyword>
+      <keyword>strflocaltime</keyword>
+      <keyword>combinations</keyword>
+      <keyword>with_entries</keyword>
+      <keyword>fromstream</keyword>
+      <keyword>halt_error</keyword>
+      <keyword>map_values</keyword>
+      <keyword>nexttoward</keyword>
+      <keyword>startswith</keyword>
+      <keyword>nextafter</keyword>
+      <keyword>remainder</keyword>
+      <keyword>unique_by</keyword>
+      <keyword>contains</keyword>
+      <keyword>copysign</keyword>
+      <keyword>delpaths</keyword>
+      <keyword>endswith</keyword>
+      <keyword>group_by</keyword>
+      <keyword>ltrimstr</keyword>
+      <keyword>rtrimstr</keyword>
+      <keyword>strftime</keyword>
+      <keyword>strptime</keyword>
+      <keyword>bsearch</keyword>
+      <keyword>capture</keyword>
+      <keyword>flatten</keyword>
+      <keyword>getpath</keyword>
+      <keyword>indices</keyword>
+      <keyword>isempty</keyword>
+      <keyword>recurse</keyword>
+      <keyword>scalbln</keyword>
+      <keyword>setpath</keyword>
+      <keyword>sort_by</keyword>
+      <keyword>format</keyword>
+      <keyword>inside</keyword>
+      <keyword>max_by</keyword>
+      <keyword>min_by</keyword>
+      <keyword>repeat</keyword>
+      <keyword>rindex</keyword>
+      <keyword>select</keyword>
+      <keyword>splits</keyword>
+      <keyword>atan2</keyword>
+      <keyword>error</keyword>
+      <keyword>first</keyword>
+      <keyword>hypot</keyword>
+      <keyword>index</keyword>
+      <keyword>INDEX</keyword>
+      <keyword>ldexp</keyword>
+      <keyword>limit</keyword>
+      <keyword>match</keyword>
+      <keyword>paths</keyword>
+      <keyword>range</keyword>
+      <keyword>scalb</keyword>
+      <keyword>split</keyword>
+      <keyword>until</keyword>
+      <keyword>while</keyword>
+      <keyword>drem</keyword>
+      <keyword>fdim</keyword>
+      <keyword>fmax</keyword>
+      <keyword>fmin</keyword>
+      <keyword>fmod</keyword>
+      <keyword>gsub</keyword>
+      <keyword>join</keyword>
+      <keyword>JOIN</keyword>
+      <keyword>last</keyword>
+      <keyword>path</keyword>
+      <keyword>scan</keyword>
+      <keyword>test</keyword>
+      <keyword>walk</keyword>
+      <keyword>all</keyword>
+      <keyword>any</keyword>
+      <keyword>del</keyword>
+      <keyword>fma</keyword>
+      <keyword>has</keyword>
+      <keyword>map</keyword>
+      <keyword>nth</keyword>
+      <keyword>pow</keyword>
+      <keyword>sub</keyword>
+      <keyword>in</keyword>
+      <keyword>IN</keyword>
+      <keyword>jn</keyword>
+      <keyword>yn</keyword>
+    </context>
+
+    <context id="function-definitions">
+      <match>\b(def) (\%{identifier})</match>
+      <include>
+        <context sub-pattern="1" style-ref="keyword"/>
+        <context sub-pattern="2" style-ref="function"/>
+      </include>
+    </context>
+
+    <context id="function-bodies">
+      <start>:</start>
+      <end>;</end>
+      <include>
+        <context ref="filter-program"/>
+      </include>
+    </context>
+
+    <context id="generic-object-index">
+      <start>\.(\%{identifier})?\[</start>
+      <end>\]</end>
+      <include>
+        <context ref="expression"/>
+      </include>
+    </context>
+
+    <context id="sub-group">
+      <start>\(</start>
+      <end>\)</end>
+      <include>
+        <context ref="filter-program"/>
+      </include>
+    </context>
+
+    <context id="object" style-ref="def:error">
+      <start>\{</start>
+      <end>\}</end>
+      <include>
+        <context ref="json:string" style-ref="keyname"/>
+        <context>
+          <start>:</start>
+          <end>,|\s*(?=})</end>
+          <include>
+            <context sub-pattern="0" where="start" style-ref="keyname"/>
+            <context ref="expression"/>
+          </include>
+        </context>
+        <context ref="json:catchall"/>
+      </include>
+    </context>
+
+    <context id="expression">
+      <include>
+        <context ref="variables"/>
+        <context ref="keywords"/>
+        <context ref="builtin-statements"/>
+        <context ref="builtin-functions"/>
+        <context ref="function-definitions"/>
+        <context ref="function-bodies"/>
+        <context ref="generic-object-index"/>
+        <context ref="sub-group"/>
+        <context ref="object"/>
+        <context ref="json:value"/>
+      </include>
+    </context>
+
+    <context id="filter-program">
+      <include>
+        <context ref="sh:line-comment"/>
+        <context ref="expression"/>
+      </include>
+    </context>
+
+    <context id="jq">
+      <include>
+        <context ref="def:shebang"/>
+        <context ref="filter-program"/>
+      </include>
+    </context>
+  </definitions>
+</language>

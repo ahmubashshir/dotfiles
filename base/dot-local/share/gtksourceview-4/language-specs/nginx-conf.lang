@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ Copyright (C) 2017 Vlasta Vesely <vlastavesely@protonmail.ch>
+
+ This file is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This file is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<language id="nginx-conf" name="Nginx Configuration" version="2.0" _section="Others">
+  <styles>
+    <style id="keyword"          _name="Keyword"              map-to="def:statement"/>
+    <style id="definition-key"   _name="Definition key"       map-to="def:type"/>
+    <style id="number"           _name="Number"               map-to="def:decimal"/>
+    <style id="variable"         _name="Variable"             map-to="def:identifier"/>
+    <style id="regex"            _name="Regex"                map-to="def:preprocessor"/>
+  </styles>
+
+  <definitions>
+
+    <context id="location-start">
+      <match>^\s*(location)\s+([^}]+)\s+\{</match>
+      <include>
+        <context id="block-name" sub-pattern="1" style-ref="keyword"/>
+        <context id="location-path" sub-pattern="2" style-ref="regex"/>
+      </include>
+    </context>
+
+    <context id="keywords" style-ref="keyword">
+      <keyword>hostnames</keyword>
+      <keyword>http</keyword>
+      <keyword>map</keyword>
+      <keyword>return</keyword>
+      <keyword>server</keyword>
+      <keyword>if</keyword>
+    </context>
+
+    <context id="definition">
+      <start>([a-z0-9_\.]+)\s</start>
+      <end>(;\s*)$</end>
+      <include>
+        <context sub-pattern="1" where="start" style-ref="definition-key"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
+        <context ref="keywords"/>
+        <context ref="number"/>
+        <context ref="variable"/>
+        <context ref="variable-wrapped"/>
+      </include>
+    </context>
+
+    <context id="number" style-ref="number">
+      <match extended="true">
+        (?&lt;![\w\.])
+        [+-]?([1-9][0-9]*|0)
+        [KMB]?(?![\w\.])
+      </match>
+    </context>
+
+    <context id="variable" style-ref="variable">
+      <match>\$([a-z0-9_-]+)</match>
+    </context>
+
+    <context id="variable-wrapped" style-ref="variable">
+      <match>\$\{([^}]+)\}</match>
+    </context>
+
+    <context id="trailing-spaces" style-ref="def:error">
+      <match>\s+$|^ +(?=\t)</match>
+    </context>
+
+    <context id="nginx-conf" class="no-spell-check">
+      <include>
+        <context ref="def:shell-like-comment"/>
+        <context ref="location-start"/>
+        <context ref="def:string"/>
+        <context ref="def:single-quoted-string"/>
+        <context ref="keywords"/>
+        <context ref="number"/>
+        <context ref="definition"/>
+        <context ref="variable"/>
+        <context ref="variable-wrapped"/>
+        <context ref="trailing-spaces"/>
+      </include>
+    </context>
+
+  </definitions>
+</language>
