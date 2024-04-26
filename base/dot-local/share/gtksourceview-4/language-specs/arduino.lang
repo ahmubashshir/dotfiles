@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="arduino" name="Arduino Sketch" version="2.0" _section="Source">
+	<metadata>
+		<property name="globs">*.ino;</property>
+		<property name="mimetypes">text/x-arduino;text/x-ino</property>
+		<property name="line-comment-start">//</property>
+		<property name="block-comment-start">/*</property>
+		<property name="block-comment-end">*/</property>
+	</metadata>
+	<styles>
+        <style id="constants" name="Constants" map-to="def:constant" />
+		<style id="keyword" name="Keyword" map-to="c:keyword"/>
+		<style id="type" name="Data Type" map-to="c:type"/>
+		<style id="common-defines" name="Common Defines" map-to="c:common-defines"/>
+	</styles>
+	<definitions>
+		<!-- Arduino specific stuffs -->
+		<context id="arduino-proper">
+			<include>
+				<context id="keywords" style-ref="keyword">
+					<keyword>Serial</keyword>
+					<keyword>Serial2</keyword>
+					<keyword>WiFi</keyword>
+					<!--keyword></keyword-->
+				</context>
+				<context id="constants" style-ref="constants">
+					<keyword>HIGH</keyword>
+					<keyword>LOW</keyword>
+					<keyword>INPUT</keyword>
+					<keyword>INPUT_PULLUP</keyword>
+					<keyword>OUTPUT</keyword>
+					<keyword>SERIAL</keyword>
+					<keyword>DISPLAY</keyword>
+					<keyword>CHANGE</keyword>
+					<keyword>RISING</keyword>
+					<keyword>FALLING</keyword>
+					<keyword>MSBFIRST</keyword>
+					<keyword>LSBFIRST</keyword>
+					<keyword>WL_CONNECTED</keyword>
+					<keyword>WIFI_STA</keyword>
+				</context>
+			</include>
+		</context>
+		<context id="arduino">
+			<include>
+				<context ref="arduino-proper"/>
+				<context ref="cpp:cpp"/>
+			</include>
+		</context>
+	</definitions>
+</language>
