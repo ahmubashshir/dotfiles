@@ -392,6 +392,8 @@ struct IO {
 			if (!(diskinfo >> skip >> skip >> name)) break;
 			if (!name.empty()
 			    && (prev.empty() || (name.find(prev) != 0)) // skip partitions
+			    && (name.find("zram") != 0)  // skip zram
+			    && (name.find("loop") != 0)  // skip loopback
 			    && (name.find("dm") != 0)) { // skip device mapper
 				prev = name;
 				Device& device = devices[name];
