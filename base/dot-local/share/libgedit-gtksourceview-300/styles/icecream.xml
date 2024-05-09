@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- from https://github.com/hamadmarri/gedit_themes/blob/master/icecream.xml -->
-<style-scheme id="icecream" _name="Ice Cream" kind="light" version="1.0">
+<style-scheme id="icecream" _name="Ice Cream" kind="light">
   <!--author>Hamad Al Marri</author-->
   <_description>Color scheme using Ice Cream color palette</_description>
   <!-- Palette -->

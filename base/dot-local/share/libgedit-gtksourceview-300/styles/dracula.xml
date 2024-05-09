@@ -17,7 +17,7 @@
   along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<style-scheme id="dracula" _name="Dracula" kind="dark" version="1.0">
+<style-scheme id="dracula" _name="Dracula" kind="dark">
   <_description>A dark theme for Gedit</_description>
   <!-- Named Colors -->
   <color name="background" value="#282A36"/>
