@@ -151,3 +151,4 @@
 [submodule "base/dot-config/zsh/plugins/fzf-tab"]
 	path = base/dot-config/zsh/plugins/fzf-tab
 	url = https://github.com/Aloxaf/fzf-tab
+	branch = master
