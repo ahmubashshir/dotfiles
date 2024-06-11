@@ -152,3 +152,6 @@
 	path = base/dot-config/zsh/plugins/fzf-tab
 	url = https://github.com/Aloxaf/fzf-tab
 	branch = master
+[submodule "base/dot-config/zsh/plugins/mask"]
+	path = base/dot-config/zsh/plugins/mask
+	url = https://github.com/jgogstad/zsh-mask
