@@ -42,4 +42,50 @@ $0]]></text>
 }]]></text>
     <description>main</description>
   </snippet>
+  <snippet>
+    <tag>embed</tag>
+    <text><![CDATA[// Embed as ${1:ELF|COFF}
+// |${2:file}| as  ${3:payload}
+$<
+global g_tgt, g_section, g_type
+chk = lambda ret, other: ret if $1.upper() == ret[0] else other
+g_tgt, g_section, g_type = chk(
+	(
+		'COFF',
+		'.rdata, \\"dr\\"',
+		'',
+	), (
+		'ELF',
+		'.rodata',
+		f'@object',
+	)
+)
+>
+__asm__(
+	"\t.section $<[1]: return g_section>\n"
+	"\t.global _$3\n"$<[1]:
+ 	return (f'\n"\\t.type _{$3}, {g_type}\\n"'
+ 	if g_type else '')>
+	"\t.align 1\n"
+	"_$3:\n"
+	"\t.incbin \"$2\"\n"
+	"\t.global _$3_size\n"$<[1]:
+ 	return (f'\n"\\t.type _{$3}_size, {g_type}\\n"'
+	if g_type else '')>
+	"\t.align 4\n"
+	"_$3_size:\n"
+	"\t.int _$3_size - _$3 - 1\n"$<[1]:
+		if g_tgt == 'COFF':
+			return ''.join(
+				(f'\n"\\t.set __{e}, _{e}\\n"' for e in ($3, f'{$3}_size',))
+			)
+>
+	"\t.text\n"
+);
+
+extern uint8_t _$3[];
+extern uint32_t _$3_size;
+$0]]></text>
+    <description>embed</description>
+  </snippet>
 </snippets>
