@@ -7,10 +7,7 @@ journalctl --list-boots --utc \
 		return strptime(stmp, "%Y-%m-%dT%0H:%0M:%0S%Z");
 	}
 
-	$1 != "IDX" {
-		ret = ""
-		len = epoch($8 "T" $9$10) - epoch($4 "T"  $5$6)
-
+	function formatlen(len) {
 		mod = len % 60
 		len = (len - mod) / 60
 		ret = sprintf("% 3d%c%s", mod, "s", ret)
@@ -23,11 +20,18 @@ journalctl --list-boots --utc \
 		len = (len - mod) / 24
 		ret = sprintf("% 3d%c%s", mod, "h", ret)
 		ret = sprintf("% 3d%c%s", len, "d", ret)
+		return ret;
+	}
 
-		lines[a++] = sprintf ("%d\t%s\n", $1, ret);
+	$1 != "IDX" {
+		ret = ""
+		len = epoch($8 "T" $9$10) - epoch($4 "T"  $5$6)
+		#if (len  >= 3600)
+			lines[a++] = formatlen(len);
 	}
 	END {
+		n = a
 		while(a--)
-			print lines[a]
+			print sprintf ("%d\t%s\n", a - n, lines[a])
 	}' \
 	| column -R IDX -tN IDX,UPTIME -s $'\t'
