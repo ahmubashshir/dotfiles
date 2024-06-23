@@ -68,9 +68,9 @@ fetch_request()
 
 	# fetch and checkout
 	git fetch "$remote_name" "$remote_ref:$branch_name"
-	git checkout "$branch_name"
-
 	set_track_remote "$remote_name" "$branch_name" "$remote_ref"
+
+	test "$switch_branch" = false || git checkout "$branch_name"
 }
 
 case "$0" in
@@ -86,6 +86,18 @@ esac
 
 set -e
 
-test -n "$1" || die "Usage: ${0##*/} <request_number> [<remote_name>]"
+test -n "$1" || die "Usage: ${0##*/} [--switch|-s] <request_number> [<remote_name>]"
+
+switch_branch=false
+opts=$(getopt -s sh -n "${0##*/}" -l 'switch,help' -o 'sh' -- "$@")
+eval "set -- $opts"
+until test "$1" = '--'; do
+	case "$1" in
+		-s | --switch) switch_branch=true ;;
+		-h | --help) die "Usage: ${0##*/} [--switch|-s] <request_number> [<remote_name>]" ;;
+	esac
+	shift
+done
+shift
 
 fetch_request "$@"
