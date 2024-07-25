@@ -1,5 +1,5 @@
 #!/bin/dash
-if timeout 0.45 ping -c 1 1.0.0.1 2> /dev/null >&2; then
+if timeout 0.75 ping -c 1 1.0.0.1 2> /dev/null >&2; then
 	icon='network-wired-activated'
 	msg='Connected'
 elif ip route | awk '/^default/ && ! _[$3]++ {print $3}' | xargs -P 5 -n 1 timeout 0.45 ping -c1 2> /dev/null >&2; then
@@ -9,7 +9,7 @@ else
 	icon='network-wired-offline'
 	msg=Disconnected
 fi
-if ! systemctl is-active -q nginx.service; then
+if test "$1" = "nginxck" && ! systemctl is-active -q nginx.service; then
 	icon='network-wired-acquiring'
 	msg="$msg(Server Down)"
 fi
