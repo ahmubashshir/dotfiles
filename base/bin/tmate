@@ -6,9 +6,5 @@
 
 OWNER=tmate-io
 FILTER='^tmate'
-version()
-{
-	"$exec" -V
-}
-
+VERCHK=-V
 source "${0%/*}/lib/git-rel"

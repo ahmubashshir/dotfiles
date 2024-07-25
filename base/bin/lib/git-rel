@@ -3,6 +3,8 @@ NAME=${NAME:-${0##*/}}
 REPO=${REPO:-${NAME:-${0##*/}}}
 EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
+VERCHK=${VERCHK:---version}
+AUTO_UPDATE=${AUTO_UPDATE:-1}
 exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^$HOME" | head -n1)
 (
 	deps=(
@@ -11,6 +13,8 @@ exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^$HOME" | head -n1)
 		curl@pacman:curl@apt:curl
 	)
 	declare -i missing
+
+	# shellcheck disable=SC2167,SC2165
 	for dep in "${deps[@]}"; do
 		read -ra parts <<< "${dep//@/ }"
 		set -- "${parts[@]}"
@@ -58,26 +62,26 @@ EOF
 	fi
 	if ! [[ -f "$exec" && -s "$exec" ]] \
 		|| ! "$exec" --help &> /dev/null \
-		|| ((diff > 60 * 60 * 24 && last_modified != 0)); then
+		|| ((diff > 60 * 60 * 24 && last_modified > 0 && AUTO_UPDATE)); then
 		touch "$exec"
-		relinfo=$(
+		IFS= read -d $'\0' -r relinfo < <(
 			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
 				&& curl --netrc -s --disable \
 					"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
 		)
-		if [[ -n $relinfo ]]; then
+		if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 			rtver=$(jq -r '.tag_name' <<< "$relinfo")
 			rtver="${rtver#*v.}"
 			[[ ${rtver:0:1} =~ [0-9] ]] || rtver=${rtver:1}
 			if ! declare -Fp version |& grep -q '^declare -f'; then
 				version()
 				{
-					"$exec" --version
+					"$1" "${DEFAULT_ARGS[@]}" "$VERCHK"
 				}
 			fi
 			[[ ! -x $exec ]] || ltver=$(
-				version \
-					| grep -oEm1 '\s*v?[[:digit:]][[:digit:].-]+' \
+				version "$exec" \
+					| grep -oEm1 '\b(v?[0-9]+(\.[0-9.-]+)|v[0-9]+|[0-9a-f]{8,}|[0-9]{4}(\.?[0-9]{2}){2})\b' \
 					| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
 			)
 			unset -f version
@@ -141,12 +145,13 @@ EOF
 			printf "%s: can't check for update.\n" "$NAME"
 		fi
 	fi
+	# shellcheck disable=SC2153
 	if ((${#CAPS[@]} > 0)); then
 		read -r caps < <(
 			printf 'cap_%s\n' "${CAPS[@]}" \
-			| sort -d \
-			| xargs \
-			| tr -s ' ' ','
+				| sort -d \
+				| xargs \
+				| tr -s ' ' ','
 		)
 		if ! [[ $(getcap "$exec") == "$exec $caps=ep" ]]; then
 			echo ":: setcap($NAME, ${caps//,/|})" >&2

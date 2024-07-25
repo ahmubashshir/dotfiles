@@ -10,4 +10,6 @@ DEFAULT_ARGS=(
 	--multi
 	--all
 )
+AUTO_UPDATE=0
+
 source "${0%/*}/lib/git-rel"
