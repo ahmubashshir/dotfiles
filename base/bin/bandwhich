@@ -1,5 +1,10 @@
 #!/bin/bash
 OWNER=imsnif
-SETCAPS='cap_sys_ptrace,cap_dac_read_search,cap_net_raw,cap_net_admin+ep'
+CAPS=(
+	dac_read_search
+	net_raw
+	net_admin
+	sys_ptrace
+)
 
 source "${0%/*}/lib/git-rel"

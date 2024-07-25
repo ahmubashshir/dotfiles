@@ -133,15 +133,24 @@ EOF
 						cat "$file"
 					fi > "$exec"
 					chmod +x "$exec"
-					if [[ "$SETCAPS" ]]; then
-						do_as_root setcap "$SETCAPS" "$exec"
-					fi
 					rm -f "$file"
 					trap - TERM QUIT EXIT INT
 				fi
 			fi
 		else
 			printf "%s: can't check for update.\n" "$NAME"
+		fi
+	fi
+	if ((${#CAPS[@]} > 0)); then
+		read -r caps < <(
+			printf 'cap_%s\n' "${CAPS[@]}" \
+			| sort -d \
+			| xargs \
+			| tr -s ' ' ','
+		)
+		if ! [[ $(getcap "$exec") == "$exec $caps=ep" ]]; then
+			echo ":: setcap($NAME, ${caps//,/|})" >&2
+			do_as_root setcap "$caps=ep" "$exec"
 		fi
 	fi
 fi
