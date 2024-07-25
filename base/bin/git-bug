@@ -1,8 +1,5 @@
 #!/bin/bash
-function version
-{
-	"$exec" version
-}
 OWNER=MichaelMure
 EXTRACT=0
+VERCHK=version
 source "${0%/*}/lib/git-rel"
