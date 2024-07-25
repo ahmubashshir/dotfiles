@@ -43,7 +43,7 @@ if test -f /etc/arch-release; then
 			--no-confirm \
 			--pkgver
 	fi
-	( (SKIP_PACMAN)) || sudo pacman -Syu
+	test "$((SKIP_PACMAN))" -gt 0 || sudo pacman -Syu
 fi
 
 stty -echo echonl
