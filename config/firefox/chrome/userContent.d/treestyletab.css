@@ -18,8 +18,12 @@
 		margin: 3px !important;
 		margin-top: 0 !important;
 
-		& :not([data-child-ids]) tab-twisty {
+		&:not([data-child-ids]) tab-twisty {
 			visibility: collapsed !important;
+		}
+
+		& .extra-items-container.indent {
+			margin-top: -3px;
 		}
 
 		/* Adjust style for tab that is muted. */
