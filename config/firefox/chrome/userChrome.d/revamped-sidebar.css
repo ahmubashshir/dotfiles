@@ -1,0 +1,29 @@
+/* revamped sidebar */
+div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
+	& {
+		padding: var(--space-xsmall) !important;
+		min-width: unset !important;
+	}
+
+	button-group {
+		flex-flow: column-reverse;
+	}
+
+	div.bottom-actions {
+		order: -1;
+	}
+}
+
+#sidebar-main:has(+ #sidebar-box[hidden="true"]) {
+	border-right: var(--thin-tab-width) solid var(--urlbar-box-bgcolor);
+}
+
+#navigator-toolbox:has(+ #browser > #sidebar-main:not([hidden="true"])) #sidebar-button {
+	& {
+		visibility: hidden;
+	}
+
+	html:not([privatebrowsingmode]) & {
+		display: none;
+	}
+}
