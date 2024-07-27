@@ -8,6 +8,11 @@ body {
 }
 
 div {
+	&:has(main) {
+		align-items: center;
+		justify-content: center;
+	}
+
 	&.search-inner-wrapper {
 		display: none !important;
 		visibility: collapse !important;
@@ -20,7 +25,9 @@ div {
 	}
 
 	& main:has(&.search-wrapper) {
-		padding: 2.5em !important;
+		height: fit-content;
+		width: fit-content !important;
+		padding: calc(16 * var(--space-xsmall)) !important;
 	}
 
 	&.showPrivate.container {
