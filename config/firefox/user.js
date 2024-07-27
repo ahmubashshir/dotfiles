@@ -50,13 +50,15 @@ user_pref("sidebar.main.tools", "syncedtabs,history,bookmarks");
 user_pref("browser.uidensity", 1);
 user_pref("browser.display.use_system_colors", true);
 user_pref("browser.tabs.inTitlebar", 0); // disable CSD titlebar
+user_pref("browser.quitShortcut.disabled", true); // disable c-q quit
 // end UI Customizations
 
+user_pref("security.tls.enable_kyber", true); // enable X25519Kyber768 hybrid post-quantum kex
 user_pref("browser.urlbar.update1", false);
 user_pref("ui.systemUsesDarkTheme", true);
 user_pref("layout.css.color-mix.enabled", true);
 user_pref("layout.css.color-mix.color-spaces.enabled", true);
-
+// smooth scrolling
 user_pref("general.smoothScroll.msdPhysics.enabled", true);
 user_pref("general.smoothScroll.msdPhysics.continuousMotionMaxDeltaMS", 250);
 user_pref("general.smoothScroll.msdPhysics.motionBeginSpringConstant", 400);
@@ -149,6 +151,7 @@ user_pref("browser.link.open_newwindow.restriction", 0);
 user_pref("app.shield.optoutstudies.enabled", false);
 user_pref("app.normandy.user_id", "");
 user_pref("browser.contentblocking.category", "strict");
+user_pref("dom.private-attribution.submission.enabled", false);
 /* use `jq 'tostring'` to encode
 [
   {
@@ -194,3 +197,8 @@ user_pref("extensions.pocket.enabled", false);
 user_pref("network.proxy.socks_remote_dns", true);
 user_pref("network.trr.mode", 0);
 user_pref("network.dns.blockDotOnion", false);
+
+user_pref("privacy.firstparty.isolate", true);
+user_pref("browser.urlbar.speculativeConnect.enabled", false);
+user_pref("dom.battery.enabled", false);
+user_pref("network.http.referer.trimmingPolicy", 2);
