@@ -53,23 +53,29 @@ panel[position^="bottomcenter"] {
 	top: 0px;
 }
 
-.urlbarView {
-	top: auto !important;
-	bottom: 40px !important;
-}
-
 #urlbar {
-	&[breakout-extend] {
+	&[open][breakout-extend] {
 		top: auto !important;
 		bottom: 0px !important;
-	}
+		flex-direction: column-reverse;
 
-	&[open] {
-		& .urlbarView-body-inner {
-			margin-top: 42px;
-			border-top: none !important;
+		.urlbarView {
+			top: -42px !important;
+			display: flex !important;
+			flex-direction: column-reverse;
+
+			& .search-one-offs {
+				bottom: -42px !important;
+				position: relative;
+			}
+
+			& .urlbarView-body-inner {
+				margin-top: 42px;
+				border-bottom: none !important;
+			}
 		}
 
+		& .urlbar-input-container,
 		& #urlbar-input-container {
 			display: inline-flex;
 			position: absolute !important;
@@ -80,15 +86,16 @@ panel[position^="bottomcenter"] {
 			min-width: fit-content !important;
 		}
 	}
-}
 
-#urlbar-input {
-	min-width: calc(350px + 2 * var(--toolbarbutton-inner-padding)) !important;
-	width: 100vw !important;
-}
+	moz-input-box.urlbar-input-box {
+		overflow: hidden;
 
-moz-input-box.urlbar-input-box {
-	overflow: hidden;
+		#urlbar-input {
+			min-width: calc(350px + 2 * var(--toolbarbutton-inner-padding)) !important;
+			width: 100vw !important;
+		}
+	}
+
 }
 
 box.panel-viewstack:not(> #unified-extensions-view) {
