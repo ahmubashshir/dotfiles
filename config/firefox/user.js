@@ -16,6 +16,9 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
       "unified-extensions-button",
       "fxa-toolbar-menu-button"
     ],
+    "toolbar-menubar": [
+      "menubar-items"
+    ],
     "TabsToolbar": [
       "alltabs-button",
       "tabbrowser-tabs"
@@ -29,6 +32,9 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
   ],
   "dirtyAreaCache": [
     "unified-extensions-area",
+    "nav-bar",
+    "PersonalToolbar",
+    "toolbar-menubar",
     "TabsToolbar"
   ],
   "currentVersion": 99999999,
@@ -36,8 +42,11 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 }
  */
 user_pref("browser.toolbars.bookmarks.visibility", "never");
-user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
+user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
 user_pref("browser.compactmode.show", true);
+user_pref("sidebar.revamp", true);
+user_pref("browser.profiles.enabled", true);
+user_pref("sidebar.main.tools", "syncedtabs,history,bookmarks");
 user_pref("browser.uidensity", 1);
 user_pref("browser.display.use_system_colors", true);
 user_pref("browser.tabs.inTitlebar", 0); // disable CSD titlebar
