@@ -5,6 +5,8 @@
 
 @import url('userChrome.d/misc.css');
 
-@import url('userChrome.d/transparency.css');
-
 @import url('userChrome.d/bottom-toolbar.css');
+
+@import url('userChrome.d/unified-extensions.css');
+
+@import url('userChrome.d/revamped-sidebar.css');
