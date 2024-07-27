@@ -1,71 +1,75 @@
 {
+  "__ConfigsMigration__userValeusSameToDefaultAreCleared": true,
   "animationForce": true,
   "autoAttachOnNewTabCommand": 0,
   "autoAttachOnOpenedFromExternal": 0,
   "avoidDiscardedTabToBeActivatedIfPossible": true,
   "cachedExternalAddons": [
     "tst-bookmarks-subpanel@piro.sakura.ne.jp",
-    "{731bf636-c808-4c86-b02f-af462eccc963}"
+    "{731bf636-c808-4c86-b02f-af462eccc963}",
+    "tst-indent-line@piro.sakura.ne.jp",
+    "@tst-search",
+    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp"
   ],
   "chunkedSyncData0": "W10=",
-  "chunkedSyncDataLocal0": "W10=",
-  "chunkedUserStyleRules0": "OnJvb3QgewogIC0tdGFiLW1hcmdpbjogM3B4OwogIC0tdGFiLW1hcmdpbi1ib3R0b206IHZhcigtLXRhYi1tYXJnaW4pOwp9Ci5jb250ZXh0dWFsLWlkZW50aXR5LW1hcmtlciB7CiAgdG9wOiBhdXRvICFpbXBvcnRhbnQ7CiAgbGVmdDogMC41ZW0gIWltcG9ydGFudDsKICByaWdodDogMC41ZW0gIWltcG9ydGFudDsKICBib3R0b206IDAgIWltcG9ydGFudDsKICB3aWR0aDogYXV0byAhaW1wb3J0YW50OwogIG1hcmdpbjogMCAhaW1wb3J0YW50OwogIG1heC13aWR0aDogbm9uZSAhaW1wb3J0YW50OwogIGhlaWdodDogY2FsYyh2YXIoLS1mYXZpY29uLXNpemUpIC8gMTApICFpbXBvcnRhbnQ7Cn0KCi8qIGNoYW5nZSB0aGUgYmFzZSBib3ggdG8gbGF5b3V0IHBvc2l0aW9uOmFic29sdXRlIGJveCwgZnJvbSB0aGUgcm9vdCBjb250YWluZXIgYm94IHRvIHRoZSB0YWIgaXRlbSAqLwo6cm9vdC5ncm91cC10YWIgbGkgewogIHBvc2l0aW9uOiByZWxhdGl2ZTsKfQoKLyogYXV0b2hpZGUgY3NzICAqLwojdGFiYmFyIHsKICBzY3JvbGxiYXItd2lkdGg6IG5vbmU7Cn0KCmRpdiNzdWJwYW5lbC1oZWFkZXIgewogIGhlaWdodDogMjRweCAhaW1wb3J0YW50Owp9CgovKiBIaWRlIGNsb3NlIGJ1dHRvbnMgb24gdGFicy4gKi8KdGFiLWl0ZW0gLmNsb3NlYm94IHsKICB2aXNpYmlsaXR5OiBjb2xsYXBzZTsKfQoKdGFiLWl0ZW06aG92ZXIgLmNsb3NlYm94IHsKICB2aXNpYmlsaXR5OiBpbml0aWFsOwp9CgovKiBIaWRlIHNvdW5kIHBsYXlpbmcvbXV0ZWQgYnV0dG9uLiAqLwouc291bmQtYnV0dG9uOjpiZWZvcmUgewogIGRpc3BsYXk6IG5vbmUgIWltcG9ydGFudDsKfQp0YWItaXRlbSB7CiAgbWFyZ2luOiB2YXIoLS10YWItbWFyZ2luKTsKfQoKLyogQWRqdXN0IHN0eWxlIGZvciB0YWIgdGhhdCBpcyBtdXRlZC4gKi8KdGFiLWl0ZW0ubXV0ZWQgewogIG9wYWNpdHk6IDAuNTsKfQoKLyogcGVyc29uYWwgY3VzdG9taXphdGlvbnMgKi8KdGFiLWl0ZW06aG92ZXIgdGFiLWNsb3NlYm94IHsKICBib3JkZXItcmFkaXVzOiAxZW07CiAgaGVpZ2h0OiAxLjc1ZW07CiAgd2VpZ2h0OiAyLjI1ZW07CiAgZGlzcGxheTogZmxleDsKICBhbGlnbi1pdGVtczogY2VudGVyOwogIGp1c3RpZnktY29udGVudDogY2VudGVyOwogIG1hcmdpbi1sZWZ0OiAwLjI1ZW07CiAgYmFja2dyb3VuZDogcmdiKDI0NCwgOTYsIDEwMyk7Cn0KCmRpdi5hZnRlci10YWJzIHsKICBkaXNwbGF5OiBub25lOwp9Cgp0YWItaXRlbS5kaXNjYXJkZWQgewogIG9wYWNpdHk6IDAuNzU7Cn0KCnRhYi1pdGVtLmRpc2NhcmRlZCB0YWItZmF2aWNvbiB7CiAgb3BhY2l0eTogMC41ICFpbXBvcnRhbnQ7Cn0KCnRhYi1pdGVtLmFjdGl2ZSB0YWItaXRlbS1zdWJzdGFuY2UgewogIGJhY2tncm91bmQ6IHZhcigtLXRoZW1lLWNvbG9ycy10b29sYmFyKTsKfQoKdGFiLWl0ZW0uYWN0aXZlIC5sYWJlbC1jb250ZW50IHsKICBmb250LXdlaWdodDogYm9sZDsKICBmb250LXNpemU6IDE0cHg7Cn0KCnRhYi1pdGVtLmFjdGl2ZSB0YWItdHdpc3R5LAp0YWItaXRlbS5hY3RpdmUgLmxhYmVsLWNvbnRlbnQsCnRhYi1pdGVtLmFjdGl2ZSB0YWItY291bnRlciB7CiAgY29sb3I6IHZhcigtLXRoZW1lLWNvbG9ycy10YWJfdGV4dCk7Cn0KCnRhYi1pdGVtLnVucmVhZCAubGFiZWwtY29udGVudCB7CiAgZm9udC1zdHlsZTogaXRhbGljOwp9Cgp0YWItaXRlbS1zdWJzdGFuY2UgewogIGJveC1zaGFkb3c6IG5vbmUgIWltcG9ydGFudDsKICBib3JkZXItcmFkaXVzOiA1cHggMHB4IDBweCA1cHg7CiAgYm9yZGVyLWxlZnQ6IDFweCBzb2xpZDsKfQoKdGFiLWl0ZW0tc3Vic3RhbmNlOmhvdmVyIHsKICBiYWNrZ3JvdW5kOiB2YXIoLS10aGVtZS1jb2xvcnMtcG9wdXBfaGlnaGxpZ2h0KSAhaW1wb3J0YW50OwogIGJhY2tncm91bmQtb3BhY2l0eTogMC4zOwp9Cgp0YWItaXRlbTpob3ZlciB0YWItbGFiZWwgewogIGNvbG9yOiB2YXIoLS10aGVtZS1jb2xvcnMtcG9wdXBfaGlnaGxpZ2h0X3RleHQpICFpbXBvcnRhbnQ7CiAgZm9udC13ZWlnaHQ6IGJvbGQ7Cn0KCnRhYi1pdGVtLXN1YnN0YW5jZTpob3ZlciB7CiAgZmlsdGVyOiBvcGFjaXR5KDgwJSkgZHJvcC1zaGFkb3coMHB4IDBweCAwcHggIzM0OThEQik7Cn0=",
-  "configsVersion": 24,
-  "enableLinuxBehaviors": true,
+  "colorScheme": "photon",
+  "configsVersion": 31,
+  "defaultBookmarkParentId": "unfiled_____",
+  "delayForDuplicatedTabDetection": 20,
+  "faviconizePinnedTabs": false,
   "iconColor": "dark",
+  "incognitoAllowedExternalAddons": [
+    "tst-bookmarks-subpanel@piro.sakura.ne.jp",
+    "{731bf636-c808-4c86-b02f-af462eccc963}",
+    "tst-indent-line@piro.sakura.ne.jp",
+    "@tst-search",
+    "save-selected-tabs-to-files@piro.sakura.ne.jp",
+    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp"
+  ],
   "inheritContextualIdentityToChildTabMode": 1,
-  "lastConfirmedToCloseTabs": 1626075743614,
+  "labelOverflowStyle": "crop",
   "lastSelectedSubPanelProviderId": "tst-bookmarks-subpanel@piro.sakura.ne.jp",
-  "migratedBookmarkUrls": [
-    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/sidebar/sidebar.html",
-    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/resources/group-tab.html",
-    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/options/options.html",
-    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/resources/startup.html",
-    "moz-extension://55972af1-b124-4994-891c-8ef939e4f206/tests/runner.html"
-  ],
   "notifiedFeaturesVersion": 9,
-  "optionsExpandedGroups": [
-    "group-allConfigs"
-  ],
   "optionsExpandedSections": [
-    "section-appearance",
     "section-debug",
-    "section-newTab",
-    "section-addons",
-    "section-contextMenu",
-    "section-advanced",
-    "section-drag",
-    "section-treeBehavior"
+    "section-addons"
   ],
+  "shiftTabsForScrollbarOnlyOnHover": true,
   "showAutoGroupOptionHint": false,
+  "sidebarPosition": 1,
+  "sidebarPositionRighsideNotificationShown": true,
+  "sidebarWidthInWindow": {
+    "1": 40,
+    "9": 40,
+    "86": 40,
+    "114": 40,
+    "124": 40,
+    "138": 40,
+    "242": 40,
+    "317": 40,
+    "959": 40,
+    "1257": 40,
+    "1535": 40
+  },
   "skipCollapsedTabsForTabSwitchingShortcuts": true,
   "style": "photon",
-  "syncAvailableNotified": true,
-  "syncDeviceInfo": {
-    "id": "device-1612347651800-29416",
-    "name": "Firefox on Linux",
-    "icon": "device-desktop",
-    "timestamp": 1626155036428
-  },
+  "suppressGapFromShownOrHiddenToolbarOnFullScreen": true,
   "syncDevices": {
-    "device-1612347651800-29416": {
-      "id": "device-1612347651800-29416",
-      "name": "Firefox on Linux",
+    "device-1656314328732-21353": {
+      "id": "device-1656314328732-21353",
+      "name": "mubashshir-pc; linux",
+      "icon": "home",
+      "timestamp": 1721980970536
+    },
+    "device-1676482574115-54155": {
+      "id": "device-1676482574115-54155",
+      "name": "arch-baksho; linux",
       "icon": "device-desktop",
-      "timestamp": 1626155036428
+      "timestamp": 1721939592095
     }
   },
-  "syncDevicesLocalCache": {
-    "device-1612347651800-29416": {
-      "id": "device-1612347651800-29416",
-      "name": "Firefox on Linux",
-      "icon": "device-desktop",
-      "timestamp": 1626155036428
-    }
-  },
-  "syncLastMessageTimestamp": 1619874916403,
-  "syncOtherDevicesDetected": true,
   "userStyleRules": "",
-  "userStyleRulesFieldHeight": "386px",
-  "userStyleRulesFieldTheme": "dracula"
+  "userStyleRulesFieldHeight": "474px",
+  "userStyleRulesFieldTheme": "dracula",
+  "warnOnCloseTabsByClosebox": false
 }
