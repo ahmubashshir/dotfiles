@@ -66,7 +66,7 @@ format_file()
 			astyle "${args[@]}" "$2"
 			rm -f "$2.orig"
 			;;
-		js) js-beautify --quiet -ijtCkx -r "$2" 2>&1 > /dev/null ;;
+		js) js-beautify --quiet -jtCkx -r "$2" 2>&1 > /dev/null ;;
 		css) css-beautify -rnt --space-around-combinator "$2" > /dev/null ;;
 		xml) xmllint --xmlout -o "$2" --format "$2" 2>&1 > /dev/null ;;
 		lua) lua-format -i "$2" 2>&1 > /dev/null ;;
