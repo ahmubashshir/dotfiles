@@ -1,47 +1,64 @@
 #!/usr/bin/make -sirf
 XDG_CACHE_HOME ?= $(HOME)/.cache
-ARGS           ?=
 include $(firstword $(MAKECMDGOALS))
 
+CALLER := $(firstword $(MAKECMDGOALS))
 BINDIR := $(XDG_CACHE_HOME)/bin
 SRCDIR := $(HOME)/bin/srcs
 SHELL  := /bin/bash
-NAME   := $(basename $(notdir $(firstword $(MAKECMDGOALS))))
-ARGS   += $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+NAME   := $(basename $(notdir $(CALLER)))
+CLEAN  := $(filter --delete-cache,$(MAKECMDGOALS))
 
 ifneq ($(filter guile,$(.FEATURES)),)
 define execl
-(use-modules (ice-9 string-fun))
+(use-modules
+    (rnrs io ports)
+    (rnrs bytevectors))
+(define
+    (get-args)
+    (call-with-input-file
+        "/proc/self/cmdline"
+        (lambda (port)
+            (let   ((results '())
+                    (found-delim #f))
+                (for-each
+                    (lambda (i)
+                        (if found-delim
+                            (if (not (string=? i "--delete-cache"))
+                                (set! results (cons i results)))
+                            (if (string=? i "--")
+                                (set! found-delim #t))))
+                    (string-split (utf8->string (get-bytevector-all port)) #\nul))
+                (if (null? results) results (reverse (cdr results)))))))
 (apply
 	execl
-	(map-in-order
-		(lambda
-			(str)
-			(string-replace-substring str "%20" " ")
-		)
-		(string-split
-			"${BINDIR}/${NAME} ${NAME} ${ARGS}" #\ )
-	)
+	(cons "${BINDIR}/${NAME}" (cons "${NAME}" (cdr (get-args))))
 )
 endef
-all: $(BINDIR)/$(NAME)
+$(CALLER): $(CLEAN) $(BINDIR)/$(NAME)
 	$(guile $(execl))
 else
-all: $(BINDIR)/$(NAME)
-	exec -a $(NAME) $(BINDIR)/$(NAME) $(ARGS)
+define cmd
+$(shell xargs -0a \
+	$(shell awk '{print $$4}' /proc/self/stat \
+		| xargs -rn1 printf '/proc/%d/stat' \
+		| xargs -rn1 awk '{print $$4}' \
+		| xargs -rn1 printf '/proc/%d/cmdline' \
+	) -- printf '%q\n' | grep -vxF -- --delete-cache)
+endef
+$(CALLER): $(CLEAN) $(BINDIR)/$(NAME)
+	set -- $(cmd); exec -a "$(NAME)" "$(BINDIR)/$(NAME)" "$${@:6}"
 endif
 
 $(BINDIR)/%: $(SRCDIR)/%.c
 	$(CC) $(^) -o $(@) $(FLAGS)
 
 $(BINDIR)/%: $(SRCDIR)/%.cpp
+	@echo "Building..." >&2
 	$(CXX) $(^) -o $(@) $(FLAGS)
 
 --delete-cache:
-	rm -f $(BINDIR)/$(NAME)
+	@echo "Cleaning..." >&2
+	@rm -f $(BINDIR)/$(NAME)
 
-.PHONY: $(ARGS)
-
-ifeq ($(filter --delete-cache,$(ARGS)),)
-$(firstword $(ARGS)): all
-endif
+.PHONY: $(MAKECMDGOALS) --delete-cache
