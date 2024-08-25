@@ -25,7 +25,7 @@
   <style name="cursor" foreground="base1"/>
   <style name="secondary-cursor" foreground="base00"/>
   <style name="current-line" background="base00"/>
-  <style name="line-numbers" foreground="#cccccc" background="base02"/>
+  <style name="line-numbers" foreground="#cccccc" background="base00"/>
   <style name="background-pattern" background="base03-02-blend"/>
   <!-- Bracket Matching -->
   <style name="bracket-match" foreground="green" background="base02" bold="true"/>
