@@ -1,2 +1,2 @@
 #!/usr/bin/env -S${HOME}/bin/lib/mksrc --
-FLAGS = -std=c++0x -O3 -lrt
+FLAGS = -std=c++20 -O3 -lrt
