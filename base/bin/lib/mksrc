@@ -8,6 +8,7 @@ SRCDIR := $(HOME)/bin/srcs
 SHELL  := /bin/bash
 NAME   := $(basename $(notdir $(CALLER)))
 CLEAN  := $(filter --delete-cache,$(MAKECMDGOALS))
+MAKECMDGOALS := $(CALLER)
 
 ifneq ($(filter guile,$(.FEATURES)),)
 define execl
@@ -61,4 +62,4 @@ $(BINDIR)/%: $(SRCDIR)/%.cpp
 	@echo "Cleaning..." >&2
 	@rm -f $(BINDIR)/$(NAME)
 
-.PHONY: $(MAKECMDGOALS) --delete-cache
+.PHONY: $(CALLER) --delete-cache
