@@ -26,10 +26,17 @@
 // g++ -std=c++0x -O3 -lrt xfce-hkmon.cpp -o xfce-hkmon (gcc >= 4.6 or clang++)
 // Recommended 1 second period and "Bitstream Vera Sans Mono" font on the applet
 
+#ifdef DEBUG
+#define LINEBREAK "\n"
+#else
+#define LINEBREAK ""
+#endif
+
 #include <cstdlib>
 #include <memory>
 #include <iostream>
 #include <iomanip>
+#include <type_traits>
 #include <cstring>
 #include <cerrno>
 #include <cstdint>
@@ -56,26 +63,36 @@ auto constexpr GB_f = 1000000000.0;
 auto constexpr TB_i = 1000000000000LL;
 auto constexpr TB_f = 1000000000000.0; // only C++14 has a readable alternative
 
+template <typename T>
+requires std::is_arithmetic_v<T>
+constexpr inline size_t numdigits(T n) noexcept
+{
+	return ((n == 0)?1:std::ceil(std::log10((n < 0)?-n:n))) + int(n < 0);
+}
+
+template <typename T, typename P = size_t>
+constexpr inline std::_Setw setwdrel(T n, P pad = 1)
+{
+	return { int(numdigits(n) + ((pad>0)?pad:1)) };
+}
+
 // Icons
 enum ICON: unsigned int {
 	// state
 	ACTIVE   = 1 << 0,
-	SELECTED = 1 << 1,
-	UNUSED1  = 1 << 2,
-	UNUSED2  = 1 << 3,
 	// name
-	UP       = 1 << 4,
-	DOWN     = 1 << 5,
-	CHECKMARK= 1 << 6,
-	GEAR     = 1 << 7,
-	DISK     = 1 << 8,
+	UP       = 1 << 1,
+	DOWN     = 1 << 2,
+	CHECKMARK= 1 << 3,
+	NET	     = 1 << 4,
+	MEM      = 1 << 5,
+	ICPU     = 1 << 6,
+	DISK     = 1 << 7,
+	AVG      = 1 << 8,
+	THERM    = 1 << 9,
 	// stateful icons
 	_UP_ACT  = UP   | ACTIVE,
 	_DN_ACT  = DOWN | ACTIVE,
-	_UP_S    = UP   | SELECTED,
-	_DN_S    = DOWN | SELECTED,
-	_UP_ACTS = UP   | ACTIVE | SELECTED,
-	_DN_ACTS = DOWN | ACTIVE | SELECTED,
 };
 
 constexpr ICON operator| (ICON x, ICON y)
@@ -92,42 +109,46 @@ inline ICON& operator|= (ICON& x, ICON y)
 
 std::ostream& operator<<(std::ostream& os, ICON icon)
 {
+	os << std::left;
 	switch (icon) {
 	case ICON::UP:
-	case ICON::UP | ICON::SELECTED:
-		os << "\u25B3";
+		os << "\uF062";
 		break;
 	case ICON::UP | ICON::ACTIVE:
-		os << "\u25B4";
-		break;
-	case ICON::UP | ICON::ACTIVE | ICON::SELECTED:
-		os << "\u25B2";
+		os << "\uF102";
 		break;
 
 	case ICON::DOWN:
-	case ICON::DOWN | ICON::SELECTED:
-		os << "\u25BD";
+		os << "\uF063";
 		break;
 	case ICON::DOWN | ICON::ACTIVE:
-		os << "\u25BE";
-		break;
-	case ICON::DOWN | ICON::ACTIVE | ICON::SELECTED:
-		os << "\u25BC";
+		os << "\uF103";
 		break;
 
 	case ICON::CHECKMARK:
-		os << "\u2713";
+		os << "\uf42e";
 		break;
-	case ICON::GEAR:
-		os << "\u2699";
+	case ICON::MEM:
+	case ICON::ICPU:
+		os << "\uF4BC";
 		break;
 	case ICON::DISK:
-		os << "\u26C1";
+		os << "\uF0A0";
+		break;
+	case ICON::AVG:
+		os << "\uEDF3";
+		break;
+	case ICON::NET:
+		os << "\U000F0200";
+		break;
+	case ICON::THERM:
+		os << "\U0000F2CA";
 		break;
 	default:
-		os << " ";
+		os << "\U000F073A";
 		break;
 	}
+	os << " " << std::right;
 	return os;
 }
 
@@ -557,7 +578,7 @@ struct DataSize {
 
 std::ostream& operator<<(std::ostream& out, const DataSize& data)
 {
-	if (data.bytes <     5000) return out << "0 MB";
+	if (data.bytes <     5000) return out << 0 << " MB";
 	if (data.bytes <  10*MB_i) return out << std::fixed << std::setprecision(2) << data.bytes / MB_f << " MB";
 	if (data.bytes < 100*MB_i) return out << std::fixed << std::setprecision(1) << data.bytes / MB_f << " MB";
 	if (data.bytes <     GB_i) return out << data.bytes / MB_i << " MB";
@@ -569,20 +590,6 @@ std::ostream& operator<<(std::ostream& out, const DataSize& data)
 	return out << std::fixed << std::setprecision(decimals) << data.bytes / TB_f << " TB";
 }
 
-template <typename T> struct Padded {
-	uint64_t max;
-	T value;
-};
-
-template <typename T> std::ostream& operator<<(std::ostream& out, const Padded<T>& data)
-{
-	if (!std::isnan(data.value)) for (T div = data.max;; div /= 10) { // avoid infinite loop with NaN numbers
-			if ((data.value >= div) && (data.value >= 1)) break;
-			if ((data.value < 1) && (div <= 1)) break;
-			out << "  "; // two spaces in place of each missing digit (same width in XFCE Generic Monitor applet)
-		}
-	return out << data.value;
-}
 
 int main(int argc, char** argv)
 {
@@ -716,16 +723,16 @@ int main(int argc, char** argv)
 				icon |= ICON(bool(delta));
 				int64_t speed = (netSpeedUnit == Network::Bandwidth::Unit::byte? 1 : 8) * delta / secsElapsed;
 				reportDetail << "    " << icon
-				             << "  " << DataSize { newBytes };
-				reportDetail << " - " << Network::Bandwidth { netSpeedUnit, speed };
+				             << std::fixed << std::setw(5) << DataSize { newBytes };
+				reportDetail << " - " << std::setw(4) << Network::Bandwidth { netSpeedUnit, speed };
 				reportDetail << " \n";
 				if (isSelectedInterface)
-					reportStd << "   " << (icon | ICON(isSelectedInterface << 1)) << std::setw(8)
+					reportStd << "   " << icon << std::setw(7)
 					          << Network::Bandwidth { netSpeedUnit, speed }
 					          << (singleLine? " " : " \n");
 			};
 
-			reportDetail << " " << itn->first << ": ";
+			reportDetail << ICON::NET << itn->first << ": ";
 			if (isSelectedInterface) reportDetail << ICON::CHECKMARK; // "check mark" character
 			reportDetail << "\n";
 			dumpNet(ICON::UP, nif.bytesSent, oif.bytesSent); // white/black up pointing triangles
@@ -766,18 +773,20 @@ int main(int argc, char** argv)
 				double usagePercent = 100.0 * diff.cpuUsed() / cpuTotal;
 
 				auto dumpPercent = [&](const char* title, int64_t user_hz, int64_t user_hz__sinceBoot) {
-					reportDetail << "   " << Padded<double> { 100, 100.0 * user_hz / cpuTotal } << "% " << title
-					             << "  (" << 100.0 * user_hz__sinceBoot / cpuTotalSinceBoot << "%) \n";
+					reportDetail<< std::setw(11) << (100.0 * user_hz / cpuTotal) << "% "
+					            << std::left << std::setw(8) << title << std::right
+					            << "(" << std::setw(6) << 100.0 * user_hz__sinceBoot / cpuTotalSinceBoot << "%) \n";
 				};
 
 				//reportStd << std::setw(6) << std::fixed << std::setprecision(1) << usagePercent << "%";
 
-				reportDetail << " CPU " << ICON::GEAR << " " << std::fixed << std::setprecision(2) << usagePercent << "% \u2248 ";
+				reportDetail << ICON::ICPU << "CPU" << std::setw(6)
+				             << std::fixed << std::setprecision(2) << usagePercent << "% \u2248 ";
 
 				if (cum_weighted_ghz < 1)
-					reportDetail << uint64_t(cum_weighted_ghz * 1000) << " MHz:\n" << std::setprecision(2);
+					reportDetail << std::setw(4) << uint64_t(cum_weighted_ghz * 1000) << " MHz:\n" << std::setprecision(2);
 				else
-					reportDetail << std::setprecision(1) << cum_weighted_ghz << " GHz:\n" << std::setprecision(2);
+					reportDetail << std::setw(4) << std::setprecision(1) << cum_weighted_ghz << " GHz:\n" << std::setprecision(2);
 
 				dumpPercent("user",   diff.user,   ncpu.user);
 				dumpPercent("nice",   diff.nice,   ncpu.nice);
@@ -792,10 +801,10 @@ int main(int argc, char** argv)
 
 				int maxCpu = 8;
 				for (auto itc = rankByGhzUsage.crbegin(); maxCpu-- && (itc != rankByGhzUsage.crend()); ++itc) {
-					reportDetail << "   " << std::fixed
-					             << std::setprecision(2) << Padded<double> { 100, itc->second.percent } << "% cpu "
-					             << Padded<CPU::Number> { uint64_t(new_CPU->cores.size() > 10? 10 : 1), itc->second.number }
-					             << "  @" << std::setprecision(3) << Padded<double> { 10, itc->second.ghz } << " GHz \n";
+					reportDetail << std::fixed << std::setw(11) << std::setprecision(2) << itc->second.percent << "%"
+					             << " cpu " << ::setwdrel(unsigned(new_CPU->cores.size()))
+					             << std::left << itc->second.number << std::right
+					             << "@" << std::setprecision(3) << ::setwdrel(itc->second.ghz, 5) << itc->second.ghz << " GHz \n";
 				}
 			}
 		}
@@ -805,16 +814,19 @@ int main(int argc, char** argv)
 		if (new_CPU && (!posTemp || (posRam < posTemp)))
 			//reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
 
-			reportDetail << " Memory " << new_Memory->ram.total/1024 << " MiB:\n"
-			             << Padded<uint64_t> { 1000000, new_Memory->ram.available/1024 } << " MiB available \n"
-			             << Padded<uint64_t> { 1000000, (new_Memory->ram.cached+new_Memory->ram.buffers)/1024 }
-			             << " MiB cache/buff \n";
+			reportDetail << ICON::MEM << "Memory " << new_Memory->ram.total/1024 << " MiB:\n"
+			             << ::setwdrel(new_Memory->ram.total/1024, 3)
+			             << new_Memory->ram.available/1024 << " MiB available \n"
+			             << ::setwdrel(new_Memory->ram.total/1024, 3)
+			             << (new_Memory->ram.cached+new_Memory->ram.buffers)/1024 << " MiB cache/buff \n";
 
 		if (new_Memory->ram.shared)
-			reportDetail << Padded<uint64_t> { 1000000, new_Memory->ram.shared/1024 } << " MiB shared \n";
+			reportDetail << ::setwdrel(new_Memory->ram.total/1024, 3)
+			             << new_Memory->ram.shared/1024 << " MiB shared \n";
 
 		if (new_Memory->ram.swapTotal)
-			reportDetail << Padded<uint64_t> { 1000000, (new_Memory->ram.swapTotal-new_Memory->ram.swapFree)/1024 }
+			reportDetail << ::setwdrel(new_Memory->ram.total/1024, 3)
+			             << (new_Memory->ram.swapTotal-new_Memory->ram.swapFree)/1024
 			             << " MiB swap of " << new_Memory->ram.swapTotal/1024 << " \n";
 	}
 
@@ -823,14 +835,16 @@ int main(int argc, char** argv)
 			const IO::Device& device = nitd->second;
 			auto prevdev = old_IO->devices.find(nitd->first);
 			if ((device.bytesRead || device.bytesWritten) && (prevdev != old_IO->devices.end())) {
-				reportDetail << " " << nitd->first << ICON::DISK << DataSize { device.bytesSize } << ":\n";
+				reportDetail << ICON::DISK << std::left << std::setw(10)
+				             << nitd->first << std::right
+				             << DataSize { device.bytesSize } << ":\n";
 
 				auto dumpIO = [&](ICON icon, uint64_t newBytes, uint64_t oldBytes) {
 					auto transferred = newBytes - oldBytes;
 					icon |= ICON(bool(transferred));
 					reportDetail << "    " << icon
-					             << "  " << DataSize { newBytes };
-					if (transferred) reportDetail << " - " << IO::Bandwidth { transferred / secsElapsed };
+					             << std::fixed << std::setw(5) << DataSize { newBytes };
+					if (transferred) reportDetail << " - " << std::setw(4) << IO::Bandwidth { transferred / secsElapsed };
 					reportDetail << " \n";
 				};
 
@@ -879,11 +893,11 @@ int main(int argc, char** argv)
 
 		for (auto its = statByCategory.crbegin(); its != statByCategory.crend(); ++its) {
 			if (its->second.count == 1)
-				reportDetail << "    " << its->second.firstName << ": " << its->second.max / 1000 << "ºC \n";
+				reportDetail << ICON::THERM << its->second.firstName << ": " << std::setw(3) << its->second.max / 1000 << "ºC \n";
 			else
-				reportDetail << "    \u2206" << its->second.max / 1000
-				             << "ºC  \u2207" << its->second.min / 1000
-				             << "ºC  \u222B" << its->second.avg / 1000
+				reportDetail << "    " << ICON::UP   << std::setw(3) << its->second.max / 1000
+				             << "ºC  " << ICON::DOWN << std::setw(3) << its->second.min / 1000
+				             << "ºC  " << ICON::AVG  << std::setw(3) << its->second.avg / 1000
 				             << "ºC  (" << its->second.count << " " << its->first << ") \n";
 		}
 	}
@@ -896,6 +910,9 @@ int main(int argc, char** argv)
 	std::string sReportDetail = reportDetail.str();
 	if (!sReportDetail.empty() && (sReportDetail.back() == '\n')) sReportDetail.erase(sReportDetail.end()-1);
 
-	std::cout << "<txt>" << sReportStd << "</txt><tool>" << sReportDetail << "</tool>";
+	std::cout << "<txt>" LINEBREAK << sReportStd << LINEBREAK "</txt>";
+	std::cout << "<tool><span size=\"95%\" face=\"monospace\" weight=\"bold\">"
+	          LINEBREAK << sReportDetail
+	          << LINEBREAK "</span></tool>" LINEBREAK;
 	return 0;
 }
