@@ -1,0 +1,53 @@
+@keyframes xfpane-docklike-icon-grow {
+	000% {
+		-gtk-icon-transform: scale(1.02);
+	}
+
+	010% {
+		-gtk-icon-transform: scale(1.04);
+	}
+
+	020% {
+		-gtk-icon-transform: scale(1.06);
+	}
+
+	030% {
+		-gtk-icon-transform: scale(1.08);
+	}
+
+	040% {
+		-gtk-icon-transform: scale(1.10);
+	}
+
+	050% {
+		-gtk-icon-transform: scale(1.12);
+	}
+
+	060% {
+		-gtk-icon-transform: scale(1.14);
+	}
+
+	070% {
+		-gtk-icon-transform: scale(1.16);
+	}
+
+	080% {
+		-gtk-icon-transform: scale(1.18);
+	}
+
+	090% {
+		-gtk-icon-transform: scale(1.20);
+	}
+
+	100% {
+		-gtk-icon-transform: scale(1.22);
+	}
+}
+
+#XfcePanelWindowWrapper #docklike-plugin > button:hover image {
+	animation-name: xfpane-docklike-icon-grow;
+	animation-duration: 0.5s;
+	animation-timing-function: step-end;
+	animation-delay: 0.1s;
+	-gtk-icon-transform: scale(1.22);
+}
