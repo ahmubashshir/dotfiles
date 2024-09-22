@@ -6,10 +6,11 @@ fi
 if [ "$2" = "init" ]; then
 	out=LICENSE
 fi
-if [[ -f "/usr/share/licenses/common/$1/license.txt" ]]; then
-	cat "/usr/share/licenses/common/$1/license.txt" > ${out:-/dev/stdout}
-elif [[ -f "/usr/share/licenses/common/CCPL/$1" ]]; then
-	cat "/usr/share/licenses/common/CCPL/$1" > ${out:-/dev/stdout}
-else
-	echo "$1 is not a valid common license." >&2
-fi
+
+for file in "common/$1/license.txt" "common/CCPL/$1" "spdx/$1.txt" "spdx/exceptions/$1.txt"; do
+	[[ -f "/usr/share/licenses/$file" ]] || continue
+	exec cat "/usr/share/licenses/$file" > ${out:-/dev/stdout}
+done
+
+echo "$1 is not a valid common license." >&2
+exit 1
