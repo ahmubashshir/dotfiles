@@ -1,29 +1,76 @@
 /* revamped sidebar */
-div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
-	& {
-		padding: var(--space-xsmall) !important;
-		min-width: unset !important;
+@media (-moz-bool-pref: "sidebar.revamp") {
+	div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
+		& {
+			padding: var(--space-xsmall) !important;
+			min-width: unset !important;
+		}
+
+		button-group {
+			flex-flow: column-reverse;
+			order: 1;
+		}
+
+		div.bottom-actions {
+			order: 0;
+		}
+
 	}
 
-	button-group {
-		flex-flow: column-reverse;
+	#tabbrowser-tabs[orient="vertical"] {
+		& {}
+
+		#vertical-pinned-tabs-container:has(+ #newtab-button-container[showborder]) {
+			border-bottom: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+			padding-inline-end: unset !important;
+			padding-bottom: var(--space-xxsmall);
+		}
+
+		&:has(> #tabbrowser-arrowscrollbox[overflowing]) {
+			border-bottom: unset !important;
+		}
+
+		#newtab-button-container {
+			& {
+				order: 2;
+				border-top: unset !important;
+				border: var(--button-border);
+				padding: var(--button-padding-icon) !important;
+				border-radius: var(--border-radius-medium);
+				margin: 0 !important;
+				width: var(--button-size-icon);
+				height: var(--button-size-icon);
+			}
+		}
 	}
 
-	div.bottom-actions {
-		order: -1;
+	#sidebar-main:has(+ #sidebar-box[hidden="true"]) {
+		border-right: var(--thin-tab-width) solid var(--urlbar-box-bgcolor);
+	}
+
+	#navigator-toolbox:has(+ #browser > #sidebar-main:not([hidden="true"])) #sidebar-button {
+		& {
+			visibility: hidden;
+		}
+
+		html:not([privatebrowsingmode]) & {
+			display: none;
+		}
+	}
+
+	@-moz-document url(chrome://browser/content/sidebar/sidebar-history.html),
+	url(chrome://browser/content/sidebar/sidebar-customize.html),
+	url(chrome://browser/content/sidebar/sidebar-syncedtabs.html){
+	html {
+		& {
+			display: flex;
+			flex-direction: column;
+		}
+
+		body {
+			flex: 1;
+			height: min-content !important;
+		}
 	}
 }
-
-#sidebar-main:has(+ #sidebar-box[hidden="true"]) {
-	border-right: var(--thin-tab-width) solid var(--urlbar-box-bgcolor);
-}
-
-#navigator-toolbox:has(+ #browser > #sidebar-main:not([hidden="true"])) #sidebar-button {
-	& {
-		visibility: hidden;
-	}
-
-	html:not([privatebrowsingmode]) & {
-		display: none;
-	}
 }
