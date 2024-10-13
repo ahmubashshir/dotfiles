@@ -108,12 +108,30 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 	height: 0 !important;
 }
 
-#toolbar-menubar:not([inactive="true"]) {
-	margin-top: calc(0px - var(--menubar-margin-top)) !important;
-	animation: appear 0.4s;
-	max-width: min-content;
-	padding-bottom: 0 !important;
-	background-color: var(--menubar-background-color) !important;
+#toolbar-menubar {
+	min-height: min-content !important;
+	background-color: var(--background-color-canvas) !important;
+	z-index: 999999999999999;
+
+	&[autohide="false"] {
+		max-width: min-content;
+		margin-top: calc(-1 * var(--tab-min-height));
+		margin-left: var(--sidebar-collapsed-width);
+	}
+
+	&[autohide="true"] {
+		transition-property: opacity;
+		transition-duration: 0.4s;
+		transition-timing-function: ease;
+		opacity: 0;
+
+		&:not([inactive="true"]) {
+			margin: 0;
+			opacity: 1;
+			position: absolute;
+			width: 100vw;
+		}
+	}
 }
 
 #toolbar-menubar:not([inactive="true"]),
@@ -125,16 +143,4 @@ toolbarspring,
 /* FIX YOUTUBE FULLSCREEN VIDEO */
 ytd-app[masthead-hidden] #masthead-container.ytd-app {
 	display: none;
-}
-
-@keyframes appear {
-	from {
-		margin-top: 0px;
-		opacity: 0
-	}
-
-	to {
-		margin-top: var(--menubar-margin-top);
-		opacity: 1
-	}
 }
