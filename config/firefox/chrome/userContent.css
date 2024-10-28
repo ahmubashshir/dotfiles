@@ -8,3 +8,9 @@
 	scrollbar-width: thin !important;
 	scrollbar-color: rgb(161, 161, 161) transparent !important;
 }
+
+@layer {
+	html {
+		background-color: var(--color-base) !important;
+	}
+}
