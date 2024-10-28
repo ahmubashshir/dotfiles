@@ -2,13 +2,19 @@
 @media (-moz-bool-pref: "sidebar.revamp") {
 	div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
 		& {
-			padding: var(--space-xsmall) !important;
 			min-width: unset !important;
+			padding: var(--space-xsmall) var(--space-xxsmall) !important;
+		}
+
+		.actions-list {
+			padding-inline-end: var(--space-xsmall) !important;
+			padding-inline-start: var(--space-xxsmall);
 		}
 
 		button-group {
 			flex-flow: column-reverse;
 			order: 1;
+			padding: 0 !important;
 		}
 
 		div.bottom-actions {
@@ -41,6 +47,10 @@
 				width: var(--button-size-icon);
 				height: var(--button-size-icon);
 			}
+		}
+
+		.tabbrowser-tab {
+			padding-right: var(--space-small) !important;
 		}
 	}
 
