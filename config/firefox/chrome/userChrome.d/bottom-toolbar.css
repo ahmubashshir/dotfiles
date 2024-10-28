@@ -130,6 +130,15 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 			opacity: 1;
 			position: absolute;
 			width: 100vw;
+			height: 100%;
+
+			#menubar-items {
+				flex-direction: revert-layer !important;
+
+				#main-menubar {
+					height: 100%;
+				}
+			}
 		}
 	}
 }
