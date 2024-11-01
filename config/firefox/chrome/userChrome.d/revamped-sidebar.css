@@ -1,5 +1,9 @@
 /* revamped sidebar */
 @media (-moz-bool-pref: "sidebar.revamp") {
+	#appcontent {
+		--chrome-content-separator-color: var(--button-border-color);
+	}
+
 	div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
 		& {
 			min-width: unset !important;
