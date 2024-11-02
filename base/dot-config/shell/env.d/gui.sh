@@ -6,9 +6,8 @@ case "$XDG_SESSION_TYPE" in
 esac
 
 export BROWSER=firefox
-export TERMINAL="xfce4-terminal"
 if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ]; then
-	export QT_QPA_PLATFORMTHEME=qt5ct
+	export QT_QPA_PLATFORMTHEME=qt5ct:qt6ct
 #	export QT_SCALE_FACTOR=1
 fi
 
@@ -21,7 +20,6 @@ export MANGOHUD=1
 export WINEDEBUG=-all
 export WINEESYNC=1
 export WINEFSYNC=1
-export EOS_YAD_TERMINAL=kitty
 if [ -z "$WINEARCH" ]; then
 	export WINEARCH=win64
 fi
