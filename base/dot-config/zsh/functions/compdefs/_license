@@ -12,8 +12,9 @@ __actions() {
 __licenses() {
   local -a arguments
   arguments=(
-    /usr/share/licenses/common/^CCPL(:t)
-    /usr/share/licenses/common/CCPL/^cc-readme.txt(:t)
+    /usr/share/licenses/common/^CCPL(:t:r)
+    /usr/share/licenses/common/CCPL/^cc-readme.txt(:t:r)
+    /usr/share/licenses/spdx/**/*(.:t:r)
   )
   _values License $arguments
 }
