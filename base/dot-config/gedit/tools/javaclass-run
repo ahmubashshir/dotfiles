@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -x
 # [Gedit Tool]
 # Name=Run...
 # Languages=java
@@ -8,15 +8,46 @@
 # Input=document
 # Output=output-panel
 
-if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).class" ]; then
-	arg=$(zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text="")
-	java $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//) $arg
-else
-	if [ -e "$(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).jar" ]; then
-		arg=$(zenity --entry --title="Make JAR" --text="Any argument?\n*Optional*" --entry-text="")
-		java -jar $(echo $GEDIT_CURRENT_DOCUMENT_NAME | sed -e s/.java$//).jar $arg
-	else
-		zenity --name=Gedit --error --title="Java Compiler" --text="compile|Make Jar $GEDIT_CURRENT_DOCUMENT_NAME first."
-		exit 1
-	fi
-fi
+FILTER=run
+declare -ga stdin rargs
+
+get_stdin()
+{
+	stdin+=("$1")
+}
+get_arg()
+{
+	rargs+=("$1")
+}
+HELPERS=(
+	'stdin <line>: write line to program stdin'
+	'arg <arg>: pass arg to program'
+)
+
+## start args
+source "${0%/*}/.lib/args"
+## end args
+
+TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
+cat > "$TMPFILE" << EOF
+#!/bin/bash
+$(declare -p stdin)
+command -p printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+rm -f "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+$(((${#stdin[@]} == 0)) || echo "printf '> %s\\n' \"\${stdin[@]}\" | tee /dev/stderr | cut -c3- | \\")
+/bin/time \
+	-f "\$(cat <<EOT
+========
+Process returned %x, elapsed %0.4e; %Kkb
+EOT
+	)" \
+	java "${args[@]}" "$(echo "$GEDIT_CURRENT_DOCUMENT_NAME" | sed -e s/.java$//)" "${rargs[@]}"
+read -rsp$'Press RETURN to continue...'
+EOF
+
+chmod +x "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+cat "$TMPFILE" >&2
+
+exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
