@@ -57,8 +57,21 @@ if hasattr(ET, 'register_namespace'):
     ET.register_namespace('', XspfBase.NS)
 
 
+def merge(a: dict, b: dict, path=[]):
+    if len(a) == 0:
+        return b
+
+    for k, v in b.items():
+        if k in a and type(a[k]) == list:
+            a[k] += v
+        else:
+            a[k] = v
+    return a
+
 # in-place prettyprint formatter
 # From http://effbot.org/zone/element-lib.htm
+
+
 def indent(elem, level=0):
     i = "\n" + level * "  "
     if len(elem):
@@ -538,7 +551,7 @@ class playlist:
                     trk.location = file
                 data = trk
             elif self._fmt == 'm3u':
-                data = tuple([item['title'], file])
+                data = (file, item,)
 
             if isinstance(idx, (int, )):
                 _list.insert(idx, data)
@@ -553,8 +566,14 @@ class playlist:
                 f.write(self._list.toXml().decode('utf-8'))
 
             elif self._fmt == 'm3u':
-                for item in self._list:
-                    f.write("#EXTINF:0,{}\n{}\n".format(*item))
+                f.write("#EXTM3U\n")
+                for idx in range(len(self._list)):
+                    if type(self._list[idx][1]['artist']) == dict:
+                        self._list[idx][1]['artist'] = self._list[idx][1]['artist']['sname']
+                    f.write("#EXTINF:{},{{artist}} - {{title}}\n{}\n"
+                            .format(idx, self._list[idx][0])
+                            .format(**self._list[idx][1])
+                            .format(**self._list[idx][1]))
 
 
 def id3_tags(item, file):
@@ -647,7 +666,8 @@ def get_list(_list,
 
         try:
             ydl_opts['outtmpl'] = file_name(item)
-            name = get_item(item, ydl_opts, opts)
+            name = get_item(item, merge(item.pop('_ydl')
+                            if '_ydl' in item else {}, ydl_opts), opts)
             for clist in _ilists:
                 _lists[clist].append(item, name)
 
