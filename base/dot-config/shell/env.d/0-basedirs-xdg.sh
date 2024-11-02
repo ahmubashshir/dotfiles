@@ -16,10 +16,9 @@ if [ -z "$XDG_STATE_HOME" ];then
 fi
 
 # android sdk
-export ANDROID_PREFS_ROOT="$XDG_CONFIG_HOME"/android
-export ADB_KEYS_PATH="$ANDROID_PREFS_ROOT"
-export ANDROID_EMULATOR_HOME="$XDG_DATA_HOME"/android/emulator
+export ADB_KEYS_PATH="$XDG_CONFIG_HOME"/android
 export ANDROID_USER_HOME="$XDG_DATA_HOME"/android
+export ANDROID_EMULATOR_HOME="$ANDROID_USER_HOME"/emulator
 # ack
 export ACKRC="$XDG_CONFIG_HOME/ack/ackrc"
 # atom editor
@@ -37,12 +36,15 @@ export CGDB_DIR="$XDG_CONFIG_HOME"/cgdb
 export CARGO_HOME="$XDG_DATA_HOME"/cargo
 # nvidia:cuda
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
+# darling
+export DPREFIX="$XDG_DATA_HOME"/darling/prefix
 # docker
 export DOCKER_CONFIG="$XDG_CONFIG_HOME"/docker
 # elinks
 export ELINKS_CONFDIR="$XDG_CONFIG_HOME"/elinks
 # golang:go
 export GOPATH="$XDG_DATA_HOME"/go
+export GOBIN="${XDG_DATA_HOME%/*}/bin"
 # hugo
 export HUGO_CACHEDIR="$XDG_CACHE_HOME"/hugo
 # java:gradle
