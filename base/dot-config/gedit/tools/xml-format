@@ -1,11 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 # [Gedit Tool]
 # Name=Format
-# Languages=xml
+# Languages=xml,xslt
 # Output=replace-document
 # Shortcut=F5
 # Applicability=all
 # Input=document
 # Save-files=nothing
 
-xmllint --format $GEDIT_CURRENT_DOCUMENT_NAME
+DOCPATH=$(realpath --relative-to="$PWD" "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME")
+xmllint --format - 2> >(sed -E "s/^-(:[0-9]+)/${DOCPATH//\//\/}\1/" >&2) | sed '/^$/d' | unexpand --first-only -t 2
