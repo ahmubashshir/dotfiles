@@ -25,7 +25,7 @@ function __devprompt_precmd {
 	emulate -L zsh
 	setopt extendedglob
 	local -A icons
-	local pyvenvfilter='-([^-](#c8)-py[0-9].[0-9]##|[a-z]##)(#e)'
+	local pyvenvfilter='-(([^-](#c8)|[^-](#c2)-[^-](#c5))-py[0-9].[0-9]##|[a-z]##|)(#e)'
 
 	icons=(
 		['ssh']=$'\xef\x92\x89'     # f489		nf-oct-terminal
