@@ -14,11 +14,14 @@ shift
 
 declare -A urlre=(
 	['youtube']='^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
-	['ytshorts']='/(live|shorts)/'
+	['ytvidtypes']='/(live|shorts)/'
 	['redd.it']='https?://redd.it/'
 	['wikipedia']='^https?://((www|[a-z]{2})\.)?(m\.)?wikipedia\.org/wiki/.+'
-	['goolag']='^(https?://([a-z]+\.google(apis|)\.com|(([a-z]+\.)?app\.|)goo\.gl|(.+\.|)youtube.com)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'
+	['awstrack']='^https://[a-z0-1.-]+\.awstrack.me/'
+	['goolag']='^(https?://([a-z.]+\.google((apis|)\.com|/?)|(([a-z]+\.)?app\.|)goo\.gl|(.+\.|)youtube.com)(/.*)?|https?://(app\.)?convay\.com/m/j/[0-9]+/[a-z0-9]+(\?pwd=[a-z0-9]+)?)$'
 	['zoom']='zoom\.us/j/'
+	['hoyoverse']='^https?(://|.+:%2[Ff]%2[Ff])act\.hoyoverse\.com(/|%2F)[a-z]+(%2[Ff]|/)event(%2[Ff]|/)'
+	['epic']='store\.epicgames\.com/'
 )
 
 abort()
@@ -44,8 +47,8 @@ warn()
 match/url()
 {
 	grep -Eq "${urlre["$1"]}" <<< "$URL" || return 1
-	declare -F "handlers/$1" > /dev/null || return 1
-	((HANDLED)) || HANDLED=1 "handlers/$1"
+	declare -F "handlers/$1" > /dev/null || return 0
+	! [[ ${FUNCNAME[1]} == main ]] || "handlers/$1"
 }
 
 match/bin()
@@ -59,7 +62,7 @@ match/bin()
 handlers/youtube()
 {
 	match/bin "$MEDIA_PLAYER" || return 0
-	! match/url ytshorts || URL="${URL##*/}"
+	! match/url ytvidtypes || URL="https://youtu.be/${URL##*/}"
 	case "$MEDIA_PLAYER" in
 		mpv)
 			mkdir -p "$XDG_RUNTIME_DIR/mpv"
@@ -99,6 +102,24 @@ handlers/goolag()
 	local class
 	class="$(sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p' <<< "$URL")"
 	exec chromium --app="$URL" --class="${class:-google-chrome}"
+}
+
+handlers/awstrack()
+{
+	URL=$(sed -E 's|^.+/L[0-9]/([^/]+).+$|\1|' <<< "$URL" | urldecode)
+	return 1
+}
+
+handlers/hoyoverse()
+{
+	ERROR=abort match/bin chromium
+	exec chromium --app="$URL" --class=mihoyo-hoyoverse
+}
+
+handlers/epic()
+{
+	ERROR=abort match/bin chromium
+	exec chromium --app="$URL" --class=epic-games
 }
 
 handlers/zoom()
@@ -144,6 +165,30 @@ DENTRY()
 	[[ -f $exodent ]] || printf '%s\n' "${cm[@]}" "${xf[@]}" > "$exodent"
 }
 
+QBSESSION()
+{
+	yaml2json | jq -e $'
+		def validate(idx):
+			if (idx|length) > 0
+			then (
+				getpath(idx[0:1])
+				| [
+					length > 0, (.[]
+					| validate(idx[1:])
+				)] | all)
+			else length > 0
+			end;
+		validate([
+			"windows",
+			"tabs",
+			"history"
+		])
+		| if .
+			then halt
+			else empty | halt_error
+		end'
+}
+
 QBCALL()
 {
 	local config cache data base
@@ -156,6 +201,12 @@ QBCALL()
 	ln -fsT "$config" "$base/config"
 	ln -fsT "$data" "$base/data"
 	ln -fsT "$cache" "$base/cache"
+
+	if [[ -f "$data/sessions/default.bak.yml" ]] && ! QBSESSION < "$data/sessions/default.yml"; then
+		cp "$data/sessions/default.bak.yml" "$data/sessions/default.yml"
+	elif ! diff -q "$data/sessions/default.yml" "$data/sessions/default.bak.yml" 2>&- 1>&2; then
+		cp "$data/sessions/default.yml" "$data/sessions/default.bak.yml"
+	fi
 
 	local -a cfg=(
 		'config.load_autoconfig()'
@@ -225,11 +276,16 @@ QBCALL()
 
 [[ -x /usr/bin/qutebrowser ]] || abort "Qutebrowser is missing, please install it."
 
+! [[ ${URL:0:9} == x-url2app ]] || URL="${URL:12}"
+
 [[ -z "$URL" ]] \
+	|| match/url awstrack \
 	|| match/url youtube \
 	|| match/url redd.it \
 	|| match/url wikipedia \
 	|| match/url goolag \
-	|| match/url zoom
+	|| match/url zoom \
+	|| match/url hoyoverse \
+	|| match/url epic
 
 QBCALL "$@" "$URL"
