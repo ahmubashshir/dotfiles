@@ -6,7 +6,7 @@ zplug-defer lazyload
 zplug-defer completions
 zplug-defer auto-notify
 zplug-defer systemd
-zplug-defer fzf-tab
+#zplug-defer fzf-tab
 zplug-defer fast-syntax-highlighting
 zplug-defer autosuggestions
 zplug-defer autopair
@@ -15,6 +15,7 @@ zplug-defer bash-completions-fallback
 zplug-defer zshmarks
 zplug-defer history-substring-search
 zplug-defer command-time
+zplug-defer mask
 #zplug auto-ls
 zplug-defer autoswitch_virtualenv
 zplug-defer rockz
