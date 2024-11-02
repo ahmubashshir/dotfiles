@@ -5,7 +5,7 @@ ENV[prompt_prefix]='%(?..%F{cyan})┨'
 ENV[prompt_seperator]='%(?..%F{cyan})'
 
 case "$TERM" in
-	xterm|xterm-color|*-256color|*-kitty) ENV[color_prompt]=yes;;
+	xterm|xterm-color|*-256color|*-kitty|alacritty) ENV[color_prompt]=yes;;
 esac
 
 function xterm_title_precmd {
