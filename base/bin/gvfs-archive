@@ -2,7 +2,7 @@
 files=()
 for n in "$@"; do
 	if [[ $n =~ ^/ ]]; then
-		files+=("file=file://$n")
+		files+=("file$RANDOM=file://$n")
 	fi
 done
 exec /usr/lib/gvfsd-archive "${files[@]}"
