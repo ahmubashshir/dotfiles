@@ -18,4 +18,4 @@ check()
 	done
 }
 check js-beautify
-js-beautify -ijkx -w 80
+js-beautify -ijtCkx
