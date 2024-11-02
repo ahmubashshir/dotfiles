@@ -1,21 +1,28 @@
 #!/bin/zsh
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE && return
+→zsh/print/hist()
+{
+	echo 'HISTFILE: '"${${${${${HISTFILE/#${XDG_STATE_HOME:-$HOME\/.local\/state}/@STATE}/#${XDG_CONFIG_HOME:-$HOME\/.config}/@CONFIG}/#${XDG_CACHE_HOME:-$HOME\/.cache}/@CACHE}/#${XDG_DATA_HOME:-$HOME\/.local\/share}/@DATA}/#$HOME/~}"
+}
 
 function dirhist {
 	[[ $PWD != $HOME ]] || return
 	local OLDHIST="$HISTFILE"
 	fc -p "$PWD/hist"
 	fc -R "$OLDHIST"
+	→zsh/print/hist
 }
 
 function nullhist {
 	if [[ $HISTFILE == /dev/null ]]; then
 		fc -P
 		fc -R
+		→zsh/print/hist
 	else
 		local OLDHIST="$HISTFILE"
 		fc -p /dev/null
 		fc -R "$OLDHIST"
+		echo "HISTFILE: none"
 	fi
 }
 
@@ -48,8 +55,11 @@ setopt \
 	hist_verify
 
 function →zsh/pwd/hist {
-	local DIR="$PWD"
-	until [[ $DIR == / || $DIR == $HOME && ! $HISTFILE:t == hist || $HISTFILE == /dev/null ]]; do
+	local DIR="$PWD" OLDDIR=""
+	! [[ $HISTFILE == /dev/null ]] || return
+
+	: $HISTFILE:h
+	until [[ $DIR == / || $DIR == $HISTFILE:h || $DIR == $HOME && ! $HISTFILE:t == hist ]]; do
 		if
 			[[ -f "$DIR/hist" && $HISTFILE != $DIR/hist || $DIR == $HOME && $HISTFILE:t == hist ]]
 		then
@@ -61,11 +71,13 @@ function →zsh/pwd/hist {
 				fc -R "$OLDHIST"
 			fi
 			fc -R
+			→zsh/print/hist
 			return
 		fi
+		OLDDIR="$DIR"
 		DIR="${DIR:h}"
 	done
 }
 
 add-zsh-hook -Uz chpwd →zsh/pwd/hist
-cd "$PWD"
+→zsh/pwd/hist
