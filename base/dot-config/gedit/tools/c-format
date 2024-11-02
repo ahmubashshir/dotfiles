@@ -3,7 +3,7 @@
 # Input=selection-document
 # Save-files=document
 # Output=replace-selection
-# Languages=c,cpp,cpphdr,chdr
+# Languages=arduino,c,cpp,cpphdr,chdr
 # Applicability=titled
 # Shortcut=F7
 # Name=Format.........

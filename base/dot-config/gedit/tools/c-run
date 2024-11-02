@@ -2,40 +2,87 @@
 # [Gedit Tool]
 # Name=Run
 # Applicability=local
-# Languages=c,cpp,pascal
+# Languages=arduino,c,cpp,pascal,vala
 # Save-files=nothing
 # Output=nothing
 # Shortcut=F5
 # Input=nothing
 
 FILTER=run
+declare -ga stdin
+
+get_stdin()
+{
+	stdin+=("$1")
+}
+
+get_arduino()
+{
+	case "$1" in
+		list) exec arduino-cli board list;;
+		auto) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+			| jq -r 'first
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")' \
+			| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
+		);;
+		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+			| jq -r '.['"$1"']
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")'
+		);;
+	esac
+}
+HELPERS=(
+	'arduino <arg>:     Select arduino automatically.'
+	'    list: List connected boards'
+	'    N:    Connect to Nth board.'
+	'    auto: Select first connected board'
+	'stdin <line>: write line to program stdin'
+)
 ## start args
 source "${0%/*}/.lib/args"
 ## end args
-
 case "$TYPE/${NAME##*.}" in
 	x-csrc/ino) TYPE=x-arduino ;;
 	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
 esac
 
 case "$TYPE" in
-	x-arduino) exec arduino-cli upload --verbose --verify "${args[@]}" --no-color "$DIR" ;;
+	x-arduino) exec arduino-cli-log upload --verify "${args[@]}" --no-color "$DIR" ;;
 esac
 
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
-
 cat > "$TMPFILE" << EOF
 #!/bin/bash
-printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+$(declare -p stdin)
+command -p printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
-TIMEFORMAT=\$'\n========\n                      elapsed %3R'
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf" "${args[@]}"
-printf '\033[A\rProcess returned %d,\n' "\$?"
+$(((${#stdin[@]} == 0)) || echo "printf '> %s\\n' \"\${stdin[@]}\" | tee /dev/stderr | cut -c3- | \\")
+/bin/time \
+	-f "\$(cat <<EOT
+========
+Process returned %x, elapsed %0.4e; %Kkb
+EOT
+	)" \
+	"./$GEDIT_CURRENT_DOCUMENT_NAME.elf" "${args[@]}"
 read -rsp$'Press RETURN to continue...'
 EOF
-
 chmod +x "$TMPFILE"
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+cat "$TMPFILE" >&2
 
 exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
