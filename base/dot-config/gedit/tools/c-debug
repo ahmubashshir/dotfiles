@@ -7,40 +7,72 @@
 # Name=Debug
 # Save-files=nothing
 # Applicability=all
-
-dext=${GEDIT_CURRENT_DOCUMENT_NAME##*.}
-name=${GEDIT_CURRENT_DOCUMENT_NAME%.*}
-case $dext in
-	[c,C]) lang=C ;;
-	[c,C][p,P,x,X][p,P,x,X]) lang=C++ ;;
-	[j,J][a,A][v,V][a,A]) lang=Java ;;
-	*) cc=gdb ;;
+FILTER=debug
+get_arduino()
+{
+	case "$1" in
+		list) exec arduino-cli board list ;;
+		auto) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+				| jq -r 'first
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")' \
+				| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
+		) ;;
+		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+				| jq -r '.['"$1"']
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")'
+		) ;;
+	esac
+}
+HELPERS=(
+	'arduino <arg>:     Select arduino automatically.'
+	'    list: List connected boards'
+	'    N:    Connect to Nth board.'
+	'    auto: Select first connected board'
+)
+## start args
+source "${0%/*}/.lib/args"
+## end args
+case "$TYPE/${NAME##*.}" in
+	x-csrc/ino) TYPE=x-arduino ;;
+	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
 esac
 
-if [ "$lang" = Java ]; then
-	cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-	arg=$(zenity --entry --title="Compile..." --text="Any argument to debug?\n*Optional*\n seperate each with \"- \"" --entry-text="" 2> /dev/null)
-	clear
-	javac $GEDIT_CURRENT_DOCUMENT_NAME
-	exo-open --launch TerminalEmulator jdb ${GEDIT_CURRENT_DOCUMENT_NAME%.*} $arg
-else
-
-	TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
-
-	cat > "$TMPFILE" << EOF
-#!/bin/bash
-printf '\e]2;Debug: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
+cat > "$TMPFILE" << EOF
+command -p printf '\033]2;Debug: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-set "\$@" "./$GEDIT_CURRENT_DOCUMENT_NAME.elf"
-if [[ -f core ]];then
-set "\$@" core
-fi
-exec cgdb "\$@"
 EOF
 
-	chmod +x "$TMPFILE"
+case "$TYPE" in
+	x-java)
+		echo "exec jdb \"${GEDIT_CURRENT_DOCUMENT_NAME%.*}\""
+		;;
+	x-arduino)
+		printf 'exec arduino-cli monitor'
+		printf ' %q' "${args[@]}"
+		echo
+		;;
+	*)
+		echo "set \"\$@\" \"./$GEDIT_CURRENT_DOCUMENT_NAME.elf\""
+		echo "! [[ -f core ]] || set \"\$@\" core"
+		echo 'exec cgdb "$@"'
+		;;
+esac >> "$TMPFILE"
 
-	exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
-
-fi
+chmod +x "$TMPFILE"
+exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null
