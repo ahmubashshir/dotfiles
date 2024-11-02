@@ -1,3 +1,5 @@
+[credential]
+	helper = netrc
 [credential "*"]
 	helper = netrc
 [instaweb]
