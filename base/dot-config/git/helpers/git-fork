@@ -15,6 +15,15 @@ function match_remote
 	git remote get-url "${1}" | grep -xqE "${2}"'[[:alnum:]_-]+/[[:alnum:]._-]+(\.git|$)'
 }
 
+function api_call
+{
+	local endpoint="$1" path="$2" jq="$3"
+	shift 3
+	curl --disable -s --netrc "https://$endpoint/$path" "$@" \
+		-H 'accept: application/json' \
+		-H 'Content-Type: application/json' | jq -r "$jq"
+}
+
 function fork_setup
 {
 	default=$(
@@ -56,6 +65,40 @@ function gh_fork
 	fi
 }
 
+cb_fork()
+{
+	local org repo user upstream
+
+	read -r org < <(git config --get "fork.\"codeberg.org\".org")
+	read -r user < <(api_call codeberg.org/api/v1 user '.login')
+	read -r repo < <(while (($# > 0)); do
+		[[ $1 == --fork-name ]] && echo "$2" && break
+		shift
+	done)
+	read -r upstream < <(
+		git remote get-url upstream \
+			| repostrip '^.*[/:]([^/]+/[^/]+)$'
+	)
+
+	if ! repo_exists "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"; then
+		printf '\e[32m@\e[m Forking... \e[m\n'
+		jq -nc '{name: $name} + if ($org|length) > 0 then {organization: $org} else {} end' \
+			--arg name "${repo:-$REPO_NAME}" \
+			--arg org "${org}" \
+			| api_call codeberg.org/api/v1 "repos/$upstream/forks" '.' \
+				-X POST --data @- \
+			| jq -r 'if select(.message) then ("Error: \(.message)\n" |halt_error(1)) else halt end' || return
+		printf '\e[32m✓\e[m Created fork \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
+	else
+		printf '\e[32m✓\e[m Fork exists \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
+	fi
+
+	if repo_exists "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"; then
+		git remote add origin "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"
+		printf '\e[32m✓\e[m Added remote \e[1m%s\e[m\n' "origin"
+	fi
+}
+
 if ! git remote | grep -xqw upstream; then
 	git remote rename origin upstream
 	read -r REPO_NAME < <(
@@ -67,6 +110,8 @@ if ! git remote | grep -xqw upstream; then
 		gh_fork "$@"
 		#	elif match_remote upstream '(https://|git@)gitlab\.com(/|:)'; then
 		#		gl_fork "$@"
+	elif match_remote upstream '(https://|git@)codeberg\.org(/|:)'; then
+		cb_fork "$@"
 	else
 		echo "I don't know how to fork this remote:" >&2
 		echo "   $(git remote get-url upstream)" >&2
