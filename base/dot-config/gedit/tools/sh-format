@@ -35,7 +35,7 @@ if command -vp shfmt 2>&1 > /dev/null; then
 			shfmt -i 0 -ci -sr -bn -ln "$fmt" -kp -fn "$file"
 			;;
 		sh) shfmt -i 0 -ci -sr -ln posix -kp -fn "$file" ;;
-	esac
+	esac | filter-endnl
 else
-	echo shfmt not installed 1>&2
+	echo shfmt not installed >&2
 fi
