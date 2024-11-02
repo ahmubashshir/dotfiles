@@ -71,6 +71,8 @@ submenu_delay=250
 click_behavior=0
 drag_from_buttons=false
 shadowless_popup=false
+menu_blur_radius=0
+tooltip_blur_radius=0
 
 [GeneralColors]
 window.color=#f7f7f7
@@ -119,6 +121,7 @@ centered_forms=false
 kinetic_scrolling=true
 noninteger_translucency=false
 style_vertical_toolbars=false
+blur_only_active_window=false
 
 [PanelButtonCommand]
 frame=true
