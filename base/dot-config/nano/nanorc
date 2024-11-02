@@ -221,12 +221,16 @@ set trimblanks
 include "/usr/share/nano/*.nanorc"
 include "/usr/share/nano/extra/*.nanorc"
 include "/usr/share/nano-syntax-highlighting/*.nanorc"
-
-
-## Or you can select just the ones you need.  For example:
-# include "/usr/share/nano/html.nanorc"
-# include "/usr/share/nano/python.nanorc"
-# include "/usr/share/nano/sh.nanorc"
+# sytax overrides
+# INI
+extendsyntax INI color lightblack "(^|[[:space:]])(#([^{].*)?|;.*)$"
+extendsyntax git-config color lightblack "(^|[[:space:]])(#([^{].*)?)$"
+# git-commit
+extendsyntax git-commit color lightblack "^#.*"
+extendsyntax git-commit color lightblack "#"
+# git-rebase-todo
+extendsyntax git-rebase-todo color lightblack "^#.*"
+extendsyntax git-rebase-todo color lightblack "#"
 
 ## In /usr/share/nano/extra/ you can find some syntaxes that are
 ## specific for certain distros or for some less common languages.
