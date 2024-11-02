@@ -5,7 +5,7 @@
 # Shortcut=<Shift>F1
 # Applicability=titled
 # Save-files=document
-# Languages=c,cpp,java
+# Languages=arduino,c,cpp,java
 # Name=Compile...
 
 get_avr()
@@ -61,11 +61,12 @@ for_triplet()
 		set -e
 	fi
 
-	if hash "$TARCH-$TSYSTEM-$TABI-$cmd"; then
+	if [[ "$TARCH$TSYSTEM$TABI" ]] && hash -- "$TARCH-$TSYSTEM-$TABI-$cmd"; then
+		echo "+ $TARCH-$TSYSTEM-$TABI-$cmd $*" >&2
 		$exec "$TARCH-$TSYSTEM-$TABI-$cmd" "$@"
 	else
-		echo "'$TARCH-$TSYSTEM-$TABI-$cmd' not found" >&2
-		echo "Using '$cmd'" >&2
+		[[ "$TARCH$TSYSTEM$TABI" ]] && echo "'$TARCH-$TSYSTEM-$TABI-$cmd' not found" >&2 && echo "Using '$cmd'" >&2
+		echo "+ $cmd $*" >&2
 		$exec "$cmd" "$@"
 	fi
 }
@@ -117,8 +118,42 @@ get_file()
 	files+=("$1")
 }
 
+get_arduino()
+{
+	case "$1" in
+		list) exec arduino-cli board list ;;
+		auto) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+				| jq -r 'first
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")' \
+				| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
+		) ;;
+		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
+			arduino-cli board list --format jsonmini \
+				| jq -r '.['"$1"']
+			| [
+				"--fqbn",
+				(.matching_boards | first | .fqbn),
+				"--port",
+				(.port | .address)
+			]
+			| join("\n")'
+		) ;;
+	esac
+}
+
 HELPERS=(
 	'file[files]: Add another file to compile/run with this file'
+	'arduino <arg>:     Select arduino automatically.'
+	'    list: List connected boards'
+	'    N:    Connect to Nth board.'
+	'    auto: Select first connected board'
 	'avr[avr-gcc]: AVR Specific arguments'
 	'    (required) mcu=<microcontroller>'
 	'    (optional) fmt=<bin|srec|hex>   (default: hex)'
@@ -137,7 +172,10 @@ case "$TYPE/${NAME##*.}" in
 	x-csrc/ino) TYPE=x-arduino ;;
 	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
 esac
-typeset -p files
+for file in "${files[@]}"; do
+	echo "% file $file"
+done >&2
+echo "#################" >&2
 
 ONAME="${NAME}${TARCH:+.${HFTARCH:-$TARCH}}.${OUTPUT:-elf}"
 case "$TYPE" in
@@ -147,7 +185,7 @@ case "$TYPE" in
 		cd "$DIR" || exit 1
 		exec javac "${args[@]}" "$NAME"
 		;;
-	x-arduino) exec arduino-cli compile "${args[@]}" --no-color "$DIR" ;;
+	x-arduino) exec arduino-cli-log compile "${args[@]}" --no-color "$DIR" ;;
 	x-avr-csrc)
 		set -e
 		if [[ -z "$MCU" ]]; then
