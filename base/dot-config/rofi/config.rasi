@@ -1,10 +1,20 @@
 configuration {
+	modes: "nerdy,windowcd";
 	icon-theme: "Papirus-Dark";
+	font: "monospace bold 14";
 	fixed-num-lines: true;
 	display-run: " ";
-	display-drun: "  ";
-	display-window: "  ";
+	display-drun: " ";
+	display-window: " ";
+	display-nerdy: "󰔨 ";
 	drun-display-format: "{icon} {name}";
 	show-icons: true;
+	sidebar-mode: true;
+	threads: 0;
 }
-@theme "slate.rasi"
+window {
+	height: 50%;
+	width: 50%;
+}
+
+@theme "android_notification"
