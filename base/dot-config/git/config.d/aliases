@@ -30,6 +30,7 @@
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
 	rbs = rebase
+	rbsd= -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" GIT_COMMITTER_NAME="%cn" GIT_COMMITTER_EMAIL="%ce"  git commit --amend --no-edit --allow-empty --allow-empty-message' rebase
 	mrg = merge
 	rev = revert
 	crbs = rebase --continue
@@ -63,8 +64,10 @@
 	mail-patch = mail-patch
 	patch-note = !git notes add -fF ~/.config/git/patch-note
 	clean-up = "! git gc;git fsck;git fsclr;git repack -d -a"
-	z--hr = "!printf '%-80s\n' ''|tr ' ' -"
-	clean-up-r = "! git clean-up; echo;git submodule foreach 'git z--hr;git clean-up;echo'"
+	clean-up-r = "! git clean-up; echo;git submodule foreach 'git .vbar;git clean-up;echo'"
 	trigger-build = commit --allow-empty --message 'Trigger Build'
 	fold = ! gfold \"$@\"
 	graph = log --oneline --graph --decorate --all
+
+[alias ""]
+	vbar = "!printf '%-80s\\n' ''|tr ' ' -"
