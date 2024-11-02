@@ -16,7 +16,7 @@ function git_config
 function die
 {
 	local ret="$1" fmt="$2"
-	shift                  2
+	shift                2
 	printf "$fmt\n" "$@" >&2
 	exit "$ret"
 }
@@ -40,7 +40,7 @@ while (($# > 0)); do
 	shift
 	case "$arg" in
 		list | ls)
-			find "$PROFILES" -not -type d -not -xtype l \
+			find "$PROFILES" -name '*.cfg' -not -type d -not -xtype l \
 				| sed -E "s|^$PROFILES/(.+).cfg$|\1|" \
 				| while read -r profile; do
 					printf '%s\t' "$profile"
