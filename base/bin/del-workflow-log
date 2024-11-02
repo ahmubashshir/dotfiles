@@ -1,3 +1,4 @@
-gh api repos/$1/actions/runs \
-| jq -r '.workflow_runs[] | "\(.id)"' \
-| xargs -I {} gh api repos/$1/actions/runs/{} -X DELETE
+#!/bin/sh
+gh api repos/$1/actions/runs |
+	jq -r '.workflow_runs[] | "\(.id)"' |
+	xargs -I {} gh api repos/$1/actions/runs/{} -X DELETE
