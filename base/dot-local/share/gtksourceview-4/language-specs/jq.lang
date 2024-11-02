@@ -14,7 +14,7 @@
     <style id="builtin-function"  name="Builtin Function"      map-to="def:builtin"/>
     <style id="function"          name="Function"              map-to="def:function"/>
     <style id="variable"          name="Variable"              map-to="def:type"/>
-    <style id="keyname"           name="Key"                   map-to="def:constant"/>
+    <style id="keyname"           name="Key"                   map-to="def:type"/>
     <style id="special-char"      name="Escaped Character"     map-to="js:escape"/>
     <style id="string"            name="String"                map-to="js:string"/>
     <style id="null-value"        name="Null Value"            map-to="js:null-value"/>
@@ -274,13 +274,13 @@
       </include>
     </context>
 
-    <context id="generic-object-index">
-      <start>\.(\%{identifier})?\[</start>
-      <end>\]</end>
-      <include>
-        <context ref="expression"/>
-      </include>
-    </context>
+<!--    <context id="generic-object-index">-->
+<!--      <start>\.(\%{identifier})?\[</start>-->
+<!--      <end>\]</end>-->
+<!--      <include>-->
+<!--        <context ref="expression"/>-->
+<!--      </include>-->
+<!--    </context>-->
 
     <context id="sub-group">
       <start>\(</start>
@@ -290,11 +290,62 @@
       </include>
     </context>
 
+
+    <context id="object-key-name">
+      <include>
+        <context ref="json:string" style-ref="keyname" />
+        <context style-ref="keyname">
+          <match>\%{identifier}</match>
+        </context>
+      </include>
+    </context>
+
+    <context id="object-gen-key" style-ref="keyname">
+      <match>(\.)\%{identifier}(\[\])?</match>
+      <include>
+        <context sub-pattern="1" style-ref="keyword"/>
+        <context sub-pattern="2" style-ref="keyword"/>
+      </include>
+    </context>
+
+    <context id="object-str-key" style-ref="keyname">
+      <start>(\.)"</start>
+      <end>"(\[\])?</end>
+      <include>
+        <context sub-pattern="1" where="end" style-ref="keyword"/>
+        <context sub-pattern="1" where="start" style-ref="keyword"/>
+      </include>
+    </context>
+
+    <context id="object-key">
+      <include>
+        <context ref="object-gen-key" />
+        <context ref="object-str-key" />
+      </include>
+    </context>
+    <context id="arrays">
+      <start>\[</start>
+      <end>\]</end>
+
+      <include>
+        <context ref="filter-program" />
+        <context ref="array-element" />
+      </include>
+    </context>
+
+    <context id="array-element" end-parent="true">
+      <start>,</start>
+      <include>
+        <context ref="filter-program" />
+      </include>
+    </context>
+
+
     <context id="object" style-ref="def:error">
       <start>\{</start>
       <end>\}</end>
       <include>
-        <context ref="json:string" style-ref="keyname"/>
+        <context ref="object-key-name"/>
         <context>
           <start>:</start>
           <end>,|\s*(?=})</end>
@@ -309,14 +360,16 @@
 
     <context id="expression">
       <include>
+        <context ref="object-key"/>
         <context ref="variables"/>
         <context ref="keywords"/>
         <context ref="builtin-statements"/>
         <context ref="builtin-functions"/>
         <context ref="function-definitions"/>
         <context ref="function-bodies"/>
-        <context ref="generic-object-index"/>
+<!--        <context ref="generic-object-index"/>-->
         <context ref="sub-group"/>
+        <context ref="arrays" />
         <context ref="object"/>
         <context ref="json:value"/>
       </include>
