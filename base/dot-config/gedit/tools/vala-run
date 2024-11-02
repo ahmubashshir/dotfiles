@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/bin/bash
 # [Gedit Tool]
 # Name=Run...
 # Languages=vala
@@ -8,21 +9,25 @@
 # Save-files=nothing
 # Shortcut=F5
 
-declare -a args
+FILTER=run
+## start args
+source "${0%/*}/.lib/args"
+## end args
 
-readarray -t args < <(
-	sed -nE \
-		'/\/\*$/,/\*\//s/^.+arg@ (.+)$/\1/p;s|.*// arg@ ([^"]+)$|\1|p' \
-		"$GEDIT_CURRENT_DOCUMENT_NAME"
-)
+TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 
-if ! [ -f "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out" ]; then
-	echo You did\'nt compile $GEDIT_CURRENT_DOCUMENT_NAME 1>&2
-	exit 1
-fi
+cat > "$TMPFILE" << EOF
+#!/bin/bash
+printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+rm -f "$TMPFILE"
+TIMEFORMAT=\$'\n========\n                      elapsed %3R'
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf" "${args[@]}"
+printf '\033[A\rProcess returned %d,\n' "\$?"
+read -rsp$'Press RETURN to continue...'
+EOF
 
-if [ -n "$(sed -n '/\/\*$/,/\*\//{/:no-term:/p}' "$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME")" ]; then
-	"$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out" "${args[@]}"
-else
-	exo-open --launch TerminalEmulator "cb_console_runner '$GEDIT_CURRENT_DOCUMENT_DIR/$GEDIT_CURRENT_DOCUMENT_NAME.out' ${args[@]}"
-fi
+chmod +x "$TMPFILE"
+cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+
+exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null

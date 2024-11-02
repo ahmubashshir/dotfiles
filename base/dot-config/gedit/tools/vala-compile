@@ -8,21 +8,9 @@
 # Save-files=document
 # Shortcut=F4
 
-declare -a args
-
-while read -r flag arg; do
-	if [[ $flag =~ ^- ]]; then
-		args+=("$flag")
-	else
-		args+=("--$flag")
-	fi
-	if [[ -n $arg ]]; then
-		args+=("$arg")
-	fi
-done < <(
-	sed -nE -e 's|.*// @(-?\w+ ?[^"]+)$|\1|p' \
-		-e '/\/\*$/,/\*\//s/^.+@(-?\w+ ?.+)$/\1/p' \
-		"$GEDIT_CURRENT_DOCUMENT_NAME"
-)
+FILTER=compile
+## start args
+source "${0%/*}/.lib/args"
+## end args
 
 valac --Xcc=-w "$GEDIT_CURRENT_DOCUMENT_NAME" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.elf"
