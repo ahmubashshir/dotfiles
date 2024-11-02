@@ -6,6 +6,7 @@
 		{pm,spm}=pacman
 		gpg-{yay,jadupc}=gpg
 		jpc=exec
+		go-hugomod=go
 	)
 	compdef "${defs[@]}" 2> /dev/null
 }
