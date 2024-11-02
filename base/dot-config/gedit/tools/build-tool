@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # [Gedit Tool]
 # Name=Build
 # Languages=
@@ -23,11 +23,9 @@ try()
 			;;
 		CMakeLists.txt)
 			cd "$(dirname "$target")" || exit
-			mkdir builddir
-			pushd builddir || exit
-			BUILDDIR="$PWD"
+			BUILDDIR="$PWD/build"
 			tool='make'
-			cmake ..
+			cmake -S . -B build
 			;;
 		meson.build)
 			cd "$(dirname "$target")" || exit
@@ -43,16 +41,17 @@ try()
 	esac
 	return 0
 }
+
 GIT_ROOT=$(git rev-parse --show-toplevel 2> /dev/null)
+
 if [[ -n $GIT_ROOT ]]; then
 	cd "$GIT_ROOT" || exit
-else
-	cd "$GEDIT_CURRENT_DOCUMENT_DIR" || exit
 fi
-try autogen.sh ||
-	try configure ||
-	try CMakeLists.txt ||
-	try meson.build ||
-	try Makefile
+
+try autogen.sh \
+	|| try configure \
+	|| try CMakeLists.txt \
+	|| try meson.build \
+	|| try Makefile
 
 "$tool" -C "$BUILDDIR"
