@@ -1,5 +1,7 @@
 /* revamped sidebar */
 @media (-moz-bool-pref: "sidebar.revamp") {
+
+	#tabbrowser-tabbox,
 	#appcontent {
 		--chrome-content-separator-color: var(--button-border-color);
 	}
@@ -15,10 +17,29 @@
 			padding-inline-start: var(--space-xxsmall);
 		}
 
-		button-group {
+		button-group,
+		div.bottom-actions {
+			max-width: min-content;
 			flex-flow: column-reverse;
 			order: 1;
 			padding: 0 !important;
+
+			moz-button {
+				--button-outer-padding-inline: var(--space-xxsmall) !important;
+				--button-outer-padding-block: var(--space-xxsmall) !important;
+
+				&:last-of-type {
+					--button-outer-padding-block-end: var(--space-xsmall) !important;
+				}
+
+				&:first-of-type {
+					--button-outer-padding-block-start: var(--space-xsmall) !important;
+				}
+
+				&[view="viewCustomizeSidebar"] {
+					order: -1;
+				}
+			}
 		}
 
 		div.bottom-actions {
