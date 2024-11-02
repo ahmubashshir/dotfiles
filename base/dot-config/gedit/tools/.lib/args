@@ -40,32 +40,41 @@ EOF
 	} >&2
 	exit
 }
+declare -A _ignored
+for flg in "${ignored[@]}"; do
+	_ignored["$flg"]=1
+done
 
 declare -i compiler_hints
 while read -r type flag arg; do
 	[[ $flag ]] || continue
+
+	if [[ $type = : && -z "$filter" ]]; then
+		filter="$flag:"
+	elif [[ -z "$filter" && -n "$FILTER" ]]; then
+		filter="$FILTER:"
+	fi
+	flag="${flag#"$filter"}"
+
+	[[ -z "$filter" || ! $flag =~ ^[^-]+: || $flag =~ ^$filter ]] || continue
+	[[ -z "${_ignored["$flag"]}" ]] || continue
+
 	if [[ $type = \# && $(type -t "get_$flag") = function ]]; then
 		"get_$flag" "$arg"
 	else
-		if [[ $type = : && -z "$filter" ]]; then
-			filter="$flag:"
-		elif [[ -z "$filter" && -n "$FILTER" ]]; then
-			filter="$FILTER:"
-		fi
-
-		[[ -z "$filter" || ! $flag =~ : || $flag =~ ^$filter ]] || continue
 		if [[ $flag =~ ^- ]]; then
-			args+=("${flag#"$filter"}")
+			args+=("$flag")
 		elif [[ $type == : ]]; then
-			args+=("${flag#"$filter"}")
+			args+=("$flag")
 		else
-			args+=("--${flag#"$filter"}")
+			args+=("--$flag")
 		fi
 		if [[ -n $arg ]]; then
-			args+=("$arg")
+			args+=("$(envsubst <<< "${arg/\~/$HOME}")")
 		fi
 	fi
-	((++compiler_hints)) && echo "$type ${flag#"$filter"} $arg"
+
+	((++compiler_hints)) && echo "$type $flag $arg" >&2
 done < <(
 	TYPE='@|:|#'
 	FILTER='-?\w+ ?.+?'
@@ -73,6 +82,8 @@ done < <(
 	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
 		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
 )
+
+unset -f
 
 if ((compiler_hints == 0)); then
 	__hint "Add '#help' as a comment to see tool help"
