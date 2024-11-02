@@ -1055,3 +1055,5 @@ xst/
 _ngo/
 _xmsgs/
 patches/
+# directory history
+hist
