@@ -1,0 +1,3 @@
+#!/bin/bash
+OWNER=charmbracelet
+source "${0%/*}/lib/git-rel"
