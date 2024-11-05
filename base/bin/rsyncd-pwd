@@ -7,3 +7,8 @@ max verbosity = 4
 	comment = %PWD%
 	read only = yes
 	fake super = yes
+[wpwd]
+	path = %PWD%/
+	comment = %PWD%
+	read only = no
+	fake super = yes
