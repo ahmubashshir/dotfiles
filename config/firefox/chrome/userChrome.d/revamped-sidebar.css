@@ -45,39 +45,81 @@
 		div.bottom-actions {
 			order: 0;
 		}
-
 	}
 
 	#tabbrowser-tabs[orient="vertical"] {
 		& {}
 
-		#vertical-pinned-tabs-container:has(+ #newtab-button-container[showborder]) {
-			border-bottom: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-			padding-inline-end: unset !important;
-			padding-bottom: var(--space-xxsmall);
+		#tabs-newtab-button,
+		#vertical-tabs-newtab-button {
+			display: none;
+			visibility: collapse;
 		}
 
-		&:has(> #tabbrowser-arrowscrollbox[overflowing]) {
-			border-bottom: unset !important;
-		}
+		&:has(> #vertical-tabs-newtab-button) {
+			tab {
+				--tab-inner-inline-margin: var(--space-xxsmall) !important;
+				--tab-collapsed-background-width: var(--button-size-icon-small) !important;
+				width: min-content !important;
 
-		#newtab-button-container {
-			& {
-				order: 2;
-				border-top: unset !important;
-				border: var(--button-border);
-				padding: var(--button-padding-icon) !important;
-				border-radius: var(--border-radius-medium);
-				margin: 0 !important;
-				width: var(--button-size-icon);
-				height: var(--button-size-icon);
+				.tab-content {
+					padding: 0 !important;
+					justify-content: center !important;
+				}
+
+				.tab-background[selected] {
+					box-shadow: 0 0 4px color-mix(in srgb, AccentColor 75%, transparent) !important;
+				}
+			}
+
+			#vertical-pinned-tabs-container-separator {
+				--tab-inner-inline-margin: var(--space-xsmall);
+			}
+
+			#vertical-pinned-tabs-container {
+				grid-template-columns: auto !important;
+			}
+
+			&[overflow]::after {
+				margin-inline: var(--space-xxsmall) !important;
+				border-bottom-style: dotted !important;
+				border-bottom-width: var(--space-xxsmall) !important;
 			}
 		}
 
-		.tabbrowser-tab {
-			padding-right: var(--space-small) !important;
+		&:has(> #newtab-button-container) {
+			& {}
+
+			#vertical-pinned-tabs-container:has(+ #newtab-button-container[showborder]) {
+				border-bottom: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+				padding-inline-end: unset !important;
+				padding-bottom: var(--space-xxsmall);
+			}
+
+			&:has(> #tabbrowser-arrowscrollbox[overflowing]) {
+				border-bottom: unset !important;
+			}
+
+			#newtab-button-container {
+				& {
+					order: 2;
+					border-top: unset !important;
+					border: var(--button-border);
+					padding: var(--button-padding-icon) !important;
+					border-radius: var(--border-radius-medium);
+					margin: 0 !important;
+					width: var(--button-size-icon);
+					height: var(--button-size-icon);
+				}
+			}
+
+			.tabbrowser-tab {
+				padding-right: var(--space-small) !important;
+			}
 		}
 	}
+
+
 
 	#sidebar-main:has(+ #sidebar-box[hidden="true"]) {
 		border-right: var(--thin-tab-width) solid var(--urlbar-box-bgcolor);
