@@ -204,4 +204,5 @@ user_pref("network.dns.blockDotOnion", false);
 user_pref("privacy.firstparty.isolate", true);
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
 user_pref("dom.battery.enabled", false);
-user_pref("network.http.referer.trimmingPolicy", 2);
+user_pref("network.http.referer.trimmingPolicy", 1);
+user_pref("network.http.referer.XOriginTrimmingPolicy", 2);
