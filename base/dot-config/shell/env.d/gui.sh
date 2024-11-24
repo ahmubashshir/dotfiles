@@ -7,7 +7,7 @@ esac
 
 export BROWSER=firefox
 if [ "${DESKTOP_SESSION:-${XDG_SESSION_DESKTOP}}" != "plasma" ]; then
-	export QT_QPA_PLATFORMTHEME=qt5ct:qt6ct
+	export QT_QPA_PLATFORMTHEME=qt5gtk3:gtk3:qt5ct:qt6ct
 #	export QT_SCALE_FACTOR=1
 fi
 
