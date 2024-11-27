@@ -146,7 +146,7 @@ function _git_prompt_worker_restart {
 
 function _git_prompt_precmd {
 	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/ ]] && return 0
-	async_flush_jobs "gitworker$$"  2>/dev/null || _git_prompt_worker_restart
+	() { async_flush_jobs "gitworker$$" || _git_prompt_worker_restart } 2>/dev/null
 	async_worker_eval "gitworker$$" cd "$PWD"
 	async_job "gitworker$$" _git_prompt_update_async
 }
