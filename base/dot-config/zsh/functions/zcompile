@@ -2,6 +2,7 @@
 emulate -L zsh -o hist_subst_pattern -o extended_glob
 echo "zcompile: ${${Z_COMPILE_TARGET:s:/load(#e)::}:-${@[-1]:t:s:(#s)\.:dot-:}}" >&2
 () {
+	[[ $e:e == zwc || $e:e == izwc ]] && return
 	{
 		cd "${@[-1]:h}"
 		builtin zcompile "${@:1:-1}" -- "${@[-1]:t}" || touch "${@[-1]:t}.izwc"
