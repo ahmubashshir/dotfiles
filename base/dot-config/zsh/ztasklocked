@@ -6,49 +6,40 @@ case "$task" in
 	exec) LOCK="$1";;
 	*) LOCK="$*";;
 esac
-
-LOCKFILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/ztasklocked/$LOCK"
-if ! [[ -d "${LOCKFILE:h}" ]]; then
-	rm -rf "${LOCKFILE:h}"
-	mkdir -p "${LOCKFILE:h}"
-fi
-
+LOCKFILE="${XDG_RUNTIME_DIR:-/run/user/$UID}/ztasklocked/$LOCK.lck"
+[[ -d "${LOCKFILE:h}" ]] || rm -f "${LOCKFILE:h}"
+mkdir -p "${LOCKFILE:h}"
 touch "$LOCKFILE"
-exec <&- 2>&-
-zsystem flock -t 0 -f fd "$LOCKFILE" || exit
+exec <&- >&- 2>&-
+zsystem flock -e -t 0 -f fd "$LOCKFILE" || exit
 trap 'rm -f "$LOCKFILE"' EXIT
 
 case "$task" in
 	(recompile)
 	setopt null_glob extended_glob
-	function zcompare {
-		if
-			! [[ $1:e =~ ^(zwc|md|adoc|rst|(c|h)(|pp|xx)|cc|png|gif|zunit|ini|org|zwc|lck)$ ]] \
-			&& ! [[ $1:t =~ ^(AUTHORS|LICENSE|CHANGELOG|history)$ ]] \
-			&& [[ -O $1:P:h ]] \
-			&& [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
-		then
-			zcompile "${@:2}" "$1" || touch "$1.ignore.zwc"
-		fi
+	autoload -Uz zcompare
+	function zrecompile {
+		local mode e
+		mode="$1"; shift
+		while (($# > 0)); do
+			e="$1"; shift
+			! [[ $e:e =~ ^(zwc|md|adoc|rst|izwc)$ ]] && \
+			! [[ $e:e =~ ^((c|h)(|pp|xx)|cc|png|gif|zunit|ini|org|lck)$ ]] && \
+			! [[ $e:t =~ ^(AUTHORS|LICENSE|CHANGELOG|history)$ ]] && \
+			[[ -O $e:P:h ]] || continue
+			if [[ -f $e ]];then
+				zcompare "$e" "$mode"
+			elif [[ -d $e ]];then
+				zrecompile "$mode" "$e"/*
+			fi
+		done
 	}
-
-	for target in $@;do
-		if [[ -f $target ]];then
-			zcompare "$target" -Rz
-		elif [[ -d $target ]];then
-			for file in "$target"/**/*(^/);do
-				zcompare "$file" -Rz
-			done
-		fi
-	done
-
-	for target in \
+	zrecompile -Rz $@
+	zrecompile -Mz \
 		"${ZDOTDIR:-$HOME}"/.z{shrc,shenv,login,logout,profile,inputrc} \
 		"${ZDOTDIR:-$HOME/.zsh}"/compdef \
 		"${XDG_CACHE_HOME:-$HOME/.cache}/zsh"/**/*(.)
-	do
-		zcompare "$target" -Mz
-	done
+	wait
 	;;
-	(exec) "$@" 1>&-;;
+	(exec) "$@";;
 esac
