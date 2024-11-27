@@ -3,7 +3,7 @@ local -a ___plugins
 
 ___plugins=(
 	"$ZDOTDIR/.zshrc"(:P:h:h:h:h)
-	"$ZDOTDIR/plugins"/*(-/:P:t5)
+	"$ZDOTDIR/plugins"/*/.git(-/:P:t5:h)
 	"$ZDOTDIR/omz"(:P:t4)
 )
 
