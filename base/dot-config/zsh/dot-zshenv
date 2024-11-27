@@ -22,22 +22,13 @@ ZSH="$ZDOTDIR/omz"
 function compinit {
 		local body
 		body=$functions[compinit]
-		unfunction compinit
-		autoload -Uz compinit
+		builtin unfunction compinit
+		builtin autoload -Uz compinit
 		compinit -d "$ZSH_COMPDUMP" "$@"
 		functions[compinit]=$body
 }
 
-if [[ -o interactive ]];then
-	autoload -Uz zcompare
-else
-	function zcompare {
-		if [[ -w $1:P:h ]] && [[ -s "$1" && ( ! -s "$1.zwc" || "$1" -nt "$1.zwc" ) && ! -f "$1.ignore.zwc" ]]
-		then
-			zcompile "${@:2}" "$1"
-		fi
-	}
-fi
+autoload -Uz zcompare
 
 function load {
 	local each from
