@@ -4,7 +4,7 @@ echo "zcompile: ${${Z_COMPILE_TARGET:s:/load(#e)::}:-${@[-1]:t:s:(#s)\.:dot-:}}"
 () {
 	[[ $e:e == zwc || $e:e == izwc ]] && return
 	{
-		cd "${@[-1]:h}"
+		cd -q "${@[-1]:h}"
 		builtin zcompile "${@:1:-1}" -- "${@[-1]:t}" || touch "${@[-1]:t}.izwc"
 	} 2> /dev/null
 } "$@" &!
