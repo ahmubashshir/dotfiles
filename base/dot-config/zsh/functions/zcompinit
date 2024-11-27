@@ -1,7 +1,5 @@
 #!/bin/zsh
 # function zcompinit
-autoload -Uz zrecompile
-zrecompile
 compinit -C "$@"
 source ${ZDOTDIR:-$HOME/.zsh}/compdef
 
