@@ -23,10 +23,9 @@ case "$task" in
 		mode="$1"; shift
 		while (($# > 0)); do
 			e="$1"; shift
-			! [[ $e:e =~ ^(zwc|md|adoc|rst|izwc)$ ]] && \
-			! [[ $e:e =~ ^((c|h)(|pp|xx)|cc|png|gif|zunit|ini|org|lck)$ ]] && \
-			! [[ $e:t =~ ^(AUTHORS|LICENSE|CHANGELOG|history)$ ]] && \
 			[[ -O $e:P:h ]] || continue
+			[[ $e:e == zwc || $e:e == izwc ]] && continue
+
 			if [[ -f $e ]];then
 				zcompare "$e" "$mode"
 			elif [[ -d $e ]];then
