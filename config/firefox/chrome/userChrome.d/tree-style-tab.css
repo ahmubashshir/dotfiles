@@ -13,13 +13,15 @@
 
 @media (-moz-bool-pref: "sidebar.revamp") {
 
-	/* Hide splitter, when using Tree Style Tab. */
-	#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
-		margin-bottom: 3px !important;
+	#sidebar-box {
+		z-index: calc(var(--browser-area-z-index-tabbox) + var(--browser-area-z-index-sidebar)) !important;
 
-		&:not(:hover):not(:-moz-drag-over) #sidebar {
-			width: calc(100% - var(--space-xsmall)) !important;
-			min-width: calc(var(--thin-tab-width) - var(--space-xsmall)) !important;
+		/* Hide splitter, when using Tree Style Tab. */
+		&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+			&:not(:hover):not(:-moz-drag-over) #sidebar {
+				width: calc(100% - var(--space-xsmall)) !important;
+				min-width: calc(var(--thin-tab-width) - var(--space-xsmall)) !important;
+			}
 		}
 	}
 }
@@ -29,7 +31,6 @@
 		transition: all 200ms !important;
 		min-width: var(--thin-tab-width) !important;
 		max-width: var(--thin-tab-width) !important;
-		z-index: 1;
 
 		/* Hide splitter, when using Tree Style Tab. */
 		& + #sidebar-splitter {
@@ -63,7 +64,6 @@
 			min-width: calc(var(--wide-tab-width) + var(--thin-tab-width) * 2) !important;
 			max-width: calc(var(--wide-tab-width) + var(--thin-tab-width) * 2) !important;
 			margin-right: calc(-1 * (var(--wide-tab-width) + var(--thin-tab-width))) !important;
-			z-index: 1;
 
 			& + #sidebar-splitter {
 				display: none !important;
