@@ -31,16 +31,16 @@
 	/* ff >= 119.0 */
 	&:not(:has(#navigator-toolbox-background)) {
 		& #navigator-toolbox {
-			position: fixed;
+			position: fixed !important;
 			bottom: 0;
 			display: block;
-			z-index: 1;
+			z-index: 1 !important;
 			width: 100% !important;
 		}
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding));
+		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xsmall));
 	}
 
 	& #titlebar {
@@ -127,9 +127,12 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 		&:not([inactive="true"]) {
 			margin: 0;
 			opacity: 1;
-			position: absolute;
+			position: absolute !important;
+			bottom: 0;
+			left: var(--button-size-icon);
 			width: 100vw;
 			height: 100%;
+
 
 			#menubar-items {
 				flex-direction: revert-layer !important;
@@ -137,6 +140,10 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 				#main-menubar {
 					height: 100%;
 				}
+			}
+
+			& ~ #nav-bar #urlbar-container {
+				visibility: hidden !important;
 			}
 		}
 
