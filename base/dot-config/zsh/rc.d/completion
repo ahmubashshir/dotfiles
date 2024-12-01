@@ -10,19 +10,21 @@ zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' expand prefix suffix
 zstyle ':completion:*' file-sort name
+zstyle ':completion:*' file-list all
+zstyle ':completion:*' last-prompt true
 zstyle ':completion:*' format 'Completing %d'
-zstyle ':completion:*' glob set
+zstyle ':completion:*' glob true
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' ignore-parents parent pwd
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' list-prompt '%SAt %p: Hit TAB for more, or the character to insert%s'
-zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
-zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' max-errors 1
-zstyle ':completion:*' menu select=0
+zstyle ':completion:*' menu yes=long select
 zstyle ':completion:*' preserve-prefix '//[^/]##/'
 zstyle ':completion:*' prompt 'Correct'
-zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+zstyle ':completion:*' select-prompt '%SScrolling active: current selection at %p%s'
+zstyle ':completion:*' separate-sections true
 zstyle ':completion:*' special-dirs true
 zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' substitute set
@@ -44,4 +46,5 @@ zstyle ':completion:*:kill:*' force-list always
 #zstyle -e ':completion:*:approximate:*' \
 	#max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
 
+autoload -U +X bashcompinit && bashcompinit
 zcompinit
