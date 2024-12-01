@@ -72,13 +72,83 @@ STOW_IGNORE="^(face\.png|.info)|\.swp"
 if [ "$#" -eq 0 ]; then
 	cd "$STOW_DIR"
 	[ "${STOW_DIR#$HOME}" = "$STOW_DIR" ] || STOW_DIR_REPR="~${STOW_DIR#$HOME}"
+	cat >&2 << EOF
+Usage:
+  ${STOW_DIR_REPR-$STOW_DIR}/${0##*/} [@|-]package1 [[@|-]package2 [...]]
+    actions:
+      package  -> install
+      -package -> remove
+      @package -> reinstall
+  ---------------------------------------------
+  ${STOW_DIR_REPR-$STOW_DIR}/${0##*/} system <stow args>
+  ${STOW_DIR_REPR-$STOW_DIR}/${0##*/} firefox [@|-]profiles
+EOF
 	echo "Available packages: ${STOW_DIR_REPR-$STOW_DIR}"
-	exec find -maxdepth 1 -type d -not -name '.*' -printf '\t%f\n'
+	printf '%s\n' */.info | sed -n '/^[a-z]*\/\.info$/{s@/.info@@;s@^@\t@;p}'
 elif [ "$1" = "system" ]; then
 	shift
 	stow-system "$@"
+elif [ "$1" = "firefox" ]; then
+	declare -A profiles
+	shift
+	while IFS="=" read -r name path; do
+		profiles+=(["$name"]="$path")
+	done < <(
+		awk -F= '/\[Profile[0-9]+\]/,/^$/ {
+			if($0 ~ /\[Profile[0-9]+\]/) i += 1
+			if($1 == "Name") name[i]=$2
+			if($1 == "Path") path[i]=$2
+		} END {
+			for(k = 1; k <= i; k++) print name[k]"="path[k]
+		}' ~/.mozilla/firefox/profiles.ini | sort
+	)
+	if (($# == 0)); then
+		echo "Profiles:"
+		printf '\t%s\n' "${!profiles[@]}"
+	else
+		for each in "$@"; do
+			declare -a args=()
+			case "${each:0:1}" in
+				+ | -) args=(~/".mozilla/firefox/${profiles["${each:1}"]}") ;;
+				*)  args=(~/".mozilla/firefox/${profiles["$each"]}") ;;
+			esac
+			args+=(-v1)
+			case "${each:0:1}" in
+				@) args+=(-R) ;;
+				-) args+=(-D) ;;
+				*) args+=(-S) ;;
+			esac
+			case "${each:0:1}" in
+				@ | -) each="${each:1}" ;;
+			esac
+			if [[ -d "${args[0]}" ]]; then
+				echo "Profile: ${each}"
+				stow -d "$PWD/config" -t "${args[@]}" firefox
+			fi
+		done
+	fi
 else
-	dot-file "$@"
+	declare -a args
+	while (($# > 0)); do
+		if [[ -d "$STOW_DIR/${1:1}/.info" || -d "$STOW_DIR/$1/.info" ]]; then
+			case "${1:0:1}" in
+				@) args+=(-R) ;;
+				-) args+=(-D) ;;
+				*) args+=(-S) ;;
+			esac
+			case "${1:0:1}" in
+				@ | -) args+=("${1:1}") ;;
+				*)  args+=("$1") ;;
+			esac
+		else
+			case "${1:0:1}" in
+				@ | -) printf 'Error: Package not defined "%s"\n' "${1:1}" ;;
+				*) printf 'Error: Package not defined "%s"\n' "${1}" ;;
+			esac
+		fi
+		shift
+	done
+	dot-file "${args[@]}"
 fi
 
 #patch@ --- a/lib/Stow.pm @patch#
