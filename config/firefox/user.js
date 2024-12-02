@@ -189,7 +189,6 @@ user_pref("dom.private-attribution.submission.enabled", false);
   }
 ]
  */
-user_pref("browser.newtabpage.pinned", "[{\"url\":\"https://stackoverflow.com/\",\"label\":\"stackoverflow\"},{\"url\":\"https://github.com/notifications\",\"label\":\"github\"},{\"url\":\"https://twitter.com/\",\"label\":\"twitter\"},{\"url\":\"https://www.reddit.com/\",\"label\":\"reddit\"},{\"url\":\"https://kitsu.io/\",\"label\":\"kitsu\"},{\"url\":\"https://myanimelist.net/\"},{\"url\":\"https://mangadex.org/\"},{\"url\":\"https://web.archive.org/\",\"label\":\"web.archive\"}]");
 user_pref("browser.pagethumbnails.capturing_disabled", false);
 user_pref("browser.tabs.unloadOnLowMemory", true);
 user_pref("devtools.chrome.enabled", true);
