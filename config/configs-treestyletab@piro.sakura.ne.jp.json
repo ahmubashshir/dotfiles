@@ -5,14 +5,11 @@
   "autoAttachOnOpenedFromExternal": 0,
   "avoidDiscardedTabToBeActivatedIfPossible": true,
   "cachedExternalAddons": [
-    "tst-bookmarks-subpanel@piro.sakura.ne.jp",
-    "{731bf636-c808-4c86-b02f-af462eccc963}",
     "tst-indent-line@piro.sakura.ne.jp",
-    "@tst-search",
-    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp"
+    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp",
+    "TST-Lock@irvinm.addons.mozilla.org"
   ],
   "chunkedSyncData0": "W10=",
-  "colorScheme": "photon",
   "configsVersion": 31,
   "defaultBookmarkParentId": "unfiled_____",
   "delayForDuplicatedTabDetection": 20,
@@ -24,52 +21,68 @@
     "tst-indent-line@piro.sakura.ne.jp",
     "@tst-search",
     "save-selected-tabs-to-files@piro.sakura.ne.jp",
-    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp"
+    "tst-active-tab-in-collapsed-tree@piro.sakura.ne.jp",
+    "TST-Lock@irvinm.addons.mozilla.org",
+    "tst-active-tab-on-scrollbar@piro.sakura.ne.jp"
   ],
   "inheritContextualIdentityToChildTabMode": 1,
   "labelOverflowStyle": "crop",
-  "lastSelectedSubPanelProviderId": "tst-bookmarks-subpanel@piro.sakura.ne.jp",
+  "lastSelectedSubPanelProviderId": "@tst-search",
   "notifiedFeaturesVersion": 9,
   "optionsExpandedSections": [
-    "section-debug",
-    "section-addons"
+    "section-debug"
   ],
   "shiftTabsForScrollbarOnlyOnHover": true,
   "showAutoGroupOptionHint": false,
+  "showExpertOptions": true,
   "sidebarPosition": 1,
   "sidebarPositionRighsideNotificationShown": true,
   "sidebarWidthInWindow": {
-    "1": 40,
-    "9": 40,
+    "1": 34,
+    "7": 34,
+    "18": 40,
+    "22": 34,
+    "73": 34,
     "86": 40,
+    "94": 36,
+    "112": 40,
     "114": 40,
     "124": 40,
     "138": 40,
+    "157": 250,
+    "178": 40,
+    "235": 34,
     "242": 40,
+    "244": 34,
+    "273": 40,
+    "292": 40,
     "317": 40,
+    "329": 40,
+    "352": 40,
+    "405": 250,
     "959": 40,
+    "1106": 34,
     "1257": 40,
-    "1535": 40
+    "1535": 40,
+    "3029": 40,
+    "3357": 40
   },
   "skipCollapsedTabsForTabSwitchingShortcuts": true,
   "style": "photon",
   "suppressGapFromShownOrHiddenToolbarOnFullScreen": true,
   "syncDevices": {
-    "device-1656314328732-21353": {
-      "id": "device-1656314328732-21353",
-      "name": "mubashshir-pc; linux",
-      "icon": "home",
-      "timestamp": 1721980970536
-    },
     "device-1676482574115-54155": {
       "id": "device-1676482574115-54155",
       "name": "arch-baksho; linux",
       "icon": "device-desktop",
-      "timestamp": 1721939592095
+      "timestamp": 1733161342497
     }
   },
+  "tabDragBehavior": 9,
+  "tabDragBehaviorShift": 13,
   "userStyleRules": "",
   "userStyleRulesFieldHeight": "474px",
   "userStyleRulesFieldTheme": "dracula",
-  "warnOnCloseTabsByClosebox": false
+  "warnOnCloseTabsByClosebox": false,
+  "workaroundForBug1548949DroppedTabs": "1732764961302-13901/59"
 }
