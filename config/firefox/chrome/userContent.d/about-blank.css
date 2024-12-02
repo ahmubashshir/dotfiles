@@ -5,6 +5,7 @@ html:not(#ublock0-epicker),
 html:not(#ublock0-epicker) body,
 #newtab-customize-overlay {
 	background: var(--backdrop) !important;
+	backdrop-filter: blur(15px);
 }
 }
 

@@ -4,7 +4,7 @@ url(about:privatebrowsing){
 
 body {
 	background: var(--backdrop) !important;
-	background-size: cover !important;
+	backdrop-filter: blur(15px);
 }
 
 div {
