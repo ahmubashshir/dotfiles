@@ -1,7 +1,6 @@
 @-moz-document url(about:home),
 url(about:newtab),
 url(about:privatebrowsing){
-
 body {
 	background: var(--backdrop) !important;
 	backdrop-filter: blur(15px);
@@ -70,8 +69,16 @@ a.top-site-button {
 		border-radius: 50% !important;
 		width: 100% !important;
 		height: 100% !important;
-		position: unset !important;
+		position: absolute !important;
 		background-color: transparent !important;
+
+		&.search-topsite {
+			bottom: 10% !important;
+			right: 10% !important;
+			width: 25% !important;
+			height: 25% !important;
+			background-color: color-mix(in srgb, transparent 75%, var(--color-accent-primary)) !important;
+		}
 	}
 
 	& div.title,
@@ -98,7 +105,9 @@ button.personalize-button {
 	}
 }
 
-li.top-site-outer:is(.active, :focus, :hover) {
+li.top-site-outer:is(.active,
+	:focus,
+	:hover) {
 	background: none !important;
 
 	& button.context-menu-button {
