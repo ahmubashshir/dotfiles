@@ -110,7 +110,7 @@ elif [ "$1" = "firefox" ]; then
 			declare -a args=()
 			case "${each:0:1}" in
 				+ | -) args=(~/".mozilla/firefox/${profiles["${each:1}"]}") ;;
-				*)  args=(~/".mozilla/firefox/${profiles["$each"]}") ;;
+				*) args=(~/".mozilla/firefox/${profiles["$each"]}") ;;
 			esac
 			args+=(-v1)
 			case "${each:0:1}" in
@@ -123,7 +123,7 @@ elif [ "$1" = "firefox" ]; then
 			esac
 			if [[ -d "${args[0]}" ]]; then
 				echo "Profile: ${each}"
-				stow -d "$PWD/config" -t "${args[@]}" firefox
+				stow -d "$STOW_DIR/config" -t "${args[@]}" firefox
 			fi
 		done
 	fi
@@ -138,7 +138,7 @@ else
 			esac
 			case "${1:0:1}" in
 				@ | -) args+=("${1:1}") ;;
-				*)  args+=("$1") ;;
+				*) args+=("$1") ;;
 			esac
 		else
 			case "${1:0:1}" in
