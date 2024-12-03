@@ -14,7 +14,7 @@
 @media (-moz-bool-pref: "sidebar.revamp") {
 
 	#sidebar-box {
-		z-index: calc(var(--browser-area-z-index-tabbox) + var(--browser-area-z-index-sidebar)) !important;
+		z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 
 		/* Hide splitter, when using Tree Style Tab. */
 		&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
