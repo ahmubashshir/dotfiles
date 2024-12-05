@@ -4,6 +4,8 @@
 	#tabbrowser-tabbox,
 	#appcontent {
 		--chrome-content-separator-color: var(--button-border-color);
+		border-radius: var(--border-radius-medium);
+		border: 1px solid var(--background-color-canvas);
 	}
 
 	div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
@@ -83,7 +85,7 @@
 			&[overflow]::after {
 				margin-inline: var(--space-xxsmall) !important;
 				border-bottom-style: dotted !important;
-				border-bottom-width: var(--space-xxsmall) !important;
+				border-bottom-width: var(--space-medium) !important;
 			}
 		}
 
@@ -121,8 +123,13 @@
 
 
 
-	#sidebar-main:has(+ #sidebar-box[hidden="true"]) {
-		border-right: var(--thin-tab-width) solid var(--urlbar-box-bgcolor);
+	#sidebar-main:has(~ #sidebar-box[hidden="true"]) {
+		border-right: calc(var(--thin-tab-width) + var(--space-xsmall)) solid var(--background-color-canvas);
+	}
+
+	#sidebar-launcher-splitter {
+		visibility: collapse;
+		display: none;
 	}
 
 	#navigator-toolbox:has(+ #browser > #sidebar-main:not([hidden="true"])) #sidebar-button {
@@ -134,6 +141,21 @@
 			display: none;
 		}
 	}
+
+	#sidebar-box {
+		z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
+		padding-top: var(--space-small) !important;
+		background: transparent !important;
+
+		--collapsed-width: calc(var(--thin-tab-width) + var(--space-xsmall));
+
+		&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+			&:not(:hover):not(:-moz-drag-over) #sidebar {
+				min-width: calc(var(--collapsed-width) - var(--space-small)) !important;
+			}
+		}
+	}
+
 
 	@-moz-document url(chrome://browser/content/sidebar/sidebar-history.html),
 	url(chrome://browser/content/sidebar/sidebar-customize.html),
