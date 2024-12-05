@@ -143,13 +143,14 @@
 	}
 
 	#sidebar-box {
+		--collapsed-width: calc(var(--thin-tab-width) + var(--space-xsmall));
 		z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 		padding-top: var(--space-small) !important;
 		background: transparent !important;
 
-		--collapsed-width: calc(var(--thin-tab-width) + var(--space-xsmall));
+		& {}
 
-		&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+		&[sidebarcommand$="-sidebar-action"] {
 			&:not(:hover):not(:-moz-drag-over) #sidebar {
 				min-width: calc(var(--collapsed-width) - var(--space-small)) !important;
 			}

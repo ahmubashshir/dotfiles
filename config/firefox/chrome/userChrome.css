@@ -1,7 +1,7 @@
 /* Root */
 @import url('userChrome.d/root.css');
 
-@import url('userChrome.d/tree-style-tab.css');
+@import url('userChrome.d/extension-sidebar.css');
 
 @import url('userChrome.d/misc.css');
 

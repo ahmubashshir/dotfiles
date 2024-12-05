@@ -15,7 +15,7 @@
 	--collapsed-width: var(--thin-tab-width);
 	--expanded-width: var(--wide-tab-width);
 
-	&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+	&[sidebarcommand$="-sidebar-action"] {
 		transition: all 200ms !important;
 		min-width: var(--collapsed-width) !important;
 		max-width: var(--collapsed-width) !important;
@@ -46,7 +46,7 @@
 
 	}
 
-	&:not([sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"]) {
+	&:not([sidebarcommand$="-sidebar-action"]) {
 		&:has(> #sidebar-header[hidden="true"]) {
 			transition: all 200ms !important;
 			min-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
