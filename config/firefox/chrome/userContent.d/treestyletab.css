@@ -2,7 +2,7 @@
 
 	/* autohide css  */
 	#tabbar {
-		scrollbar-width: none !important;
+		padding-top: 0.2rem !important;
 	}
 
 	div#subpanel-header {
@@ -36,18 +36,26 @@
 		& .closebox {
 			border-radius: 1em;
 			height: 1.75em;
-			width: 2em;
+			width: 1.75em;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			margin-left: 0.25em !important;
-			background: rgb(244, 96, 103) !important;
+			background: rgb(204, 87, 93) !important;
 			visibility: collapse;
+
+			&::after {
+				background: var(--bg-color) !important;
+			}
 		}
 
 		&:hover {
 			& tab-closebox {
 				visibility: initial;
+
+				&:hover {
+					background: rgb(244, 96, 103) !important;
+				}
 			}
 
 			& tab-label {
@@ -93,9 +101,8 @@
 
 	tab-item-substance {
 		box-shadow: none !important;
-		border-radius: 5px 0px 0px 5px;
-		border-left: 1px solid !important;
-		padding-left: 0.3em !important;
+		border-radius: 5px;
+		border: 1px solid var(--tab-border) !important;
 
 		&:hover {
 			background: var(--theme-colors-popup_highlight) !important;
