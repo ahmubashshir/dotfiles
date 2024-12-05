@@ -11,26 +11,14 @@
 
 }
 
-@media (-moz-bool-pref: "sidebar.revamp") {
-
-	#sidebar-box {
-		z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
-
-		/* Hide splitter, when using Tree Style Tab. */
-		&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
-			&:not(:hover):not(:-moz-drag-over) #sidebar {
-				width: calc(100% - var(--space-xsmall)) !important;
-				min-width: calc(var(--thin-tab-width) - var(--space-xsmall)) !important;
-			}
-		}
-	}
-}
-
 #sidebar-box {
+	--collapsed-width: var(--thin-tab-width);
+	--expanded-width: var(--wide-tab-width);
+
 	&[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
 		transition: all 200ms !important;
-		min-width: var(--thin-tab-width) !important;
-		max-width: var(--thin-tab-width) !important;
+		min-width: var(--collapsed-width) !important;
+		max-width: var(--collapsed-width) !important;
 
 		/* Hide splitter, when using Tree Style Tab. */
 		& + #sidebar-splitter {
@@ -40,7 +28,7 @@
 		/* Sidebar min and max width removal */
 		& #sidebar {
 			max-width: none !important;
-			min-width: var(--thin-tab-width) !important;
+			min-width: var(--collapsed-width) !important;
 		}
 
 		/* Hide sidebar header, when using Tree Style Tab. */
@@ -51,9 +39,9 @@
 		&:hover,
 		&:-moz-drag-over {
 			transition: all 300ms !important;
-			min-width: var(--wide-tab-width) !important;
-			max-width: var(--wide-tab-width) !important;
-			margin-right: calc(var(--thin-tab-width) - var(--wide-tab-width)) !important;
+			min-width: var(--expanded-width) !important;
+			max-width: var(--expanded-width) !important;
+			margin-right: calc(var(--collapsed-width) - var(--expanded-width)) !important;
 		}
 
 	}
@@ -61,9 +49,9 @@
 	&:not([sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"]) {
 		&:has(> #sidebar-header[hidden="true"]) {
 			transition: all 200ms !important;
-			min-width: calc(var(--wide-tab-width) + var(--thin-tab-width) * 2) !important;
-			max-width: calc(var(--wide-tab-width) + var(--thin-tab-width) * 2) !important;
-			margin-right: calc(-1 * (var(--wide-tab-width) + var(--thin-tab-width))) !important;
+			min-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
+			max-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
+			margin-right: calc(-1 * (var(--expanded-width) + var(--collapsed-width))) !important;
 
 			& + #sidebar-splitter {
 				display: none !important;
@@ -71,7 +59,7 @@
 		}
 
 		&:not(:has(> #sidebar-header[hidden="true"])) {
-			min-width: var(--wide-tab-width) !important;
+			min-width: var(--expanded-width) !important;
 			max-width: none !important;
 		}
 	}
