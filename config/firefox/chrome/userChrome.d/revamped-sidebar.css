@@ -144,7 +144,6 @@
 
 	#sidebar-box {
 		--collapsed-width: calc(var(--thin-tab-width) + var(--space-xsmall));
-		z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 		padding-top: var(--space-small) !important;
 		background: transparent !important;
 
