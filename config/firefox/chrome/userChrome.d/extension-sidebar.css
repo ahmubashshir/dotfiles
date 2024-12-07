@@ -14,6 +14,7 @@
 #sidebar-box {
 	--collapsed-width: var(--thin-tab-width);
 	--expanded-width: var(--wide-tab-width);
+	z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 
 	&[sidebarcommand$="-sidebar-action"] {
 		transition: all 200ms !important;
@@ -64,6 +65,12 @@
 		}
 	}
 
+}
+
+@media not (-moz-bool-pref: "sidebar.revamp") {
+	#browser:has(> #sidebar-box[hidden="true"]) #tabbrowser-tabbox {
+		border-left: calc(var(--thin-tab-width) + var(--space-xxsmall)) solid var(--background-color-canvas);
+	}
 }
 
 #statuspanel {
