@@ -129,7 +129,8 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 			opacity: 1;
 			position: absolute !important;
 			bottom: 0;
-			left: var(--button-size-icon);
+			margin-left: calc(var(--button-size-icon) + var(--toolbarbutton-inner-padding));
+			max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
 			width: 100vw;
 			height: 100%;
 
