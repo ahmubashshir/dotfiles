@@ -21,6 +21,7 @@ zsh_options=(
 	auto_continue auto_cd auto_pushd pushd_silent
 	pushd_to_home pushd_ignore_dups pushd_minus
 	auto_list glob_complete list_packed
+	interactive_comments
 )
 setopt $zsh_options
 unset zsh_options
@@ -34,11 +35,10 @@ load rc plugins/hooks plugins/init
 zplug --path "$ZDOTDIR/omz/plugins"
 
 typeset -A ENV # base config variable
-load rc completion keymap history modules \
+load rc completion completion/defs keymap history modules \
 		prompt prompt/transient plugins <&- # close input
 
-if [ -e zprof ];then
+if [ -e ~/zprof ];then
+	exec 2>&3 3>/dev/null
 	unsetopt XTRACE
-	exec 2>&3 3>&-
-	exec 2>/dev/stderr 3>/dev/null
 fi
