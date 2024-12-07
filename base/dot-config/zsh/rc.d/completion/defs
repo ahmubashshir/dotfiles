@@ -3,8 +3,8 @@
 	local -a defs
 	defs=(
 		port=netcat
-		{pm,spm}=pacman
-		gpg-{yay,jadupc}=gpg
+		{,s}pm=pacman
+		gpg-{makepkg,jadupc}=gpg
 		jpc=exec
 		go-hugomod=go
 	)
