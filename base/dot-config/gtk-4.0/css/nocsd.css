@@ -11,3 +11,8 @@ popover contents {
 	border-top-right-radius: 0;
 	box-shadow: none;
 }
+
+tooltip.csd decoration,
+.popup decoration {
+	box-shadow: none;
+}
