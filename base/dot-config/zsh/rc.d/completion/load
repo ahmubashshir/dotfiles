@@ -47,4 +47,4 @@ zstyle ':completion:*:kill:*' force-list always
 	#max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3))numeric)'
 
 autoload -U +X bashcompinit && bashcompinit
-zcompinit
+compinit -C
