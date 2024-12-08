@@ -1,6 +1,0 @@
-#!/bin/zsh
-# function zcompinit
-compinit -C "$@"
-source ${ZDOTDIR:-$HOME/.zsh}/compdef
-
-unfunction zcompinit

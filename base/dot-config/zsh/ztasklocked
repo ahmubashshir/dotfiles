@@ -36,7 +36,6 @@ case "$task" in
 	zrecompile -Rz $@
 	zrecompile -Mz \
 		"${ZDOTDIR:-$HOME}"/.z{shrc,shenv,login,logout,profile,inputrc} \
-		"${ZDOTDIR:-$HOME/.zsh}"/compdef \
 		"${XDG_CACHE_HOME:-$HOME/.cache}/zsh"/**/*(.)
 	wait
 	;;
