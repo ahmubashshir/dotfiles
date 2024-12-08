@@ -73,6 +73,14 @@ export OPAMROOT="$XDG_DATA_HOME/opam"
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 # pass
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
+# perl:cpan
+export PERLHOME="${XDG_DATA_HOME}/perl"
+export PATH="$PERLHOME/bin${PATH:+:${PATH}}"
+export PERL_CPANM_HOME="${XDG_CONFIG_HOME}/cpan"
+export PERL5LIB="$PERL_CPANM_HOME:$PERLHOME/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
+export PERL_LOCAL_LIB_ROOT="$PERLHOME${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
+export PERL_MB_OPT="--install_base \"$PERLHOME\""
+export PERL_MM_OPT="INSTALL_BASE=$PERLHOME"
 # python:hist
 export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
 # python:venv
