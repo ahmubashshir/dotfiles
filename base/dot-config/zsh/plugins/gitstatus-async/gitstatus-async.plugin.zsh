@@ -5,9 +5,9 @@ zplug async
 (($+functions[gitstatus_check])) || return
 (($+functions[async_init])) || return
 autoload -U add-zsh-hook
-add-zsh-hook precmd →git/prompt/precmd
-add-zsh-hook chpwd  →git/prompt/chpwd
-add-zsh-hook zshexit →git/prompt/worker_shutdown
+add-zsh-hook precmd ›git›prompt›precmd
+add-zsh-hook chpwd  ›git›prompt›chpwd
+add-zsh-hook zshexit ›git›prompt›worker_shutdown
 
 typeset -gA GITSTATUS
 typeset -g  GITSTATUS_PROMPT
@@ -24,7 +24,7 @@ GITSTATUS[default]='%F{red}'
 GITSTATUS[prefix]='-['
 GITSTATUS[suffix]=']'
 
-function →git/prompt/update/async {
+function ›git›prompt›update›async {
 	emulate -L zsh
 	# Call gitstatus_query asynchronously
 	local \
@@ -123,8 +123,8 @@ function →git/prompt/update/async {
 				"${GITSTATUS[default]}${GITSTATUS[suffix]}"
 }
 
-function →git/prompt/update {
-	[[ $1 != →git/prompt/update/async ]] && return
+function ›git›prompt›update {
+	[[ $1 != ›git›prompt›update›async ]] && return
 	if [[ "$GITSTATUS_PROMPT" != "$3" ]];then
 		local promptesc='%([BSUbfksu]|([FK]|){*})'
 		emulate -L zsh
@@ -135,24 +135,24 @@ function →git/prompt/update {
 	fi
 }
 
-function →git/prompt/worker_shutdown {
+function ›git›prompt›worker_shutdown {
 	async_stop_worker "gitworker$$" 2>/dev/null
 }
 
-function →git/prompt/worker_restart {
-	→git/prompt/worker_shutdown
+function ›git›prompt›worker_restart {
+	›git›prompt›worker_shutdown
 	async_start_worker "gitworker$$" -n
-	async_register_callback "gitworker$$" →git/prompt/update
+	async_register_callback "gitworker$$" ›git›prompt›update
 }
 
-function →git/prompt/chpwd {
+function ›git›prompt›chpwd {
 	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/ ]] && return 0
 	async_worker_eval "gitworker$$" cd -q "$PWD"
-	→git/prompt/precmd
+	›git›prompt›precmd
 }
 
-function →git/prompt/precmd {
+function ›git›prompt›precmd {
 	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/ ]] && return 0
-	() { async_flush_jobs "gitworker$$" || →git/prompt/worker_restart } 2>/dev/null
-	async_job "gitworker$$" →git/prompt/update/async
+	() { async_flush_jobs "gitworker$$" || ›git›prompt›worker_restart } 2>/dev/null
+	async_job "gitworker$$" ›git›prompt›update›async
 }

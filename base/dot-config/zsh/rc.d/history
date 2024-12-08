@@ -1,6 +1,6 @@
 #!/bin/zsh
 [[ $(get_term) =~ ^(.*geany.*|octopi)$ ]] && unset HISTFILE && return
-→zsh/print/hist()
+›zsh›print›hist()
 {
 	echo 'HISTFILE: '"${${${${${HISTFILE/#${XDG_STATE_HOME:-$HOME\/.local\/state}/@STATE}/#${XDG_CONFIG_HOME:-$HOME\/.config}/@CONFIG}/#${XDG_CACHE_HOME:-$HOME\/.cache}/@CACHE}/#${XDG_DATA_HOME:-$HOME\/.local\/share}/@DATA}/#$HOME/~}"
 }
@@ -10,14 +10,14 @@ function dirhist {
 	local OLDHIST="$HISTFILE"
 	fc -p "$PWD/hist"
 	fc -R "$OLDHIST"
-	→zsh/print/hist
+	›zsh›print›hist
 }
 
 function nullhist {
 	if [[ $HISTFILE == /dev/null ]]; then
 		fc -P
 		fc -R
-		→zsh/print/hist
+		›zsh›print›hist
 	else
 		local OLDHIST="$HISTFILE"
 		fc -p /dev/null
@@ -54,7 +54,7 @@ setopt \
 	hist_no_functions \
 	hist_verify
 
-function →zsh/pwd/hist {
+function ›zsh›pwd›hist {
 	local DIR="$PWD" OLDDIR=""
 	! [[ $HISTFILE == /dev/null ]] || return
 
@@ -71,7 +71,7 @@ function →zsh/pwd/hist {
 				fc -R "$OLDHIST"
 			fi
 			fc -R
-			→zsh/print/hist
+			›zsh›print›hist
 			return
 		fi
 		OLDDIR="$DIR"
@@ -79,5 +79,5 @@ function →zsh/pwd/hist {
 	done
 }
 
-add-zsh-hook -Uz chpwd →zsh/pwd/hist
-→zsh/pwd/hist
+add-zsh-hook -Uz chpwd ›zsh›pwd›hist
+›zsh›pwd›hist
