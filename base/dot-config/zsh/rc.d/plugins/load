@@ -31,6 +31,4 @@ zplug-defer z
 	zplug-defer nix-shell
 }
 
-# reset zle after loading plugins: required when using deferred loading
 zsh-defer +a eval '${ZDOTDIR:-$HOME/.zsh}/ztasklocked recompile $fpath ${(v)zsh_loaded_plugins}'
-zsh-defer +a builtin :
