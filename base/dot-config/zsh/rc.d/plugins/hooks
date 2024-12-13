@@ -92,8 +92,15 @@ function zplug:pre:git {
 }
 
 function zplug:pre:z {
-	ZSHZ_DATA="${XDG_CACHE_HOME:-$HOME/.}${XDG_CACHE_HOME+/zsh/}z"
-	alias d=zshz
+	ZSHZ_NO_RESOLVE_SYMLINKS=1
+	ZSHZ_DATA="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/dirs"
+	ZSHZ_CMD=d
+	ZSHZ_CASE=smart
+}
+
+function zplug:pre:dotenv {
+	ZSH_DOTENV_ALLOWED_LIST="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/dotenv/allowed"
+	ZSH_DOTENV_DISALLOWED_LIST="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/dotenv/denied"
 }
 
 function zplug:post:dotenv {
