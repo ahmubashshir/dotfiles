@@ -16,7 +16,7 @@
 	progress = diff --stat
 	amend = commit --amend
 	pg = diff --shortstat
-	pullmod = submodule update --init --remote --checkout
+	pullmod = submodule update --init --remote
 	rf = !git pull --all && git pull origin master && git push --all
 	up = "![ \"$(git config \"branch.$(git rev-parse --abbrev-ref HEAD).merge\")\" = '' ] && git push -u || git push"
 	hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
