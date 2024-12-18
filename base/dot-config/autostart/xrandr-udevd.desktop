@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Hidden=false
+Terminal=false
+NoDisplay=false
+Type=Application
+Name=xrandr-udevd
+Categories=Utility;
+StartupNotify=false
+Exec=xrandr-udevd -r
+TryExec=xrandr-udevd
+Icon=preferences-desktop-display
+Comment=Remove disconnected display from config cache (XRandR)
