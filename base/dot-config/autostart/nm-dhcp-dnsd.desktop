@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Hidden=false
+Terminal=false
+NoDisplay=false
+Type=Application
+Name=nm-dhcp-dnsd
+Categories=Utility;
+Icon=network-server
+StartupNotify=false
+Exec=nm-dhcp-dnsd -r
+TryExec=nm-dhcp-dnsd
+Comment=Ignore DHCP provided DNS (NetworkManager)

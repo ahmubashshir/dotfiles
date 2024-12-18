@@ -1,0 +1,8 @@
+#!/usr/bin/env -S${HOME}/bin/lib/mksrc --
+findpkg = --pkg=$(1)
+TYPE    = vala
+COMP    = valac
+PKGS    = gio-2.0 posix
+FLAGS = -X -Wno-discarded-qualifiers \
+		--abi-stability \
+		--vapidir $(XDG_DATA_HOME)/vapis-extra
