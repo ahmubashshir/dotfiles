@@ -155,3 +155,7 @@
 [submodule "base/dot-config/zsh/plugins/mask"]
 	path = base/dot-config/zsh/plugins/mask
 	url = https://github.com/jgogstad/zsh-mask
+[submodule "base/dot-local/share/vapis-extra"]
+	path = base/dot-local/share/vapis-extra
+	url = https://github.com/GNOME/vala-extra-vapis
+	branch = master
