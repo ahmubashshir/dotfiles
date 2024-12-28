@@ -36,11 +36,16 @@
 			display: block;
 			z-index: 1 !important;
 			width: 100% !important;
+			margin-top: var(--space-xsmall);
 		}
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xsmall));
+		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xsmall) + 1px);
+
+		#sidebar-main {
+			margin-bottom: calc(0px - var(--space-xsmall));
+		}
 	}
 
 	& #titlebar {
