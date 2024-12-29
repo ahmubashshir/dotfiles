@@ -531,11 +531,12 @@ struct Health {
 	{
 		std::string coretemp;
 		std::error_code ec;
-		std::filesystem::path base {"/sys/class/hwmon"};
-		std::filesystem::directory_iterator iter {base, ec};
+		std::filesystem::directory_iterator dirs {
+			std::filesystem::path("/sys/class/hwmon"), ec
+		};
 		if (! ec)
-			for(auto& ent: iter) {
-				std::filesystem::path p = ent.path();
+			for(auto& dir: dirs) {
+				std::filesystem::path p = dir.path();
 				std::vector<char> buffer;
 				if (!readFile((p / "name").c_str(), buffer, false))
 					if (!readFile(((p = p / "device") / "name").c_str(), buffer, false))
