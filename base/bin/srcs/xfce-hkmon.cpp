@@ -33,6 +33,7 @@
 #endif
 
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <iostream>
 #include <iomanip>
@@ -529,20 +530,20 @@ struct Health {
 	void readProc()
 	{
 		std::string coretemp;
-		for (int hwmon = 0; hwmon < 256; hwmon++) {
-			std::string base = VA_STR("/sys/class/hwmon/hwmon" << hwmon);
-			std::vector<char> buffer;
-			if (!readFile(VA_STR(base << "/name").c_str(), buffer, false)) { // pre-3.15 kernel?
-				base.append("/device");
-				if (!readFile(VA_STR(base << "/name").c_str(), buffer, false)) break;
+		std::error_code ec;
+		std::filesystem::path base {"/sys/class/hwmon"};
+		std::filesystem::directory_iterator iter {base, ec};
+		if (! ec)
+			for(auto& ent: iter) {
+				std::filesystem::path p = ent.path();
+				std::vector<char> buffer;
+				if (!readFile((p / "name").c_str(), buffer, false))
+					if (!readFile(((p = p / "device") / "name").c_str(), buffer, false))
+						continue;
+
+				if (std::string(buffer.begin(), buffer.end()).find("coretemp") == std::string::npos) continue;
+				coretemp = p.string();
 			}
-			std::istringstream sname(&buffer[0]);
-			std::string name;
-			if ((sname >> name) && (name == "coretemp")) {
-				coretemp = base;
-				break;
-			}
-		}
 
 		if (!coretemp.empty()) for (int ic = 1; ic < 64; ic++) {
 				std::vector<char> buffer;
