@@ -98,13 +98,13 @@ enum ICON: unsigned int {
 
 constexpr ICON operator| (ICON x, ICON y)
 {
-	typedef std::underlying_type<ICON>::type ucast;
+	using ucast = std::underlying_type<ICON>::type;
 	return ICON(ucast(x) | ucast(y));
 }
 
 inline ICON& operator|= (ICON& x, ICON y)
 {
-	typedef std::underlying_type<ICON>::type ucast;
+	using ucast = std::underlying_type<ICON>::type;
 	return x = ICON(ucast(x) | ucast(y));
 }
 
