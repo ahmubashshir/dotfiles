@@ -91,6 +91,10 @@ elif [ "$1" = "system" ]; then
 elif [ "$1" = "firefox" ]; then
 	declare -A profiles
 	shift
+	if ! [ -f ~/.mozilla/firefox/profiles.ini ]; then
+		echo "No firefox profile available!"
+		exit 2
+	fi >&2
 	while IFS="=" read -r name path; do
 		profiles+=(["$name"]="$path")
 	done < <(
