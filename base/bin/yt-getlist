@@ -511,8 +511,11 @@ def strip(_str):
 
 def file_name(item):
     return '[{}] {} [{}].%(ext)s'.format(
-        '.'.join((item['artist'] if isinstance(item['artist'], (str, )) else
-                  item['artist']['sname']).split(' ')),
+        '.'.join((','.join(item['artist'])
+                  if isinstance(item['artist'], (list,))
+                  else item['artist']
+                  if isinstance(item['artist'], (str,))
+                  else item['artist']['sname']).split(' ')),
         '.'.join(item['title'].split(' ')), '.'.join(
             item['comment'].split(' ')))
 
@@ -540,9 +543,11 @@ class playlist:
             if self._fmt == 'xspf':
                 trk = Track()
                 trk.title = item['title']
-                trk.creator = item['artist'] if isinstance(
-                    item['artist'],
-                    (str, )) else ' '.join(item['artist'].values())
+                trk.creator = (item['artist']
+                               if isinstance(item['artist'], (str, ))
+                               else ', '.join(item['artist'])
+                               if isinstance(item['artist'], (list,))
+                               else ' '.join(item['artist'].values()))
                 trk.annotation = item['comment'].format(**item)
 
                 if 'album' in item:
@@ -568,8 +573,12 @@ class playlist:
             elif self._fmt == 'm3u':
                 f.write("#EXTM3U\n")
                 for idx in range(len(self._list)):
-                    if type(self._list[idx][1]['artist']) == dict:
-                        self._list[idx][1]['artist'] = self._list[idx][1]['artist']['sname']
+                    self._list[idx][1]['artist'] = (
+                        lambda k: (k
+                                   if isinstance(k, (str, ))
+                                   else '; '.join(k)
+                                   if isinstance(k, (list,))
+                                   else ' '.join(k.values())))(self._list[idx][1]['artist'])
                     f.write("#EXTINF:{},{{artist}} - {{title}}\n{}\n"
                             .format(idx, self._list[idx][0])
                             .format(**self._list[idx][1])
@@ -589,7 +598,9 @@ def id3_tags(item, file):
                 tags, key,
                 item[key].format(**item) if isinstance(item[key], (str, )) else
                 (' / '.join(item[key].values())
-                 if key == 'text' else ' '.join(item[key].values())))
+                 if key == 'text' else ', '.join(item[key])
+                 if isinstance(item[key], (list,))
+                 else ' '.join(item[key].values())))
     tags.write()
 
 
