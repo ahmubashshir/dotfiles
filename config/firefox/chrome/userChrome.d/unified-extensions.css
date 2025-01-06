@@ -10,13 +10,15 @@
 				height: 40px;
 				max-width: 40px;
 			}
+
 		}
 	}
 
 	& toolbaritem.unified-extensions-item,
-	& unified-extensions-item {
+	& unified-extensions-item,
+	& .unified-extensions-item-row-wrapper {
 
-		&:has(> toolbarbutton[disabled="true"]),
+		&:has(toolbarbutton[disabled="true"]:not(.unified-extensions-item-menu-button)),
 		& > .unified-extensions-item-menu-button,
 		& .unified-extensions-item-contents {
 			visibility: collapse;
