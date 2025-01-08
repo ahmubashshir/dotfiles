@@ -70,21 +70,22 @@ case "$TYPE" in
 	x-arduino) exec arduino-cli-log upload --verify "${args[@]}" --no-color "$DIR" ;;
 esac
 
+
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 cat > "$TMPFILE" << EOF
-#!/bin/bash
-$(declare -p stdin)
-command -p printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
+#!/bin/sh
 rm -f "$TMPFILE"
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-$(((${#stdin[@]} == 0)) || echo "printf '> %s\\n' \"\${stdin[@]}\" | tee /dev/stderr | cut -c3- | \\")
-/bin/time \
-	-f "\$(cat <<EOT
-========
-Process returned %x, elapsed %0.4e; %Kkb
-EOT
-	)" \
-	"./$GEDIT_CURRENT_DOCUMENT_NAME.elf" "${args[@]}"
+
+/bin/printf '\\e]2;Run: %s' "$GEDIT_CURRENT_DOCUMENT_NAME"
+/bin/printf ' %q' ${args[@]}
+/bin/printf '\\a'
+$(((${#stdin[@]} == 0)) || {
+	printf "printf '> %%s\\n'"
+	printf ' %q' "${stdin[@]}"
+	printf '| tee /dev/stderr | cut -c3- | \'
+})
+/bin/time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf" ${args[@]}
 read -rsp$'Press RETURN to continue...'
 EOF
 chmod +x "$TMPFILE"

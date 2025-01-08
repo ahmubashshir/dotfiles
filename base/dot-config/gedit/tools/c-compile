@@ -115,6 +115,7 @@ get_strip()
 
 get_file()
 {
+	echo '# file <path> is deprecated!' >&2
 	files+=("$1")
 }
 
@@ -149,7 +150,6 @@ get_arduino()
 }
 
 HELPERS=(
-	'file[files]: Add another file to compile/run with this file'
 	'arduino <arg>:     Select arduino automatically.'
 	'    list: List connected boards'
 	'    N:    Connect to Nth board.'
