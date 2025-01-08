@@ -8,12 +8,9 @@ exec 3> /dev/null
 tty -s || return
 ! test "${_SHELL_LINUS_FINGER_SHOWN}" = "in-$TERM" || return
 
-if
-	{
-		[ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]
-	}                                                                   &&
-		hash kitten 2> /dev/null
-then
+if hash kitten 2> /dev/null && {
+	[ "${TERM#xterm*-}" = "kitty" ] || [ "${TERM%[-+]*}" = "kitty" ]
+}; then
 	kitten icat --align=left "$XDG_CONFIG_HOME/shell/motd.png"
 elif
 	[ "${TERM_PROGRAM}" = "WezTerm" ] && hash wezterm 2> /dev/null
