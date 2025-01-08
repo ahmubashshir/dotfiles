@@ -8,9 +8,9 @@
 # Save-files=document
 # Shortcut=F4
 
-FILTER=compile
 ## start args
+FILTER=compile
 source "${0%/*}/.lib/args"
 ## end args
 
-valac --Xcc=-w "$GEDIT_CURRENT_DOCUMENT_NAME" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.elf"
+valac --Xcc=-w "${files[@]}" "${args[@]}" -o "$GEDIT_CURRENT_DOCUMENT_NAME.elf"

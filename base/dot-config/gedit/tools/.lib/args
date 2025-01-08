@@ -30,6 +30,7 @@ Usage:
    :arg           -> arg
    @option  [arg] -> --option [arg]
    @-option [arg] -> -option  [arg]
+   % <file>       -> add file for compilation
    #helper  [arg]
     ->  Modify environment by running
         <helper> with [arg]
@@ -82,6 +83,22 @@ done < <(
 	sed -nE -e 's%^//'"$PREFIX"'('"$TYPE"')('"$FILTER"')$%\1 \2%p' \
 		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'('"$TYPE"')('"$FILTER"')$/\1 \2/p' "$NAME" | tr -d '\r'
 )
+
+while read -r path; do
+	if [[ -n $(envsubst <<< "${path/\~/$HOME}") ]]; then
+		files+=("$(envsubst <<< "${path/\~/$HOME}")")
+	fi
+done < <(
+	PREFIX='[ \*]+'
+	sed -nE -e 's|^//'"$PREFIX"'%\s+||p' \
+		-e '/^\/\*/,/\*\/$/s/^\/?'"$PREFIX"'%\s+//p' "$NAME" | tr -d '\r'
+)
+
+echo "#################" >&2
+for file in "${files[@]}"; do
+	echo "% file $file"
+done >&2
+echo "#################" >&2
 
 unset -f
 
