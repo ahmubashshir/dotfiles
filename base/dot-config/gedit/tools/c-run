@@ -22,7 +22,10 @@ get_arduino()
 		list) exec arduino-cli board list;;
 		auto) mapfile -t -O "${#args[@]}" args < <(
 			arduino-cli board list --format jsonmini \
-			| jq -r 'first
+			| jq -r 'if has("detected_ports") then
+				.detected_ports
+			else . end
+			| first
 			| [
 				"--fqbn",
 				(.matching_boards | first | .fqbn),
@@ -34,7 +37,10 @@ get_arduino()
 		);;
 		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
 			arduino-cli board list --format jsonmini \
-			| jq -r '.['"$1"']
+			| jq -r 'if has("detected_ports") then
+				.detected_ports
+			else . end
+			| .['"$1"']
 			| [
 				"--fqbn",
 				(.matching_boards | first | .fqbn),
