@@ -124,7 +124,7 @@
 
 
 	#sidebar-main:has(~ #sidebar-box[hidden="true"]) {
-		border-right: calc(var(--thin-tab-width) + var(--space-xsmall)) solid var(--background-color-canvas);
+		border-right: calc(var(--thin-tab-width) + var(--space-xsmall) + 1px) solid var(--background-color-canvas);
 	}
 
 	#sidebar-launcher-splitter {
