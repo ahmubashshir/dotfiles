@@ -1,0 +1,27 @@
+if () {
+	setopt localoptions extendedglob noksharrays
+	local -a match
+	local -i 10 major minor patch
+	local -li 16 rev
+	local -F 3 version
+	[[ $ZSH_PATCHLEVEL = (#b)zsh-(*).(*)-(*)-g(*) ]] && ((
+		major = match[1],
+		minor = match[2],
+		patch = match[3],
+		rev   = 16#${match[4]},
+		version = ${match[1]}.${match[2]}
+	))
+	declare -r major minor patchrev version
+	(($1))
+	return
+} 'version > 5.9 || version == 5.9 && (patch >= 20 || rev == 16#d4955bc)'; then
+	function function-mv {
+		builtin functions -c "$1" "$2"
+	}
+else
+	function function-mv {
+		builtin declare -g "functions[$2]=$functions[$1]"
+	}
+fi
+
+# vim: ft=sh
