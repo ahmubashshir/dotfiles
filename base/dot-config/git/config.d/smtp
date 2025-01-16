@@ -6,7 +6,7 @@
 	suppressCc = self
 	annotate = yes
 	multiEdit = yes
-	aliasesFile = ~/.config/git/mail-aliases
+	aliasesFile = ~/.config/git/authors
 	aliasFileType = mutt
 
 [format]
