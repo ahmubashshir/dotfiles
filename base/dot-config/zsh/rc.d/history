@@ -28,13 +28,13 @@ function nullhist {
 
 () {
 	local HISTDIR="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
-	if [[ "${HOST:r}" == "$HOST" ]]
-	then set "$HISTDIR/history"
-	else set "$HISTDIR/history.d/${${HOST:r}/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"
+	if [[ "${CONTAINER_ID}" ]]
+	then set "$HISTDIR/history.d/${CONTAINER_ID/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"
+	else set "$HISTDIR/history"
 	fi
 
 	[[ -d ${1:a:h} ]] || mkdir -p ${1:a:h}
-	[[ "${HOST:r}" == "$HOST" ]] || fc -R "$HISTDIR/history"
+	[[ -z "${CONTAINER_ID}" ]] || fc -R "$HISTDIR/history"
 	declare -g HISTFILE="${1:a}"
 }
 
