@@ -14,7 +14,7 @@ if (( ! $+functions[____zplug_run_hook]));then
 	done
 	while read -r plug _;do
 		if (($+functions[$plug]));then
-			functions -c $plug →zplug/hooks/${${plug#zplug:}:s+:+/+}
+			function-mv $plug →zplug/hooks/${${plug#zplug:}:s+:+/+}
 			unset -f $plug
 		fi
 	done < <(
