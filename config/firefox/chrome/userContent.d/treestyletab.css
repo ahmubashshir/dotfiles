@@ -145,11 +145,12 @@
 			}
 
 			& .extra-items-container.indent {
-				width: calc(var(--tab-indent) * 0.25) !important;
+				width: calc(var(--tab-indent) * 0.15) !important;
 			}
 
 			tab-item-substance {
-				margin-left: calc(var(--tab-indent) * 0.35) !important;
+				margin-left: calc(var(--tab-indent) * 0.25) !important;
+				overflow: clip;
 			}
 
 		}
