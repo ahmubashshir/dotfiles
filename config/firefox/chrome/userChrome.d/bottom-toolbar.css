@@ -123,7 +123,7 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 	}
 
 	&[autohide="true"] {
-		background-color: var(--toolbar-bgcolor) !important;
+		background-color: var(--toolbox-bgcolor) !important;
 		margin: 0;
 		position: absolute !important;
 		bottom: var(--space-xxsmall);
