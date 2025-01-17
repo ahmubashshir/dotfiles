@@ -1,3 +1,17 @@
+iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
+	background: transparent;
+}
+
+@-moz-document regexp("moz-extension://.+/resources/tab-preview-frame.html") {
+	html {
+		background: transparent !important;
+	}
+
+	.tab-preview-panel.open {
+		margin-left: calc(var(--panel-width) - var(--thin-tab-width, 84px)) !important;
+	}
+}
+
 @-moz-document regexp("moz-extension://.+/sidebar/sidebar.html.*") {
 
 	/* autohide css  */
