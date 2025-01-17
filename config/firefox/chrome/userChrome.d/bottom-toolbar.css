@@ -123,13 +123,18 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 	}
 
 	&[autohide="true"] {
-		background-color: var(--toolbox-bgcolor) !important;
 		margin: 0;
 		position: absolute !important;
 		bottom: var(--space-xxsmall);
 		height: var(--button-size-icon);
 		left: calc(var(--button-size-icon) + var(--toolbarbutton-inner-padding));
 		max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
+
+		&:not([inactive=true]) ~ #nav-bar #nav-bar-customization-target {
+			& > :not(:is(#urlbar-container ~ *, #firefox-view-button)) {
+				visibility: hidden !important;
+			}
+		}
 
 		#menubar-items {
 			flex-direction: revert-layer !important;
@@ -153,10 +158,6 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 					}
 				}
 			}
-		}
-
-		&:not([inactive="true"]) ~ #nav-bar #urlbar-container {
-			visibility: hidden !important;
 		}
 	}
 }
