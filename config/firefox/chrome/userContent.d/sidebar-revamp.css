@@ -1,0 +1,12 @@
+@-moz-document url(about:home),
+url(about:newtab),
+url(about:privatebrowsing),
+url(about:blank){
+@media (-moz-bool-pref: "sidebar.revamp") {
+
+	body {
+		--content-border-radius: var(--border-radius-medium) 0 var(--border-radius-medium) var(--border-radius-medium);
+		border-radius: var(--content-border-radius);
+	}
+}
+}

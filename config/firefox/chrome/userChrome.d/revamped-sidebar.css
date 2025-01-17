@@ -1,11 +1,16 @@
 /* revamped sidebar */
 @media (-moz-bool-pref: "sidebar.revamp") {
 
-	#tabbrowser-tabbox,
-	#appcontent {
+	#browser > #tabbrowser-tabbox {
 		--chrome-content-separator-color: var(--button-border-color);
-		border-radius: var(--border-radius-medium);
+		--content-border-radius: var(--border-radius-medium) 0 var(--border-radius-medium) var(--border-radius-medium);
+
+		border-radius: var(--content-border-radius);
 		border: 1px solid var(--background-color-canvas);
+
+		& > #tabbrowser-tabpanels {
+			clip-path: rect(auto auto auto auto round var(--content-border-radius));
+		}
 	}
 
 	div.wrapper:has(> button-group.tools-and-extensions.actions-list) {
@@ -124,7 +129,7 @@
 
 
 	#sidebar-main:has(~ #sidebar-box[hidden="true"]) {
-		border-right: calc(var(--thin-tab-width) + var(--space-xsmall) + 1px) solid var(--background-color-canvas);
+		border-right: calc(var(--thin-tab-width) + var(--space-xsmall) + 1px) solid var(--toolbar-bgcolor);
 	}
 
 	#sidebar-launcher-splitter {
