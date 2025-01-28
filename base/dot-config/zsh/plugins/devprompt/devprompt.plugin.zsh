@@ -37,7 +37,7 @@ function __devprompt_precmd {
 	)
 
 	DEVPROMPT_PROMPT=''
-	__devprompt_env ssh "${${=SSH_CONNECTION}[3]}"
+	__devprompt_env ssh "${${=SSH_CONNECTION}[3]}${${${=SSH_CONNECTION}[4]/#%22/}:+:${=SSH_CONNECTION}[4]}"
 	__devprompt_env pod "${CONTAINER_ID}"
 	__devprompt_env py3 "${${VIRTUAL_ENV:t}//$~pyvenvfilter/}"
 	__devprompt_env lua "${ROCK_ENV_NAME}"
