@@ -1,0 +1,24 @@
+#!/bin/sh
+if [ "$#" -lt 2 ]; then
+	echo "$0 <add|del> pkg1[ pkg2[ ...]" >&2
+	exit 1
+elif [ "$1" != "add" ] && [ "$1" != "del" ]; then
+	echo "Only add/del verb is supported" >&2
+	exit 2
+fi
+
+mode="$1"
+shift
+
+find "$@" -mindepth 2 -maxdepth 3 -type d -not -wholename '*/.info/*' -print0 |
+	sed -z 's@^[^/]*/@@;s@dot-@.@' |
+	case "$mode" in
+		add)
+			cd
+			xargs      -0n1 mkdir -vp
+			;;
+		del)
+			cd
+			grep      -zvE '^.(local/[^/]+|config)$' | sort -rzst/ | xargs -0n1 rmdir -v
+			;;
+	esac
