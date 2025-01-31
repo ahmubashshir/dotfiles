@@ -68,6 +68,8 @@
 	trigger-build = commit --allow-empty --message 'Trigger Build'
 	fold = ! gfold \"$@\"
 	graph = log --oneline --graph --decorate --all
+	http11 = "! git -c http.version=HTTP/1.1"
+	h11 = http11
 
 [alias ""]
 	vbar = "!printf '%-80s\\n' ''|tr ' ' -"
