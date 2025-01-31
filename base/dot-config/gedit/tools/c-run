@@ -73,7 +73,7 @@ esac
 
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 cat > "$TMPFILE" << EOF
-#!/bin/sh
+#!/bin/bash
 rm -f "$TMPFILE"
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
 
