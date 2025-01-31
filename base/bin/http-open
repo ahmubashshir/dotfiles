@@ -22,6 +22,7 @@ declare -A urlre=(
 	['zoom']='zoom\.us/j/'
 	['hoyoverse']='^https?(://|.+:%2[Ff]%2[Ff])act\.hoyoverse\.com(/|%2F)[a-z]+(%2[Ff]|/)event(%2[Ff]|/)'
 	['epic']='store\.epicgames\.com/'
+	['pesbuk']='://([[:alnum:].-]+\.|)(facebook|fb)\.com($|/)'
 )
 
 abort()
@@ -94,6 +95,11 @@ handlers/wikipedia()
 		wike) exec wike -u "$URL" ;;
 		*) exec "$WIKIPEDIA_APP" "$URL" ;;
 	esac
+}
+
+handlers/pesbuk()
+{
+	exec firefox -p pesbuk "$URL"
 }
 
 handlers/goolag()
@@ -280,6 +286,7 @@ QBCALL()
 
 [[ -z "$URL" ]] \
 	|| match/url awstrack \
+	|| match/url pesbuk \
 	|| match/url youtube \
 	|| match/url redd.it \
 	|| match/url wikipedia \
