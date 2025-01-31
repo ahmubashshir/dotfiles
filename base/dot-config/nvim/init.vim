@@ -8,6 +8,7 @@ scripte utf-8
 " Revert all command settings before proceeding with other settings below
 "set all&
 
+set viminfo=NONE
 " Work in Vim compatible not Vi compatible
 set nocompatible
 
