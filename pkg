@@ -11,15 +11,21 @@ mode="$1"
 shift
 
 cd "$(dirname "$(realpath "$0")")"
-find "$@" -mindepth 2 -maxdepth 3 -type d -not -wholename '*/.info/*' -print0 |
+find "$@" \
+	-mindepth 2 \
+	-maxdepth 3 \
+	-type d \
+	-not -wholename '*/.info/*' \
+	-not -wholename '*/zsh/omz' \
+	-print0 |
 	sed -z 's@^[^/]*/@@;s@dot-@.@' |
 	case "$mode" in
 		add)
 			cd
-			xargs    -0n1 mkdir -vp
+			xargs  -0n1 mkdir -vp
 			;;
 		del)
 			cd
-			grep    -zvE '^.(local/[^/]+|config)$' | sort -rzst/ | xargs -0n1 rmdir -v
+			grep  -zvE '^.(local/[^/]+|config)$' | sort -rzst/ | xargs -0n1 rmdir -v
 			;;
 	esac
