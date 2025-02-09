@@ -84,7 +84,7 @@ Usage:
   ${STOW_DIR_REPR-$STOW_DIR}/${0##*/} firefox [@|-]profiles
 EOF
 	echo "Available packages: ${STOW_DIR_REPR-$STOW_DIR}"
-	printf '%s\n' */.info | sed -n '/^[a-z]*\/\.info$/{s@/.info@@;s@^@\t@;p}'
+	printf '%s\n' */.info | sed -n '/^[a-z]*\/\.info$/{s@/.info@@;s@^@\t@;p;}'
 elif [ "$1" = "system" ]; then
 	shift
 	stow-system "$@"
