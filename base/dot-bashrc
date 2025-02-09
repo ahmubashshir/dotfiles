@@ -2,25 +2,22 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
-#set -x
 # If not running interactively, don't do anything
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-case "$OSTYPE" in
-	darwin*) [[ $TERM == xterm-kitty ]] && TERM='xterm-256color' ;;
-esac
-! [[ $NIX_BASH_ZSH_SWITCH == yes ]] || return # nix-shell source guard
-if [ -f ~/.config/shell/import ]; then
-	. ~/.config/shell/import
-fi
 case $- in
 	*i*) ;;
 	*) return ;;
 esac
+
+! [[ $NIX_BASH_ZSH_SWITCH == yes ]] || return # nix-shell source guard
+
+if [ -f ~/.config/shell/import ]; then
+	. ~/.config/shell/import
+fi
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=erasedups:ignoreboth
+
 # append to the history file, don't overwrite it
 shopt -s histappend
 if [ ! -d "${XDG_STATE_HOME:-$HOME/.local/state}"/bash ]; then
@@ -48,24 +45,15 @@ shopt -s checkwinsize
 
 # If set, the pattern "**" used in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
-#shopt -s globstar
+shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-	debian_chroot=$(cat /etc/debian_chroot)
-fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
 	xterm | xterm-color | *-256color | *-kitty) color_prompt=yes ;;
 esac
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-#force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
 	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
