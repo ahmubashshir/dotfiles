@@ -8,8 +8,9 @@
 # the default umask is set in /etc/profile; for setting the umask
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
-if [ -f ~/.config/shell/environment ]; then
-	. ~/.config/shell/environment
+: ${XDG_CONFIG_HOME:=$HOME/.config}
+if [ -f "$XDG_CONFIG_HOME/shell/environment" ]; then
+	. "$XDG_CONFIG_HOME/shell/environment"
 fi
 
 if [ -n "$BASH_VERSION" ]; then
