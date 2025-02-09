@@ -10,8 +10,8 @@ esac
 
 ! [[ $NIX_BASH_ZSH_SWITCH == yes ]] || return # nix-shell source guard
 
-if [ -f ~/.config/shell/import ]; then
-	. ~/.config/shell/import
+if [ -f "$XDG_CONFIG_HOME/shell/import" ]; then
+	. "$XDG_CONFIG_HOME/shell/import"
 fi
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -20,6 +20,7 @@ HISTCONTROL=erasedups:ignoreboth
 
 # append to the history file, don't overwrite it
 shopt -s histappend
+
 if [ ! -d "${XDG_STATE_HOME:-$HOME/.local/state}"/bash ]; then
 	mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}"/bash
 fi
