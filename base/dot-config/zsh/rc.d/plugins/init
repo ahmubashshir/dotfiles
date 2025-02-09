@@ -4,17 +4,17 @@
 		git -C "$1" submodule init --quiet plugins omz
 		if ! git -C "$1" submodule update --progress plugins omz
 		then
-			printf "zsh: failed to initialize plugins\n"
+			printf "zsh: Plugins installation failed.\n"
 			function zsh-defer {
 				while [[ $1 =~ ^[+-] ]];do shift; done
 				"$@"
 			}
 		else
-			printf "zsh: finished cloning modules\n"
+			printf "zsh: Plugins installed successfully.\n"
 			zplug defer
 		fi
 	else
 		"$ZDOTDIR/ztasklocked" exec \
-			git -C "${___plugins[1]}" submodule update --progress "${___plugins[@]:1}" &!
+			git -C "$1" submodule update --progress plugins omz &!
 	fi
 } "${${ZDOTDIR/%//.zshrc}:P:h}" <&- # close input stream
