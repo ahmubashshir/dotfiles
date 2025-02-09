@@ -15,6 +15,16 @@ if [ -z "$XDG_STATE_HOME" ];then
 	export XDG_STATE_HOME="$HOME/.local/state"
 fi
 
+if [ -z "$XDG_RUNTIME_DIR" ];then
+	if [ -d "/run/user/$UID" ]
+	then XDG_RUNTIME_DIR="/run/user/$UID"
+	elif [ -n "$TMPDIR" ]
+	then XDG_RUNTIME_DIR="$TMPDIR"
+	else XDG_RUNTIME_DIR="/tmp/run/$UID"
+	fi
+	export XDG_RUNTIME_DIR
+fi
+
 # android sdk
 export ADB_KEYS_PATH="$XDG_CONFIG_HOME"/android
 export ANDROID_USER_HOME="$XDG_DATA_HOME"/android
