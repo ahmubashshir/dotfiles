@@ -5,7 +5,11 @@ EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
 VERCHK=${VERCHK:---version}
 AUTO_UPDATE=${AUTO_UPDATE:-1}
-exec=$(env which "$NAME" -a 2> /dev/null | grep -v "^${BASH_SOURCE%/lib/git-rel}" | head -n1)
+exec=$(
+	env which -a "$NAME" 2> /dev/null \
+		| grep -v "^${BASH_SOURCE%/lib/git-rel}" \
+		| head -n1
+)
 (
 	deps=(
 		jq@pacman:jq@apt:jq
