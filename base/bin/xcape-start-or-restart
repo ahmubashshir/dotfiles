@@ -9,7 +9,7 @@ function configfile(path) {
 }
 
 function is_file(path) {
-	ret = stat(path, data);
+	ret = stat(path, data, 1);
 	if (ret == -1 || data["type"] != "file") return 0;
 	return 1;
 }
@@ -22,7 +22,9 @@ BEGIN {
 			gsub("+", "|");
 			line = ((line == "")?"":line";") $0;
 		}
-		if(line != "")
+		if (ARGV[1] == "--dry-run" || ARGV[0] == "-n")
+			print "xcape -e \""line"\"";
+		else if(line != "")
 			system("pkill --older 1 xcape;command -p xcape -e \"" line "\"&");
 	}
 }
