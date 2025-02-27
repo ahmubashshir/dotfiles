@@ -1,14 +1,15 @@
-#!/usr/bin/make -sirf
+#!/usr/bin/make -sirdf
 XDG_CACHE_HOME ?= $(HOME)/.cache
 include $(firstword $(MAKECMDGOALS))
 
 CALLER := $(firstword $(MAKECMDGOALS))
-BINDIR := $(XDG_CACHE_HOME)/bin
+BINDIR := $(XDG_CACHE_HOME)/bin/$(shell getmachine)
 SRCDIR := $(HOME)/bin/srcs
 SHELL  := /bin/bash
 NAME   := $(basename $(notdir $(CALLER)))
 CLEAN  := $(filter --delete-cache,$(MAKECMDGOALS))
 MAKECMDGOALS := $(CALLER)
+<<<<   := $(shell mkdir -p $(BINDIR))
 
 findpkg ?= $(shell pkg-config $(1) --libs --cflags)
 
