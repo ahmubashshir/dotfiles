@@ -1,0 +1,121 @@
+#!/bin/bash
+(
+	deps=(
+		jq@pacman:jq@apt:jq
+		bsdtar@pacman:libarchive@apt:libarchive-tools
+		curl@pacman:curl@apt:curl
+	)
+	declare -i missing
+
+	# shellcheck disable=SC2167,SC2165
+	for dep in "${deps[@]}"; do
+		read -ra parts <<< "${dep//@/ }"
+		set -- "${parts[@]}"
+		unset parts
+		if ! hash "$1" 2> /dev/null >&2; then
+			missing+=1
+			printf 'ERROR: %s: command not found.\n' "$1"
+			printf "  Install and/or ensure \`%s' is in your \$PATH.\n" "$1"
+			shift
+			if (($# > 0)); then
+				printf '  Available in :\n'
+				for dep in "$@"; do
+					printf '    %s \t-> %s\n' "${dep%:*}" "${dep#*:}"
+				done
+			fi
+		fi
+	done >&2
+	exit $missing
+) || return 1 # missing dependency
+
+IFS= read -d $'\0' -r relinfo < <(
+	timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
+		&& curl --netrc -s --disable \
+			"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
+)
+
+touch "$exec"
+if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
+	rtver=$(jq -r '.tag_name' <<< "$relinfo")
+	rtver="${rtver#*v.}"
+	[[ ${rtver:0:1} =~ [0-9] ]] || rtver=${rtver:1}
+	if ! declare -Fp version |& grep -q '^declare -f'; then
+		version()
+		{
+			"$1" "${ARGS[@]}" "$VERCHK"
+		}
+	fi
+	[[ ! -x $exec ]] || ltver=$(
+		version "$exec" \
+			| grep -oEm1 '\b(v?[0-9]+(\.[0-9.-]+)|v[0-9]+|[0-9a-f]{8,}|[0-9]{4}(\.?[0-9]{2}){2})\b' \
+			| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
+	)
+	unset -f version
+	[[ -n $ltver ]] || ltver=0.0.0
+
+	filter='.assets[]|select(type == "object")'
+	filter()
+	{
+		test -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
+	}
+
+	arch=${ARCH:-$(uname -m)}
+	os=${OS:-$(uname -s)}
+	case "$MACHINE" in
+		*-musl*) abi=musl ;;
+	esac
+
+	case "$arch" in
+		arm) abi=gnueabihf ;;
+		x86_64)
+			arch="x86_64|amd64|${os}64"
+			tarch=x86_64
+			;;
+	esac
+
+	filter "$arch"
+	filter "$os"
+	filter "$abi"
+	filter "$FILTER"
+	data="$(printf '%s' "$relinfo" | jq "$filter")"
+	if ! [[ "$data" ]]; then
+		echo "$NAME: No releases available for \"${MACHINE//-/\/}\""
+		exit 1
+	fi
+
+	if ! [[ -f $exec && $(printf '%s\n' "${ltver#*v}" "${rtver#*v}" | sort -V | head -n 1) == "${rtver#*v}" ]]; then
+		if [[ $ltver == 0.0.0 ]]; then
+			echo >&2 "Downloading ${0##*/}: ${rtver#*v}"
+		else
+			echo >&2 "Updating ${0##*/}: ${ltver#*v} -> ${rtver#*v}"
+		fi
+		file=$(mktemp /tmp/bin.XXXXXXXX)
+		trap 'rm -f $file' TERM QUIT EXIT INT
+		if ((EXTRACT)); then
+			data=$(
+				printf '%s' "$data" \
+					| jq 'select(.name|test("(?i).'"${ARCHIVE:-tar}"'"))'
+			)
+		fi
+		if curl --disable --fail -L -# "$(
+			printf '%s' "$data" \
+				| jq -r '.browser_download_url' \
+				| head -n 1
+		)" -o "$file"; then
+			if ((EXTRACT)); then
+				bsdtar -xOf "$file" "${FILE:-$(
+					bsdtar -tvf "$file" \
+						| rev | cut -d ' ' -f1 \
+						| rev | grep -iE "(^|/)$NAME(-($os|$arch))*$"
+				)}"
+			else
+				cat "$file"
+			fi > "$exec"
+			chmod +x "$exec"
+			rm -f "$file"
+			trap - TERM QUIT EXIT INT
+		fi
+	fi
+else
+	printf "%s: can't check for update.\n" "$NAME"
+fi
