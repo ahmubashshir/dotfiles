@@ -1,0 +1,19 @@
+#!/bin/sh
+LIBC=
+ARCH=$(uname -m)
+KRNL=$(uname -s)
+
+if ldd --version 2>&1 | grep -q '^musl'; then
+	LIBC=musl
+else
+	LIBC=gnu
+fi
+case "$1" in
+	--is-musl)
+		test         "$LIBC" = musl
+		exit
+		;;
+esac
+case "$LIBC:$ARCH:$KRNL" in
+	*) echo "$ARCH-$KRNL-$LIBC" ;;
+esac | tr 'A-Z ' 'a-z_'
