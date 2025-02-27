@@ -1,6 +1,7 @@
 #!/bin/bash
+FALLBACK=/bin/ls
 OWNER=eza-community
 case "$TERM" in
-	*-kitty | *-256color | *-utf8) DEFAULT_ARGS=(--icons --git) ;;
+	*-kitty | *-256color | *-utf8) ARGS=(--icons --git) ;;
 esac
 source "${0%/*}/lib/git-rel"
