@@ -5,150 +5,32 @@ EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
 VERCHK=${VERCHK:---version}
 AUTO_UPDATE=${AUTO_UPDATE:-1}
+MACHINE="$(getmachine)"
+BINDIR="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$MACHINE"
 exec=$(
 	env which -a "$NAME" 2> /dev/null \
 		| grep -v "^${BASH_SOURCE%/lib/git-rel}" \
 		| head -n1
 )
-(
-	deps=(
-		jq@pacman:jq@apt:jq
-		bsdtar@pacman:libarchive@apt:libarchive-tools
-		curl@pacman:curl@apt:curl
-	)
-	declare -i missing
 
-	# shellcheck disable=SC2167,SC2165
-	for dep in "${deps[@]}"; do
-		read -ra parts <<< "${dep//@/ }"
-		set -- "${parts[@]}"
-		unset parts
-		if ! hash "$1" 2> /dev/null >&2; then
-			missing+=1
-			printf 'ERROR: %s: command not found.\n' "$1"
-			printf "  Install and/or ensure \`%s' is in your \$PATH.\n" "$1"
-			shift
-			if (($# > 0)); then
-				printf '  Available in :\n'
-				for dep in "$@"; do
-					printf '    %s \t-> %s\n' "${dep%:*}" "${dep#*:}"
-				done
-			fi
-		fi
-	done >&2
-	exit $missing
-) || exit 1 # missing dependency
-
-if [[ -z $exec ]]; then
-	function do_as_root
-	{
-		if command -pv sudo 2> /dev/null >&2; then
-			sudo "$@"
-		elif command -pv doas 2> /dev/null >&2; then
-			doas "$@"
-		elif command -pv su 2> /dev/null >&2; then
-			su root -- -c 'exec "$@"' -- "$@"
-		else
-			cat >&2 << EOF
+function do_as_root
+{
+	if command -pv sudo 2> /dev/null >&2; then
+		sudo "$@"
+	elif command -pv doas 2> /dev/null >&2; then
+		doas "$@"
+	elif command -pv su 2> /dev/null >&2; then
+		su root -- -c 'exec "$@"' -- "$@"
+	else
+		cat >&2 << EOF
 warning: no su helpers found, run the below text as root
 "$@"
 EOF
-		fi
-	}
-	last_modified=0
-	diff=0
-	mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/bin"
-	exec="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$NAME"
-	if [[ -f $exec ]]; then
-		last_modified="$(stat -c%Y "$exec")"
-		date_now="$(date +%s)"
-		diff=$((date_now - last_modified))
 	fi
-	if ! [[ -f "$exec" && -s "$exec" ]] \
-		|| ! "$exec" --help &> /dev/null \
-		|| ((diff > 60 * 60 * 24 && last_modified > 0 && AUTO_UPDATE)); then
-		touch "$exec"
-		IFS= read -d $'\0' -r relinfo < <(
-			timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
-				&& curl --netrc -s --disable \
-					"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
-		)
-		if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
-			rtver=$(jq -r '.tag_name' <<< "$relinfo")
-			rtver="${rtver#*v.}"
-			[[ ${rtver:0:1} =~ [0-9] ]] || rtver=${rtver:1}
-			if ! declare -Fp version |& grep -q '^declare -f'; then
-				version()
-				{
-					"$1" "${DEFAULT_ARGS[@]}" "$VERCHK"
-				}
-			fi
-			[[ ! -x $exec ]] || ltver=$(
-				version "$exec" \
-					| grep -oEm1 '\b(v?[0-9]+(\.[0-9.-]+)|v[0-9]+|[0-9a-f]{8,}|[0-9]{4}(\.?[0-9]{2}){2})\b' \
-					| sed 's/^[^[:digit:]]*//;s/[[:punct:][:blank:]]*$//'
-			)
-			unset -f version
-			[[ -n $ltver ]] || ltver=0.0.0
+}
 
-			filter='.assets[]|select(type == "object")'
-			filter()
-			{
-				test -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
-			}
-
-			arch=${ARCH-$(uname -m)}
-			os=${OS-$(uname -s)}
-
-			case "$arch" in
-				arm) abi=gnueabihf ;;
-				x86_64) arch="x86_64|amd64|${os}64" ;;
-			esac
-			filter "$arch"
-			filter "$os"
-			filter "$abi"
-			filter "$FILTER"
-
-			if ! [[ -f $exec && $(printf '%s\n' "${ltver#*v}" "${rtver#*v}" | sort -V | head -n 1) == "${rtver#*v}" ]]; then
-				if [[ $ltver == 0.0.0 ]]; then
-					echo >&2 "Downloading ${0##*/}: ${rtver#*v}"
-				else
-					echo >&2 "Updating ${0##*/}: ${ltver#*v} -> ${rtver#*v}"
-				fi
-				file=$(mktemp /tmp/bin.XXXXXXXX)
-				trap 'rm -f $file' TERM QUIT EXIT INT
-				data="$(
-					printf '%s' "$relinfo" | jq "$filter"
-				)"
-				if ((EXTRACT)); then
-					data=$(
-						printf '%s' "$data" \
-							| jq 'select(.name|test("(?i).'"${ARCHIVE:-tar}"'"))'
-					)
-				fi
-				if curl --disable --fail -L -# "$(
-					printf '%s' "$data" \
-						| jq -r '.browser_download_url' \
-						| head -n 1
-				)" -o "$file"; then
-					if ((EXTRACT)); then
-						bsdtar -xOf "$file" "${FILE:-$(
-							bsdtar -tvf "$file" \
-								| rev | cut -d ' ' -f1 \
-								| rev | grep -iE "(^|/)$NAME(-($os|$arch))*$"
-						)}"
-					else
-						cat "$file"
-					fi > "$exec"
-					chmod +x "$exec"
-					rm -f "$file"
-					trap - TERM QUIT EXIT INT
-				fi
-			fi
-		else
-			printf "%s: can't check for update.\n" "$NAME"
-		fi
-	fi
+function apply_caps
+{
 	# shellcheck disable=SC2153
 	if ((${#CAPS[@]} > 0)); then
 		read -r caps < <(
@@ -162,16 +44,34 @@ EOF
 			do_as_root setcap "$caps=ep" "$exec"
 		fi
 	fi
+}
+
+if [[ -z $exec ]]; then
+	last_modified=0
+	diff=0
+	mkdir -p "$BINDIR"
+	exec="$BINDIR/$NAME"
+	if [[ -f $exec ]]; then
+		last_modified="$(stat -c%Y "$exec")"
+		date_now="$(date +%s)"
+		diff=$((date_now - last_modified))
+	fi
+
+	if ! [[ -f "$exec" && -s "$exec" ]] \
+		|| ! "$exec" --help &> /dev/null \
+		|| ((diff > 60 * 60 * 24 && last_modified > 0 && AUTO_UPDATE)); then
+		source   "${BASH_SOURCE}-fetch"
+	fi
+	apply_caps
 fi
 
+[[ "$(declare -p ARGS 2> /dev/null)" =~ ^("declare -a ARGS="|$) ]] || unset -v ARGS
 if [[ -x "$exec" && -s "$exec" ]]; then
-	if [[ x$(typeset -p DEFAULT_ARGS 2> /dev/null | awk '{print $2}') != x-a ]]; then
-		unset -v DEFAULT_ARGS
-		declare -a DEFAULT_ARGS
-	fi
-	exec -a "$NAME" "$exec" "${DEFAULT_ARGS[@]}" "$@"
+	exec -a "$NAME" "$exec" "${ARGS[@]}" "$@"
+elif [[ "$FALLBACK" && -x "$FALLBACK" ]]; then
+	exec -a "$NAME" "$FALLBACK" "$@"
 else
-	! [[ -f $exec && $exec =~ ^${XDG_CACHE_HOME:-$HOME/.cache}/bin ]] || rm -f "$exec"
+	! [[ -f $exec && $exec =~ ^$BINDIR ]] || rm -f "$exec"
 	printf "%s: command not found.\n" "$NAME"
 	exit 1
 fi
