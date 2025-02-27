@@ -30,9 +30,10 @@ HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}"/bash/history
 HISTSIZE=1000
 HISTFILESIZE=2000
 HISTTIMEFORMAT="%d.%m.%Y-%I:%M %p   "
+export HISTFILE
 # HSTR configuration - add this to ~/.bashrc
 alias hh=hstr                    # hh to be alias for hstr
-export HSTR_CONFIG=hicolor       # get more colors
+export HSTR_CONFIG=hicolor,prompt-bottom      # get more colors
 #shopt -s histappend              # append new history items to .bash_history
 export HSTR_PROMPT="──>>"
 #export PROMPT_COMMAND="history -a; history -n; ${PROMPT_COMMAND}"
