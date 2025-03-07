@@ -59,6 +59,12 @@ panel[position^="bottomcenter"] {
 }
 
 #urlbar {
+	&:is(:not([focused]), [suppress-focus-border]) {
+		& > .urlbar-input-container {
+			border-color: var(--urlbar-box-bgcolor) !important;
+		}
+	}
+
 	&[open][breakout-extend] {
 		top: auto !important;
 		bottom: 0px !important;
