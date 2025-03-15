@@ -1,4 +1,4 @@
-#!/usr/bin/make -sirdf
+#!/usr/bin/make -sirf
 XDG_CACHE_HOME ?= $(HOME)/.cache
 include $(firstword $(MAKECMDGOALS))
 
