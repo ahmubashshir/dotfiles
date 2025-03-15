@@ -23,6 +23,7 @@ declare -A urlre=(
 	['hoyoverse']='^https?(://|.+:%2[Ff]%2[Ff])act\.hoyoverse\.com(/|%2F)[a-z]+(%2[Ff]|/)event(%2[Ff]|/)'
 	['epic']='store\.epicgames\.com/'
 	['pesbuk']='://([[:alnum:].-]+\.|)(facebook|fb)\.com($|/)'
+	['goolag-forms']='^https?://forms.gle/'
 )
 
 abort()
@@ -108,6 +109,11 @@ handlers/goolag()
 	local class
 	class="$(sed -nE 's#^.+://(\w+)\.(google)\.com/.*$#\2-\1#p' <<< "$URL")"
 	exec chromium --app="$URL" --class="${class:-google-chrome}"
+}
+
+handlers/goolag-forms()
+{
+	handlers/goolag
 }
 
 handlers/awstrack()
@@ -291,6 +297,7 @@ QBCALL()
 	|| match/url redd.it \
 	|| match/url wikipedia \
 	|| match/url goolag \
+	|| match/url goolag-forms \
 	|| match/url zoom \
 	|| match/url hoyoverse \
 	|| match/url epic
