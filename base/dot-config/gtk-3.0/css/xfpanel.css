@@ -15,3 +15,8 @@ window.whiskermenu#XfcePanelWindowWrapper,
 window#XfcePanelWindowWrapper decoration {
 	background-color: mix(transparent, @theme_bg_color, 0.75);
 }
+
+#XfcePanelWindowHidden:not(:hover) {
+	background-color: mix(transparent, @theme_selected_bg_color, 0.5);
+	border: 1px dotted mix(@theme_bg_color, @theme_selected_bg_color, 0.5);
+}
