@@ -28,13 +28,24 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 		display: none !important;
 	}
 
-	tab-item {
-		margin: 3px !important;
-		margin-top: 0 !important;
-
-		&:not([data-child-ids]) tab-twisty {
-			visibility: collapsed !important;
+	#pinned-tabs-container tab-item {
+		&:nth-child(1) {
+			margin-top: 3px !important;
 		}
+
+		&.pinned tab-twisty {
+			@media screen and (width > 70px) {
+				visibility: visible !important;
+			}
+
+			&::before {
+				mask-image: url("chrome://global/skin/icons/badge-blue.svg") !important;
+			}
+		}
+	}
+
+	tab-item {
+		margin: auto 3px 3px 3px !important;
 
 		& .extra-items-container.indent {
 			margin-top: -3px;
@@ -150,6 +161,8 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 		}
 
 		tab-item {
+			width: calc(100% - 6px) !important;
+
 			& tab-twisty {
 				visibility: collapse !important;
 			}
