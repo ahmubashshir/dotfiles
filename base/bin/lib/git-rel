@@ -60,7 +60,7 @@ if [[ -z $exec ]]; then
 	if ! [[ -f "$exec" && -s "$exec" ]] \
 		|| ! "$exec" --help &> /dev/null \
 		|| ((diff > 60 * 60 * 24 && last_modified > 0 && AUTO_UPDATE)); then
-		source   "${BASH_SOURCE}-fetch"
+		source "${BASH_SOURCE}-fetch"
 	fi
 	apply_caps
 fi
@@ -69,7 +69,7 @@ fi
 if [[ -x "$exec" && -s "$exec" ]]; then
 	exec -a "$NAME" "$exec" "${ARGS[@]}" "$@"
 elif [[ "$FALLBACK" && -x "$FALLBACK" ]]; then
-	exec -a "$NAME" "$FALLBACK" "$@"
+	exec -a "${FALLBACK##*/}" "$FALLBACK" "$@"
 else
 	! [[ -f $exec && $exec =~ ^$BINDIR ]] || rm -f "$exec"
 	printf "%s: command not found.\n" "$NAME"

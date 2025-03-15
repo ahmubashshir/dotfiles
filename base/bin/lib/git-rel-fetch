@@ -80,7 +80,7 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 	data="$(printf '%s' "$relinfo" | jq "$filter")"
 	if ! [[ "$data" ]]; then
 		echo "$NAME: No releases available for \"${MACHINE//-/\/}\""
-		exit 1
+		return 1
 	fi
 
 	if ! [[ -f $exec && $(printf '%s\n' "${ltver#*v}" "${rtver#*v}" | sort -V | head -n 1) == "${rtver#*v}" ]]; then
