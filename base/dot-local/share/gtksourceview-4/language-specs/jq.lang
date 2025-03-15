@@ -14,7 +14,7 @@
     <style id="builtin-function"  name="Builtin Function"      map-to="def:builtin"/>
     <style id="function"          name="Function"              map-to="def:function"/>
     <style id="variable"          name="Variable"              map-to="def:type"/>
-    <style id="keyname"           name="Key"                   map-to="def:type"/>
+    <style id="keyname"           name="Key"                   map-to="js:string"/>
     <style id="special-char"      name="Escaped Character"     map-to="js:escape"/>
     <style id="string"            name="String"                map-to="js:string"/>
     <style id="null-value"        name="Null Value"            map-to="js:null-value"/>
@@ -26,10 +26,32 @@
 
   <definitions>
     <define-regex id="identifier">[a-zA-Z_][a-zA-Z0-9_]*</define-regex>
-
     <context id="variables" style-ref="variable">
       <match>\$\%{identifier}</match>
     </context>
+
+<!--    <context id="formatter" style-ref="builtin-function">-->
+<!--        <match>@\%{identifier}</match>-->
+<!--    </context>-->
+
+    <context id="formatter" style-ref="builtin-function" >
+      <start>@</start>
+      <end>\b|[^[:alpha:]]</end>
+      <include>
+        <context id="formatters" end-parent="true">
+          <keyword>text</keyword>
+          <keyword>json</keyword>
+          <keyword>html</keyword>
+          <keyword>uri</keyword>
+          <keyword>csv</keyword>
+          <keyword>tsv</keyword>
+          <keyword>sh</keyword>
+          <keyword>base64</keyword>
+          <keyword>base64d</keyword>
+        </context>
+      </include>
+    </context>
+
 
     <context id="keywords" style-ref="keyword">
       <keyword>__loc__</keyword>
@@ -274,13 +296,13 @@
       </include>
     </context>
 
-<!--    <context id="generic-object-index">-->
-<!--      <start>\.(\%{identifier})?\[</start>-->
-<!--      <end>\]</end>-->
-<!--      <include>-->
-<!--        <context ref="expression"/>-->
-<!--      </include>-->
-<!--    </context>-->
+    <context id="generic-object-index">
+      <start>\.(\%{identifier})?\[</start>
+      <end>\]</end>
+      <include>
+        <context ref="expression"/>
+      </include>
+    </context>
 
     <context id="sub-group">
       <start>\(</start>
@@ -341,7 +363,7 @@
     </context>
 
 
-    <context id="object" style-ref="def:error">
+    <context id="object">
       <start>\{</start>
       <end>\}</end>
       <include>
@@ -350,7 +372,6 @@
           <start>:</start>
           <end>,|\s*(?=})</end>
           <include>
-            <context sub-pattern="0" where="start" style-ref="keyname"/>
             <context ref="expression"/>
           </include>
         </context>
@@ -365,9 +386,10 @@
         <context ref="keywords"/>
         <context ref="builtin-statements"/>
         <context ref="builtin-functions"/>
+        <context ref="formatter" />
         <context ref="function-definitions"/>
         <context ref="function-bodies"/>
-<!--        <context ref="generic-object-index"/>-->
+        <context ref="generic-object-index"/>
         <context ref="sub-group"/>
         <context ref="arrays" />
         <context ref="object"/>
