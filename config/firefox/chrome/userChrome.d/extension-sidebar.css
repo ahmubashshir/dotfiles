@@ -8,7 +8,6 @@
 	&:not([tabsintitlebar="true"]) #TabsToolbar {
 		visibility: collapse !important;
 	}
-
 }
 
 #sidebar-box {
@@ -16,7 +15,7 @@
 	--expanded-width: var(--wide-tab-width);
 	z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 
-	&[sidebarcommand$="-sidebar-action"] {
+	&[checked] {
 		transition: all 200ms !important;
 		min-width: var(--collapsed-width) !important;
 		max-width: var(--collapsed-width) !important;
@@ -34,7 +33,22 @@
 
 		/* Hide sidebar header, when using Tree Style Tab. */
 		#sidebar-header:not([hidden="true"]) {
+			overflow-x: clip;
+
+			#sidebar-title {
+				right: var(--space-small);
+				position: absolute;
+				transition-timing-function: ease-in;
+				transition-property: opacity, visibility;
+				transition-duration: 75ms, 100ms;
+			}
+		}
+
+		&:not(:hover) #sidebar-title,
+		#sidebar-switcher-arrow,
+		#sidebar-close {
 			visibility: collapse;
+			opacity: 0.0;
 		}
 
 		&:hover,
@@ -42,14 +56,25 @@
 			transition: all 300ms !important;
 			min-width: var(--expanded-width) !important;
 			max-width: var(--expanded-width) !important;
-			margin-right: calc(var(--collapsed-width) - var(--expanded-width)) !important;
-		}
 
+			&[positionend] {
+				margin-left: calc(var(--collapsed-width) - var(--expanded-width)) !important;
+			}
+
+			&:not([positionend]) {
+				margin-right: calc(var(--collapsed-width) - var(--expanded-width)) !important;
+			}
+
+			#sidebar-title {
+				transition-delay: 250ms;
+				transition-duration: 50ms;
+				visibility: visible !important;
+			}
+		}
 	}
 
-	&:not([sidebarcommand$="-sidebar-action"]) {
+	&:not([checked]) {
 		&:has(> #sidebar-header[hidden="true"]) {
-			transition: all 200ms !important;
 			min-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
 			max-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
 			margin-right: calc(-1 * (var(--expanded-width) + var(--collapsed-width))) !important;
@@ -64,12 +89,21 @@
 			max-width: none !important;
 		}
 	}
-
 }
 
 @supports not -moz-bool-pref("sidebar.revamp") {
-	#browser:has(#sidebar-box[hidden="true"]) #tabbrowser-tabbox {
-		border-left: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
+	#sidebar-box[hidden="true"] {
+		#browser:has(&) #tabbrowser-tabbox {
+			--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
+		}
+
+		#browser:has(&:not([positionend])) #tabbrowser-tabbox {
+			border-left: var(--sidebar-placeholder-width);
+		}
+
+		#browser:has(&[positionend]) #tabbrowser-tabbox {
+			border-right: var(--sidebar-placeholder-width);
+		}
 	}
 }
 
@@ -82,7 +116,6 @@
 	border-left-style: solid;
 	border-top-left-radius: .3em;
 	margin-left: 1em;
-
 	border-top-right-radius: unset !important;
 	border-right-style: unset !important;
 	margin-right: unset !important;
