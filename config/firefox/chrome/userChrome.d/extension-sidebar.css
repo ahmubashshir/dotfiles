@@ -67,9 +67,9 @@
 
 }
 
-@media not (-moz-bool-pref: "sidebar.revamp") {
-	#browser:has(> #sidebar-box[hidden="true"]) #tabbrowser-tabbox {
-		border-left: calc(var(--thin-tab-width) + var(--space-xxsmall)) solid var(--background-color-canvas);
+@supports not -moz-bool-pref("sidebar.revamp") {
+	#browser:has(#sidebar-box[hidden="true"]) #tabbrowser-tabbox {
+		border-left: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
 	}
 }
 

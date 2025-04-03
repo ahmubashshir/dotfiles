@@ -1,5 +1,5 @@
 /* revamped sidebar */
-@media (-moz-bool-pref: "sidebar.revamp") {
+@supports -moz-bool-pref("sidebar.revamp") {
 
 	#browser > #tabbrowser-tabbox {
 		--chrome-content-separator-color: var(--button-border-color);
