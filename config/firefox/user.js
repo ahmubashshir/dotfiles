@@ -52,14 +52,14 @@ user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"side
 user_pref("browser.toolbars.bookmarks.visibility", "never");
 // enable legacy compact mode
 user_pref("browser.compactmode.show", true);
-// enable revamped sidebar
-user_pref("sidebar.revamp", true);
+// disable revamped sidebar
+user_pref("sidebar.revamp", false);
 // enable profile store and profile chooser ui
 user_pref("browser.profiles.enabled", true);
 // enabled tools in revamped sidebar
 user_pref("sidebar.main.tools", "syncedtabs,history,bookmarks");
-// enable native vertical tabs
-user_pref("sidebar.verticalTabs", true);
+// disable native vertical tabs
+user_pref("sidebar.verticalTabs", false);
 /*
  * ui density:
  *    0 -> Normal

@@ -133,7 +133,7 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 		position: absolute !important;
 		bottom: var(--space-xxsmall);
 		height: var(--button-size-icon);
-		left: calc(var(--button-size-icon) + var(--toolbarbutton-inner-padding));
+		left: calc(var(--button-size-icon) + var(--toolbarbutton-inner-padding) + var(--space-small));
 		max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
 
 		&:not([inactive=true]) ~ #nav-bar #nav-bar-customization-target {
