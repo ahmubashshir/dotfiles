@@ -159,3 +159,6 @@
 	path = base/dot-local/share/vapis-extra
 	url = https://github.com/GNOME/vala-extra-vapis
 	branch = master
+[submodule "submodules/gdbinit"]
+	path = submodules/gdbinit
+	url = https://github.com/gdbinit/Gdbinit
