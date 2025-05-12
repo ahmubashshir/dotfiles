@@ -150,6 +150,16 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 		margin-left: -0.5em;
 	}
 
+	div.tab-preview-panel[data-tab-id] {
+		--panel-width: 75vw !important;
+		--tab-preview-panel-scale: 1.1 !important;
+		left: 12.5vw !important;
+
+		&.open {
+			margin-top: 2vh !important;
+		}
+	}
+
 
 	@media screen and (width <=70px) {
 		.left tab-item {
