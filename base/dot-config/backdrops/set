@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if ! [ "$#" = 2 ]; then
+	cat > /dev/stderr << EOF
+Usage: ${0##*/} <day|night|all> <image>
+EOF
+	exit
+fi
+
+dir="$(dirname "$(realpath "$0")")"
+set -- "$1" $(realpath --relative-to="$dir" "$2")
+cd "$dir" || exit
+
+case "$1" in
+	all)
+		ln -sf "$2" day
+		ln -sf "$2" night
+		;;
+	day | night)
+		ln -sf "$2" "$1"
+		;;
+	*)
+		echo "Unknown mode: $1"
+		exit
+		;;
+esac
+
+! pgrep -x xfdesktop > /dev/ || xfdesktop -R

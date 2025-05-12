@@ -5,8 +5,15 @@ regexp("moz-extension://[0-9a-f-]+/html/tab.html.*") {
 
 	:root {
 		color-scheme: light dark;
-		--backdrop: image-set(url(../backdrop), url(backdrop)) center center / cover no-repeat fixed border-box;
+		--backdrop: image-set(url(../day), url(day)) center center / cover no-repeat fixed border-box;
 		--light-canvas: color-mix(in srgb, transparent 60%, canvas);
 		--dark-canvas: color-mix(in srgb, transparent 20%, canvas);
+	}
+
+	/* Dark Mode */
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--backdrop: image-set(url(../night), url(night)) center center / cover no-repeat fixed border-box;
+		}
 	}
 }
