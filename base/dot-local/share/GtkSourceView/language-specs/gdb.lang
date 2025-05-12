@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="gdb" name="GDB Macro Language" version="2.0" _section="Scripts">
+  <metadata>
+    <property name="mimetypes">text/x-gdb</property>
+    <property name="globs">*.gdb</property>
+    <property name="globs">gdbinit</property>
+    <property name="globs">gdbinit.*</property>
+    <property name="globs">.gdbinit</property>
+    <property name="globs">.gdbinit.*</property>
+    <property name="line-comment-start">#</property>
+  </metadata>
+
+  <styles>
+    <style id="keyword" name="Keyword" map-to="def:keyword"/>
+    <style id="command" name="Command" map-to="def:identifier"/>
+    <style id="string" name="String" map-to="def:string"/>
+    <style id="comment" name="Comment" map-to="def:comment"/>
+    <style id="operator" name="Operator" map-to="def:operator"/>
+    <style id="variable" name="variables" map-to="def:special-constant"/>
+  </styles>
+
+  <definitions>
+	<define-regex id="name">[a-zA-Z_][\w\-]+</define-regex>
+    <context id="gdb">
+      <include>
+	<!-- Keywords (Control Flow and Definitions) -->
+		<context id="document-block" style-ref="string">
+			<start>(document)\s+(\%{name})\b</start>
+			<end>end$</end>
+			<include>
+				<context style-ref="def:statement">
+					<start>^([^:]+):</start>
+					<end>$</end>
+					<include>
+						<context style-ref="def:special-constant">
+							<match><![CDATA[<\%{name}>|\b[A-Z0-9]+\b]]></match>
+						</context>
+						<context where="start" sub-pattern="0" style-ref="def:constant" />
+					</include>
+				</context>
+				<context id="doc-body-oper" style-ref="operator">
+					<match>^\s*\|</match>
+				</context>
+				<context where="start" sub-pattern="1" style-ref="keyword" />
+				<context where="start" sub-pattern="2" style-ref="string" />
+				<context where="end" sub-pattern="0" style-ref="keyword" />
+			</include>
+		</context>
+
+		<context id="python-block">
+			<start>(python|py)$</start>
+			<end>end$</end>
+			<include>
+				<context where="start" sub-pattern="0" style-ref="keyword" />
+				<context where="end" sub-pattern="0" style-ref="keyword" />
+			<context ref="python3:python3"/>
+			</include>
+		</context>
+
+		<context id="guile-block">
+			<start>(guile|gu)$</start>
+			<end>end$</end>
+			<include>
+				<context where="start" sub-pattern="0" style-ref="keyword" />
+				<context where="end" sub-pattern="0" style-ref="keyword" />
+			<context ref="commonlisp:commonlisp"/>
+			</include>
+		</context>
+
+		<context id="python-line">
+			<start>(python|py)\b</start>
+			<end>$</end>
+			<include>
+				<context where="start" sub-pattern="0" style-ref="keyword" />
+			<context ref="python3:python3"/>
+			</include>
+		</context>
+
+		<context id="guile-line">
+			<start>(guile|gu)\b</start>
+			<end>$</end>
+			<include>
+				<context where="start" sub-pattern="0" style-ref="keyword" />
+			<context ref="commonlisp:commonlisp"/>
+			</include>
+		</context>
+
+	<!-- Identifiers -->
+	<context id="keywords" style-ref="keyword">
+	  <keyword>if</keyword>
+	  <keyword>else</keyword>
+	  <keyword>while</keyword>
+	  <keyword>loop_break</keyword>
+	  <keyword>loop_continue</keyword>
+	  <keyword>end</keyword>
+	  <keyword>define</keyword>
+	  <keyword>source</keyword>
+	  <keyword>set</keyword>
+	  <keyword>shell</keyword>
+	  <keyword>dont-repeat</keyword>
+	</context>
+
+	<!-- Commands -->
+	<context id="commands" style-ref="command">
+	  <keyword>access-watchpoint-packet</keyword>
+	  <keyword>actions</keyword>
+	  <keyword>active-border-mode</keyword>
+	  <keyword>ada</keyword>
+	  <keyword>address</keyword>
+	  <keyword>add-symbol-file</keyword>
+	  <keyword>add-symbol-file-from-memory</keyword>
+	  <keyword>advance</keyword>
+	  <keyword>agent</keyword>
+	  <keyword>agent-eval</keyword>
+	  <keyword>alias</keyword>
+	  <keyword>all</keyword>
+	  <keyword>allow-packet</keyword>
+	  <keyword>all-registers</keyword>
+	  <keyword>always-disassemble</keyword>
+	  <keyword>always-inserted</keyword>
+	  <keyword>annotate</keyword>
+	  <keyword>append</keyword>
+	  <keyword>apply</keyword>
+	  <keyword>apropos</keyword>
+	  <keyword>arch</keyword>
+	  <keyword>architecture</keyword>
+	  <keyword>args</keyword>
+	  <keyword>array</keyword>
+	  <keyword>array-indexes</keyword>
+	  <keyword>asm-demangle</keyword>
+	  <keyword>assert</keyword>
+	  <keyword>attach</keyword>
+	  <keyword>attach-packet</keyword>
+	  <keyword>auto</keyword>
+	  <keyword>auto-hw</keyword>
+	  <keyword>auto-load-scripts</keyword>
+	  <keyword>auto-retry</keyword>
+	  <keyword>auto-solib-add</keyword>
+	  <keyword>auxv</keyword>
+	  <keyword>awatch</keyword>
+	  <keyword>backtrace</keyword>
+	  <keyword>basenames-may-differ</keyword>
+	  <keyword>binary</keyword>
+	  <keyword>binary-download-packet</keyword>
+	  <keyword>bookmark</keyword>
+	  <keyword>bookmarks</keyword>
+	  <keyword>border-kind</keyword>
+	  <keyword>border-mode</keyword>
+	  <keyword>break</keyword>
+	  <keyword>breakpoint</keyword>
+	  <keyword>breakpoints</keyword>
+	  <keyword>break-range</keyword>
+	  <keyword>bt</keyword>
+	  <keyword>call</keyword>
+	  <keyword>can-use-hw-watchpoints</keyword>
+	  <keyword>case-sensitive</keyword>
+	  <keyword>catch</keyword>
+	  <keyword>cd</keyword>
+	  <keyword>charset</keyword>
+	  <keyword>check</keyword>
+	  <keyword>check-physname</keyword>
+	  <keyword>checkpoint</keyword>
+	  <keyword>checkpoints</keyword>
+	  <keyword>check-symtabs</keyword>
+	  <keyword>child</keyword>
+	  <keyword>circular-trace-buffer</keyword>
+	  <keyword>classes</keyword>
+	  <keyword>clear</keyword>
+	  <keyword>cmdline</keyword>
+	  <keyword>coerce-float-to-double</keyword>
+	  <keyword>collect</keyword>
+	  <keyword>commands</keyword>
+	  <keyword>common</keyword>
+	  <keyword>compare-sections</keyword>
+	  <keyword>complaints</keyword>
+	  <keyword>complete</keyword>
+	  <keyword>condition</keyword>
+	  <keyword>conditional-tracepoints-packet</keyword>
+	  <keyword>confirm</keyword>
+	  <keyword>connect-timeout</keyword>
+	  <keyword>continue</keyword>
+	  <keyword>convenience</keyword>
+	  <keyword>cooked-registers</keyword>
+	  <keyword>copying</keyword>
+	  <keyword>core</keyword>
+	  <keyword>corefile</keyword>
+	  <keyword>core-file</keyword>
+	  <keyword>cp-abi</keyword>
+	  <keyword>cplus</keyword>
+	  <keyword>c-tdesc</keyword>
+	  <keyword>cwd</keyword>
+	  <keyword>data-directory</keyword>
+	  <keyword>dcache</keyword>
+	  <keyword>debug</keyword>
+	  <keyword>debug-file-directory</keyword>
+	  <keyword>debugvarobj</keyword>
+	  <keyword>default-collect</keyword>
+	  <keyword>delete</keyword>
+	  <keyword>demangle</keyword>
+	  <keyword>demangle-style</keyword>
+	  <keyword>deprecate</keyword>
+	  <keyword>detach</keyword>
+	  <keyword>detach-on-fork</keyword>
+	  <keyword>directories</keyword>
+	  <keyword>directory</keyword>
+	  <keyword>disable</keyword>
+	  <keyword>disable-randomization</keyword>
+	  <keyword>disable-randomization-packet</keyword>
+	  <keyword>disassemble</keyword>
+	  <keyword>disassemble-next-line</keyword>
+	  <keyword>disassembly-flavor</keyword>
+	  <keyword>disconnect</keyword>
+	  <keyword>disconnected-tracing</keyword>
+	  <keyword>displaced</keyword>
+	  <keyword>displaced-stepping</keyword>
+	  <keyword>display</keyword>
+	  <keyword>document</keyword>
+	  <keyword>down</keyword>
+	  <keyword>down-silently</keyword>
+	  <keyword>dummy-frames</keyword>
+	  <keyword>dump</keyword>
+	  <keyword>dump-me</keyword>
+	  <keyword>dwarf2</keyword>
+	  <keyword>dwarf2-die</keyword>
+	  <keyword>echo</keyword>
+	  <keyword>edit</keyword>
+	  <keyword>editing</keyword>
+	  <keyword>elements</keyword>
+	  <keyword>enable</keyword>
+	  <keyword>endian</keyword>
+	  <keyword>entry-values</keyword>
+	  <keyword>environment</keyword>
+	  <keyword>exception</keyword>
+	  <keyword>exe</keyword>
+	  <keyword>exec</keyword>
+	  <keyword>exec-direction</keyword>
+	  <keyword>exec-done-display</keyword>
+	  <keyword>exec-file</keyword>
+	  <keyword>exec-wrapper</keyword>
+	  <keyword>expand</keyword>
+	  <keyword>expand-once</keyword>
+	  <keyword>expansion</keyword>
+	  <keyword>expression</keyword>
+	  <keyword>extended-prompt</keyword>
+	  <keyword>extended-remote</keyword>
+	  <keyword>extension-language</keyword>
+	  <keyword>extensions</keyword>
+	  <keyword>fast-tracepoints-packet</keyword>
+	  <keyword>fetch-register-packet</keyword>
+	  <keyword>file</keyword>
+	  <keyword>filename</keyword>
+	  <keyword>files</keyword>
+	  <keyword>find</keyword>
+	  <keyword>finish</keyword>
+	  <keyword>first_component</keyword>
+	  <keyword>float</keyword>
+	  <keyword>flushregs</keyword>
+	  <keyword>follow-exec-mode</keyword>
+	  <keyword>follow-fork-mode</keyword>
+	  <keyword>fork</keyword>
+	  <keyword>forward-search</keyword>
+	  <keyword>frame</keyword>
+	  <keyword>frame-arguments</keyword>
+	  <keyword>ftrace</keyword>
+	  <keyword>function</keyword>
+	  <keyword>functions</keyword>
+	  <keyword>gdb-index</keyword>
+	  <keyword>generate-core-file</keyword>
+	  <keyword>get</keyword>
+	  <keyword>get-thread-information-block-address-packet</keyword>
+	  <keyword>get-thread-local-storage-address-packet</keyword>
+	  <keyword>gnutarget</keyword>
+	  <keyword>goto</keyword>
+	  <keyword>handle</keyword>
+	  <keyword>hardware-breakpoint-limit</keyword>
+	  <keyword>hardware-breakpoint-packet</keyword>
+	  <keyword>hardware-watchpoint-length-limit</keyword>
+	  <keyword>hardware-watchpoint-limit</keyword>
+	  <keyword>hbreak</keyword>
+	  <keyword>height</keyword>
+	  <keyword>help</keyword>
+	  <keyword>history</keyword>
+	  <keyword>host-charset</keyword>
+	  <keyword>hostio-close-packet</keyword>
+	  <keyword>hostio-open-packet</keyword>
+	  <keyword>hostio-pread-packet</keyword>
+	  <keyword>hostio-pwrite-packet</keyword>
+	  <keyword>hostio-readlink-packet</keyword>
+	  <keyword>hostio-unlink-packet</keyword>
+	  <keyword>ignore</keyword>
+	  <keyword>ihex</keyword>
+	  <keyword>inaccessible-by-default</keyword>
+	  <keyword>inferior</keyword>
+	  <keyword>inferior-events</keyword>
+	  <keyword>inferiors</keyword>
+	  <keyword>inferior-tty</keyword>
+	  <keyword>info</keyword>
+	  <keyword>infrun</keyword>
+	  <keyword>init-if-undefined</keyword>
+	  <keyword>input-radix</keyword>
+	  <keyword>insn-number-max</keyword>
+	  <keyword>inspect</keyword>
+	  <keyword>install-in-trace-packet</keyword>
+	  <keyword>interactive-mode</keyword>
+	  <keyword>internal-error</keyword>
+	  <keyword>internal-warning</keyword>
+	  <keyword>interpreter-exec</keyword>
+	  <keyword>interrupt</keyword>
+	  <keyword>interrupt-on-connect</keyword>
+	  <keyword>interrupt-sequence</keyword>
+	  <keyword>jit</keyword>
+	  <keyword>jump</keyword>
+	  <keyword>kill</keyword>
+	  <keyword>kill-packet</keyword>
+	  <keyword>language</keyword>
+	  <keyword>library-info-packet</keyword>
+	  <keyword>library-info-svr4-packet</keyword>
+	  <keyword>libthread-db</keyword>
+	  <keyword>libthread-db-search-path</keyword>
+	  <keyword>limit</keyword>
+	  <keyword>line</keyword>
+	  <keyword>line-size</keyword>
+	  <keyword>lin-lwp</keyword>
+	  <keyword>list</keyword>
+	  <keyword>list-overlays</keyword>
+	  <keyword>listsize</keyword>
+	  <keyword>load</keyword>
+	  <keyword>load-target</keyword>
+	  <keyword>locals</keyword>
+	  <keyword>logging</keyword>
+	  <keyword>macro</keyword>
+	  <keyword>macros</keyword>
+	  <keyword>maintenance</keyword>
+	  <keyword>make</keyword>
+	  <keyword>manual</keyword>
+	  <keyword>map-overlay</keyword>
+	  <keyword>mappings</keyword>
+	  <keyword>max-cache-age</keyword>
+	  <keyword>max-symbolic-offset</keyword>
+	  <keyword>max-user-call-depth</keyword>
+	  <keyword>may-insert-breakpoints</keyword>
+	  <keyword>may-insert-fast-tracepoints</keyword>
+	  <keyword>may-insert-tracepoints</keyword>
+	  <keyword>may-interrupt</keyword>
+	  <keyword>may-write-memory</keyword>
+	  <keyword>may-write-registers</keyword>
+	  <keyword>mem</keyword>
+	  <keyword>memory</keyword>
+	  <keyword>memory-map-packet</keyword>
+	  <keyword>memory-query</keyword>
+	  <keyword>memory-read-packet-size</keyword>
+	  <keyword>memory-write-packet-size</keyword>
+	  <keyword>monitor</keyword>
+	  <keyword>msymbols</keyword>
+	  <keyword>multiple-symbols</keyword>
+	  <keyword>multi-thread</keyword>
+	  <keyword>name</keyword>
+	  <keyword>namespace</keyword>
+	  <keyword>next</keyword>
+	  <keyword>nexti</keyword>
+	  <keyword>ni</keyword>
+	  <keyword>noack-packet</keyword>
+	  <keyword>none</keyword>
+	  <keyword>non-stop</keyword>
+	  <keyword>nosharedlibrary</keyword>
+	  <keyword>null-stop</keyword>
+	  <keyword>object</keyword>
+	  <keyword>objfiles</keyword>
+	  <keyword>observer</keyword>
+	  <keyword>off</keyword>
+	  <keyword>on</keyword>
+	  <keyword>once</keyword>
+	  <keyword>opaque-type-resolution</keyword>
+	  <keyword>os</keyword>
+	  <keyword>osabi</keyword>
+	  <keyword>osdata-packet</keyword>
+	  <keyword>output</keyword>
+	  <keyword>output-radix</keyword>
+	  <keyword>outside</keyword>
+	  <keyword>overlay</keyword>
+	  <keyword>overload</keyword>
+	  <keyword>overload-resolution</keyword>
+	  <keyword>overwrite</keyword>
+	  <keyword>packet</keyword>
+	  <keyword>pagination</keyword>
+	  <keyword>parser</keyword>
+	  <keyword>pascal_static-members</keyword>
+	  <keyword>passcount</keyword>
+	  <keyword>pass-signals-packet</keyword>
+	  <keyword>past-entry</keyword>
+	  <keyword>past-main</keyword>
+	  <keyword>path</keyword>
+	  <keyword>paths</keyword>
+	  <keyword>pc</keyword>
+	  <keyword>pending</keyword>
+	  <keyword>p-packet</keyword>
+	  <keyword>P-packet</keyword>
+	  <keyword>pretty</keyword>
+	  <keyword>pretty-printer</keyword>
+	  <keyword>print</keyword>
+	  <keyword>printf</keyword>
+	  <keyword>print-object</keyword>
+	  <keyword>print-stack</keyword>
+	  <keyword>proc</keyword>
+	  <keyword>profile</keyword>
+	  <keyword>program</keyword>
+	  <keyword>program-spaces</keyword>
+	  <keyword>prompt</keyword>
+	  <keyword>psymbols</keyword>
+	  <keyword>psymtabs</keyword>
+	  <keyword>ptype</keyword>
+	  <keyword>put</keyword>
+	  <keyword>pwd</keyword>
+	  <keyword>python</keyword>
+	  <keyword>query-attached-packet</keyword>
+	  <keyword>quit</keyword>
+	  <keyword>radix</keyword>
+	  <keyword>range</keyword>
+	  <keyword>raw-registers</keyword>
+	  <keyword>rbreak</keyword>
+	  <keyword>rc</keyword>
+	  <keyword>read-aux-vector-packet</keyword>
+	  <keyword>read-fdpic-loadmap-packet</keyword>
+	  <keyword>read-sdata-object-packet</keyword>
+	  <keyword>read-siginfo-object-packet</keyword>
+	  <keyword>read-spu-object-packet</keyword>
+	  <keyword>read-watchpoint-packet</keyword>
+	  <keyword>record</keyword>
+	  <keyword>record-core</keyword>
+	  <keyword>redirect</keyword>
+	  <keyword>reggroups</keyword>
+	  <keyword>register-groups</keyword>
+	  <keyword>registers</keyword>
+	  <keyword>remote</keyword>
+	  <keyword>remoteaddresssize</keyword>
+	  <keyword>remotebaud</keyword>
+	  <keyword>remotebreak</keyword>
+	  <keyword>remotecache</keyword>
+	  <keyword>remoteflow</keyword>
+	  <keyword>remotelogbase</keyword>
+	  <keyword>remotelogfile</keyword>
+	  <keyword>remote-registers</keyword>
+	  <keyword>remotetimeout</keyword>
+	  <keyword>remotewritesize</keyword>
+	  <keyword>repeats</keyword>
+	  <keyword>restart</keyword>
+	  <keyword>restore</keyword>
+	  <keyword>return</keyword>
+	  <keyword>reverse-continue</keyword>
+	  <keyword>reverse-continue-packet</keyword>
+	  <keyword>reverse-finish</keyword>
+	  <keyword>reverse-next</keyword>
+	  <keyword>reverse-nexti</keyword>
+	  <keyword>reverse-search</keyword>
+	  <keyword>reverse-step</keyword>
+	  <keyword>reverse-stepi</keyword>
+	  <keyword>reverse-step-packet</keyword>
+	  <keyword>rni</keyword>
+	  <keyword>rsi</keyword>
+	  <keyword>run</keyword>
+	  <keyword>run-packet</keyword>
+	  <keyword>rwatch</keyword>
+	  <keyword>save</keyword>
+	  <keyword>save-tracepoints</keyword>
+	  <keyword>schedule-multiple</keyword>
+	  <keyword>scheduler-locking</keyword>
+	  <keyword>scope</keyword>
+	  <keyword>script-extension</keyword>
+	  <keyword>search</keyword>
+	  <keyword>search-memory-packet</keyword>
+	  <keyword>section</keyword>
+	  <keyword>sections</keyword>
+	  <keyword>select-frame</keyword>
+	  <keyword>selectors</keyword>
+	  <keyword>serial</keyword>
+	  <keyword>set-register-packet</keyword>
+	  <keyword>sevenbit-strings</keyword>
+	  <keyword>sharedlibrary</keyword>
+	  <keyword>show</keyword>
+	  <keyword>show-debug-regs</keyword>
+	  <keyword>si</keyword>
+	  <keyword>signal</keyword>
+	  <keyword>signals</keyword>
+	  <keyword>size</keyword>
+	  <keyword>skip</keyword>
+	  <keyword>software-breakpoint-packet</keyword>
+	  <keyword>solib-absolute-prefix</keyword>
+	  <keyword>solib-search-path</keyword>
+	  <keyword>source</keyword>
+	  <keyword>sources</keyword>
+	  <keyword>space</keyword>
+	  <keyword>srec</keyword>
+	  <keyword>stack</keyword>
+	  <keyword>stack-cache</keyword>
+	  <keyword>start</keyword>
+	  <keyword>stat</keyword>
+	  <keyword>static-members</keyword>
+	  <keyword>static-tracepoint-markers</keyword>
+	  <keyword>static-tracepoints-packet</keyword>
+	  <keyword>statistics</keyword>
+	  <keyword>status</keyword>
+	  <keyword>step</keyword>
+	  <keyword>stepi</keyword>
+	  <keyword>step-mode</keyword>
+	  <keyword>stepping</keyword>
+	  <keyword>stop</keyword>
+	  <keyword>stop-at-limit</keyword>
+	  <keyword>stop-on-solib-events</keyword>
+	  <keyword>strace</keyword>
+	  <keyword>struct-convention</keyword>
+	  <keyword>substitute-path</keyword>
+	  <keyword>supported-packets-packet</keyword>
+	  <keyword>symbol</keyword>
+	  <keyword>symbol-file</keyword>
+	  <keyword>symbol-filename</keyword>
+	  <keyword>symbol-lookup-packet</keyword>
+	  <keyword>symbol-reloading</keyword>
+	  <keyword>symbols</keyword>
+	  <keyword>symtabs</keyword>
+	  <keyword>syscall</keyword>
+	  <keyword>sysroot</keyword>
+	  <keyword>system-call-allowed</keyword>
+	  <keyword>target</keyword>
+	  <keyword>target-async</keyword>
+	  <keyword>target-charset</keyword>
+	  <keyword>target-features-packet</keyword>
+	  <keyword>target-file-system-kind</keyword>
+	  <keyword>target-stack</keyword>
+	  <keyword>target-wide-charset</keyword>
+	  <keyword>task</keyword>
+	  <keyword>tasks</keyword>
+	  <keyword>tbreak</keyword>
+	  <keyword>tcatch</keyword>
+	  <keyword>tcp</keyword>
+	  <keyword>tdesc</keyword>
+	  <keyword>tdump</keyword>
+	  <keyword>tekhex</keyword>
+	  <keyword>terminal</keyword>
+	  <keyword>teval</keyword>
+	  <keyword>tfile</keyword>
+	  <keyword>tfind</keyword>
+	  <keyword>thbreak</keyword>
+	  <keyword>thread</keyword>
+	  <keyword>thread-events</keyword>
+	  <keyword>threads</keyword>
+	  <keyword>threads-packet</keyword>
+	  <keyword>throw</keyword>
+	  <keyword>time</keyword>
+	  <keyword>timestamp</keyword>
+	  <keyword>tp</keyword>
+	  <keyword>trace</keyword>
+	  <keyword>trace-commands</keyword>
+	  <keyword>traceframe-info-packet</keyword>
+	  <keyword>trace-notes</keyword>
+	  <keyword>tracepoint</keyword>
+	  <keyword>tracepoints</keyword>
+	  <keyword>TracepointSource-packet</keyword>
+	  <keyword>trace-stop-notes</keyword>
+	  <keyword>trace-user</keyword>
+	  <keyword>translate-address</keyword>
+	  <keyword>trust-PAD-over-XVS</keyword>
+	  <keyword>trust-readonly-sections</keyword>
+	  <keyword>tsave</keyword>
+	  <keyword>tstart</keyword>
+	  <keyword>tstatus</keyword>
+	  <keyword>tstop</keyword>
+	  <keyword>tty</keyword>
+	  <keyword>tui</keyword>
+	  <keyword>tvariable</keyword>
+	  <keyword>tvariables</keyword>
+	  <keyword>type</keyword>
+	  <keyword>types</keyword>
+	  <keyword>undef</keyword>
+	  <keyword>undeprecate</keyword>
+	  <keyword>undisplay</keyword>
+	  <keyword>union</keyword>
+	  <keyword>unmap-overlay</keyword>
+	  <keyword>until</keyword>
+	  <keyword>unwindonsignal</keyword>
+	  <keyword>unwind-on-terminating-exception</keyword>
+	  <keyword>up</keyword>
+	  <keyword>up-silently</keyword>
+	  <keyword>user</keyword>
+	  <keyword>value</keyword>
+	  <keyword>values</keyword>
+	  <keyword>variable</keyword>
+	  <keyword>variables</keyword>
+	  <keyword>vector</keyword>
+	  <keyword>verbose</keyword>
+	  <keyword>verbose-resume-packet</keyword>
+	  <keyword>version</keyword>
+	  <keyword>vfork</keyword>
+	  <keyword>vtbl</keyword>
+	  <keyword>warranty</keyword>
+	  <keyword>watch</keyword>
+	  <keyword>watchdog</keyword>
+	  <keyword>watchpoints</keyword>
+	  <keyword>whatis</keyword>
+	  <keyword>where</keyword>
+	  <keyword>while-stepping</keyword>
+	  <keyword>width</keyword>
+	  <keyword>win</keyword>
+	  <keyword>write</keyword>
+	  <keyword>write-siginfo-object-packet</keyword>
+	  <keyword>write-spu-object-packet</keyword>
+	  <keyword>write-watchpoint-packet</keyword>
+	  <keyword>ws</keyword>
+	  <keyword>xml</keyword>
+	  <keyword>X-packet</keyword>
+	  <keyword>Z-packet</keyword>
+	</context>
+
+	<context id="string" style-ref="string">
+	  <start>"</start>
+	  <end>"</end>
+	  <include>
+	    <context ref="def:escape"/>
+	  </include>
+	</context>
+
+	<context id="string-single" style-ref="string">
+	  <start>'</start>
+	  <end>'</end>
+	  <include>
+	    <context ref="def:escape"/>
+	  </include>
+	</context>
+	<context id="string-backtick" style-ref="string">
+	  <start>`</start>
+	  <end>`</end>
+	  <include>
+	    <context ref="def:escape"/>
+	  </include>
+	</context>
+
+	<!-- Comments -->
+	<context id="comment" style-ref="comment">
+	  <start>#</start>
+	  <end>$</end>
+	</context>
+
+	<!-- Operators -->
+	<context id="operators" style-ref="operator">
+	  <match>[\(\)\[\]\{\},\;&lt;&gt;!=/\%\+\-]</match>
+	</context>
+
+	<context id="variable" style-ref="variable">
+	  <match>\$[0-9a-zA-Z_]+</match>
+	</context>
+
+	<context id="identifier" style-ref="def:identifier">
+	  <match>[a-zA-Z_][\w\-]*</match>
+	</context>
+
+      </include>
+    </context>
+  </definitions>
+</language>
