@@ -1,5 +1,5 @@
 #!/bin/bash
-OWNER=dbrgn
+OWNER=tealdeer-rs
 NAME=tealdeer
 EXTRACT=0
 source "${0%/*}/lib/git-rel"
