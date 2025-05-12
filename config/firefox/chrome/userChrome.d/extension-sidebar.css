@@ -1,4 +1,12 @@
 /* Hide main tabs toolbar */
+@-moz-document url(chrome://browser/content/places/historySidebar.xhtml){
+@media screen and (width <=70px) {
+	#sidebar-search-container {
+		visibility: collapse;
+	}
+}
+}
+
 #main-window {
 	&[tabsintitlebar="true"]:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
 		opacity: 0;
@@ -92,17 +100,21 @@
 }
 
 @supports not -moz-bool-pref("sidebar.revamp") {
-	#sidebar-box[hidden="true"] {
-		#browser:has(&) #tabbrowser-tabbox {
-			--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
-		}
+	#browser[chromehidden=""] {
+		& {}
 
-		#browser:has(&:not([positionend])) #tabbrowser-tabbox {
-			border-left: var(--sidebar-placeholder-width);
-		}
+		#sidebar-box[hidden="true"] {
+			#browser:has(&) #tabbrowser-tabbox {
+				--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
+			}
 
-		#browser:has(&[positionend]) #tabbrowser-tabbox {
-			border-right: var(--sidebar-placeholder-width);
+			#browser:has(&:not([positionend])) #tabbrowser-tabbox {
+				border-left: var(--sidebar-placeholder-width);
+			}
+
+			#browser:has(&[positionend]) #tabbrowser-tabbox {
+				border-right: var(--sidebar-placeholder-width);
+			}
 		}
 	}
 }
@@ -120,4 +132,5 @@
 	border-right-style: unset !important;
 	margin-right: unset !important;
 	float: right;
+	background-color: #afe;
 }
