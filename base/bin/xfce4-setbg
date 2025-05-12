@@ -1,0 +1,25 @@
+#!/bin/sh
+if ! [ "$#" = 1 ]; then
+	cat > /dev/stderr << EOF
+Usage: ${0##*/} <image-path>
+EOF
+	exit
+fi
+
+set -- "$(realpath -s "$1")"
+
+# check image
+case "$(file --mime-type -Lb "$1")" in
+	image/*) ;;
+	*)
+		echo "Invalid image" > /dev/stderr
+		exit 1
+		;;
+esac
+
+# set to every monitor that contains image-path/last-image
+xfconf-query -c xfce4-desktop -p /backdrop -l |
+	grep -e "screen.*/monitor.*image-path$" -e "screen.*/monitor.*/last-image$" |
+	while read -r prop; do
+		xfconf-query -c xfce4-desktop -p "$prop" -s "$1"
+	done

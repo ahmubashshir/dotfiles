@@ -1,9 +1,0 @@
-#!/bin/sh
-cd "$(dirname "$(realpath "$0")")"
-
-if [ -f "$HOME/Pictures/bgs/$1" ]; then
-	ln -sf "$HOME/Pictures/bgs/$1" ../dot-config/backdrop
-	! pgrep -x xfdesktop || xfdesktop -R
-else
-	printf '%s\n' "$HOME/Pictures/bgs"/* | xargs -n1 basename
-fi
