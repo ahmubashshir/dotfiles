@@ -7,8 +7,7 @@ if [[ $ENV[color_prompt] = yes ]];then
 	(( ${+TPROMPT} )) || typeset -g TPROMPT="%1~ %# "
 
 	prompt:save-exit-status() {
-		local -i ret="$?"
-		((__TPROMPT_CRET == ret )) || __TPROMPT_CRET=ret
+		typeset -gi __TPROMPT_CRET=$?
 	}
 
 	prompt:zle-line-init() {
