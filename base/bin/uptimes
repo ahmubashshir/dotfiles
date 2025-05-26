@@ -1,10 +1,10 @@
 #!/bin/bash
 journalctl --list-boots --utc \
 	| gawk '
-	@load "time";
-
-	function epoch(stmp) {
-		return strptime(stmp, "%Y-%m-%dT%0H:%0M:%0S%Z");
+	@load "time"
+	function epoch(s) {
+		f = "\\1 \\2 \\3 \\4 \\5 \\6 \\7"
+		return mktime(gensub("(....)-(..)-(..) (..):(..):(..) (.+)", f, 1, s))
 	}
 
 	function formatlen(len) {
@@ -25,11 +25,12 @@ journalctl --list-boots --utc \
 
 	$1 != "IDX" {
 		ret = ""
-		len = epoch($8 "T" $9$10) - epoch($4 "T"  $5$6)
+		len = epoch($8 " " $9 " " $10) - epoch($4 " "  $5 " " $6)
 		#if (len  >= 3600)
 			lines[a++] = formatlen(len);
 	}
 	END {
+		s;
 		n = a
 		while(a--)
 			print sprintf ("%d\t%s\n", a - n, lines[a])
