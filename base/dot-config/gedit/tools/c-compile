@@ -126,9 +126,10 @@ get_arduino()
 		auto) mapfile -t -O "${#args[@]}" args < <(
 			arduino-cli board list --format jsonmini \
 				| jq -r 'first
-			| [
+			| (.matching_boards | first | .fqbn | if . == "" then [] wlaw[
 				"--fqbn",
-				(.matching_boards | first | .fqbn),
+				.
+			]) + [
 				"--port",
 				(.port | .address)
 			]
@@ -172,10 +173,6 @@ case "$TYPE/${NAME##*.}" in
 	x-csrc/ino) TYPE=x-arduino ;;
 	x-csrc/c) grep -qxE '\s*#\s*include\s*<avr/\w+.h>' "$NAME" && TYPE="x-avr-csrc" ;;
 esac
-for file in "${files[@]}"; do
-	echo "% file $file"
-done >&2
-echo "#################" >&2
 
 ONAME="${NAME}${TARCH:+.${HFTARCH:-$TARCH}}.${OUTPUT:-elf}"
 case "$TYPE" in

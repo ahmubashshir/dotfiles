@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # [Gedit Tool]
 # Name=Build
 # Languages=
@@ -9,32 +9,44 @@
 # Shortcut=<Alt>F5
 
 tool=""
-BUILDDIR=""
+builddir=""
+run()
+{
+	{
+		printf '+'
+		printf ' %q' "$@"
+		printf '\n'
+	} >&2
+	"$@"
+}
 
 try()
 {
-	target=$(find . -maxdepth 3 -name "$1" -print | sort | head -n 1)
+	target=$(
+		find . -maxdepth 3 -name "$1" -printf '%d %p\0' \
+			| sort -zn \
+			| sed -znE '1s/^[0-9]+ //p' \
+			| tr -s '\0' '\n'
+	)
 	[[ -z $target ]] && return 1
-	case $1 in
+	IFS= read -r targetdir < <(dirname "$target")
+	builddir="$targetdir-build"
+
+	case "$1" in
 		autogen.sh | configure)
 			tool='make'
-			BUILDDIR="$(dirname "$target")"
-			$target
+			"$target"
 			;;
 		CMakeLists.txt)
-			cd "$(dirname "$target")" || exit
-			BUILDDIR="$PWD/build"
 			tool='make'
-			cmake -S . -B build
+			run cmake -S "$targetdir" -B "$builddir"
 			;;
 		meson.build)
-			cd "$(dirname "$target")" || exit
-			BUILDDIR="$PWD/builddir"
 			tool='ninja'
-			meson --wipe builddir
+			run meson --wipe "$builddir" "$targetdir"
 			;;
 		Makefile)
-			BUILDDIR="$(dirname "$target")"
+			unset builddir
 			tool='make'
 			;;
 		*) exit 1 ;;
@@ -48,10 +60,16 @@ if [[ -n $GIT_ROOT ]]; then
 	cd "$GIT_ROOT" || exit
 fi
 
-try autogen.sh \
-	|| try configure \
-	|| try CMakeLists.txt \
+false \
+	|| try Makefile \
 	|| try meson.build \
-	|| try Makefile
+	|| try configure \
+	|| try autogen.sh \
+	|| try CMakeLists.txt \
+	|| :
 
-"$tool" -C "$BUILDDIR"
+[[ $tool && ${builddir:-$targetdir} ]] || {
+	echo "Unknown build tool..." >&2
+}
+
+run "$tool" -C "${builddir:-$targetdir}"

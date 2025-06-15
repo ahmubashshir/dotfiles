@@ -1,10 +1,10 @@
-#!/bin/bash -x
+#!/bin/bash
 # [Gedit Tool]
 # Name=Run...
 # Languages=java
 # Save-files=document
 # Applicability=titled
-# Shortcut=F7
+# Shortcut=F5
 # Input=document
 # Output=output-panel
 
@@ -32,22 +32,29 @@ TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 cat > "$TMPFILE" << EOF
 #!/bin/bash
 $(declare -p stdin)
+$(declare -p args)
+$(declare -p rargs)
 command -p printf '\e]2;Run: %s\a' "$GEDIT_CURRENT_DOCUMENT_NAME"
 rm -f "$TMPFILE"
+TIME_FORMAT=\$(cat <<EOT
+
+
+========
+Consumed %KkB
+Process returned %x
+Elapsed %e (%U user, %S system; %P% CPU)
+EOT
+)
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"
+unset _JAVA_OPTIONS
 $(((${#stdin[@]} == 0)) || echo "printf '> %s\\n' \"\${stdin[@]}\" | tee /dev/stderr | cut -c3- | \\")
 /bin/time \
-	-f "\$(cat <<EOT
-========
-Process returned %x, elapsed %0.4e; %Kkb
-EOT
-	)" \
-	java "${args[@]}" "$(echo "$GEDIT_CURRENT_DOCUMENT_NAME" | sed -e s/.java$//)" "${rargs[@]}"
+	-f "\$TIME_FORMAT" \
+	-- \
+	java -cp "$GEDIT_CURRENT_DOCUMENT_DIR" "\${args[@]}" "$(echo "$GEDIT_CURRENT_DOCUMENT_NAME" | sed -e s/.java$//)" "\${rargs[@]}"
 read -rsp$'Press RETURN to continue...'
 EOF
 
 chmod +x "$TMPFILE"
-cd "$GEDIT_CURRENT_DOCUMENT_DIR"
-cat "$TMPFILE" >&2
 
 exo-open --launch TerminalEmulator "$TMPFILE" &> /dev/null

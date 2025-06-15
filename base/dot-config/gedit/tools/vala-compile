@@ -6,7 +6,7 @@
 # Output=output-panel
 # Applicability=all
 # Save-files=document
-# Shortcut=F4
+# Shortcut=<Shift>F1
 
 ## start args
 FILTER=compile
