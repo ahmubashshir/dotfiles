@@ -10,10 +10,16 @@
 
 FILTER=run
 declare -ga stdin
+CONT=0
 
 get_stdin()
 {
 	stdin+=("$1")
+}
+
+get_cont()
+{
+	CONT=1
 }
 
 get_arduino()
@@ -57,6 +63,7 @@ HELPERS=(
 	'    N:    Connect to Nth board.'
 	'    auto: Select first connected board'
 	'stdin <line>: write line to program stdin'
+	"cont : Don't wait for Keypress..."
 )
 ## start args
 source "${0%/*}/.lib/args"
@@ -86,7 +93,7 @@ $(((${#stdin[@]} == 0)) || {
 	printf '| tee /dev/stderr | cut -c3- | \'
 })
 /bin/time "./$GEDIT_CURRENT_DOCUMENT_NAME.elf" ${args[@]}
-read -rsp$'Press RETURN to continue...'
+(($CONT == 1)) || read -rsp$'Press RETURN to continue...'
 EOF
 chmod +x "$TMPFILE"
 cd "$GEDIT_CURRENT_DOCUMENT_DIR"

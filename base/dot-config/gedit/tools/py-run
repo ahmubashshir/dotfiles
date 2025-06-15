@@ -9,10 +9,10 @@
 # Output=output-panel
 
 v=${GEDIT_CURRENT_DOCUMENT_TYPE#*-}
-intrp=python3
+intrp=python
 
 if [ "$v" == "python" ]; then
-	intrp=python2
+	intrp=python3
 fi
 TMPFILE=$(mktemp /tmp/run.gedit.XXXXXXXXXXXXX.sh)
 
