@@ -16,15 +16,29 @@
 	&:not([tabsintitlebar="true"]) #TabsToolbar {
 		visibility: collapse !important;
 	}
+
+	&:has(#sidebar-box:not(:is([hidden="true"], [positionend], [sidebar-positionend]))) #toolbar-menubar {
+		left: calc(var(--thin-tab-width) + var(--space-xxsmall));
+	}
 }
 
 #sidebar-box {
 	--collapsed-width: var(--thin-tab-width);
 	--expanded-width: var(--wide-tab-width);
 	z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
+	transition: all 300ms ease-in-out allow-discrete;
 
-	&[checked] {
-		transition: all 200ms !important;
+	&[hidden="true"] {
+		min-width: 0 !important;
+		width: 0 !important;
+		display: flex;
+
+		& > * {
+			display: none;
+		}
+	}
+
+	&:not([hidden="true"]) {
 		min-width: var(--collapsed-width) !important;
 		max-width: var(--collapsed-width) !important;
 
@@ -48,28 +62,45 @@
 				position: absolute;
 				transition-timing-function: ease-in;
 				transition-property: opacity, visibility;
-				transition-duration: 75ms, 100ms;
+				transition-duration: 50ms, 100ms;
+			}
+
+			#sidebar-box:not(:is([positionend],
+					[sidebar-positionend])) & {
+				#sidebar-title {
+					right: var(--space-xxsmall);
+				}
+			}
+
+			#sidebar-box:is([positionend],
+				[sidebar-positionend]) & {
+				direction: rtl;
+
+				#sidebar-title {
+					direction: initial;
+					left: var(--space-xxsmall);
+				}
 			}
 		}
 
-		&:not(:hover) #sidebar-title,
+		&:not(:is(:hover, :has(#sidebar-switcher-target.active))) #sidebar-title,
 		#sidebar-switcher-arrow,
 		#sidebar-close {
 			visibility: collapse;
 			opacity: 0.0;
 		}
 
-		&:hover,
+		&:is(:hover, :has(#sidebar-switcher-target.active)),
 		&:-moz-drag-over {
-			transition: all 300ms !important;
 			min-width: var(--expanded-width) !important;
 			max-width: var(--expanded-width) !important;
+			transition: all 300ms ease-in-out !important;
 
-			&[positionend] {
+			&:is([positionend], [sidebar-positionend]) {
 				margin-left: calc(var(--collapsed-width) - var(--expanded-width)) !important;
 			}
 
-			&:not([positionend]) {
+			&:not(:is([positionend], [sidebar-positionend])) {
 				margin-right: calc(var(--collapsed-width) - var(--expanded-width)) !important;
 			}
 
@@ -79,22 +110,22 @@
 				visibility: visible !important;
 			}
 		}
-	}
 
-	&:not([checked]) {
-		&:has(> #sidebar-header[hidden="true"]) {
-			min-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
-			max-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
-			margin-right: calc(-1 * (var(--expanded-width) + var(--collapsed-width))) !important;
+		&:not([checked]) {
+			&:has(> #sidebar-header[hidden="true"]) {
+				min-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
+				max-width: calc(var(--expanded-width) + var(--collapsed-width) * 2) !important;
+				margin-right: calc(-1 * (var(--expanded-width) + var(--collapsed-width))) !important;
 
-			& + #sidebar-splitter {
-				display: none !important;
+				& + #sidebar-splitter {
+					display: none !important;
+				}
 			}
-		}
 
-		&:not(:has(> #sidebar-header[hidden="true"])) {
-			min-width: var(--expanded-width) !important;
-			max-width: none !important;
+			&:not(:has(> #sidebar-header[hidden="true"])) {
+				min-width: var(--expanded-width) !important;
+				max-width: none !important;
+			}
 		}
 	}
 }
@@ -108,11 +139,11 @@
 				--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
 			}
 
-			#browser:has(&:not([positionend])) #tabbrowser-tabbox {
+			#browser:has(&:not(:is([positionend], [sidebar-positionend]))) #tabbrowser-tabbox {
 				border-left: var(--sidebar-placeholder-width);
 			}
 
-			#browser:has(&[positionend]) #tabbrowser-tabbox {
+			#browser:has(&:is([positionend], [sidebar-positionend])) #tabbrowser-tabbox {
 				border-right: var(--sidebar-placeholder-width);
 			}
 		}
