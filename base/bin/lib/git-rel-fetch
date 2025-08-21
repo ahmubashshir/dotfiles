@@ -69,7 +69,7 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 	case "$arch" in
 		arm) abi=gnueabihf ;;
 		x86_64)
-			arch="x86_64|amd64|${os}64"
+			arch="x86_64|amd64|${os}64|x64"
 			tarch=x86_64
 			;;
 	esac
