@@ -2,7 +2,7 @@
 # shellcheck disable=SC2016
 [[ -f $HOOKSUTIL ]] && source "$HOOKSUTIL" || :
 
-declare -A FORMATTERS f
+declare -A FORMATTERS
 FORMATTERS=(
 	# shfmt
 	[sh]=shfmt
@@ -45,7 +45,7 @@ format_file()
 				c | cpp | cxx | vala) style=linux ;;
 				cs | java)
 					mode=$1
-					style=gnu
+					style=java
 					;;
 			esac
 			args=(--mode="${mode:-c}")
@@ -81,7 +81,7 @@ for file in "${STAGED[@]}"; do
 	test -f "${file%/*}/.hookignore" \
 		&& grep -xFq "$id" "${file%/*}/.hookignore" \
 		&& continue
-	if [ "$(head -c2 "$file")" = "#!" ]; then
+	if [ "$(od -N2 -tu1 -An "$file" | xargs)" = "35 33" ]; then
 		fmt=$(
 			head -1 "$file" \
 				| tr ' ' '\n' \
