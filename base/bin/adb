@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 [[ -d "$XDG_DATA_HOME"/android ]] || mkdir -p "$XDG_DATA_HOME"/android
-shopt -s extglob
-PATH=${PATH//?(:)${BASH_ARGV0%/*}?(:)/:} HOME="$XDG_DATA_HOME"/android exec adb "$@"
+export HOME="$XDG_DATA_HOME"/android
+source "${0%/*}/lib/xdgdirs"

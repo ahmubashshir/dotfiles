@@ -1,0 +1,3 @@
+#!/bin/bash
+ARGS=("--hsts-file=$XDG_CACHE_HOME/wget-hsts")
+source "${0%/*}/lib/xdgdirs"
