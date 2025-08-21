@@ -8,7 +8,7 @@ SRCDIR := $(HOME)/bin/srcs
 SHELL  := /bin/bash
 NAME   := $(basename $(notdir $(CALLER)))
 CLEAN  := $(filter --delete-cache,$(MAKECMDGOALS))
-MAKECMDGOALS := $(CALLER)
+OTHERS := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
 <<<<   := $(shell mkdir -p $(BINDIR))
 
 findpkg ?= $(shell pkg-config $(1) --libs --cflags)
@@ -20,7 +20,9 @@ ifneq ($(filter guile,$(.FEATURES)),)
 define execl
 (use-modules
     (rnrs io ports)
-    (rnrs bytevectors))
+    (rnrs bytevectors)
+    (ice-9 pretty-print)
+    (srfi srfi-1))
 (define
     (get-args)
     (call-with-input-file
@@ -37,11 +39,20 @@ define execl
                                 (set! found-delim #t))))
                     (string-split (utf8->string (get-bytevector-all port)) #\nul))
                 (if (null? results) results (reverse (cdr results)))))))
-(apply
-	execl
-	(cons "${BINDIR}/${NAME}" (cons "${NAME}" (cdr (get-args))))
-)
+((lambda (args)
+	(if
+		(any (lambda (s)
+				(if (string-prefix? "--" s)
+					(or (string=? "--trace" s)
+						(string-prefix? "--debug" s))
+					(not (eqv? (string-any (lambda (c) (memq c '(#\n #\d))) s) #f))))
+			(string-split (gmk-expand "$(MAKEFLAGS)") #\space))
+		(pretty-print (cons 'execl args)))
+	(apply execl args))
+	(cons "${BINDIR}/${NAME}" (cons "${NAME}" (cdr (get-args)))
+))
 endef
+
 ifeq ($(NAME),)
 define abort
 (display "Error: `mksrc` must not be called directly!" (current-error-port))
@@ -54,7 +65,8 @@ $(CALLER): $(CLEAN) $(BINDIR)/$(NAME)
 	$(guile $(execl))
 else
 define cmd
-$(shell xargs -0a \
+$(shell \
+	xargs -0a \
 	$(shell awk '{print $$4}' /proc/self/stat \
 		| xargs -rn1 printf '/proc/%d/stat' \
 		| xargs -rn1 awk '{print $$4}' \
@@ -82,4 +94,4 @@ $(BINDIR)/%: $(SRCDIR)/%.cpp
 	@echo "Cleaning..." >&2
 	@rm -f $(BINDIR)/$(NAME)
 
-.PHONY: $(CALLER) --delete-cache
+.PHONY: $(CALLER) --delete-cache $(OTHERS)
