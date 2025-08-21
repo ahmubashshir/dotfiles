@@ -1,0 +1,8 @@
+#!/bin/bash
+[[ "$(declare -p ARGS 2> /dev/null)" =~ ^("declare -a ARGS="|$) ]] || unset -v ARGS
+read -r exec < <(
+	which -a "${0##*/}" 2> /dev/null \
+		| grep -v "^${BASH_SOURCE%/lib/xdgdirs}" \
+		| head -n1
+)
+exec -a "${0##*/}" "$exec" "${ARGS[@]}" "$@"
