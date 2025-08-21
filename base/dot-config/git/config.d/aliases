@@ -30,7 +30,7 @@
 	lsmod = !git submodule status|awk '{print $2}'
 	insmod = submodule add
 	rbs = rebase
-	rbsd= -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE="%cD" GIT_COMMITTER_NAME="%cn" GIT_COMMITTER_EMAIL="%ce"  git commit --amend --no-edit --allow-empty --allow-empty-message' rebase
+	rbsd= -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE=%x22%cD%x22 GIT_COMMITTER_NAME=%x22%cn%x22 GIT_COMMITTER_EMAIL=%x22%ce%x22  git commit --amend --date=%x22%cD%x22 --no-edit --allow-empty --allow-empty-message' rebase
 	mrg = merge
 	rev = revert
 	crbs = rebase --continue
