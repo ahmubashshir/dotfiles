@@ -119,34 +119,28 @@ get_file()
 	files+=("$1")
 }
 
+arduino_get_board()
+{
+	arduino-cli board list --format jsonmini \
+		| jq -r 'if has("detected_ports") then
+		.detected_ports
+	else . end
+	| .['"$1"']
+	| [
+		"--fqbn",
+		(.matching_boards | first | .fqbn),
+		"--port",
+		(.port | .address)
+	]
+	| join("\n")' \
+		| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
+}
 get_arduino()
 {
 	case "$1" in
 		list) exec arduino-cli board list ;;
-		auto) mapfile -t -O "${#args[@]}" args < <(
-			arduino-cli board list --format jsonmini \
-				| jq -r 'first
-			| (.matching_boards | first | .fqbn | if . == "" then [] wlaw[
-				"--fqbn",
-				.
-			]) + [
-				"--port",
-				(.port | .address)
-			]
-			| join("\n")' \
-				| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
-		) ;;
-		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
-			arduino-cli board list --format jsonmini \
-				| jq -r '.['"$1"']
-			| [
-				"--fqbn",
-				(.matching_boards | first | .fqbn),
-				"--port",
-				(.port | .address)
-			]
-			| join("\n")'
-		) ;;
+		auto) mapfile -t -O "${#args[@]}" args < <(arduino_get_board 0) ;;
+		[0-9]*) mapfile -t -O "${#args[@]}" args < <(arduino_get_board "$1") ;;
 	esac
 }
 
@@ -185,14 +179,14 @@ case "$TYPE" in
 	x-arduino) exec arduino-cli-log compile "${args[@]}" --no-color "$DIR" ;;
 	x-avr-csrc)
 		set -e
-		if [[ -z "$MCU" ]]; then
-			__error "No target MCU defined"
-			__hint "Add \`# avr MCU=<MCU>\` as comment."
+		if ! command -pv avr-gcc 2> /dev/null >&2; then
+			__error "avr-gcc not installed."
 			false
 		fi
 
-		if ! command -pv avr-gcc 2> /dev/null >&2; then
-			__error "avr-gcc not installed."
+		if [[ -z "$MCU" ]]; then
+			__error "No target MCU defined"
+			__hint "Add \`# avr mcu=<MCU>\` as comment."
 			false
 		fi
 

@@ -22,39 +22,29 @@ get_cont()
 	CONT=1
 }
 
+arduino_get_board()
+{
+	arduino-cli board list --format jsonmini \
+	| jq -r 'if has("detected_ports") then
+		.detected_ports
+	else . end
+	| .['"$1"']
+	| [
+		"--fqbn",
+		(.matching_boards | first | .fqbn),
+		"--port",
+		(.port | .address)
+	]
+	| join("\n")' \
+	| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
+}
+
 get_arduino()
 {
 	case "$1" in
-		list) exec arduino-cli board list;;
-		auto) mapfile -t -O "${#args[@]}" args < <(
-			arduino-cli board list --format jsonmini \
-			| jq -r 'if has("detected_ports") then
-				.detected_ports
-			else . end
-			| first
-			| [
-				"--fqbn",
-				(.matching_boards | first | .fqbn),
-				"--port",
-				(.port | .address)
-			]
-			| join("\n")' \
-			| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
-		);;
-		[0-9]*) mapfile -t -O "${#args[@]}" args < <(
-			arduino-cli board list --format jsonmini \
-			| jq -r 'if has("detected_ports") then
-				.detected_ports
-			else . end
-			| .['"$1"']
-			| [
-				"--fqbn",
-				(.matching_boards | first | .fqbn),
-				"--port",
-				(.port | .address)
-			]
-			| join("\n")'
-		);;
+		list) exec arduino-cli board list ;;
+		auto) mapfile -t -O "${#args[@]}" args < <(arduino_get_board 0);;
+		[0-9]*) mapfile -t -O "${#args[@]}" args < <(arduino_get_board "$1");;
 	esac
 }
 HELPERS=(
