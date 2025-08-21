@@ -23,19 +23,43 @@ run()
 try()
 {
 	target=$(
-		find . -maxdepth 3 -name "$1" -printf '%d %p\0' \
+		find . -maxdepth "${2:-3}" -name "$1" -printf '%d %p\0' \
 			| sort -zn \
 			| sed -znE '1s/^[0-9]+ //p' \
 			| tr -s '\0' '\n'
 	)
+
 	[[ -z $target ]] && return 1
-	IFS= read -r targetdir < <(dirname "$target")
+	IFS= read -r targetdir < <(dirname -z "$target" | xargs -0 realpath)
 	builddir="$targetdir-build"
 
 	case "$1" in
+		pom.xml)
+			unset builddir
+			cd "$targetdir"
+			run mvn compile package
+			exit
+			;;
+		configure.ac)
+			cd "$targetdir"
+			if [[ configure.ac -nt configure ]] || [[ Makefile.am -nt Makefile.in ]]; then
+				autoreconf --verbose --install --force
+			fi
+			if [[ Makefile.am -nt "$builddir/Makefile" ]] || ! [[ -f "$builddir/Makefile" ]]; then
+				mkdir -p "$builddir"
+				cd "$builddir"
+				"$targetdir/$target"
+			fi
+
+			tool='make'
+			;;
 		autogen.sh | configure)
 			tool='make'
-			"$target"
+			if [[ Makefile.am -nt "$builddir/Makefile" ]] || ! [[ -f "$builddir/Makefile" ]]; then
+				mkdir -p "$builddir"
+				cd "$builddir"
+				"$targetdir/$target"
+			fi
 			;;
 		CMakeLists.txt)
 			tool='make'
@@ -63,9 +87,11 @@ fi
 false \
 	|| try Makefile \
 	|| try meson.build \
+	|| try configure.ac \
 	|| try configure \
 	|| try autogen.sh \
 	|| try CMakeLists.txt \
+	|| try pom.xml 25 \
 	|| :
 
 [[ $tool && ${builddir:-$targetdir} ]] || {
