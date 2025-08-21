@@ -128,10 +128,6 @@
 	path = base/dot-local/share/gedit/plugins/open-uri-context-menu
 	url = https://github.com/jpfleury/open-uri-context-menu
 	branch = master
-[submodule "base/dot-local/share/gedit/plugins/restore-minimap"]
-	path = base/dot-local/share/gedit/plugins/restore-minimap
-	url = https://github.com/johnfactotum/gedit-restore-minimap.git
-	branch = master
 [submodule "base/dot-local/share/gedit/plugins/smart-home"]
 	path = base/dot-local/share/gedit/plugins/smart-home
 	url = https://github.com/hardpixel/gedit-smart-home
