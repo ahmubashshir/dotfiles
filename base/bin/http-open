@@ -65,6 +65,15 @@ handlers/youtube()
 {
 	match/bin "$MEDIA_PLAYER" || return 0
 	! match/url ytvidtypes || URL="https://youtu.be/${URL##*/}"
+	local chrome=""
+	if match/bin chromium && grep -qE 'youtu\.be/[^/]+|/watch\?.+?&?v=[^&]+' <<< "$URL"; then
+		chrome="https://youtube.com/embed/"$(
+			sed -nE \
+				-e '/:\/\/youtu\.be/s@^.+/([^/]+)$@\1@p' \
+				-e '/\/watch\?.+?&?v=[^&]+/s@^.+/watch\?.+?&?v=([^&]+)$@\1@p' <<< "$URL"
+		)
+	fi
+	[[ -z $chrome ]] || exec chromium --incognito --maximized --class=mpv --app="$chrome"
 	case "$MEDIA_PLAYER" in
 		mpv)
 			mkdir -p "$XDG_RUNTIME_DIR/mpv"
