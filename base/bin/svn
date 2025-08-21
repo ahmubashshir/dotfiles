@@ -1,0 +1,6 @@
+#!/bin/bash
+ARGS=(
+	--config-dir
+	"$XDG_CONFIG_HOME/subversion"
+)
+source "${0%/*}/lib/xdgdirs"

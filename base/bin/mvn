@@ -1,0 +1,11 @@
+#!/bin/bash
+if ! [[ -d "$XDG_CONFIG_HOME"/maven ]]; then
+	mkdir -p "$XDG_CONFIG_HOME"/maven
+	cat > "$XDG_CONFIG_HOME/maven/settings.xml" << 'EOF'
+<settings>
+	<localRepository>${env.XDG_CACHE_HOME}/maven/repository</localRepository>
+</settings>
+EOF
+fi
+ARGS=(-gs "$XDG_CONFIG_HOME/maven/settings.xml")
+source "${0%/*}/lib/xdgdirs"
