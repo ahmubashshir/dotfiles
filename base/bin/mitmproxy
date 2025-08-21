@@ -1,0 +1,3 @@
+#!/bin/bash
+ARGS=('--set' "confdir=${XDG_CONFIG_HOME}/mitmproxy")
+source "${0%/*}/lib/xdgdirs"
