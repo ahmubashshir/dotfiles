@@ -1,0 +1,14 @@
+#!/bin/sh -e
+stdbuf -o0 arduino-cli --log --log-level info --log-format text "$@" |
+	stdbuf -i0 -o0 sed '
+/^time=/ {
+	s/^time=[^ ]* level=\([^ ]*\)/[\1]/
+	s/\bmsg="\([^[:space:]][^"]*\)"/\1/
+	s/\bmsg="[[:space:]]*\([^"]*\)"/-> \1/
+	s/\blib=\([[:alnum:]]*\)\b/"\1"/
+	s/\btool="\([[:alnum:]]*\)"\b/"\1"/
+	s/\bprio=[0-9A-F]*$//
+	s/\bdir=\(.*\) location=\([a-z]*\)\b/"\1" (\2)/
+}
+s@'"$HOME"'@~@g
+'
