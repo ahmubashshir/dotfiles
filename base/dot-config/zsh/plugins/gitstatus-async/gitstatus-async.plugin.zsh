@@ -154,5 +154,8 @@ function ›git›prompt›chpwd {
 function ›git›prompt›precmd {
 	[[ $PWD =~ ^/run/user/[[:digit:]]*/gvfs/ ]] && return 0
 	() { async_flush_jobs "gitworker$$" || ›git›prompt›worker_restart } 2>/dev/null
+	((GITSTATUS[reload_config] == 0)) || async_worker_eval "gitworker$$" "$(declare -p GITSTATUS)"
 	async_job "gitworker$$" ›git›prompt›update›async
 }
+
+›git›prompt›worker_restart
