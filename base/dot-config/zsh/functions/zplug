@@ -14,7 +14,7 @@ if (( ! $+functions[____zplug_run_hook]));then
 	done
 	while read -r plug _;do
 		if (($+functions[$plug]));then
-			function-mv $plug →zplug/hooks/${${plug#zplug:}:s+:+/+}
+			function-mv $plug ›zplug›hooks›${${plug#zplug:}:s+:+›+}
 			unset -f $plug
 		fi
 	done < <(
@@ -34,10 +34,10 @@ if [[ -z $1 ]];then
 	return
 fi
 
-function ____zplug_run_hook {
+function ›zplug›hook {
 	local when=$1 plugin=$2;shift
-	if (($+functions[→zplug/hooks/$when/$plugin]));then
-		→zplug/hooks/$when/$plugin "$@"
+	if (($+functions[›zplug›hooks›${when}›$plugin]));then
+		›zplug›hooks›${when}›$plugin "$@"
 	fi
 }
 
@@ -65,9 +65,9 @@ for plugpath in $zplugdirs[@];do
 				rm -f "$plugin.zwc"
 				Z_COMPILE_TARGET="${plugpath:t2:h1}-$plugname" zcompile "$plugin"
 			fi
-			____zplug_run_hook pre $plugname "$@"
+			›zplug›hook pre $plugname "$@"
 			builtin source "$plugin" "$@"
-			____zplug_run_hook post $plugname "$@"
+			›zplug›hook post $plugname "$@"
 			if (( ! ${+zsh_loaded_plugins[$plugname]}));then
 				zsh_loaded_plugins[$plugname]=$plugin:h
 			fi
