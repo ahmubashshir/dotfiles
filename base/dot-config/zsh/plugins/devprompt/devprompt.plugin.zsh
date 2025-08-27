@@ -23,8 +23,9 @@ function __devprompt_env {
 
 function __devprompt_precmd {
 	emulate -L zsh
-	setopt extendedglob
+	setopt extendedglob rematchpcre hist_subst_pattern
 	local -A icons
+	local -i nix
 	local pyvenvfilter='-(([^-](#c8)|[^-](#c2)-[^-](#c5))-py[0-9].[0-9]##|[a-z]##|)(#e)'
 
 	icons=(
@@ -42,5 +43,5 @@ function __devprompt_precmd {
 	__devprompt_env py3 "${${VIRTUAL_ENV:t}//$~pyvenvfilter/}"
 	__devprompt_env lua "${ROCK_ENV_NAME}"
 	__devprompt_env rby "${RBENV_VERSION}"
-	__devprompt_env nix "${IN_NIX_SHELL}"
+	(( (nix = $path[(I)/nix/store/*]) == 0 )) || __devprompt_env nix "${path[nix]:h:t:s:#%(#b)(?(#c8))[^-]##-(*):${match[1]}*-${match[2]}}"
 }
