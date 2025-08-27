@@ -7,16 +7,16 @@ for color in "$@";do
 			printf '#%-9s: ' "$color"
 			case ${#color} in
 				(8)
-					printf 'rgba(%d,%d,%d,%lf)' "0x${color:0:2}" \
+					printf "${name:-rgb}"'a(%d,%d,%d,%lf)' "0x${color:0:2}" \
 						"0x${color:2:2}" "0x${color:4:2}" \
 						"0x${color:6:2}*1.0/0xFF"
 					;;
 				(6)
-					printf 'rgb(%d,%d,%d)' "0x${color:0:2}" \
+					printf "${name:-rgb}"'(%d,%d,%d)' "0x${color:0:2}" \
 						"0x${color:2:2}" "0x${color:4:2}"
 					;;
 				(3)
-					printf 'rgb(%d,%d,%d)' "0x${color:0:1}*0x11" \
+					printf "${name:-rgb}"'(%d,%d,%d)' "0x${color:0:1}*0x11" \
 						"0x${color:1:1}*0x11" "0x${color:2:1}*0x11"
 					;;
 			esac
