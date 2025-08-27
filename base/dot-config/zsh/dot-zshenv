@@ -6,19 +6,19 @@ fpath=(
 	${ZDOTDIR:-$HOME/.zsh}/functions/compdefs
 	$fpath
 )
-ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-ZSH="$ZDOTDIR/omz"
 
 () {
-	[[ "${HOST:r}" == "$HOST" ]] || ZSH_COMPDUMP="${${HOST:r}/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"
-	if [[ $ZSH_COMPDUMP == distrobox-ephemeral ]]; then
-		ZSH_COMPDUMP=/tmp/zsh/compdump
-	else
-		ZSH_COMPDUMP="$ZSH_CACHE_DIR/${ZSH_COMPDUMP+$ZSH_COMPDUMP/}compdump"
+	if [[ ${CONTAINER_ID/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral} == distrobox-ephemeral ]]
+	then ZSH_CACHE_DIR="/tmp/zsh"
+	elif [[ $CONTAINER_ID ]]
+	then ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/$CONTAINER_ID"
+	else ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 	fi
-	[[ -d ${ZSH_COMPDUMP:a:h} ]] || mkdir -p ${ZSH_COMPDUMP:a:h}
+	[[ -d ${ZSH_CACHE_DIR} ]] || mkdir -p "$ZSH_CACHE_DIR"
 }
 
+ZSH="$ZDOTDIR/omz"
+ZSH_COMPDUMP="$ZSH_CACHE_DIR/compdump"
 function compinit {
 		local body
 		body=$functions[compinit]
