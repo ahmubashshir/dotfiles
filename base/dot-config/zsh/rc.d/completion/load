@@ -34,8 +34,6 @@ zstyle ':completion:*' list-grouped true
 zstyle ':completion:*' list-dirs-first true
 zstyle ':completion:*' list-rows-first true
 zstyle ':completion:*' remove-all-dups true #
-zstyle ':completion:*' use-cache true
-zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR/compcache"
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*:kill:*' gain-privileges true
