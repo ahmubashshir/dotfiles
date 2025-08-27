@@ -31,6 +31,10 @@ bindkey -e
 autoload -Uz add-zsh-hook compinit
 autoload -Uz "${ZDOTDIR:-$HOME/.zsh}/functions"/^_*~*.zwc(-.:t) >&3 2>&1
 
+# configure completion cache before all else
+zstyle ':completion:*' use-cache true
+zstyle ':completion:*' cache-path "$ZSH_CACHE_DIR/compcache"
+
 load rc plugins/hooks plugins/init
 zplug --path "$ZDOTDIR/omz/plugins"
 
