@@ -132,3 +132,15 @@ function zplug:post:fzf-tab {
 
 	zstyle ':fzf-tab:complete:reboot-to:*' disabled-on any
 }
+
+function zplug:post:gio-vfs-prompt {
+	GIOVFS[prefix]="╭─${ENV[prompt_prefix]}"
+	GIOVFS[suffix]="┃"$'\n'
+	GIOVFS[icon]=$'%1{\UF0870%}' # nf-md-folder_network
+}
+
+function zplug:post:gitstatus-async {
+	GITSTATUS[prefix]="${ENV[prompt_prefix]}"
+	GITSTATUS[suffix]="${ENV[prompt_suffix]}"
+	GITSTATUS[reload_config]=1
+}
