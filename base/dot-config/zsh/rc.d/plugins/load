@@ -31,4 +31,10 @@ zplug-defer z
 	zplug-defer nix-shell
 }
 
+if [[ $ENV[color_prompt] == yes ]]; then
+	zplug-defer gitstatus-async
+	zplug-defer devprompt
+#	zplug-defer gio-vfs-prompt
+fi
+
 zsh-defer +a eval '${ZDOTDIR:-$HOME/.zsh}/ztasklocked recompile $fpath ${(v)zsh_loaded_plugins}'
