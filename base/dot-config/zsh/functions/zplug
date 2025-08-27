@@ -1,6 +1,8 @@
 #!/bin/zsh
 local plugname plug plugpath plugin plugpkg
-if (( ! $+functions[____zplug_run_hook]));then
+typeset -gA __zplug__rpath __zplug___rpkg
+
+if (( ! $+functions[›zplug›hook]));then
 		if (( ! ${+zplugdirs} )); then
 		typeset -ga zplugdirs
 	fi
@@ -14,12 +16,14 @@ if (( ! $+functions[____zplug_run_hook]));then
 	done
 	while read -r plug _;do
 		if (($+functions[$plug]));then
-			function-mv $plug ›zplug›hooks›${${plug#zplug:}:s+:+›+}
+			function-mv $plug ›zplug›hook›${${plug#zplug:}:s+:+›+}
 			unset -f $plug
 		fi
 	done < <(
 		functions -m 'zplug:(pre|post):*'
 	)
+	autoload -Uz _cache_invalid _store_cache _retrieve_cache
+	_retrieve_cache zplug-resolved
 fi
 
 if [[ $1 = --path ]];then
@@ -36,15 +40,44 @@ fi
 
 function ›zplug›hook {
 	local when=$1 plugin=$2;shift
-	if (($+functions[›zplug›hooks›${when}›$plugin]));then
-		›zplug›hooks›${when}›$plugin "$@"
+	if (($+functions[›zplug›hook›${when}›$plugin]));then
+		›zplug›hook›${when}›$plugin "$@"
 	fi
+}
+
+
+function ›zplug›load {
+	local plugname="$1" plugin="$2" plugpath="$3"; shift 3
+
+	if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
+	then
+		rm -f "$plugin.zwc"
+		Z_COMPILE_TARGET="${plugpath:t2:h1}-$plugname" zcompile "$plugin"
+	fi
+	›zplug›hook pre  "$plugname" "$@" || return 1
+	builtin source   "$plugin" "$@" || return 1
+	›zplug›hook post "$plugname" "$@" || return 1
+	if (( ! ${+zsh_loaded_plugins[$plugname]}));then
+		zsh_loaded_plugins[$plugname]=$plugin:h
+	fi
+	return 0
 }
 
 plugname=$1:t
 plugpkg=$1:h
 [[ $plugpkg =~ ^\.$ ]] && unset plugpkg
 shift
+
+if [[  -n ${__zplug__rpath[$plugname]} \
+	&& -n ${__zplug___rpkg[$plugname]}  \
+	&& -f ${__zplug__rpath[$plugname]} \
+	&& -d ${__zplug___rpkg[$plugname]}
+]] && ›zplug›load "$plugname" "${__zplug__rpath[$plugname]}" "${__zplug___rpkg[$plugname]}"
+then return 0
+fi
+
+unset "__zplug__rpath[$plugname]" "__zplug___rpkg[$plugname]"
+
 for plugpath in $zplugdirs[@];do
 	for plug in \
 		"$plugname/$plugname.plugin" \
@@ -58,19 +91,11 @@ for plugpath in $zplugdirs[@];do
 		"zsh-$plugname/init"
 	do
 		plugin="$plugpath/${plugpkg+$plugpkg/}$plug.zsh"
-		if [ -f "$plugin" ]
+		if [[ -f "$plugin" ]] && ›zplug›load "$plugname" "$plugin" "$plugpath"
 		then
-			if [[ -w $plugin:P:h ]] && [[ -s "$plugin" && ( ! -s "$plugin.zwc" || "$plugin" -nt "$plugin.zwc" ) ]]
-			then
-				rm -f "$plugin.zwc"
-				Z_COMPILE_TARGET="${plugpath:t2:h1}-$plugname" zcompile "$plugin"
-			fi
-			›zplug›hook pre $plugname "$@"
-			builtin source "$plugin" "$@"
-			›zplug›hook post $plugname "$@"
-			if (( ! ${+zsh_loaded_plugins[$plugname]}));then
-				zsh_loaded_plugins[$plugname]=$plugin:h
-			fi
+			__zplug__rpath[$plugname]="$plugin"
+			__zplug___rpkg[$plugname]="$plugpath"
+			_store_cache zplug-resolved __zplug___rpkg __zplug__rpath
 			return 0
 		fi
 	done
