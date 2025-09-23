@@ -1,14 +1,3 @@
-@-moz-document url(about:blank),
-url(about:blank){
-
-html:not(#ublock0-epicker),
-html:not(#ublock0-epicker) body,
-#newtab-customize-overlay {
-	background: var(--backdrop) !important;
-	backdrop-filter: blur(15px);
-}
-}
-
 @-moz-document regexp("moz-extension://[0-9a-f-]+/html/tab.html.*") {
 	body {
 		background: var(--backdrop) !important;
