@@ -107,7 +107,7 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 				bsdtar -xOf "$file" "${FILE:-$(
 					bsdtar -tvf "$file" \
 						| rev | cut -d ' ' -f1 \
-						| rev | grep -iE "(^|/)$NAME(-($os|$arch))*$"
+						| rev | grep -iE "(^|/)$NAME(-($os|$arch|))*$"
 				)}"
 			else
 				cat "$file"
