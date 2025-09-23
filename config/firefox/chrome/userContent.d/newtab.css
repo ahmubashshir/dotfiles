@@ -1,9 +1,16 @@
 @-moz-document url(about:home),
 url(about:newtab),
+url(about:blank),
 url(about:privatebrowsing){
-body {
-	background: var(--backdrop) !important;
+
+#newtab-customize-overlay,
+html:not(#ublock0-epicker):not(.popup-window) body {
 	backdrop-filter: blur(15px);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
+	background-image: var(--backdrop-image) !important;
 	overflow: clip;
 }
 
@@ -40,15 +47,11 @@ div {
 	&.search-inner-wrapper {
 		padding: 0px !important;
 		margin: 0px !important;
-
-		html:is(.private) & .wordmark {
-			fill: var(--in-content-page-color) !important;
-		}
-
-		html:not(.private) & .wordmark {
-			fill: var(--newtab-text-primary-color) !important;
-		}
 	}
+}
+
+.top-sites-list {
+	grid-template-columns: repeat(4, 1fr) !important;
 }
 
 .top-sites-list .hide-for-narrow {
