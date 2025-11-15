@@ -25,4 +25,4 @@ case "$1" in
 		;;
 esac
 
-! pgrep -x xfdesktop > /dev/ || xfdesktop -R
+! pgrep -x xfdesktop > /dev/null || xfdesktop -R
