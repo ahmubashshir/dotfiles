@@ -16,7 +16,7 @@ function git_config
 function die
 {
 	local ret="$1" fmt="$2"
-	shift                2
+	shift              2
 	printf "$fmt\n" "$@" >&2
 	exit "$ret"
 }
@@ -68,8 +68,7 @@ while (($# > 0)); do
 			read -r profile < <(git_config --get profile.selected)
 			[[ $profile ]] || die 0 "No profile applied."
 			echo "$profile: unapplying profile." >&2
-
-			sed '/^#/d' "$PROFILES/$profile.cfg" \
+			sed -E '/^(#|$)/d' "$PROFILES/$profile.cfg" \
 				| while read -r key op val; do
 					git_config --unset "$key" "$val"
 				done \
