@@ -67,7 +67,7 @@ handlers/youtube()
 	! match/url ytvidtypes || URL="https://youtu.be/${URL##*/}"
 	local chrome=""
 	if match/bin chromium && grep -qE 'youtu\.be/[^/]+|/watch\?.+?&?v=[^&]+' <<< "$URL"; then
-		chrome="https://youtube.com/embed/"$(
+		chrome="https://youtube.com/watch?v="$(
 			sed -nE \
 				-e '/:\/\/youtu\.be/s@^.+/([^/]+)$@\1@p' \
 				-e '/\/watch\?.+?&?v=[^&]+/s@^.+/watch\?.+?&?v=([^&]+)$@\1@p' <<< "$URL"
