@@ -1,11 +1,11 @@
 #!/bin/sh
 add_java_option()
 {
-	case "$_JAVA_OPTIONS" in
+	case "$JAVA_TOOL_OPTIONS" in
 		*"-D$1"*) ;;
-		*) _JAVA_OPTIONS="-D$1${_JAVA_OPTIONS+ $_JAVA_OPTIONS}" ;;
+		*) JAVA_TOOL_OPTIONS="-D$1${JAVA_TOOL_OPTIONS+ $JAVA_TOOL_OPTIONS}" ;;
 	esac
-	export _JAVA_OPTIONS
+	export JAVA_TOOL_OPTIONS
 }
 
 for env__e in ~/.config/shell/env.d/*.sh; do
