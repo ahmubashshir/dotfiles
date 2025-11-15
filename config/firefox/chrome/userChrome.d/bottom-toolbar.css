@@ -46,7 +46,7 @@
 			position: fixed !important;
 			bottom: 0;
 			display: block;
-			z-index: 1 !important;
+			z-index: calc(var(--browser-area-z-index-tabbox) * 3) !important;
 			width: 100% !important;
 			margin-top: var(--space-xsmall);
 		}
@@ -176,6 +176,15 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 			}
 		}
 	}
+}
+
+#notifications-toolbar {
+	max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
+	position: absolute;
+	top: calc(-1 * var(--tab-height-with-margin-padding) - var(--space-medium));
+	background: transparent !important;
+	transform: translateX(-50%);
+	left: 50% !important;
 }
 
 #toolbar-menubar:not([inactive="true"]),
