@@ -5,103 +5,127 @@
 	exit 1
 }
 
-ID=$(awk -v FS== '/^ID=/{print $2}' /etc/os-release)
-targets=()
-if [[ $1 ]]; then
-	case $1 in
-		windows) entry=auto-windows ;;
-		shell) entry=auto-efi-shell ;;
-		firmware) entry=auto-reboot-to-firmware-setup ;;
-		linux-*) entry="$ID-$1.conf" ;;
-		*) entry="$1.conf" ;;
+command -pv jq 2> /dev/null >&2 || {
+	printf "error: jq is not installed"
+	exit 1
+}
+
+ID=$(
+	.   /etc/os-release
+	echo                     "$ID"
+)
+if [[ "$1" ]]; then
+	case "$1" in
+		efi:windows) entry=auto-windows ;;
+		efi:shell) entry=auto-efi-shell ;;
+		efi:firmware-setup) entry=auto-reboot-to-firmware-setup ;;
+		uki:linux-*) entry="$ID-${1#uki:}.efi" ;;
+		uki:*) entry="${1#uki:}.efi" ;;
+		cfg:linux-*) entry="$ID-${1#cfg:}.conf" ;;
+		cfg:*) entry="${1#cfg:}.conf" ;;
 	esac
 	if bootctl list | grep -q '^[[:blank:]]*id: '"$entry"; then
 		printf 'Rebooting to %s\n' "$1"
-		exec systemctl reboot --boot-loader-entry="$entry"
+		echo systemctl reboot --boot-loader-entry="$entry"
 	fi
 else
 	if tty -s; then
-		if tput setaf 0 > /dev/null 2>&1; then
-			BOLD="$(tput bold)"
-			BLUE="${BOLD}$(tput setaf 4)"
-			GREEN="${BOLD}$(tput setaf 2)"
-			RED="${BOLD}$(tput setaf 1)"
-			YELLOW="${BOLD}$(tput setaf 3)"
-			ALL_OFF="$(tput sgr0)"
-		else
-			BOLD="\e[1m"
-			BLUE="${BOLD}\e[34m"
-			GREEN="${BOLD}\e[32m"
-			RED="${BOLD}\e[31m"
-			YELLOW="${BOLD}\e[33m"
-			ALL_OFF="\e[0m"
-		fi
+		CSI=$'\e['
+		BOLD="${CSI}1m"
+		BLACK="${BOLD}${CSI}30m"
+		RED="${BOLD}${CSI}31m"
+		GREEN="${BOLD}${CSI}32m"
+		YELLOW="${BOLD}${CSI}33m"
+		BLUE="${BOLD}${CSI}34m"
+		MAGENTA="${BOLD}${CSI}35m"
+		CYAN="${BOLD}${CSI}36m"
+		WHITE="${BOLD}${CSI}37m"
+		RESET="${CSI}0m"
 	fi
-	printf "%sReboot targets:%s\n" "$BOLD" "$ALL_OFF"
-	mapfile -t targets < <(
-		bootctl list | sed -nE '/^[[:blank:]]*id: /{
-			s/^.*id: (.*)/\1/
-			s/\.conf$//g
-			s/^('"$ID"'|auto)-//g
-			s/efi-(shell)/\1/
-			s/reboot-to-(firmware)-setup/\1/
-			p
-		}' | sort \
-			| awk '!/^(shell|firmware)$/;/^(shell|firmware)$/ {d[i++]=$1};END{for(i in d)print d[i]}'
-	)
-	bootdir=$(bootctl -x)
-	espdir=$(bootctl -p)
-	for each in ${targets[@]}; do
-		case $each in
-			windows)
+	printf "%bReboot targets:%b\n" "$BOLD" "$RESET"
+	#	cat ~/bm.json |
+	bootctl list --json=short \
+		| jq -r '[.[] | . * {
+			id: (.id
+				| sub("^arch-"; "")
+				| if test("\\.efi$")
+					then sub("^(?<id>.+)\\.efi$"; "uki:\(.id)")
+				elif test("\\.conf$")
+					then sub("^(?<id>.+)\\.conf$"; "cfg:\(.id)")
+				elif test("^auto-")
+					then sub("^auto(-reboot-to|-efi)?-(?<id>.+)$"; "efi:\(.id)")
+				end)
+			}
+			| [(.id |
+				if test(":windows$") then 2
+				elif test("^efi:")   then 0
+				elif test("memtest") then 1
+				elif test("^uki:")   then 1
+				elif test("linux-")  then 2
+				elif test("^cfg:")   then 3
+				end),
+				.id,
+				(if .id == "efi:firmware-setup"
+                then "EFI Firmware Setup"
+                elif (.id|test("^uki:(.+-)?linux(-fallback)?$"))
+                then "\(.title), \(.version|sub("^\\d+\\.\\d+\\.\\d+-(?:\\w+)-\\d+"; "linux")|sub("~"; ", "))"
+                elif (.id|test("^uki:"))
+                then "\(.title), \(.version|sub("^\\d+\\.\\d+\\.\\d+(?:(-\\w+)?-\\d+)?-(?<id>\\w+)[^~]*"; "\(.id)")|sub("~"; ", "))"
+                else .showTitle
+				end),
+				.path
+			]] | sort[] | .[1:] | join("\t")' \
+		| while IFS=$'\t' read -r entry title source; do
+			# RED GREEN YELLOW BLUE MAGENTA CYAN
+			# uki GREEN:BLUE
+			# efi YLLOW:RED
+			# kfg MGNTA:GREEN
+			# cfg CYAN:BLUE
+			# win YELLOW:MGNTA
+			id=BLUE
+			txt=GREEN
+			case "${entry}" in
+				efi:windows)
+					id=YELLOW
+					txt=MAGENTA
+					;;
+				uki:*)
+					id=GREEN
+					txt=BLUE
+					;;
+				efi:*)
+					id=YELLOW
+					txt=RED
+					;;
+				cfg:*)
+					fsroot="${source%loader/entries/*.conf}"
+					while read -r file; do
+						if [ ! -f "$fsroot$file" ]; then
+							continue 2
+						fi
+					done < <(awk '/^(initrd|linux|efi)/ {print $2}' "$source")
+					case "${entry}" in
+						cfg:memtest*)
+							id=YELLOW
+							txt=RED
+							;;
+						cfg:*linux-*)
+							id=MAGENTA
+							txt=GREEN
+							;;
+						cfg:*)
+							id=CYAN
+							txt=BLUE
+							;;
+					esac
+					;;
+			esac
+			(
+				declare -run id txt
 				printf '%s\t--\t%s\n' \
-					"${GREEN}${each}${ALL_OFF}" \
-					"${BLUE}Windows Boot Manager${ALL_OFF}"
-				;;
-			shell)
-				printf '%s\t--\t%s\n' \
-					"${YELLOW}${each}${ALL_OFF}" \
-					"${RED}EFI Shell${ALL_OFF}"
-				;;
-			firmware)
-				printf '%s\t--\t%s\n' \
-					"${YELLOW}${each}${ALL_OFF}" \
-					"${RED}EFI Settings${ALL_OFF}"
-				;;
-			*)
-				source=$(
-					if [[ $each =~ ^linux-* ]]; then
-						id="$ID-$each"
-					else
-						id="$each"
-					fi
-					id="${id//+/\\+}"
-					id="${id//\?/\\?}"
-					bootctl list \
-						| awk '/^\s+id: '"$id\\.conf"'/,/^$/ { if($1 == "source:") print $2}'
-				)
-				case $source in
-					${bootdir}*) fsroot="$bootdir" ;;
-					${espdir}*) fsroot="$espdir" ;;
-					/sys/*) continue ;;
-					*) fsroot='' ;;
-				esac
-				case "$each" in
-					memtest*) COLOR="$YELLOW" ;;
-					*) COLOR="$BLUE" ;;
-				esac
-				while read -r file; do
-					if [ ! -f "$fsroot$file" ]; then
-						continue 2
-					fi
-				done < <(
-					awk '/^(initrd|linux|efi)/ {print $2}' "$source"
-				)
-				title=$(awk '/^title/ {for (i=2; i<NF; i++) printf $i " "; print $NF}' "$source")
-				printf '%s\t--\t%s\n' \
-					"${GREEN}${each}${ALL_OFF}" \
-					"${COLOR}${title}${ALL_OFF}"
-				;;
-		esac
-	done | column -t -s $'\t'
+					"${id}${entry}${RESET}" \
+					"${txt}${title}${RESET}"
+			)
+		done \
+		| column -t -s $'\t'
 fi
