@@ -1,0 +1,2 @@
+#!/bin/sh
+git subtree pull --prefix submodules/gdbinit https://github.com/gdbinit/Gdbinit master
