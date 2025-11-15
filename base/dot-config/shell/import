@@ -2,7 +2,7 @@
 # FD 3w /dev/null
 exec 3> /dev/null
 
-. "$XDG_CONFIG_HOME/shell/functions"
+. "${XDG_CONFIG_HOME:=$HOME/.config}/shell/functions"
 . "$XDG_CONFIG_HOME/shell/aliases"
 
 tty -s || return
