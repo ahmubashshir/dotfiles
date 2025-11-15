@@ -35,6 +35,7 @@ function __devprompt_precmd {
 		['lua']=$'\xee\x98\xa0'     # e620		nf-seti-lua
 		['rby']=$'\xee\x98\x85'     # e605		nf-seti-ruby
 		['nix']=$'\xef\x8c\x93'     # f313		nf-linux-nixos
+		['tty']=$'\xef\x87\xa0'     # f1e0     nf-fa-share_alt
 	)
 
 	DEVPROMPT_PROMPT=''
@@ -43,5 +44,6 @@ function __devprompt_precmd {
 	__devprompt_env py3 "${${VIRTUAL_ENV:t}//$~pyvenvfilter/}"
 	__devprompt_env lua "${ROCK_ENV_NAME}"
 	__devprompt_env rby "${RBENV_VERSION}"
+	__devprompt_env tty "${TTY_SHARE_PUBLIC_URL:+public${TTY_SHARE_LOCAL_URL:+:}}${TTY_SHARE_LOCAL_URL:+local}"
 	(( (nix = $path[(I)/nix/store/*]) == 0 )) || __devprompt_env nix "${path[nix]:h:t:s:#%(#b)(?(#c8))[^-]##-(*):${match[1]}*-${match[2]}}"
 }
