@@ -126,6 +126,11 @@ user_pref("browser.download.start_downloads_in_tmp_dir", true);
 // enable jpeg-xl
 //user_pref("image.jxl.enabled", true);
 
+// Ctrl-Tab MRU order
+user_pref("browser.ctrlTab.sortByRecentlyUsed", true);
+
+// disable site-wide zoom
+user_pref("browser.zoom.siteSpecific", false);
 // keyboard zoom steps
 user_pref("toolkit.zoomManager.zoomValues", "0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.00,1.05,1.10,1.15,1.20,1.25,1.30,1.35,1.40,1.45,1.50,1.55,1.60,1.65,1.70,1.75,1.80,1.85,1.90,1.95,2.00,2.05,2.10,2.15,2.20,2.25,2.30,2.35,2.40,2.45,2.50,2.55,2.60,2.65,2.70,2.75,2.80,2.85,2.90,2.95,3.00,3.05,3.10,3.15,3.20,3.25,3.30,3.35,3.40,3.45,3.50");
 // Use document fonts
@@ -222,6 +227,11 @@ user_pref("browser.newtabpage.directory.source", "");
 user_pref("browser.newtabpage.directory.ping", "");
 user_pref("browser.newtabpage.introShown", true);
 
+// Disable LLM integration
+user_pref("browser.ml.chat.enabled", false);
+user_pref("browser.ml.chat.sidebar", false);
+user_pref("browser.ml.chat.shortcuts", false);
+user_pref("browser.ml.chat.shortcuts.custom", false);
 
 // disable onboarding
 user_pref("browser.onboarding.newtour", "performance,private,addons,customize,default");
