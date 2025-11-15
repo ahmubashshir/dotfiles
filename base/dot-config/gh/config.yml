@@ -12,3 +12,4 @@ aliases:
     pcreate: repo create --private
 prompt: enabled
 browser: xdg-open
+version: "1"
