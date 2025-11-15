@@ -86,6 +86,17 @@ set startup-with-shell off
 set confirm off
 set verbose off
 set history filename ~/.gdb_history
+
+python
+from os import path, environ as env, mkdir, rename
+histdir = path.join(env.get('XDG_STATE_HOME', path.expanduser('~/.local/state')), 'gdb')
+if not path.isdir(histdir):
+	if path.exists(histdir):
+		rename(histdir, f"{histdir}.old")
+	mkdir(histdir)
+gdb.execute(f"set history filename {histdir}/history")
+end
+
 set history save
 
 set output-radix 0x10
@@ -189,14 +200,19 @@ define color_underline
     end
 end
 
-# create ~/.gdbinit.local if file not present
-# suppresses any warning about not finding the file
-shell if ! test -f ~/.gdbinit.local; then touch ~/.gdbinit.local; fi
-
 # this way anyone can have their custom prompt - argp's idea :-)
 # can also be used to redefine anything else in particular the colors aka theming
 # just remap the color variables defined above
-source ~/.gdbinit.local
+python
+from os import path, environ as env, mkdir, rename
+config = path.join(env.get('XDG_CONFIG_HOME', path.expanduser('~/.config')), 'gdb/gdbinit.local')
+if not path.isfile(config):
+	config = path.expanduser('~/.gdbinit.local')
+	if not path.isfile(config):
+		config = None
+if config:
+	gdb.execute(f"source {config}")
+end
 
 # can't use the color functions because we are using the set command
 if $COLOREDPROMPT == 1
@@ -305,7 +321,7 @@ define bp
     end
 end
 document bp
-Syntax: bp LOCATION
+Syntax: bp <LOCATION>
 | Set breakpoint.
 | LOCATION may be a line number, function name, or "*" and an address.
 | To break on a symbol you must enclose symbol name inside "".
