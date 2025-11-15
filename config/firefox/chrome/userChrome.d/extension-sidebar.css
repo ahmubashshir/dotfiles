@@ -17,8 +17,11 @@
 		visibility: collapse !important;
 	}
 
-	&:has(#sidebar-box:not(:is([hidden="true"], [positionend], [sidebar-positionend]))) #toolbar-menubar {
-		left: calc(var(--thin-tab-width) + var(--space-xxsmall));
+	&:has(#sidebar-box:not(:is([hidden="true"],
+				[positionend],
+				[sidebar-positionend]))) :is(#toolbar-menubar,
+		#notifications-toolbar) {
+		max-width: calc(100vw - var(--thin-tab-width) - var(--space-xxsmall));
 	}
 }
 
@@ -83,14 +86,16 @@
 			}
 		}
 
-		&:not(:is(:hover, :has(#sidebar-switcher-target.active))) #sidebar-title,
+		&:not(:is(:hover,
+				:has(#sidebar-switcher-target.active))) #sidebar-title,
 		#sidebar-switcher-arrow,
 		#sidebar-close {
 			visibility: collapse;
 			opacity: 0.0;
 		}
 
-		&:is(:hover, :has(#sidebar-switcher-target.active)),
+		&:is(:hover,
+			:has(#sidebar-switcher-target.active)),
 		&:-moz-drag-over {
 			min-width: var(--expanded-width) !important;
 			max-width: var(--expanded-width) !important;
@@ -100,7 +105,8 @@
 				margin-left: calc(var(--collapsed-width) - var(--expanded-width)) !important;
 			}
 
-			&:not(:is([positionend], [sidebar-positionend])) {
+			&:not(:is([positionend],
+					[sidebar-positionend])) {
 				margin-right: calc(var(--collapsed-width) - var(--expanded-width)) !important;
 			}
 
@@ -139,11 +145,13 @@
 				--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
 			}
 
-			#browser:has(&:not(:is([positionend], [sidebar-positionend]))) #tabbrowser-tabbox {
+			#browser:has(&:not(:is([positionend],
+						[sidebar-positionend]))) #tabbrowser-tabbox {
 				border-left: var(--sidebar-placeholder-width);
 			}
 
-			#browser:has(&:is([positionend], [sidebar-positionend])) #tabbrowser-tabbox {
+			#browser:has(&:is([positionend],
+					[sidebar-positionend])) #tabbrowser-tabbox {
 				border-right: var(--sidebar-placeholder-width);
 			}
 		}
@@ -151,17 +159,24 @@
 }
 
 #statuspanel {
-	right: 0;
-	left: unset !important;
-}
+	width: 50vw !important;
+	margin-inline: 25vw !important;
+	justify-content: center;
 
-#statuspanel-label {
-	border-left-style: solid;
-	border-top-left-radius: .3em;
-	margin-left: 1em;
-	border-top-right-radius: unset !important;
-	border-right-style: unset !important;
-	margin-right: unset !important;
-	float: right;
-	background-color: #afe;
+	& #statuspanel-label {
+		border-radius: var(--border-radius-large) var(--border-radius-large) 0 0 !important;
+		padding-inline: 0.75rem !important;
+		border-color: var(--color-accent-primary-active) !important;
+		border-style: dashed dashed none !important;
+		max-width: min-content !important;
+		text-align: center;
+
+		#statuspanel:not([type="status"]) & {
+			min-width: 25vw;
+		}
+
+		#statuspanel[type="status"] & {
+			min-width: min-content;
+		}
+	}
 }
