@@ -93,6 +93,7 @@ export PERL_MB_OPT="--install_base \"$PERLHOME\""
 export PERL_MM_OPT="INSTALL_BASE=$PERLHOME"
 # python:hist
 export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
+export PYTHON_HISTORY="$XDG_STATE_HOME"/python.history
 # python:venv
 export WORKON_HOME="$XDG_DATA_HOME/virtualenvs"
 # ruby:rbenv
