@@ -25,7 +25,12 @@
 	date = iso
 [rebase]
 	autoStash = true
+	stat = true
 [checkout]
 	defaultRemote = origin
 [branch]
 	autoSetupMerge = true
+
+[rerere]
+	enabled = true
+	autoupdate = true
