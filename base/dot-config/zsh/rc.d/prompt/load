@@ -8,22 +8,6 @@ case "$TERM" in
 	xterm|xterm-color|*-256color|*-kitty|alacritty) ENV[color_prompt]=yes;;
 esac
 
-function xterm_title_precmd {
-	print -Pnf '\e]2;[%s] <idle>\a' -- '%m %3~'
-}
-function xterm_title_preexec {
-	print -Pnf '\e]2;[%s] %s\a' -- '%m %2~' '${1}'
-}
-function reset_broken_terminal {
-	printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
-}
-# zsh hooks
-if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
-	add-zsh-hook -Uz precmd reset_broken_terminal
-	add-zsh-hook -Uz precmd xterm_title_precmd
-	add-zsh-hook -Uz preexec xterm_title_preexec
-fi
-
 function check_stderr {
 	emulate -L zsh
 	setopt histsubstpattern
@@ -71,12 +55,29 @@ if [[ $ENV[color_prompt] = yes ]];then
 	RPS1=''
 	PROMPT=''
 	# setup
-	PROMPT+=$'%0{\r%}%E%(?.%F{red}.%F{cyan})╭─${DIR_PROMPT}'
-	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}${GIOVFS_PROMPT}'
+	PROMPT+=$'%(?.%F{red}.%F{cyan})${GIOVFS_PROMPT}'
+	PROMPT+=$'%0{\r%}%E╭─${DIR_PROMPT}'
+	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}'
 	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT}//$~ENV[prompt_filter]/}))>─>${(pl:COLUMNS::─:)}%<<'
 	PROMPT+=$'${DATE_TIME_PROMPT}╮%1{\n\r%}'
 	PROMPT+=$'%0{\r%}%E╰─%(?..%F{cyan})${ENV[prompt_prefix]}%1{\xEE\xAE\x89%} %F{lightgreen}'
 	# transient prompt
 	TPROMPT=$'%0{\r%}%E%B%(?.%F{red}.%F{cyan})%(3~|%6>…>%-1~%<</…/%16>…>%1~%<<|%16>…>%2~%<<) %# %f%b'
 	RPROMPT=$'${RET_PROMPT}'
+fi
+
+# zsh hooks
+if [[ "$TERM" == (alacritty*|gnome*|konsole*|putty*|rxvt*|screen*|tmux*|xterm*) ]]; then
+	function xterm_title_precmd {
+		print -Pnf '\e]2;[%s] <idle>\a' -- '%m %3~'
+	}
+	function xterm_title_preexec {
+		print -Pnf '\e]2;[%s] %s\a' -- '%m %2~' '${1}'
+	}
+	function reset_broken_terminal {
+		printf '%b' '\e[0m\e(B\e)0\017\e[?5l\e7\e[0;0r\e8'
+	}
+	add-zsh-hook -Uz precmd reset_broken_terminal
+	add-zsh-hook -Uz precmd xterm_title_precmd
+	add-zsh-hook -Uz preexec xterm_title_preexec
 fi
