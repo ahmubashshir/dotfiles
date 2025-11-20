@@ -10,7 +10,6 @@
 	}
 }
 
-
 @media -moz-pref("browser.urlbar.searchModeSwitcher.featureGate") or -moz-pref("browser.urlbar.scotchBonnet.enableOverride") {
 	@media not -moz-pref("browser.urlbar.unifiedSearchButton.always") {
 		#urlbar-searchmode-switcher {
@@ -71,6 +70,8 @@ panel[position^="bottomcenter"] {
 }
 
 #urlbar {
+	bottom: calc(var(--space-small) - var(--space-xxsmall)) !important;
+
 	&:is(:not([focused]), [suppress-focus-border]) {
 		& > .urlbar-input-container {
 			border-color: var(--urlbar-box-bgcolor) !important;
@@ -79,7 +80,7 @@ panel[position^="bottomcenter"] {
 
 	&[open][breakout-extend] {
 		top: auto !important;
-		bottom: 0px !important;
+		bottom: 0 !important;
 		flex-direction: column-reverse;
 
 		.urlbarView {
@@ -102,7 +103,7 @@ panel[position^="bottomcenter"] {
 		& #urlbar-input-container {
 			display: inline-flex;
 			position: absolute !important;
-			bottom: 0 !important;
+			bottom: calc(var(--space-xxsmall) / 2) !important;
 		}
 
 		&[searchmode] #urlbar-search-mode-indicator {
