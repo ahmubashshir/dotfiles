@@ -25,6 +25,9 @@ if [ -f "$1" ]; then
 				)
 			fi
 			if [ -n "$key" ]; then
+				case "$key" in
+					Fixes*#) echo "$arg" | grep -q '^[0-9]*$' || key="Fixes: " ;;
+				esac
 				echo "$key" | grep -q "[$TS]$" || key="$key$DTS "
 				sed -Ei "/^$trailer[$TS]+$(echo "$arg" | sed 's@/@\\/@g')$/c\\$key${rep:-$arg}" "$1"
 			fi
