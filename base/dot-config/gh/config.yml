@@ -10,6 +10,7 @@ aliases:
     clone: repo clone
     create: repo create --public
     pcreate: repo create --private
+    switch: auth switch
 prompt: enabled
 browser: xdg-open
 version: "1"
