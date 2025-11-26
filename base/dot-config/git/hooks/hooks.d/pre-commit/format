@@ -73,7 +73,13 @@ format_file()
 		*) return 1 ;;
 	esac
 }
-IFS=$'\r\n' GLOBIGNORE='*' command eval 'STAGED=($(git diff --name-only --cached))'
+
+mapfile -d '' -t STAGED < <(
+	git status --porcelain -uno -z \
+		| grep -Evz '^( |D)' \
+		| cut -zc4-
+)
+
 for file in "${STAGED[@]}"; do
 	if ! [ -f "$file" ] || [ -L "$file" ]; then
 		continue
