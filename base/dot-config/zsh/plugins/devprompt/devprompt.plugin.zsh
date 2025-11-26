@@ -25,7 +25,7 @@ function __devprompt_precmd {
 	emulate -L zsh
 	setopt extendedglob rematchpcre hist_subst_pattern
 	local -A icons
-	local -i nix
+	local nix
 	local pyvenvfilter='-(([^-](#c8)|[^-](#c2)-[^-](#c5))-py[0-9].[0-9]##|[a-z]##|)(#e)'
 
 	icons=(
@@ -45,5 +45,11 @@ function __devprompt_precmd {
 	__devprompt_env lua "${ROCK_ENV_NAME}"
 	__devprompt_env rby "${RBENV_VERSION}"
 	__devprompt_env tty "${TTY_SHARE_PUBLIC_URL:+public${TTY_SHARE_LOCAL_URL:+:}}${TTY_SHARE_LOCAL_URL:+local}"
-	(( (nix = $path[(I)/nix/store/*]) == 0 )) || __devprompt_env nix "${path[nix]:h:t:s:#%(#b)(?(#c8))[^-]##-(*):${match[1]}*-${match[2]}}"
+	if [[ $NIX_GCROOT ]]
+	then nix="${NIX_GCROOT:t:s/%-env/}"
+	elif (( (nix = $path[(I)/nix/store/*]) > 0))
+	then nix="${path[nix]:h:t}"
+	else nix=''
+	fi
+	[[ -z $nix ]] || __devprompt_env nix "${nix:s:#%(#b)(?(#c8))[^-]##-(*):${match[1]}*-${match[2]}}${IN_NIX_SHELL:+($IN_NIX_SHELL)}"
 }
