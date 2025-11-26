@@ -155,3 +155,6 @@
 	path = base/dot-local/share/vapis-extra
 	url = https://github.com/GNOME/vala-extra-vapis
 	branch = master
+[submodule "submodules/gsv"]
+	path = submodules/gsv
+	url = https://github.com/ahmubashshir/gtksourceview-config
