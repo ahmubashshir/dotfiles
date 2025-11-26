@@ -2,7 +2,7 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 	background: transparent;
 }
 
-@-moz-document regexp("moz-extension://[^/]+/resources/tab-preview-frame.html($|\?.+)") {
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/tab-preview-frame.html($|\\?.+)") {
 	html {
 		background: transparent !important;
 	}
@@ -12,14 +12,14 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 	}
 }
 
-@-moz-document regexp("moz-extension://[^/]+/resources/group-tab.html($|\?.+)") {
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/group-tab.html($|\\?.+)") {
 	body {
 		background-color: var(--in-content-page-background);
 		color: var(--in-content-page-color);
 	}
 }
 
-@-moz-document regexp("moz-extension://[^/]+/sidebar/sidebar.html($|\?.+)") {
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 
 	/* autohide css  */
 	#tabbar {
