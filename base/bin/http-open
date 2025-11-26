@@ -24,6 +24,7 @@ declare -A urlre=(
 	['epic']='store\.epicgames\.com/'
 	['pesbuk']='://([[:alnum:].-]+\.|)(facebook|fb)\.com($|/)'
 	['goolag-forms']='^https?://forms.gle/'
+	['github']='^https?://(github\.com|[^/]+\.github\.io)\b'
 )
 
 abort()
@@ -161,6 +162,24 @@ handlers/zoom()
 			| xargs printf 'zoommtg://%s/join?action=join&confno=%s&confid=%s\n' "${URL%%/*}" "${PASS//\?/\&}"
 	)
 	[[ "$meeting" ]] && exec zoom "$meeting"
+}
+
+handlers/github()
+{
+	# https://github.com/michaellass/archlinux-java-run/issues
+	local app
+	read -r app < <(
+		tr -s ':' ' ' <<< "${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/share}" \
+			| xargs printf '%s/applications\n' \
+			| xargs grep -slxrF Name=GitHub \
+			| head -n1 \
+			| rev | cut -d/ -f1 | rev
+	)
+	case "$app" in
+		FFPWA-*.desktop) app="${app%.desktop}" ;;
+		*) return ;;
+	esac
+	exec firefoxpwa site launch --url "$URL" "${app#FFPWA-}"
 }
 
 DENTRY()
@@ -301,6 +320,7 @@ QBCALL()
 
 [[ -z "$URL" ]] \
 	|| match/url awstrack \
+	|| match/url github \
 	|| match/url pesbuk \
 	|| match/url youtube \
 	|| match/url redd.it \
