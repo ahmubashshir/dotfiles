@@ -6,6 +6,7 @@ fi
 export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 add_java_option awt.useSystemAAFontSettings=on
 add_java_option swing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel
+add_java_option swing.crossplatformlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel
 if [ "${ZSH_ARGZERO##*[/-]}" = "zsh" ];then
 	export LS_COLORS=${${(@f)$(dircolors -c ~/.config/shell/dircolors 2>/dev/null || dircolors -c 2>/dev/null)[3]%*\'}#\'*} #}
 else
