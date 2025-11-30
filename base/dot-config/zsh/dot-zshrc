@@ -16,12 +16,18 @@ fi
 source ~/.config/shell/import
 ## options
 zsh_options=(
-	extended_glob prompt_subst rematchpcre beep
-	no_nomatch null_glob c_bases no_flow_control
-	auto_continue auto_cd auto_pushd pushd_silent
+	# globbing
+	extended_glob prompt_subst rematchpcre
+	no_nomatch null_glob
+	# cd
+	auto_cd auto_pushd pushd_silent
 	pushd_to_home pushd_ignore_dups pushd_minus
-	auto_list glob_complete list_packed
-	interactive_comments
+	# completions
+	auto_menu glob_complete menu_complete no_list_ambiguous
+	# misc
+	beep c_bases no_flow_control rm_star_wait
+	auto_continue hash_cmds short_loops
+	interactive_comments octal_zeroes
 )
 setopt $zsh_options
 unset zsh_options
