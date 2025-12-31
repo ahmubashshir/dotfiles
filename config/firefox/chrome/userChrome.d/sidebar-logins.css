@@ -1,0 +1,29 @@
+@-moz-document url(chrome://global/content/megalist/megalist.html){
+body {
+	min-width: min-content;
+	transition: ease-in 250ms;
+	transition-property: opacity;
+}
+
+div.sidebar-panel-heading,
+#more-options-menubutton {
+	display: none;
+	visibility: collapse;
+}
+
+div.first-row {
+	display: contents !important;
+}
+
+@media screen and (width < 250px) {
+	sidebar-panel-header div.second-row {
+		visibility: hidden !important;
+		min-width: 275px !important;
+	}
+
+	body {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+}
