@@ -161,3 +161,6 @@
 [submodule "submodules/desktop-backgrounds"]
 	path = submodules/desktop-backgrounds
 	url = https://github.com/ahmubashshir/desktop-backgrounds
+[submodule "submodules/gdbinit"]
+	path = submodules/gdbinit
+	url = https://github.com/ahm-forks/gdbinit
