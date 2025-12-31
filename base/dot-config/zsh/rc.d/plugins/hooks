@@ -75,12 +75,6 @@ function zplug:post:command-time {
 	ZSH_COMMAND_TIME_COLOR=cyan
 }
 
-function zplug:post:gitstatus-async {
-	GITSTATUS[seperator]="${ENV[prompt_seperator]}"
-	GITSTATUS[prefix]="${ENV[prompt_prefix]}"
-	GITSTATUS[suffix]="${ENV[prompt_suffix]}"
-}
-
 function zplug:post:devprompt {
 	DEVPROMPT[seperator]="${ENV[prompt_seperator]}"
 	DEVPROMPT[prefix]="${ENV[prompt_prefix]}"
@@ -134,9 +128,10 @@ function zplug:post:fzf-tab {
 }
 
 function zplug:post:gio-vfs-prompt {
-	GIOVFS[prefix]="╭─${ENV[prompt_prefix]}"
-	GIOVFS[suffix]="┃"$'\n'
-	GIOVFS[icon]=$'%1{\UF0870%}' # nf-md-folder_network
+	GIOVFS[prefix]="${ENV[prompt_prefix]}"
+	GIOVFS[suffix]="${ENV[prompt_suffix]}"
+	GIOVFS[basename]=yes
+	GIOVFS[icon]=$'%2{\xf3\xb0\xa1\xb0%}' # nf-md-folder_network
 }
 
 function zplug:post:gitstatus-async {
