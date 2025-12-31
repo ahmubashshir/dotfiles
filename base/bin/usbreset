@@ -1,2 +1,2 @@
-#!/usr/bin/env -S${HOME}/bin/lib/mksrc --
+#!/usr/bin/env mksrc.sh
 FLAGS = -O
