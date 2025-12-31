@@ -1,0 +1,13 @@
+#!/bin/sh
+xfconf-query -c xfce4-panel -l -p /plugins |
+	grep 'plugin-[[:digit:]]*$' |
+	while read -r p; do
+		printf '%s: ' "${p##*/}"
+		xfconf-query -c xfce4-panel -p "$p"
+	done |
+	sed -nE '/wcktitle$/s@^plugin(-[[:digit:]]+): (.+)$@\2\1 refresh b true@p' |
+	xargs -n4 busctl --user call \
+		org.xfce.Panel \
+		/org/xfce/Panel \
+		org.xfce.Panel \
+		PluginEvent ssv > /dev/null
