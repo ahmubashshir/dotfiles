@@ -17,3 +17,14 @@ fi
 if [ "$CONTAINER_ID" ] && [ "$container" ];then
 	export LANG=C.UTF-8
 fi
+if command -pv batcat &> /dev/null
+then BAT=batcat
+elif command -pv bat &> /dev/null
+then BAT=bat
+fi
+
+if test -n "$BAT"; then
+export MANPAGER="sh -c 'col -bx|bat -pl man --strip-ansi auto'"
+export MANROFFOPT="-c"
+else unset BAT
+fi

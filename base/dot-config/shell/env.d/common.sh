@@ -5,7 +5,7 @@ export CORS_PROXY="https://cors.eu.org/"
 unset PUPPETEER_PROXY
 export LNDIR="/mnt/Books/LightNovels"
 export EDITOR=nano
-export LESS='-FgiJRMSx4$z-4$~'
+export LESS='-FgiRMSx4$z-4$~'
 export GPGID=56DB0538F60D951C
 export GPGFP=916961EE198832DD70B628B356DB0538F60D951C
 export MEDIA_PLAYER=mpv-buffered
