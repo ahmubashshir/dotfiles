@@ -61,9 +61,12 @@ for_triplet()
 		set -e
 	fi
 
-	if [[ "$TARCH$TSYSTEM$TABI" ]] && hash -- "$TARCH-$TSYSTEM-$TABI-$cmd"; then
+	if [[ "$TARCH$TSYSTEM$TABI" ]] && hash -- "$TARCH-$TSYSTEM-$TABI-$cmd" 2> /dev/null; then
 		echo "+ $TARCH-$TSYSTEM-$TABI-$cmd $*" >&2
 		$exec "$TARCH-$TSYSTEM-$TABI-$cmd" "$@"
+	elif [[ "$LIBC" && ":$cmd:" =~ :(gcc|clang): ]] && hash -- "$LIBC-$cmd" 2> /dev/null; then
+		echo "+ $LIBC-$cmd $*" >&2
+		$exec "$LIBC-$cmd" "$@"
 	else
 		[[ "$TARCH$TSYSTEM$TABI" ]] && echo "'$TARCH-$TSYSTEM-$TABI-$cmd' not found" >&2 && echo "Using '$cmd'" >&2
 		echo "+ $cmd $*" >&2
@@ -80,6 +83,11 @@ get_pkg()
 	else
 		__error "pkg-config: $1 not found."
 	fi
+}
+
+get_libc()
+{
+	declare -g LIBC="$1"
 }
 
 get_triplet()
@@ -113,6 +121,13 @@ get_strip()
 	[[ $1 == "false" ]] || read -ra STRIP_ARGS <<< "$1"
 }
 
+get_local()
+{
+	args+=(
+		-idirafter ~/.local/include
+	)
+}
+
 get_file()
 {
 	echo '# file <path> is deprecated!' >&2
@@ -135,6 +150,7 @@ arduino_get_board()
 	| join("\n")' \
 		| tee /dev/stderr 2> >(sed -n '2s/^/@ fqbn /p;4s/^/@ port /p' >&2)
 }
+
 get_arduino()
 {
 	case "$1" in
@@ -157,6 +173,8 @@ HELPERS=(
 	'triplet: Specify system triplet'
 	'output : Specify output extension'
 	'strip  : Strip program after compilation [pass arguments to strip with this]'
+	'libc:  specify compiler for libc (known value: empty, musl)'
+	'local: include local header files'
 )
 FILTER=compile
 ## start args
