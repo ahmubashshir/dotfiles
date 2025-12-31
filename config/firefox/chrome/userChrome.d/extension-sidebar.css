@@ -17,11 +17,17 @@
 		visibility: collapse !important;
 	}
 
-	&:has(#sidebar-box:not(:is([hidden="true"],
+	&:has(#sidebar-box:not( :is([hidden]:not([hidden="false"]),
 				[positionend],
-				[sidebar-positionend]))) :is(#toolbar-menubar,
-		#notifications-toolbar) {
-		max-width: calc(100vw - var(--thin-tab-width) - var(--space-xxsmall));
+				[sidebar-positionend]))) {
+		& :is(#toolbar-menubar, #notifications-toolbar) {
+			max-width: calc(100vw - var(--thin-tab-width) - var(--space-xxsmall));
+		}
+
+		#toolbar-menubar:is([autohide="false"],
+			:not([autohide])) {
+			margin-left: calc(var(--thin-tab-width) + var(--space-xxsmall));
+		}
 	}
 }
 
@@ -41,6 +47,13 @@
 		}
 	}
 
+	&[sidebarcommand="viewCPMSidebar"] > #sidebar-header > #sidebar-switcher-target > #sidebar-icon {
+		list-style-image: url(chrome://browser/skin/login.svg);
+		-moz-context-properties: fill;
+		fill: currentColor;
+		opacity: 0.8;
+	}
+
 	&:not([hidden="true"]) {
 		min-width: var(--collapsed-width) !important;
 		max-width: var(--collapsed-width) !important;
@@ -54,11 +67,12 @@
 		& #sidebar {
 			max-width: none !important;
 			min-width: var(--collapsed-width) !important;
+			background-color: var(--toolbar-field-background-color) !important;
 		}
 
-		/* Hide sidebar header, when using Tree Style Tab. */
 		#sidebar-header:not([hidden="true"]) {
 			overflow-x: clip;
+			background-color: var(--toolbar-bgcolor);
 
 			#sidebar-title {
 				right: var(--space-small);
