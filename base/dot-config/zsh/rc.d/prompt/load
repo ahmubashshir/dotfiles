@@ -51,12 +51,13 @@ if [[ $ENV[color_prompt] = yes ]];then
 			OLDCOLUMNS=COLUMNS
 		}
 	fi
+	zplug gio-vfs-prompt
 	# init
 	RPS1=''
 	PROMPT=''
 	# setup
-	PROMPT+=$'%(?.%F{red}.%F{cyan})${GIOVFS_PROMPT}'
-	PROMPT+=$'%0{\r%}%E╭─${DIR_PROMPT}'
+	PROMPT+=$'%(?.%F{red}.%F{cyan})'
+	PROMPT+=$'%0{\r%}%E╭─${GIOVFS_PROMPT:-${DIR_PROMPT}}${GIOVFS_PROMPT:+${DIR_PROMPT/\\%1~/${GIOVFS[cwd]}}}'
 	PROMPT+=$'${GITSTATUS_PROMPT}${DEVPROMPT_PROMPT}'
 	PROMPT+=$'%-$((2 + ${#${(S%%)DATE_TIME_PROMPT}//$~ENV[prompt_filter]/}))>─>${(pl:COLUMNS::─:)}%<<'
 	PROMPT+=$'${DATE_TIME_PROMPT}╮%1{\n\r%}'
