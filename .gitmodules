@@ -158,3 +158,6 @@
 [submodule "submodules/gsv"]
 	path = submodules/gsv
 	url = https://github.com/ahmubashshir/gtksourceview-config
+[submodule "submodules/desktop-backgrounds"]
+	path = submodules/desktop-backgrounds
+	url = https://github.com/ahmubashshir/desktop-backgrounds
