@@ -5,6 +5,8 @@
 [url "https://github.com/"]
 	insteadOf = "github:"
 	insteadOf = "gh:"
+[url "https://github.com/ahmubashshir/"]
+	insteadOf = "gh-ahm:"
 [url "https://github.com/ahm-forks/"]
 	insteadOf = "gh-fork:"
 [url "https://github.com/The-Penguins-Club/"]
