@@ -12,6 +12,12 @@ html:not(#ublock0-epicker):not(.popup-window) body {
 	background-attachment: fixed;
 	background-image: var(--backdrop-image) !important;
 	overflow: clip;
+
+	@-moz-document url(about:blank){
+	min-width: 100vw;
+	min-height: 100vh;
+	margin: 0;
+}
 }
 
 div {
@@ -29,6 +35,10 @@ div {
 	& main:has(&.search-wrapper) {
 		background: light-dark(var(--light-canvas), var(--dark-canvas));
 		border-radius: 0.75em;
+
+		div.body-wrapper {
+			width: auto !important;
+		}
 	}
 
 	& main:has(&.search-wrapper) {
