@@ -45,7 +45,7 @@
 			position: fixed !important;
 			bottom: 0;
 			display: block;
-			z-index: calc(var(--browser-area-z-index-tabbox) * 3) !important;
+			z-index: calc(var(--browser-area-z-index-tabbox) + 1) !important;
 			width: 100% !important;
 			margin-top: var(--space-xsmall);
 		}
@@ -133,22 +133,27 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 
 #toolbar-menubar {
 	min-height: min-content !important;
-	z-index: 999999999999999;
 
-	&[autohide="false"] {
+	&:is([autohide="false"], :not([autohide])) {
 		max-width: min-content;
 		margin-top: calc(-1 * var(--tab-min-height));
+
+		#main-window:has(&) #browser #tabbrowser-tabbox {
+			padding-bottom: var(--tab-min-height);
+		}
 	}
 
-	&[autohide="true"] {
+	&[autohide]:not([autohide="false"]) {
 		margin: 0;
 		position: absolute !important;
 		bottom: var(--space-xxsmall);
 		height: var(--button-size-icon);
 		max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
+		margin-left: calc(var(--button-size-icon) + var(--space-small));
+		z-index: calc(var(--browser-area-z-index-tabbox) + 2) !important;
 
 		&:not([inactive=true]) ~ #nav-bar #nav-bar-customization-target {
-			& > :not(:is(#urlbar-container ~ *, #firefox-view-button)) {
+			& > :not(:is(#urlbar-container ~ *, :first-child)) {
 				visibility: hidden !important;
 			}
 		}
