@@ -164,3 +164,6 @@
 [submodule "submodules/gdbinit"]
 	path = submodules/gdbinit
 	url = https://github.com/ahm-forks/gdbinit
+[submodule "submodules/darkhttpd"]
+	path = submodules/darkhttpd
+	url = https://github.com/emikulic/darkhttpd

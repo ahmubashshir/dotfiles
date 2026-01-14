@@ -6,3 +6,4 @@
 *.swp
 base/dot-config/zsh/functions/_gmtool
 base/dot-config/backdrop
+archlinux/dot-config/kalu/news.conf
