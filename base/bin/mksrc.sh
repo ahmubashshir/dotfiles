@@ -27,11 +27,11 @@ done
 set -e
 make -srf /dev/stdin -- "$CALLER" BINDIR="$BINDIR" CLEAN="$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
 CALLER := $(firstword $(MAKECMDGOALS))
-include $(CALLER)
 
 SRCDIR := $(HOME)/bin/srcs
 NAME   := $(basename $(notdir $(CALLER)))
 <<<<   := $(shell mkdir -p $(BINDIR))
+include $(CALLER)
 
 findpkg ?= $(shell pkg-config $(1) --libs --cflags)
 
