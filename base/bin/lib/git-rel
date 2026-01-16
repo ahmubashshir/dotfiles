@@ -7,9 +7,14 @@ VERCHK=${VERCHK:---version}
 AUTO_UPDATE=${AUTO_UPDATE:-1}
 MACHINE="$(getmachine)"
 BINDIR="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$MACHINE"
+ORIGDIR="${BASH_SOURCE[0]%/lib/git-rel}"
+if [[ ${ORIGDIR:0:1} == '.' ]]; then
+	ORIGDIR=$(realpath "$ORIGDIR")
+fi
+
 exec=$(
 	env which -a "$NAME" 2> /dev/null \
-		| grep -v "^${BASH_SOURCE%/lib/git-rel}" \
+		| grep -v "^$ORIGDIR" \
 		| head -n1
 )
 
