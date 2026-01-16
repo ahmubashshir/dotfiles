@@ -24,7 +24,7 @@ declare -A urlre=(
 	['epic']='store\.epicgames\.com/'
 	['pesbuk']='://([[:alnum:].-]+\.|)(facebook|fb)\.com($|/)'
 	['goolag-forms']='^https?://forms.gle/'
-	['github']='^https?://(github\.com|[^/]+\.github\.io)\b'
+	['github']='^https?://(github\.com|[^/]+\.github\.io|codereview\.qt-project\.org|git(lab|)\.[^/]+)\b'
 )
 
 abort()
