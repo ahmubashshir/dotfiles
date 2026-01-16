@@ -139,3 +139,7 @@ function zplug:post:gitstatus-async {
 	GITSTATUS[suffix]="${ENV[prompt_suffix]}"
 	GITSTATUS[reload_config]=1
 }
+
+function zplug:pre:autoswitch_virtualenv {
+	typeset -g AUTOSWITCH_VIRTUAL_ENV_DIR="${WORKON_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/virtualenvs}"
+}
