@@ -94,13 +94,19 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 
 		&[type="group"] {
 			tab-item-substance {
+				border-width: var(--tab-y-offset) !important;
 				max-width: initial !important;
 				background: var(--tab-surface-regular) !important;
 				--tab-text: var(--tab-text-regular) !important;
-			}
 
-			tab-item-substance {
-				border-width: var(--tab-y-offset) !important;
+				.ui > .caption {
+					--tab-label-width: min-content;
+					background: transparent !important;
+					border: 3px var(--tab-surface) !important;
+					border-style: double !important;
+					border-radius: 4px;
+
+				}
 			}
 
 			tab-twisty {
@@ -128,6 +134,14 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 			& .label-content,
 			& tab-counter {
 				color: var(--theme-colors-tab_text) !important;
+			}
+		}
+
+		&:not(.subtree-collapsed) {
+			tab-item-substance {
+				.ui > .caption {
+					--tab-text: var(--tab-group-color-pale) !important;
+				}
 			}
 		}
 
