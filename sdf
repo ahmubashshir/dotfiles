@@ -3,6 +3,7 @@ function find-bin
 {
 	local -i missing
 	while [[ -n "$1" ]]; do
+		# shellcheck disable=SC2016
 		if ! hash "$1" 2> /dev/null; then
 			((++missing))
 			printf 'ERROR: %s: command not found.\n\n' "$1"
@@ -70,8 +71,9 @@ STOW_DIR="$(dirname "$(realpath "$0")")"
 STOW_IGNORE="^(face\.png|.info)|\.swp"
 
 if [ "$#" -eq 0 ]; then
+	# shellcheck disable=SC2164
 	cd "$STOW_DIR"
-	[ "${STOW_DIR#$HOME}" = "$STOW_DIR" ] || STOW_DIR_REPR="~${STOW_DIR#$HOME}"
+	[ "${STOW_DIR#"$HOME"}" = "$STOW_DIR" ] || STOW_DIR_REPR="~${STOW_DIR#"$HOME"}"
 	cat >&2 << EOF
 Usage:
   ${STOW_DIR_REPR-$STOW_DIR}/${0##*/} [@|-]package1 [[@|-]package2 [...]]
@@ -91,7 +93,17 @@ elif [ "$1" = "system" ]; then
 elif [ "$1" = "firefox" ]; then
 	declare -A profiles
 	shift
-	if ! [ -f ~/.mozilla/firefox/profiles.ini ]; then
+	FFROOT=''
+	if [[ -d ~/.mozilla ]]; then
+		FFROOT="$HOME/.mozilla/firefox"
+	elif [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/mozilla" ]]; then
+		FFROOT="${XDG_CONFIG_HOME:-$HOME/.config}/mozilla/firefox"
+	else
+		echo   "No firefox profile available!" >&2
+		exit                                             2
+	fi
+
+	if [[ ! -f $FFROOT/profiles.ini ]]; then
 		echo "No firefox profile available!"
 		exit 2
 	fi >&2
@@ -104,7 +116,7 @@ elif [ "$1" = "firefox" ]; then
 			if($1 == "Path") path[i]=$2
 		} END {
 			for(k = 1; k <= i; k++) print name[k]"="path[k]
-		}' ~/.mozilla/firefox/profiles.ini | sort
+		}' "$FFROOT/profiles.ini" | sort
 	)
 	if (($# == 0)); then
 		echo "Profiles:"
@@ -112,10 +124,6 @@ elif [ "$1" = "firefox" ]; then
 	else
 		for each in "$@"; do
 			declare -a args=()
-			case "${each:0:1}" in
-				+ | -) args=(~/".mozilla/firefox/${profiles["${each:1}"]}") ;;
-				*) args=(~/".mozilla/firefox/${profiles["$each"]}") ;;
-			esac
 			args+=(-v1)
 			case "${each:0:1}" in
 				@) args+=(-R) ;;
@@ -125,9 +133,9 @@ elif [ "$1" = "firefox" ]; then
 			case "${each:0:1}" in
 				@ | -) each="${each:1}" ;;
 			esac
-			if [[ -d "${args[0]}" ]]; then
+			if [[ -d "$FFROOT/${profiles["$each"]}" ]]; then
 				echo "Profile: ${each}"
-				stow -d "$STOW_DIR/config" -t "${args[@]}" firefox
+				stow -d "$STOW_DIR/config" -t "$FFROOT/${profiles["$each"]}" "${args[@]}" firefox
 			fi
 		done
 	fi
