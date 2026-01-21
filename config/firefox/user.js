@@ -33,7 +33,8 @@ ui@json
     "ublock0_raymondhill_net-browser-action",
     "sponsorblocker_ajay_app-browser-action",
     "private-bookmarks_rharel-browser-action",
-    "dearrow_ajay_app-browser-action"
+    "dearrow_ajay_app-browser-action",
+    "jid1-mnnxcxisbpnsxq_jetpack-browser-action"
   ],
   "dirtyAreaCache": [
     "unified-extensions-area",
@@ -47,7 +48,7 @@ ui@json
 }
 json@ui
  */
-user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\",\"dearrow_ajay_app-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
+user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\",\"dearrow_ajay_app-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
 // hide bookmark bar
 user_pref("browser.toolbars.bookmarks.visibility", "never");
 // enable legacy compact mode
