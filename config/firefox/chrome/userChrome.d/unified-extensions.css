@@ -1,5 +1,7 @@
 #unified-extensions-view {
-	& #unified-extensions-area {
+
+	& #unified-extensions-area,
+	& .unified-extensions-list {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(calc(var(--size-item-large) + var(--size-item-small)), 1fr));
 		justify-content: space-between;
@@ -10,7 +12,6 @@
 				height: 40px;
 				max-width: 40px;
 			}
-
 		}
 	}
 
@@ -18,7 +19,6 @@
 	& unified-extensions-item,
 	& .unified-extensions-item-row-wrapper {
 
-		&:has(toolbarbutton[disabled="true"]:not(.unified-extensions-item-menu-button)),
 		& > .unified-extensions-item-menu-button,
 		& .unified-extensions-item-contents {
 			visibility: collapse;
