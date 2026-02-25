@@ -21,9 +21,45 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 
 @-moz-document regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 
+	/* https://github.com/piroor/treestyletab/issues/2780 */
+	:root {
+		--tab-surface-regular: var(--theme-colors-tab,
+				var(--theme-colors-frame_inactive));
+		--tab-surface-active: var(--theme-colors-tab_selected,
+				var(--theme-colors-toolbar,
+					var(--browser-bg-for-header-image,
+						var(--tab-like-surface))));
+		--tab-surface-active-hover: var(--theme-colors-tab_selected,
+				var(--theme-colors-toolbar,
+					var(--browser-bg-for-header-image,
+						var(--tab-like-surface))));
+		--tab-border: var(--theme-colors-tab_background_separator,
+				var(--theme-colors-tab_line,
+					var(--theme-colors-tab_background_text-30,
+						hsl(240, 9%, 32%))));
+		--tab-text-regular: var(--theme-colors-tab_background_text,
+				hsl(240, 9%, 98%));
+		--tab-text-active: var(--theme-colors-tab_text,
+				var(--theme-colors-toolbar_text,
+					-moz-DialogText));
+		--tabbar-bg: var(--theme-colors-frame,
+				hsl(235, 33%, 19%));
+	}
+
+
 	/* autohide css  */
 	#tabbar {
 		padding-top: 0.2rem !important;
+
+		&.overflow {
+			#normal-tabs-container {
+				scrollbar-width: none;
+			}
+
+			&:hover #normal-tabs-container {
+				scrollbar-width: thin;
+			}
+		}
 	}
 
 	div#subpanel-header {
