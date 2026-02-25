@@ -153,7 +153,9 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 		z-index: calc(var(--browser-area-z-index-tabbox) + 2) !important;
 
 		&:not([inactive=true]) ~ #nav-bar #nav-bar-customization-target {
-			& > :not(:is(#urlbar-container ~ *, :first-child)) {
+
+			& > :not(:is(#urlbar-container ~ *, :first-child)),
+			& > #urlbar-container :is(image) {
 				visibility: hidden !important;
 			}
 		}
