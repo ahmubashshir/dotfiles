@@ -1,0 +1,15 @@
+@-moz-document url(chrome://browser/content/syncedtabs/sidebar.xhtml){
+body {
+	min-width: min-content;
+	transition: ease-in 250ms;
+	transition-property: opacity;
+}
+
+@media screen and (width < 250px) {
+	body {
+		opacity: 0;
+		visibility: hidden;
+		overflow: hidden;
+	}
+}
+}
