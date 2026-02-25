@@ -36,6 +36,7 @@
 	--expanded-width: var(--wide-tab-width);
 	z-index: calc(var(--browser-area-z-index-tabbox, 1) + var(--browser-area-z-index-sidebar, 1)) !important;
 	transition: all 300ms ease-in-out allow-discrete;
+	flex-direction: column-reverse;
 
 	&[hidden="true"] {
 		min-width: 0 !important;
