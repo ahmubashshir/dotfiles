@@ -28,16 +28,39 @@
 	exit $missing
 ) || return 1 # missing dependency
 
-IFS= read -d $'\0' -r relinfo < <(
-	! [[ -f ~/.netrc ]] || set -- --netrc
-	timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null \
-		&& curl "$@" -s --disable \
-			"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
+tagfilters=(
+	['github']='.tag_name'
 )
+assetfilter=(
+	['github']='.assets[]|select(type == "object")'
+)
+
+github_relinfo()
+{
+	! [[ -f ~/.netrc ]] || set -- --netrc
+	curl --disable "$@" -sL \
+		"https://api.github.com/repos/$OWNER/$REPO/releases/latest"
+}
+
+get_relinfo()
+{
+	timeout 0.3 ping -c 1 1.0.0.1 &> /dev/null || return
+	"${FORGE}_relinfo" "$@"
+}
+
+case "$FORGE" in
+	github | github.com | gh) FORGE=github ;;
+	*)
+		echo "Unsupported git forge: $FORGE" >&2
+		return 1
+		;;
+esac
+
+IFS= read -d $'\0' -r relinfo < <(get_relinfo)
 
 touch "$exec"
 if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
-	rtver=$(jq -r '.tag_name' <<< "$relinfo")
+	rtver=$(jq -r "${tagfilters["$FORGE"]}" <<< "$relinfo")
 	rtver="${rtver#*v.}"
 	[[ ${rtver:0:1} =~ [0-9] ]] || rtver=${rtver:1}
 	if ! declare -Fp version |& grep -q '^declare -f'; then
@@ -54,10 +77,16 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 	unset -f version
 	[[ -n $ltver ]] || ltver=0.0.0
 
-	filter='.assets[]|select(type == "object")'
+	filter="${assetfilter["$FORGE"]}"
 	filter()
 	{
-		test -n "$1" && filter+="|select(.name|test(\"(?i)$1\"))"
+		local -A field
+		field=(
+			['github']='.name'
+		)
+		test -n "${field["$FORGE"]}" \
+			&& test -n "$1" \
+			&& filter+="|select(${field["$FORGE"]}|test(\"(?i)$1\"))"
 	}
 
 	arch=${ARCH:-$(uname -m)}

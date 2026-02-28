@@ -8,6 +8,7 @@ AUTO_UPDATE=${AUTO_UPDATE:-1}
 MACHINE="$(getmachine)"
 BINDIR="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$MACHINE"
 ORIGDIR="${BASH_SOURCE[0]%/lib/git-rel}"
+FORGE="${FORGE:-github}"
 if [[ ${ORIGDIR:0:1} == '.' ]]; then
 	ORIGDIR=$(realpath "$ORIGDIR")
 fi
