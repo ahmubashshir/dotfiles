@@ -76,9 +76,9 @@ for_triplet()
 
 get_pkg()
 {
-	if pkg-config "$1"; then
+	if for_triplet pkg-config "$1"; then
 		readarray -t -O "${#args[@]}" args < <(
-			for_triplet pkg-config --cflags --libs "$1" | tr -s ' ' '\n'
+			for_triplet pkg-config --cflags --libs "$1" | tr -s ' ' '\n' | sed '/^$/d'
 		)
 	else
 		__error "pkg-config: $1 not found."
