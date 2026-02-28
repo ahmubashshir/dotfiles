@@ -19,7 +19,7 @@ BEGIN {
 
 	if(is_file(cfg)) {
 		while(getline < cfg) {
-			gsub("+", "|");
+			gsub("\\+", "|");
 			line = ((line == "")?"":line";") $0;
 		}
 		if (ARGV[1] == "--dry-run" || ARGV[0] == "-n")
