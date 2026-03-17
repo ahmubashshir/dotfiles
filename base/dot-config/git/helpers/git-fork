@@ -1,9 +1,10 @@
 #!/bin/bash
+set -o pipefail
 declare -iA hook
 hook["github"]=1
 
 #### Remotes Implementation Section ###
-identify_remote()
+function identify_remote
 {
 	local url domain remote provider host
 
@@ -43,15 +44,12 @@ function codeberg_user
 function codeberg_fork
 {
 	local owner="$2" repo="$3" upstream="$4"
-	local -a args
-	args=(
-		-H 'Content-Type: application/json'
-	)
 
 	json \
 		:name "$repo" \
 		:organization "$owner" \
 		| AUTH=basic api_call codeberg.org/api/v1 "repos/$upstream/forks" '.' \
+			-H 'Content-Type: application/json' \
 			-X POST --data @- "${args[@]}" \
 		| api_if_error
 }
@@ -105,7 +103,7 @@ function gitlab_fork
 		:mr_default_target_self :false \
 		| api_call "$domain/api/v4" "projects/$(asuri "$upstream")/fork" . \
 			-H 'Content-Type: application/json' \
-			-X POST --data @- "${args[@]}" \
+			-X POST --data @- \
 		| api_if_error || return 1
 
 	gitlab_wait_import "$domain" "$owner/$repo"
@@ -125,7 +123,7 @@ function gitlab_wait_import
 }
 
 ### Script Utils Section ###
-require()
+function require
 {
 	local missing=()
 
@@ -136,7 +134,7 @@ require()
 	if ((${#missing[@]})); then
 		message '\e[31m\e[1m ! \e[0mMissing dependencies:'
 		message '   - %s' "${missing[@]}"
-		exit 1
+		return 1
 	fi
 }
 
@@ -260,7 +258,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift                3
+	shift              3
 
 	read -r org < <(get_config "$domain" org)
 	read -r user < <("${provider}_user" "$domain")
@@ -302,7 +300,7 @@ function create_fork
 
 	if [[ -z "$user" ]]; then
 		message '\e[31m\e[1m ! \e[0mFailed to authenticate with \e[1m%s\e[0m...' "$domain"
-		exit
+		return 1
 	fi
 
 	if ! repo_exists "${remote}${org:-$user}/$repo"; then
@@ -327,7 +325,7 @@ function create_fork
 	fi
 }
 
-function rollaback_failure
+function rollback_failure
 {
 	trap ':' INT TERM QUIT EXIT
 	if ! git remote | grep -xqw origin; then
@@ -367,9 +365,9 @@ EOF
 	exit 0
 fi
 
-require git curl jq
+require git curl jq || exit 1
 if ! git remote | grep -xqw upstream; then
-	trap 'rollaback_failure' INT TERM QUIT EXIT
+	trap 'rollback_failure' INT TERM QUIT EXIT
 	git remote rename origin upstream
 
 	read -r provider domain remote < <(identify_remote upstream)
@@ -379,7 +377,7 @@ if ! git remote | grep -xqw upstream; then
 		create_fork "$provider" "$domain" "$remote" "$@"
 	fi
 
-	rollaback_failure
+	rollback_failure
 	fork_setup
 elif git remote | grep -xqw upstream; then
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
