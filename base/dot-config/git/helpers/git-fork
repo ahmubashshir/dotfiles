@@ -50,7 +50,7 @@ function codeberg_fork
 		:organization "$owner" \
 		| AUTH=basic api_call codeberg.org/api/v1 "repos/$upstream/forks" '.' \
 			-H 'Content-Type: application/json' \
-			-X POST --data @- "${args[@]}" \
+			-X POST --data @- \
 		| api_if_error
 }
 
@@ -190,8 +190,10 @@ function api_call
 	local endpoint="$1" path="$2" jq="$3" user token
 	shift 3
 
-	read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
-	IFS=: read -r user token < <(creds "${endpoint%%/*}" "$user")
+	IFS=: read -r user token < <(
+		read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
+		creds "${endpoint%%/*}" "$user"
+	)
 
 	[[ "$token" ]] || return 1
 
@@ -204,6 +206,7 @@ function api_call
 			set -- --expand-oauth2-bearer '{{token}}' "$@"
 			;;
 	esac
+	[[ -z "$AUTH" ]] || unset AUTH
 
 	set -- --variable '%user' --variable '%token' "$@"
 
@@ -216,9 +219,27 @@ function api_call
 		| jq -r "$jq"
 }
 
+function get_arg
+{
+	local match arg
+	match="$1"
+	shift
+
+	while (($# > 0)); do
+		arg="$1"
+		shift
+		[[ $arg == "$match" ]] || continue
+		! [[ $1 == "" ]] || break
+		echo "$1"
+		return 0
+	done
+	return 1
+}
+
 function json
 {
-	local template args
+	local template
+	local -a args
 	template='{}'
 	while (($# > 0)); do
 		if [[ $1 == :* ]]; then
@@ -242,7 +263,8 @@ function json
 
 function fork_setup
 {
-	default=$(
+	local default
+	read -r default < <(
 		git remote show upstream 2>&3 \
 			| grep "HEAD branch" \
 			| awk '{print $3}'
@@ -258,44 +280,21 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift              3
+	shift            3
 
-	read -r org < <(get_config "$domain" org)
 	read -r user < <("${provider}_user" "$domain")
-	read -r repo < <(
-		git remote get-url upstream \
-			| repostrip '^.*/([^/]+)$'
-	)
 	read -r upstream < <(
 		git remote get-url upstream \
 			| repostrip '^.*[/:]([^/]+/[^/]+)$'
 	)
-
 	read -r repo < <(
-		while (($# > 0)); do
-			arg="$1"
-			shift
-			[[ $arg == --name ]] || continue
-			arg="$1"
-			shift
-			[[ $arg != "" ]] || continue
-			repo="$arg"
-			break
-		done
-		echo "$repo"
+		! get_arg --name "$@" || exit
+		git remote get-url upstream \
+			| repostrip '^.*/([^/]+)$'
 	)
 	read -r org < <(
-		while (($# > 0)); do
-			arg="$1"
-			shift
-			[[ $arg == --org ]] || continue
-			arg="$1"
-			shift
-			[[ $arg != "" ]] || continue
-			org="$arg"
-			break
-		done
-		echo "$org"
+		! get_arg --org "$@" || exit
+		get_config "$domain" org
 	)
 
 	if [[ -z "$user" ]]; then
