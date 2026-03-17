@@ -1,7 +1,55 @@
 #!/bin/bash
+declare -iA hook
+hook["github"]=1
+
+identify_remote()
+{
+	local url domain remote provider host
+
+	url="$(git remote get-url "$1")"
+	host="${url#*://}"
+	host="${host#*@}"
+	host="${host%%[:/]*}"
+
+	case "$url" in
+		*://*)
+			remote="${url%%://*}://$host/"
+			;;
+		git@*:*)
+			remote="git@${host}:"
+			;;
+		*)
+			remote="unknown"
+			;;
+	esac
+
+	case "$host" in
+		github.com) provider=github ;;
+		codeberg.org) provider=codeberg ;;
+		gitlab.* | *.gitlab.*) provider=gitlab ;;
+		*) provider=unknown ;;
+	esac
+
+	printf '%s %s %s\n' "$provider" "$host" "$remote"
+}
+
+function message
+{
+	local template
+	template="$1"
+	shift
+	# shellcheck disable=SC2059
+	printf "$template\\n" "$@" >&2
+}
+
 function repo_exists
 {
 	git ls-remote -q "$1" HEAD 2> /dev/null 1>&2
+}
+
+function get_config
+{
+	git config --get "fork.$1.$2"
 }
 
 function repostrip
@@ -9,19 +57,108 @@ function repostrip
 	sed -nE -e "s;$1;\1;g" -e 's;\.git$;;;p'
 }
 
-function match_remote
+function netrc
 {
-	# match_remote <remote> <hostspec-regex>
-	git remote get-url "${1}" | grep -xqE "${2}"'[[:alnum:]_-]+/[[:alnum:]._-]+(\.git|$)'
+	local -a words
+	local -A current
+	local machine user token
+
+	machine="$1"
+	shift
+	if [[ "$1" ]]; then
+		user="$1"
+		shift
+	fi
+
+	while read -ra words; do
+		[[ ${words[0]:0:1} != '#' ]] || continue
+		if [[ "${current["machine"]}" && "${current["user"]}" && "${current["token"]}" ]]; then
+			current=()
+		fi
+
+		for ((i = 0; i < ${#words[@]}; i += 2)); do
+			case "${words[i]}" in
+				machine) current[machine]="${words[i + 1]}" ;;
+				login) current[user]="${words[i + 1]}" ;;
+				password) current[token]="${words[i + 1]}" ;;
+			esac
+		done
+
+		if [[ "${current["machine"]}" && "${current["user"]}" && "${current["token"]}" ]]; then
+			[[ "$machine" == "${current["machine"]}" ]] || continue
+			[[ "$user" == "" || "$user" == "${current["user"]}" ]] || continue
+			echo "${current["token"]}"
+			break
+		fi
+	done < ~/.netrc
+}
+
+function asuri
+{
+	jq -nc -r '$ARGS.positional[] | @uri' --args "$@"
+}
+
+function api_if_error
+{
+	jq -r 'if select(.message) then ("\e[31m ! \e[0m\(.message)\n" |halt_error(1)) else halt end'
 }
 
 function api_call
 {
-	local endpoint="$1" path="$2" jq="$3"
+	local endpoint="$1" path="$2" jq="$3" user token
 	shift 3
-	curl --disable -s --netrc "https://$endpoint/$path" "$@" \
-		-H 'accept: application/json' \
-		-H 'Content-Type: application/json' | jq -r "$jq"
+
+	read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
+	read -r token < <(netrc "${endpoint%%/*}" "$user")
+
+	if [[ -z "$token" ]]; then
+		message '\e[31m\e[1m ! \e[0mRemote \e[1m%s\e[0m not configured.' "${endpoint##/*}"
+		return 1
+	fi
+
+	case "$AUTH" in
+		basic)
+			[[ -z "$user" ]] \
+				|| set -- --expand-user '{{user}}' --netrc "$@"
+			;;
+		bearer | '')
+			set -- --expand-oauth2-bearer '{{token}}' "$@"
+			;;
+	esac
+
+	set -- --variable '%user' --variable '%token' "$@"
+
+	user="$user" \
+		token="$token" \
+		curl --disable -s \
+		--fail-with-body \
+		"https://$endpoint/$path" "$@" \
+		-H 'Accept: application/json' \
+		| jq -r "$jq"
+}
+
+function json
+{
+	local template args
+	template='{}'
+	while (($# > 0)); do
+		if [[ $1 == :* ]]; then
+			if [[ $2 == :* ]]; then
+				args+=(--argjson)
+				template+=" + {${1#:}: \$${1#:}}"
+			else
+				args+=(--arg)
+				template+=" + if (\$${1#:}|length) > 0 then {${1#:}: \$${1#:}} else {} end"
+			fi
+			args+=("${1#:}" "${2#:}")
+			shift
+		else
+			args+=("$1")
+		fi
+		shift
+	done
+
+	: | jq -nc "$template" "${args[@]}"
 }
 
 function fork_setup
@@ -29,103 +166,216 @@ function fork_setup
 	default=$(
 		git remote show upstream 2>&3 \
 			| grep "HEAD branch" \
-			| awk '{print	$3}'
+			| awk '{print $3}'
 	)
 
-	git config branch.$default.remote upstream
-	git config branch.$default.pushRemote origin
+	git config "branch.$default.remote" upstream
+	git config "branch.$default.pushRemote" origin
 	git config remote.pushDefault origin
-	echo "configured the fork" >&2
+	message '\e[32m\e[1m + \e[0mFork remotes configured...'
 }
 
-function gh_fork
+function codeberg_user
 {
-	local org repo user upstream
-	read -r org < <(git config --get "fork.github.com.org")
-	read -r user < <(gh api user --jq '.login')
-	read -r repo < <(while (($# > 0)); do
-		[[ $1 == --fork-name ]] && echo "$2" && break
-		shift
-	done)
-	read -r upstream < <(
-		git remote get-url upstream \
-			| repostrip '^.*[/:]([^/]+/[^/]+)$'
-	)
-	[[ -n "$repo" ]] || set -- --fork-name "${REPO_NAME%.git}" "$@"
-	[[ -z "$org" ]] || set -- --org "$org" "$@"
-	if ! repo_exists "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"; then
-		gh repo fork --remote --remote-name origin "$@"
-	else
-		printf '\e[32m✓\e[m Fork exists \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
-		git remote add origin "https://github.com/${org:-$user}/${repo:-$REPO_NAME}"
-		printf '\e[32m✓\e[m Added remote \e[1m%s\e[m\n' "origin"
-	fi
-	if [[ $(gh repo set-default --view) != "$upstream" ]]; then
-		gh repo set-default "$upstream"
-	fi
+	AUTH=basic api_call codeberg.org/api/v1 user '.login'
 }
 
-cb_fork()
+function codeberg_fork
 {
-	local org repo user upstream
-
-	read -r org < <(git config --get "fork.\"codeberg.org\".org")
-	read -r user < <(api_call codeberg.org/api/v1 user '.login')
-	read -r repo < <(while (($# > 0)); do
-		[[ $1 == --fork-name ]] && echo "$2" && break
-		shift
-	done)
-	read -r upstream < <(
-		git remote get-url upstream \
-			| repostrip '^.*[/:]([^/]+/[^/]+)$'
+	local owner="$2" repo="$3" upstream="$4"
+	local -a args
+	args=(
+		-H 'Content-Type: application/json'
 	)
 
-	if ! repo_exists "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"; then
-		printf '\e[32m@\e[m Forking... \e[m\n'
-		jq -nc '{name: $name} + if ($org|length) > 0 then {organization: $org} else {} end' \
-			--arg name "${repo:-$REPO_NAME}" \
-			--arg org "${org}" \
-			| api_call codeberg.org/api/v1 "repos/$upstream/forks" '.' \
-				-X POST --data @- \
-			| jq -r 'if select(.message) then ("Error: \(.message)\n" |halt_error(1)) else halt end' || return
-		printf '\e[32m✓\e[m Created fork \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
-	else
-		printf '\e[32m✓\e[m Fork exists \e[1m%s\e[m\n' "${org:-$user}/${repo:-$REPO_NAME}"
-	fi
-
-	if repo_exists "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"; then
-		git remote add origin "https://codeberg.org/${org:-$user}/${repo:-$REPO_NAME}"
-		printf '\e[32m✓\e[m Added remote \e[1m%s\e[m\n' "origin"
-	fi
+	json \
+		:name "$repo" \
+		:organization "$owner" \
+		| AUTH=basic api_call codeberg.org/api/v1 "repos/$upstream/forks" '.' \
+			-X POST --data @- "${args[@]}" \
+		| api_if_error
 }
 
-if ! git remote | grep -xqw upstream; then
-	git remote rename origin upstream
-	read -r REPO_NAME < <(
+function github_user
+{
+	api_call api.github.com 'user' '.login' \
+		-H "X-GitHub-Api-Version: 2026-03-10"
+}
+
+function github_fork
+{
+	local owner="$2" repo="$3" upstream="$4"
+
+	json \
+		:name "$repo" \
+		:organization "$owner" \
+		:default_branch_only :true \
+		| api_call api.github.com "repos/$upstream/forks" . \
+			-H "X-GitHub-Api-Version: 2026-03-10" \
+			-H 'Content-Type: application/json' \
+			-X POST --data @- \
+		| api_if_error
+}
+
+function github_post
+{
+	while read -r key val; do
+		case "$key:$val" in
+			remote.upstream.gh-resolved:base) return ;;
+			*:base) return ;;
+		esac
+	done < <(git config --get-regexp 'remote\..*\.gh-resolved')
+
+	git config remote.upstream.gh-resolved base
+}
+
+function gitlab_user
+{
+	api_call "$1/api/v4" user .username
+}
+
+function gitlab_fork
+{
+	local domain="$1" owner="$2" repo="$3" upstream="$4"
+	json \
+		:name "$repo" \
+		:namespace_path "$owner" \
+		:mr_default_target_self :false \
+		| api_call "$domain/api/v4" "projects/$(asuri "$upstream")/fork" . \
+			-H 'Content-Type: application/json' \
+			-X POST --data @- "${args[@]}" \
+		| api_if_error
+
+	gitlab_wait_import "$domain" "$owner/$repo"
+}
+
+function gitlab_wait_import
+{
+	local domain="$1" repo="$2" status
+	while read -r status < <(
+		api_call "$domain/api/v4" "projects/$(asuri "$repo")/import" .import_status
+	); do
+		case "$status" in
+			'' | none | finished) break ;;
+			scheduled | started) sleep 3 ;;
+		esac
+	done
+}
+
+function create_fork
+{
+	local org repo user upstream
+	local provider="$1" domain="$2" remote="$3"
+	shift                            3
+
+	read -r org < <(get_config "$domain" org)
+	read -r user < <("${provider}_user" "$domain")
+	read -r repo < <(
 		git remote get-url upstream \
 			| repostrip '^.*/([^/]+)$'
 	)
+	read -r upstream < <(
+		git remote get-url upstream \
+			| repostrip '^.*[/:]([^/]+/[^/]+)$'
+	)
 
-	if match_remote upstream '(https://|git@)github\.com(/|:)'; then
-		gh_fork "$@"
-		#	elif match_remote upstream '(https://|git@)gitlab\.com(/|:)'; then
-		#		gl_fork "$@"
-	elif match_remote upstream '(https://|git@)codeberg\.org(/|:)'; then
-		cb_fork "$@"
+	read -r repo < <(
+		while (($# > 0)); do
+			arg="$1"
+			shift
+			[[ $arg == --name ]] || continue
+			arg="$1"
+			shift
+			[[ $arg != "" ]] || continue
+			repo="$arg"
+			break
+		done
+		echo "$repo"
+	)
+	read -r org < <(
+		while (($# > 0)); do
+			arg="$1"
+			shift
+			[[ $arg == --org ]] || continue
+			arg="$1"
+			shift
+			[[ $arg != "" ]] || continue
+			org="$arg"
+			break
+		done
+		echo "$org"
+	)
+
+	if ! repo_exists "${remote}${org:-$user}/$repo"; then
+		message '\e[32m\e[1m > \e[0mForking \e[1m%s\e[0m...' "$upstream"
+		"${provider}_fork" "$domain" "${org:-$user}" "$repo" "$upstream" || return
+		message '\e[32m\e[1m + \e[0mForked \e[1m%s\e[0m' "${org:-$user}/$repo"
 	else
-		echo "I don't know how to fork this remote:" >&2
-		echo "   $(git remote get-url upstream)" >&2
+		message '\e[32m\e[1m + \e[0mFork exists \e[1m%s\e[0m' "${org:-$user}/$repo"
+	fi
+
+	case "$provider" in
+		gitlab) repo+='.git/' ;;
+	esac
+
+	if repo_exists "${remote}${org:-$user}/$repo"; then
+		git remote add origin "${remote}${org:-$user}/$repo"
+		message '\e[32m\e[1m + \e[0mRemote origin added...'
+	fi
+
+	if ((${hook["$provider"]})); then
+		"${provider}_post" "$domain" "${org:-$user}" "$repo"
+	fi
+}
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+	cat << 'EOF'
+git fork [OPTIONS]
+
+Fork current repository
+
+OPTIONS
+--name NAME
+Create the fork with a custom repository name.
+
+--org ORG
+    Create the fork under the specified organization.
+
+-h, --help
+    Show this help message.
+
+SUPPORTED UPSTREAM
+GitHub, GitLab, Codeberg
+
+AUTHENTICATION
+Credentials are read from ~/.netrc.
+  Example:
+    machine github.com
+    login USERNAME
+    password TOKEN
+EOF
+	exit 0
+fi
+
+if ! git remote | grep -xqw upstream; then
+	git remote rename origin upstream
+
+	read -r provider domain remote < <(identify_remote upstream)
+	if [[ $provider == unknown ]]; then
+		message '\e[31m\e[1m ! \e[0mUnknown remote:\n\e[31m...\e[0m \e[1m%s\e[0m' "$(git remote get-url upstream)"
+	else
+		create_fork "$provider" "$domain" "$remote" "$@"
 	fi
 
 	if ! git remote | grep -xqw origin; then
+		message '\e[31m\e[1m ! \e[0mFork failed, origin remote restored...'
 		git remote rename upstream origin
-		echo "Failed to fork" >&2
 		exit
 	fi
 	fork_setup
 elif git remote | grep -xqw upstream; then
-	echo "Already has upstream" >&2
+	message '\e[33m\e[1m > \e[0mUpstream configured...'
 	fork_setup
 else
-	echo "No upstream remote available" >&2
+	message '\e[31m\e[1m ! \e[0mNo upstream found...'
 fi
