@@ -1,9 +1,4 @@
 // ==============================
-// Firefox Custom user.js
-// ==============================
-
-
-// ==============================
 // UI & APPEARANCE
 // ==============================
 
@@ -132,6 +127,9 @@ user_pref("browser.tabs.unloadOnLowMemory", true);
 // recover from crash
 user_pref("browser.sessionstore.resume_from_crash", true);
 
+// restore session
+user_pref("browser.startup.page", 3);
+
 // ==============================
 // MEMORY & CACHE
 // ==============================
@@ -181,6 +179,9 @@ user_pref("privacy.trackingprotection.enabled", true);
 user_pref("privacy.trackingprotection.pbmode.enabled", true);
 user_pref("privacy.trackingprotection.fingerprinting.enabled", true);
 user_pref("privacy.trackingprotection.cryptomining.enabled", true);
+// -> fix severly broken sites
+user_pref("privacy.trackingprotection.allow_list.baseline.enabled", true);
+user_pref("privacy.trackingprotection.allow_list.convenience.enabled", false);
 
 // network leaks
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
@@ -270,12 +271,6 @@ user_pref("browser.onboarding.updatetour", "performance,library,singlesearch,cus
 user_pref("app.shield.optoutstudies.enabled", false);
 user_pref("app.normandy.enabled", false);
 
-// LLM features
-user_pref("browser.ml.chat.enabled", false);
-user_pref("browser.ml.chat.sidebar", false);
-user_pref("browser.ml.chat.shortcuts", false);
-user_pref("browser.ml.chat.shortcuts.custom", false);
-
 // thumbnails
 user_pref("browser.pagethumbnails.capturing_disabled", true);
 
@@ -327,6 +322,7 @@ user_pref("datareporting.healthreport.service.enabled", false);
 
 user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
 user_pref("datareporting.sessions.current.clean", true);
+user_pref("datareporting.policy.firstRunURL", "");
 
 
 // ==============================
@@ -342,3 +338,20 @@ user_pref("browser.safebrowsing.downloads.remote.enabled", false);
 user_pref("browser.safebrowsing.appRepURL", "");
 user_pref("browser.safebrowsing.downloads.remote.url", "");
 user_pref("browser.safebrowsing.blockedURIs.enabled", true);
+
+// ==============================
+// AI Features
+// ==============================
+user_pref("browser.ai.control.default", "blocked");
+user_pref("browser.ai.control.pdfjsAltText", "enabled");
+user_pref("browser.ai.control.smartTabGroups", "enabled");
+user_pref("browser.ai.control.translations", "available");
+
+// LLM features
+user_pref("browser.ml.chat.enabled", false);
+user_pref("browser.ml.chat.sidebar", false);
+user_pref("browser.ml.chat.shortcuts", false);
+user_pref("browser.ml.chat.shortcuts.custom", false);
+user_pref("browser.ml.chat.linkPreview.enabled", false);
+user_pref("browser.ml.chat.pageAssist.enabled", false);
+user_pref("browser.ml.chat.smartAssist.enabled", false);
