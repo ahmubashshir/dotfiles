@@ -2,6 +2,21 @@
 declare -iA hook
 hook["github"]=1
 
+require()
+{
+	local missing=()
+
+	for cmd in "$@"; do
+		command -v "$cmd" > /dev/null 2>&1 || missing+=("$cmd")
+	done
+
+	if ((${#missing[@]})); then
+		message '\e[31m\e[1m ! \e[0mMissing dependencies:'
+		message '   - %s' "${missing[@]}"
+		exit 1
+	fi
+}
+
 identify_remote()
 {
 	local url domain remote provider host
@@ -57,40 +72,17 @@ function repostrip
 	sed -nE -e "s;$1;\1;g" -e 's;\.git$;;;p'
 }
 
-function netrc
+function creds
 {
-	local -a words
-	local -A current
-	local machine user token
-
-	machine="$1"
-	shift
-	if [[ "$1" ]]; then
-		user="$1"
-		shift
-	fi
-
-	while read -ra words; do
-		[[ ${words[0]:0:1} != '#' ]] || continue
-		if [[ "${current["machine"]}" && "${current["user"]}" && "${current["token"]}" ]]; then
-			current=()
-		fi
-
-		for ((i = 0; i < ${#words[@]}; i += 2)); do
-			case "${words[i]}" in
-				machine) current[machine]="${words[i + 1]}" ;;
-				login) current[user]="${words[i + 1]}" ;;
-				password) current[token]="${words[i + 1]}" ;;
-			esac
-		done
-
-		if [[ "${current["machine"]}" && "${current["user"]}" && "${current["token"]}" ]]; then
-			[[ "$machine" == "${current["machine"]}" ]] || continue
-			[[ "$user" == "" || "$user" == "${current["user"]}" ]] || continue
-			echo "${current["token"]}"
-			break
-		fi
-	done < ~/.netrc
+	printf 'protocol=https\nhost=%s\nusername=%s\n' "$1" "$2" \
+		| git credential fill \
+		| (
+			declare -A creds
+			while IFS='=' read -r key val; do
+				creds["$key"]="$val"
+			done
+			echo "${creds["username"]}:${creds["password"]}"
+		)
 }
 
 function asuri
@@ -100,7 +92,7 @@ function asuri
 
 function api_if_error
 {
-	jq -r 'if select(.message) then ("\e[31m ! \e[0m\(.message)\n" |halt_error(1)) else halt end'
+	jq -r $'if select(.message) then ("\e[31m ! \e[0m\(.message)\n" |halt_error(1)) else halt end'
 }
 
 function api_call
@@ -109,17 +101,14 @@ function api_call
 	shift 3
 
 	read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
-	read -r token < <(netrc "${endpoint%%/*}" "$user")
+	IFS=: read -r user token < <(creds "${endpoint%%/*}" "$user")
 
-	if [[ -z "$token" ]]; then
-		message '\e[31m\e[1m ! \e[0mRemote \e[1m%s\e[0m not configured.' "${endpoint##/*}"
-		return 1
-	fi
+	[[ "$token" ]] || return 1
 
 	case "$AUTH" in
 		basic)
 			[[ -z "$user" ]] \
-				|| set -- --expand-user '{{user}}' --netrc "$@"
+				|| set -- --expand-user '{{user}}:{{token}}' "$@"
 			;;
 		bearer | '')
 			set -- --expand-oauth2-bearer '{{token}}' "$@"
@@ -244,7 +233,7 @@ function gitlab_fork
 		| api_call "$domain/api/v4" "projects/$(asuri "$upstream")/fork" . \
 			-H 'Content-Type: application/json' \
 			-X POST --data @- "${args[@]}" \
-		| api_if_error
+		| api_if_error || return 1
 
 	gitlab_wait_import "$domain" "$owner/$repo"
 }
@@ -266,7 +255,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift                            3
+	shift                      3
 
 	read -r org < <(get_config "$domain" org)
 	read -r user < <("${provider}_user" "$domain")
@@ -306,6 +295,11 @@ function create_fork
 		echo "$org"
 	)
 
+	if [[ -z "$user" ]]; then
+		message '\e[31m\e[1m ! \e[0mFailed to authenticate with \e[1m%s\e[0m...' "$domain"
+		exit
+	fi
+
 	if ! repo_exists "${remote}${org:-$user}/$repo"; then
 		message '\e[32m\e[1m > \e[0mForking \e[1m%s\e[0m...' "$upstream"
 		"${provider}_fork" "$domain" "${org:-$user}" "$repo" "$upstream" || return
@@ -328,6 +322,17 @@ function create_fork
 	fi
 }
 
+function rollaback_failure
+{
+	trap ':' INT TERM QUIT EXIT
+	if ! git remote | grep -xqw origin; then
+		message '\e[31m\e[1m ! \e[0mFork failed, origin remote restored...'
+		git remote rename upstream origin
+		exit
+	fi
+	trap '-' INT TERM QUIT EXIT
+}
+
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
 	cat << 'EOF'
 git fork [OPTIONS]
@@ -348,7 +353,7 @@ SUPPORTED UPSTREAM
 GitHub, GitLab, Codeberg
 
 AUTHENTICATION
-Credentials are read from ~/.netrc.
+Credentials are read from ~/.netrc or git-credential.
   Example:
     machine github.com
     login USERNAME
@@ -357,7 +362,9 @@ EOF
 	exit 0
 fi
 
+require git curl jq
 if ! git remote | grep -xqw upstream; then
+	trap 'rollaback_failure' INT TERM QUIT EXIT
 	git remote rename origin upstream
 
 	read -r provider domain remote < <(identify_remote upstream)
@@ -367,11 +374,7 @@ if ! git remote | grep -xqw upstream; then
 		create_fork "$provider" "$domain" "$remote" "$@"
 	fi
 
-	if ! git remote | grep -xqw origin; then
-		message '\e[31m\e[1m ! \e[0mFork failed, origin remote restored...'
-		git remote rename upstream origin
-		exit
-	fi
+	rollaback_failure
 	fork_setup
 elif git remote | grep -xqw upstream; then
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
