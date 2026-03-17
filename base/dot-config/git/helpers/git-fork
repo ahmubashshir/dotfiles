@@ -265,9 +265,8 @@ function fork_setup
 {
 	local default
 	read -r default < <(
-		git remote show upstream 2>&3 \
-			| grep "HEAD branch" \
-			| awk '{print $3}'
+		git symbolic-ref --short refs/remotes/upstream/HEAD \
+			| cut -d/ -f2-
 	)
 
 	git config "branch.$default.remote" upstream
@@ -280,7 +279,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift            3
+	shift        3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
@@ -311,7 +310,7 @@ function create_fork
 	fi
 
 	case "$provider" in
-		gitlab) repo+='.git/' ;;
+		gitlab) repo+='.git' ;;
 	esac
 
 	if repo_exists "${remote}${org:-$user}/$repo"; then
