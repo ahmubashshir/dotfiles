@@ -279,7 +279,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift        3
+	shift      3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
@@ -336,29 +336,27 @@ function rollback_failure
 
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
 	cat << 'EOF'
-git fork [OPTIONS]
+Usage: git fork [OPTIONS]
 
-Fork current repository
+Fork the upstream remote into your account (or org) and set up origin + tracking.
 
 OPTIONS
---name NAME
-Create the fork with a custom repository name.
+  --name <NAME>     Custom repository name for the fork (default: same as upstream)
+  --org <ORG>       Fork under the given organization instead of your user account
 
---org ORG
-    Create the fork under the specified organization.
+  -h, --help        Show this help message
 
--h, --help
-    Show this help message.
-
-SUPPORTED UPSTREAM
-GitHub, GitLab, Codeberg
+SUPPORTED PROVIDERS
+  GitHub, GitLab, Codeberg
 
 AUTHENTICATION
-Credentials are read from ~/.netrc or git-credential.
-  Example:
-    machine github.com
-    login USERNAME
-    password TOKEN
+  Uses `git credential` (respects whatever helper you have configured:
+  store, cache, manager, osxkeychain, etc.).
+
+EXAMPLES
+  $ git fork
+  $ git fork --org myteam
+  $ git fork --name my-cool-fork
 EOF
 	exit 0
 fi
