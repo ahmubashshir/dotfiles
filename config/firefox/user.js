@@ -75,6 +75,7 @@ user_pref("browser.theme.content-theme", 2); // 0=light, 1=dark, 2=system
 user_pref("browser.theme.toolbar-theme", 2); // 0=light, 1=dark, 2=system
 
 // misc UI tweaks
+user_pref("browser.tabs.splitView.enabled", true);
 user_pref("browser.quitShortcut.disabled", true);
 user_pref("browser.download.manager.showWhenStarting", false);
 user_pref("browser.newtabpage.activity-stream.logowordmark.alwaysVisible", true);
