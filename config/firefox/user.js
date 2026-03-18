@@ -67,17 +67,19 @@ user_pref("browser.profiles.enabled", true);
 
 // system integration
 user_pref("browser.display.use_system_colors", true);
-user_pref("ui.systemUsesDarkTheme", 1); // 0=light, 1=dark
+user_pref("ui.systemUsesDarkTheme", true);
 user_pref("browser.tabs.inTitlebar", 0); // 0=separate titlebar, 1=integrated
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.download.start_downloads_in_tmp_dir", true);
+user_pref("browser.theme.content-theme", 2); // 0=light, 1=dark, 2=system
+user_pref("browser.theme.toolbar-theme", 2); // 0=light, 1=dark, 2=system
 
 // misc UI tweaks
 user_pref("browser.quitShortcut.disabled", true);
 user_pref("browser.download.manager.showWhenStarting", false);
 user_pref("browser.newtabpage.activity-stream.logowordmark.alwaysVisible", true);
 user_pref("devtools.chrome.enabled", true);
-user_pref("devtools.theme", "dark"); // "dark" | "light"
+user_pref("devtools.theme", "auto"); // "dark" | "light" | "auto"
 
 
 // ==============================
@@ -164,7 +166,7 @@ user_pref("layout.css.color-mix.enabled", true);
 user_pref("layout.css.color-mix.color-spaces.enabled", true);
 user_pref("layout.css.backdrop-filter.enabled", true);
 user_pref("layout.css.has-selector.enabled", true);
-
+user_pref("layout.css.prefers-color-scheme.content-override", 2); // 0=light, 1=dark, 2=system
 
 // ==============================
 // PRIVACY HARDENING
@@ -182,7 +184,6 @@ user_pref("privacy.trackingprotection.cryptomining.enabled", true);
 // -> fix severly broken sites
 user_pref("privacy.trackingprotection.allow_list.baseline.enabled", true);
 user_pref("privacy.trackingprotection.allow_list.convenience.enabled", false);
-
 // network leaks
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
 user_pref("dom.battery.enabled", false);
