@@ -78,9 +78,25 @@ user_pref("browser.theme.toolbar-theme", 2); // 0=light, 1=dark, 2=system
 user_pref("browser.quitShortcut.disabled", true);
 user_pref("browser.download.manager.showWhenStarting", false);
 user_pref("browser.newtabpage.activity-stream.logowordmark.alwaysVisible", true);
-user_pref("devtools.chrome.enabled", true);
-user_pref("devtools.theme", "auto"); // "dark" | "light" | "auto"
 
+// ==============================
+// DevTools
+// ==============================
+user_pref("devtools.chrome.enabled", true);
+user_pref("devtools.f12_enabled", false);
+user_pref("devtools.inspector.simple-highlighters-reduced-motion", true);
+user_pref("devtools.netmonitor.persistlog", true);
+user_pref("devtools.theme", "auto"); // "dark" | "light" | "auto"
+user_pref("devtools.toolbox.alwaysOnTop", false);
+user_pref("devtools.toolbox.host", "window");
+user_pref("devtools.toolbox.splitconsole.enabled", false);
+user_pref("devtools.webconsole.input.editorOnboarding", true);
+user_pref("devtools.webconsole.persistlog", true);
+// reset on each start-up
+user_pref("devtools.selfxss.count", 0);
+// messing with these can crash firefox
+user_pref("devtools.inspector.showAllAnonymousContent", false);
+user_pref("devtools.inspector.showUserAgentStyles", false);
 
 // ==============================
 // PERFORMANCE & RENDERING
