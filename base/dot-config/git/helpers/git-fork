@@ -6,7 +6,7 @@ hook["github"]=1
 #### Remotes Implementation Section ###
 function identify_remote
 {
-	local url domain remote provider host
+	local url remote provider host
 
 	url="$(git remote get-url "$1")"
 	host="${url#*://}"
@@ -280,7 +280,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift      3
+	shift 3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
@@ -374,9 +374,7 @@ if ! git remote | grep -xqw upstream; then
 
 	rollback_failure
 	fork_setup
-elif git remote | grep -xqw upstream; then
+else
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
 	fork_setup
-else
-	message '\e[31m\e[1m ! \e[0mNo upstream found...'
 fi
