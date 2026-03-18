@@ -6,7 +6,7 @@ hook["github"]=1
 #### Remotes Implementation Section ###
 function identify_remote
 {
-	local url domain remote provider host
+	local url remote provider host
 
 	url="$(git remote get-url "$1")"
 	host="${url#*://}"
@@ -171,7 +171,7 @@ function creds
 			while IFS='=' read -r key val; do
 				creds["$key"]="$val"
 			done
-			echo "${creds["username"]}:${creds["password"]}"
+			printf '%s\0%s\0' "${creds["username"]}" "${creds["password"]}"
 		)
 }
 
@@ -187,13 +187,14 @@ function api_if_error
 
 function api_call
 {
-	local endpoint="$1" path="$2" jq="$3" user token
+	local endpoint="$1" path="$2" jq="$3" user token config_user
+	local -a auth
 	shift 3
 
-	IFS=: read -r user token < <(
-		read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
-		creds "${endpoint%%/*}" "$user"
-	)
+	read -r config_user < <(git config --get "credential.https://${endpoint%%/*}.username")
+	mapfile -d '' -t auth < <(creds "${endpoint%%/*}" "$config_user")
+	user="${auth[0]}"
+	token="${auth[1]}"
 
 	[[ "$token" ]] || return 1
 
@@ -229,7 +230,7 @@ function get_arg
 		arg="$1"
 		shift
 		[[ $arg == "$match" ]] || continue
-		! [[ $1 == "" ]] || break
+		[[ -n $1 && $1 != --* ]] || break
 		echo "$1"
 		return 0
 	done
@@ -279,7 +280,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift      3
+	shift 3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
@@ -287,13 +288,11 @@ function create_fork
 			| repostrip '^.*[/:]([^/]+/[^/]+)$'
 	)
 	read -r repo < <(
-		! get_arg --name "$@" || exit
-		git remote get-url upstream \
+		get_arg --name "$@" || git remote get-url upstream \
 			| repostrip '^.*/([^/]+)$'
 	)
 	read -r org < <(
-		! get_arg --org "$@" || exit
-		get_config "$domain" org
+		get_arg --org "$@" || get_config "$domain" org
 	)
 
 	if [[ -z "$user" ]]; then
@@ -375,9 +374,7 @@ if ! git remote | grep -xqw upstream; then
 
 	rollback_failure
 	fork_setup
-elif git remote | grep -xqw upstream; then
+else
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
 	fork_setup
-else
-	message '\e[31m\e[1m ! \e[0mNo upstream found...'
 fi
