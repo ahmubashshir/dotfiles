@@ -1,0 +1,10 @@
+[Unit]
+Description=Prune Container artifacts
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/buildah rm --all
+ExecStart=/usr/bin/podman image   prune -f
+ExecStart=/usr/bin/podman volume  prune -f
+ExecStart=/usr/bin/podman network prune -f
+ExecStart=/usr/bin/podman system  prune -f --external
