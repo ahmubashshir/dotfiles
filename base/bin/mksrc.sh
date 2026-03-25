@@ -25,13 +25,12 @@ for arg in "$@"; do
 done
 
 set -e
-make -srf /dev/stdin -- "$CALLER" BINDIR="$BINDIR" CLEAN="$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
-CALLER := $(firstword $(MAKECMDGOALS))
-
+make -srf /dev/stdin -- "CALLER=$CALLER" "INTRPTR=$0" "BINDIR=$BINDIR" "CLEAN=$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
 SRCDIR := $(HOME)/bin/srcs
 NAME   := $(basename $(notdir $(CALLER)))
 <<<<   := $(shell mkdir -p $(BINDIR))
 include $(CALLER)
+
 
 findpkg ?= $(shell pkg-config $(1) --libs --cflags)
 
@@ -39,22 +38,24 @@ ifneq ($(PKGS),)
 FLAGS  += $(foreach pkg,$(PKGS), $(call findpkg,$(pkg)))
 endif
 
-$(CALLER): clean-$(CLEAN) $(BINDIR)/$(NAME)
+recompile := $(INTRPTR) $(CALLER)
 
-$(BINDIR)/%: $(SRCDIR)/%.$(TYPE)
-	$(COMP) $(^) -o $(@) $(FLAGS) 2>&3
+all: clean-$(CLEAN) $(BINDIR)/$(NAME)
 
-$(BINDIR)/%: $(SRCDIR)/%.c
-	$(CC) $(^) -o $(@) $(FLAGS) 2>&3
+$(BINDIR)/%: $(SRCDIR)/%.$(TYPE) $(recompile)
+	$(COMP) $(<) -o $(@) $(FLAGS) 2>&3
 
-$(BINDIR)/%: $(SRCDIR)/%.cpp
-	$(CXX) $(^) -o $(@) $(FLAGS) 2>&3
+$(BINDIR)/%: $(SRCDIR)/%.c $(recompile)
+	$(CC) $(<) -o $(@) $(FLAGS) 2>&3
+
+$(BINDIR)/%: $(SRCDIR)/%.cpp $(recompile)
+	$(CXX) $(<) -o $(@) $(FLAGS) 2>&3
 
 clean-yes:
 	@echo "Cleaning..." 2>&3 >&2
 	@rm -f $(BINDIR)/$(NAME)
 
-.PHONY: $(CALLER) clean-no clean-no $(OTHERS)
+.PHONY: clean-no
 EOF
 set +e
 
