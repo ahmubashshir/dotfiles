@@ -62,7 +62,7 @@ function ›zsh›pwd›hist {
 	! [[ $HISTFILE == /dev/null ]] || return
 
 	: $HISTFILE:h
-	until [[ $DIR == / || $DIR == $HISTFILE:h || $DIR == $HOME && ! $HISTFILE:t == hist ]]; do
+	until [[ $DIR == . ||$DIR == / || $DIR == $HISTFILE:h || $DIR == $HOME && ! $HISTFILE:t == hist ]]; do
 		if
 			[[ -f "$DIR/hist" && $HISTFILE != $DIR/hist || $DIR == $HOME && $HISTFILE:t == hist ]]
 		then
