@@ -2,6 +2,7 @@
 set -o pipefail
 declare -iA hook
 hook["github"]=1
+hook["gitlab"]=1
 
 #### Remotes Implementation Section ###
 function identify_remote
@@ -78,14 +79,7 @@ function github_fork
 
 function github_post
 {
-	while read -r key val; do
-		case "$key:$val" in
-			remote.upstream.gh-resolved:base) return ;;
-			*:base) return ;;
-		esac
-	done < <(git config --get-regexp 'remote\..*\.gh-resolved')
-
-	git config remote.upstream.gh-resolved base
+	remote_config upstream gh-resolved base
 }
 
 ## GitLab
@@ -120,6 +114,12 @@ function gitlab_wait_import
 			scheduled | started) sleep 3 ;;
 		esac
 	done
+}
+
+function gitlab_post
+{
+	remote_config upstream glab-resolved base
+	remote_config origin glab-resolved head
 }
 
 ### Script Utils Section ###
@@ -219,6 +219,22 @@ function api_call
 		| jq -r "$jq"
 }
 
+function remote_config
+{
+	local key val remote tkey tval
+	remote="$1"
+	tkey="$2"
+	tval="$3"
+	while read -r key val; do
+		case "$key:$val" in
+			remote.*.$tkey:$tval) return ;;
+		esac
+	done < <(git config --get-regexp 'remote\..*\.'"$tkey")
+
+	git config "remote.$remote.$tkey" "$tval"
+
+}
+
 function get_arg
 {
 	local match arg
@@ -279,7 +295,7 @@ function create_fork
 {
 	local org repo user upstream
 	local provider="$1" domain="$2" remote="$3"
-	shift      3
+	shift    3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
@@ -319,6 +335,7 @@ function create_fork
 	fi
 
 	if ((${hook["$provider"]})); then
+		message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
 		"${provider}_post" "$domain" "${org:-$user}" "$repo"
 	fi
 }
@@ -377,6 +394,13 @@ if ! git remote | grep -xqw upstream; then
 	fork_setup
 elif git remote | grep -xqw upstream; then
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
+
+	read -r provider domain remote < <(identify_remote upstream)
+	if ((${hook["$provider"]})); then
+		message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
+		"${provider}_post" "$domain" "${org:-$user}" "$repo"
+	fi
+
 	fork_setup
 else
 	message '\e[31m\e[1m ! \e[0mNo upstream found...'
