@@ -19,3 +19,5 @@
 	insteadOf = "gnome:"
 [url "https://gitlab.xfce.org/"]
 	insteadOf = "xfce:"
+
+# vim: ft=git-config:ts=4:noet

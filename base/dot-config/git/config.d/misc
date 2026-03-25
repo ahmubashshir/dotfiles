@@ -52,3 +52,5 @@
 	key = "Context"
 [trailer "more"]
 	key = "More-info"
+
+# vim: ft=git-config:ts=4:noet

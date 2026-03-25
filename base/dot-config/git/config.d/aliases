@@ -73,3 +73,5 @@
 
 [alias ""]
 	vbar = "!printf '%-80s\\n' ''|tr ' ' -"
+
+# vim: ft=git-config:ts=4:noet

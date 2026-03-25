@@ -16,3 +16,5 @@
 	thread = shallow
 	coverLetter = auto
 	notes = true
+
+# vim: ft=git-config:ts=4:noet
