@@ -174,9 +174,11 @@
 }
 
 #statuspanel {
-	width: 50vw !important;
-	margin-inline: 25vw !important;
+	width: min-content !important;
+	left: 50% !important;
 	justify-content: center;
+	max-width: 50vw !important;
+	transform: translateX(-50%);
 
 	& #statuspanel-label {
 		border-radius: var(--border-radius-large) var(--border-radius-large) 0 0 !important;
@@ -187,7 +189,7 @@
 		text-align: center;
 
 		#statuspanel:not([type="status"]) & {
-			min-width: 25vw;
+			min-width: 10vw;
 		}
 
 		#statuspanel[type="status"] & {
