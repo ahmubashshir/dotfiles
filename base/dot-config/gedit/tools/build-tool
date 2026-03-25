@@ -96,6 +96,7 @@ false \
 
 [[ $tool && ${builddir:-$targetdir} ]] || {
 	echo "Unknown build tool..." >&2
+	exit
 }
 
 run "$tool" -C "${builddir:-$targetdir}"
