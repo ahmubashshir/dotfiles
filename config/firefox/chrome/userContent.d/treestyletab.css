@@ -141,7 +141,6 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 					border: 3px var(--tab-surface) !important;
 					border-style: double !important;
 					border-radius: 4px;
-
 				}
 			}
 
@@ -234,7 +233,6 @@ tab-item-substance {
 	}
 }
 
-
 #subpanel-selector-anchor .icon {
 	margin-right: 0.25em;
 	margin-left: -0.5em;
@@ -285,6 +283,14 @@ tab-item-substance {
 	tab-item {
 		width: calc(100% - 6px) !important;
 
+		@supports (x: attr(x type(*))) {
+			--tab-indent: calc(3 * attr(data-level px, 1px)) !important;
+		}
+
+		@supports not (x: attr(x type(*))) {
+			--tab-visual-indent: calc(var(--tab-margin-inline-start) + var(--tab-group-member-indent) + (var(--tab-indent) * 3 / 7px)) !important;
+		}
+
 		& tab-twisty {
 			visibility: collapse !important;
 		}
@@ -295,11 +301,6 @@ tab-item-substance {
 
 		& .extra-items-container.indent {
 			width: calc(var(--tab-indent) * 0.15) !important;
-		}
-
-		tab-item-substance {
-			margin-inline-start: calc((var(--tab-margin-inline-start) + var(--tab-group-member-indent) + var(--tab-indent)) * 0.25) !important;
-			overflow: clip;
 		}
 	}
 }
