@@ -149,7 +149,7 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 		bottom: var(--space-xxsmall);
 		height: var(--button-size-icon);
 		max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
-		margin-left: calc(var(--button-size-icon) + var(--space-small));
+		margin-left: calc(var(--button-size-icon) + var(--space-large));
 		z-index: calc(var(--browser-area-z-index-tabbox) + 2) !important;
 
 		&:not([inactive=true]) ~ #nav-bar #nav-bar-customization-target {
