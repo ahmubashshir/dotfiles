@@ -1,0 +1,5 @@
+#!/bin/bash
+OWNER=Wilfred
+REPO=difftastic
+FILTER=musl
+source "${0%/*}/lib/git-rel"

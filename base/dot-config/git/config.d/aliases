@@ -71,6 +71,12 @@
 	http11 = "! git -c http.version=HTTP/1.1"
 	h11 = http11
 
+    # difftastic
+    dlog = -c diff.external=difft log --ext-diff
+    dshow = -c diff.external=difft show --ext-diff
+    ddiff = -c diff.external=difft diff
+    dft = -c diff.external=difft diff
+    dftc = dft --cached
 [alias ""]
 	vbar = "!printf '%-80s\\n' ''|tr ' ' -"
 
