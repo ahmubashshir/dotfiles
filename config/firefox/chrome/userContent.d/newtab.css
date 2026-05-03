@@ -20,6 +20,10 @@ html:not(#ublock0-epicker):not(.popup-window) body {
 }
 }
 
+html.private {
+	color-scheme: light dark !important;
+}
+
 div {
 	&:has(main) {
 		align-items: center;
