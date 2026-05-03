@@ -175,6 +175,42 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 			}
 		}
 	}
+
+	::part(extra-contents-by-tst-active-tab-in-collapsed-tree_piro_sakura_ne_jp container) {
+		#tab-container {
+			background: var(--tab-surface-regular) !important;
+			box-shadow: none !important;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
+			border-color: var(--theme-colors-sidebar_border, var(--tab-border));
+			border-style: solid;
+			border-width: 1px 1px 0px;
+			mask-image: unset !important;
+
+			&:hover {
+				#tab {
+					width: calc(100% - var(--svg-small-icon-size) - 10px / 3) !important;
+				}
+			}
+		}
+
+		#closebox {
+			background: transparent !important;
+		}
+
+		#closebox-bg {
+			background: rgb(204, 87, 93);
+			border-radius: 1rem;
+			margin-top: 2px;
+			margin-left: -2px !important;
+		}
+
+		#closebox-icon {
+			background: var(--bg-color) !important;
+			margin-top: 2px;
+			margin-left: -2px !important;
+		}
+	}
 }
 
 div.after-tabs,
@@ -243,6 +279,12 @@ tab-item-substance {
 
 		& tab-label {
 			font-weight: bold;
+		}
+
+		::part(extra-contents-by-tst-active-tab-in-collapsed-tree_piro_sakura_ne_jp container) {
+			#tab {
+				width: calc(100% - var(--svg-small-icon-size) - 10px / 3) !important;
+			}
 		}
 	}
 }
