@@ -1,11 +1,20 @@
 #unified-extensions-view {
-
-	& #unified-extensions-area,
-	& .unified-extensions-list {
-		display: grid;
+	.panel-subview-body {
+		display: grid !important;
 		grid-template-columns: repeat(auto-fill, minmax(calc(var(--size-item-large) + var(--size-item-small)), 1fr));
 		justify-content: space-between;
 		grid-auto-flow: row;
+
+		#unified-extensions-messages-container,
+		#overflowed-extensions-list,
+		#unified-extensions-empty-state {
+			grid-column: 1 / -1 !important;
+		}
+	}
+
+	& #unified-extensions-area,
+	& .unified-extensions-list {
+		display: contents !important;
 
 		& toolbaritem {
 			& .unified-extensions-item-action-button {
@@ -21,8 +30,7 @@
 
 		& > .unified-extensions-item-menu-button,
 		& .unified-extensions-item-contents {
-			visibility: collapse;
-			display: none;
+			display: none !important;
 		}
 	}
 }
