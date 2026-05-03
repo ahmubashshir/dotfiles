@@ -184,6 +184,7 @@ user_pref("layout.css.color-mix.color-spaces.enabled", true);
 user_pref("layout.css.backdrop-filter.enabled", true);
 user_pref("layout.css.has-selector.enabled", true);
 user_pref("layout.css.prefers-color-scheme.content-override", 2); // 0=light, 1=dark, 2=system
+user_pref("layout.css.attr.enabled", true);
 
 // ==============================
 // PRIVACY HARDENING
