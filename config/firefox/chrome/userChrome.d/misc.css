@@ -30,3 +30,32 @@ arrowscrollbox.menupopup-arrowscrollbox {
 :root[privatebrowsingmode="temporary"] #PanelUI-menu-button {
 	list-style-image: url("chrome://global/skin/icons/indicator-private-browsing.svg") !important;
 }
+
+#tabbrowser-tabpanels[splitview] {
+	& .split-view-panel {
+		margin: 1px !important;
+	}
+
+	& .browserContainer {
+		border-radius: unset !important;
+
+		split-view-footer {
+			border-end-end-radius: unset !important;
+			border-start-start-radius: var(--border-radius-small) !important;
+			border-start-end-radius: var(--border-radius-small) !important;
+			border-width: 1px 1px 0px !important;
+			border-style: solid !important;
+			border-color: var(--border-color) !important;
+		}
+	}
+
+	&:has(> .deck-selected[column="0"]) > .split-view-splitter {
+		border-left-color: var(--focus-outline-color) !important;
+		border-left-width: 2px !important;
+	}
+
+	&:has(> .deck-selected[column="1"]) > .split-view-splitter {
+		border-right-color: var(--focus-outline-color) !important;
+		border-right-width: 2px !important;
+	}
+}
