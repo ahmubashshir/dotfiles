@@ -1,0 +1,4 @@
+#!/bin/bash
+# a friendly and fast tool for sending HTTP requests
+OWNER=ducaale
+source "${0%/*}/lib/git-rel"
