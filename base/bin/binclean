@@ -1,0 +1,7 @@
+#!/bin/sh
+BINDIR="${XDG_CACHE_HOME:-$HOME/.cache}/bin"
+find "$BINDIR" -type f | while read -r file; do
+	! test -x "$HOME/bin/${file##*/}" || continue
+	rm -v "$file"
+done
+find "$BINDIR" -empty -delete
