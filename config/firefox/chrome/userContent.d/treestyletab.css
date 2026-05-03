@@ -24,26 +24,27 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 	/* https://github.com/piroor/treestyletab/issues/2780 */
 	:root {
 		--tab-surface-regular: var(--theme-colors-tab,
-				var(--theme-colors-frame_inactive));
+				var(--theme-colors-frame_inactive)) !important;
 		--tab-surface-active: var(--theme-colors-tab_selected,
 				var(--theme-colors-toolbar,
 					var(--browser-bg-for-header-image,
-						var(--tab-like-surface))));
+						var(--tab-like-surface)))) !important;
 		--tab-surface-active-hover: var(--theme-colors-tab_selected,
 				var(--theme-colors-toolbar,
 					var(--browser-bg-for-header-image,
-						var(--tab-like-surface))));
+						var(--tab-like-surface)))) !important;
 		--tab-border: var(--theme-colors-tab_background_separator,
 				var(--theme-colors-tab_line,
 					var(--theme-colors-tab_background_text-30,
-						hsl(240, 9%, 32%))));
+						hsl(240, 9%, 32%)))) !important;
 		--tab-text-regular: var(--theme-colors-tab_background_text,
-				hsl(240, 9%, 98%));
+				hsl(240, 9%, 98%)) !important;
 		--tab-text-active: var(--theme-colors-tab_text,
 				var(--theme-colors-toolbar_text,
-					-moz-DialogText));
+					-moz-DialogText)) !important;
 		--tabbar-bg: var(--theme-colors-frame,
-				hsl(235, 33%, 19%));
+				hsl(235, 33%, 19%)) !important;
+		--tab-extra-contents-front-z-index: calc(var(--tab-ui-z-index) + 1) !important;
 	}
 
 
@@ -204,7 +205,8 @@ tab-item-substance {
 		visibility: collapse;
 
 		&::after {
-			background: var(--bg-color) !important;
+			fill: var(--bg-color) !important;
+			;
 		}
 	}
 
