@@ -67,13 +67,23 @@
 		/* Sidebar min and max width removal */
 		& #sidebar {
 			max-width: none !important;
-			min-width: var(--collapsed-width) !important;
+			min-width: calc(var(--collapsed-width) - 1px) !important;
 			background-color: var(--toolbar-field-background-color) !important;
+		}
+
+		&:not([sidebar-positionend]) {
+			border-right: 1px solid var(--sidebar-border-color) !important;
+		}
+
+		&[sidebar-positionend] {
+			border-left: 1px solid var(--sidebar-border-color) !important;
 		}
 
 		#sidebar-header:not([hidden="true"]) {
 			overflow-x: clip;
 			background-color: var(--toolbar-bgcolor);
+			border-bottom: unset !important;
+			border-top: 1px solid var(--sidebar-border-color);
 
 			#sidebar-title {
 				right: var(--space-small);

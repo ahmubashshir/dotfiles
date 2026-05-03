@@ -52,7 +52,7 @@
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xsmall) + 1px);
+		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xxsmall));
 
 		#sidebar-main {
 			margin-bottom: calc(0px - var(--space-xsmall));
