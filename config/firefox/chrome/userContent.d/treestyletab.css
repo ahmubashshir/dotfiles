@@ -44,7 +44,6 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 					-moz-DialogText)) !important;
 		--tabbar-bg: var(--theme-colors-frame,
 				hsl(235, 33%, 19%)) !important;
-		--tab-extra-contents-front-z-index: calc(var(--tab-ui-z-index) + 1) !important;
 	}
 
 
@@ -203,6 +202,10 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 			border-radius: 1rem;
 			margin-top: 2px;
 			margin-left: -2px !important;
+
+			&:hover {
+				background: rgb(244, 96, 103) !important;
+			}
 		}
 
 		#closebox-icon {
@@ -279,6 +282,10 @@ tab-item-substance {
 
 		& tab-label {
 			font-weight: bold;
+		}
+
+		& .extra-items-container.front {
+			inset-inline-end: calc(var(--tab-label-end-offset) + var(--svg-small-icon-size) * 1.5) !important;
 		}
 
 		::part(extra-contents-by-tst-active-tab-in-collapsed-tree_piro_sakura_ne_jp container) {
@@ -361,7 +368,12 @@ tab-item-substance {
 		}
 
 		& .extra-items-container.indent {
-			width: calc(var(--tab-indent) * 0.15) !important;
+			width: calc(var(--tab-indent) * 0.1) !important;
+		}
+
+		& .extra-items-container.front {
+			inset-inline-start: calc(var(--tab-label-start-offset) * 0.175) !important;
+			inset-inline-end: calc(var(--tab-label-end-offset) * 1.82789) !important;
 		}
 	}
 }
