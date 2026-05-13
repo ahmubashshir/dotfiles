@@ -270,6 +270,7 @@ user_pref("browser.link.open_newwindow.restriction", 0); // 0=force, 1=ignore, 2
 user_pref("media.autoplay.blocking_policy", 2); // 0=allow, 1=block audible, 2=block all
 user_pref("media.navigator.enabled", false);
 user_pref("image.jxl.enabled", true);
+user_pref("media.privatebrowsing.metadata.enabled", true);
 
 
 // ==============================
