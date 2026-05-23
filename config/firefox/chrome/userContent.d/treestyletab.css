@@ -2,24 +2,11 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 	background: transparent;
 }
 
-@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/tab-preview-frame.html($|\\?.+)") {
-	html {
-		background: transparent !important;
-	}
-
-	.tab-preview-panel.open {
-		margin-left: calc(var(--panel-width) - var(--thin-tab-width, 84px)) !important;
-	}
-}
-
-@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/group-tab.html($|\\?.+)") {
-	body {
-		background-color: var(--in-content-page-background);
-		color: var(--in-content-page-color);
-	}
-}
-
-@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
+/* colors */
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/tab-preview-frame.html($|\\?.+)"),
+regexp("moz-extension:\\/\\/[^/]+\\/resources\\/group-tab.html($|\\?.+)"),
+regexp("moz-extension:\\/\\/[^/]+\\/panel\\/panel.html($|\\?.+)"),
+regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 
 	/* https://github.com/piroor/treestyletab/issues/2780 */
 	:root {
@@ -45,7 +32,37 @@ iframe[src^="moz-extension://"][src$="/resources/tab-preview-frame.html"] {
 		--tabbar-bg: var(--theme-colors-frame,
 				hsl(235, 33%, 19%)) !important;
 	}
+}
 
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/tab-preview-frame.html($|\\?.+)") {
+	html {
+		background: transparent !important;
+	}
+
+	.tab-preview-panel.open {
+		margin-left: calc(var(--panel-width) - var(--thin-tab-width, 84px)) !important;
+	}
+}
+
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/resources\\/group-tab.html($|\\?.+)") {
+	body {
+		background-color: var(--in-content-page-background);
+		color: var(--in-content-page-color);
+	}
+}
+
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/panel\\/panel.html($|\\?.+)") {
+	body {
+		background-color: var(--in-content-page-background);
+		color: var(--in-content-page-color);
+	}
+
+	:root :is(.bookmark, .folder):is(.active, highlighted) {
+		background: revert;
+	}
+}
+
+@-moz-document regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 
 	/* autohide css  */
 	#tabbar {
