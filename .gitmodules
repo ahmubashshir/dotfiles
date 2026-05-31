@@ -158,12 +158,16 @@
 [submodule "submodules/gsv"]
 	path = submodules/gsv
 	url = https://github.com/ahmubashshir/gtksourceview-config
+	branch = master
 [submodule "submodules/desktop-backgrounds"]
 	path = submodules/desktop-backgrounds
 	url = https://github.com/ahmubashshir/desktop-backgrounds
+	branch = master
 [submodule "submodules/gdbinit"]
 	path = submodules/gdbinit
 	url = https://github.com/ahm-forks/gdbinit
+	branch = master
 [submodule "submodules/darkhttpd"]
 	path = submodules/darkhttpd
 	url = https://github.com/emikulic/darkhttpd
+	branch = master
