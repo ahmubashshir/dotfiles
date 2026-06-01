@@ -8,9 +8,23 @@ add_java_option()
 	export JAVA_TOOL_OPTIONS
 }
 
+path_unique()
+{
+	tr : '\n' | (
+		while read -r line; do
+			case ":$pth:" in
+				*":$line:"*) ;;
+				*) ! test -d "$line" || pth="${pth:+$pth:}$line" ;;
+			esac
+		done
+		echo    "$pth"
+	)
+}
+
 for env__e in ~/.config/shell/env.d/*.sh; do
 	. "$env__e"
 done
 
 unset env__e
 unset -f add_java_option
+unset -f path_unique
