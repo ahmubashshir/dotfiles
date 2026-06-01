@@ -69,7 +69,13 @@ export IRBRC="$XDG_CONFIG_HOME"/irb/irbrc
 export MEDNAFEN_HOME="$XDG_CONFIG_HOME"/mednafen
 # terminfo
 export TERMINFO="$XDG_DATA_HOME"/terminfo
-export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
+export TERMINFO_DIRS="$(
+	path_unique <<EOF
+$XDG_DATA_HOME/terminfo
+$TERMINFO_DIRS
+/usr/share/terminfo
+EOF
+)"
 # notmuch
 export NOTMUCH_CONFIG="$XDG_CONFIG_HOME"/notmuch/notmuchrc
 export NMBGIT="$XDG_DATA_HOME"/notmuch/nmbug
@@ -85,10 +91,20 @@ export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 export PASSWORD_STORE_DIR="$XDG_DATA_HOME"/pass
 # perl:cpan
 export PERLHOME="${XDG_DATA_HOME}/perl"
-export PATH="$PERLHOME/bin${PATH:+:${PATH}}"
 export PERL_CPANM_HOME="${XDG_CONFIG_HOME}/cpan"
-export PERL5LIB="$PERL_CPANM_HOME:$PERLHOME/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
-export PERL_LOCAL_LIB_ROOT="$PERLHOME${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
+export PERL5LIB="$(
+	path_unique <<EOF
+$PERL_CPANM_HOME
+$PERLHOME/lib/perl5
+$PERL5LIB
+EOF
+)"
+export PERL_LOCAL_LIB_ROOT="$(
+	path_unique <<EOF
+$PERLHOME
+$PERL_LOCAL_LIB_ROOT
+EOF
+)"
 export PERL_MB_OPT="--install_base \"$PERLHOME\""
 export PERL_MM_OPT="INSTALL_BASE=$PERLHOME"
 # python:hist
