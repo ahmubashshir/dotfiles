@@ -31,7 +31,7 @@ function codeberg_user
 
 function codeberg_fork
 {
-	local owner="$2" repo="$3" upstream="$4"
+	local domain="$1" user="$2" owner="$3" repo="$4" upstream="$5"
 
 	json \
 		:name "$repo" \
@@ -56,7 +56,8 @@ function github_user
 
 function github_fork
 {
-	local owner="$2" repo="$3" upstream="$4"
+	local domain="$1" user="$2" owner="$3" repo="$4" upstream="$5"
+	[[ "$user" != "$owner" ]] || unset owner
 
 	json \
 		:name "$repo" \
@@ -81,7 +82,8 @@ function gitlab_user
 
 function gitlab_fork
 {
-	local domain="$1" owner="$2" repo="$3" upstream="$4"
+	local domain="$1" user="$2" owner="$3" repo="$4" upstream="$5"
+
 	json \
 		:name "$repo" \
 		:namespace_path "$owner" \
@@ -103,6 +105,7 @@ function gitlab_wait_import
 		case "$status" in
 			'' | none | finished) break ;;
 			scheduled | started) sleep 3 ;;
+			failed) return 1 ;;
 		esac
 	done
 }
@@ -150,7 +153,9 @@ function get_config
 
 function repostrip
 {
-	sed -nE -e "s;$1;\1;g" -e 's;\.git$;;;p'
+	local split="$1" capture="$2" filter
+	printf -v filter '1s#^.*%s(%s)(\\.git)?$#\\1#gp' "$split" "$capture"
+	sed -nE "$filter"
 }
 
 function creds
@@ -201,12 +206,11 @@ function api_call
 
 	set -- --variable '%user' --variable '%token' "$@"
 
-	user="$user" \
-		token="$token" \
+	user="$user" token="$token" \
 		curl --disable -s \
 		--fail-with-body \
-		"https://$endpoint/$path" "$@" \
-		-H 'Accept: application/json' \
+		-H 'Accept: application/json' "$@" \
+		"https://$endpoint/$path" \
 		| jq -r "$jq"
 }
 
@@ -273,12 +277,36 @@ function get_arg
 	while (($# > 0)); do
 		arg="$1"
 		shift
-		[[ $arg == "$match" ]] || continue
-		! [[ $1 == "" ]] || break
-		echo "$1"
-		return 0
+		if [[ $arg == "$match" ]]; then
+			if [[ $1 == "" ]]; then
+				return $((BOOLEAN != 1))
+			else
+				echo "$1"
+			fi
+			return 0
+		fi
 	done
 	return 1
+}
+
+function jsonlist
+{
+	local template
+	local -a args
+	template='[]'
+	while (($# > 0)); do
+		if [[ $1 == :* ]]; then
+			args+=(--argjson)
+			template+=" + [\$arg$#]"
+		else
+			args+=(--arg)
+			template+=" + if (\$arg$#|length) > 0 then [\$arg$#] else [] end"
+		fi
+		args+=("arg$#" "${1#:}")
+		shift
+	done
+
+	: | jq -nc "$template" "${args[@]}"
 }
 
 function json
@@ -322,23 +350,23 @@ function fork_setup
 
 function create_fork
 {
-	local org repo user upstream
+	local org repo user upstream owner
 	local provider="$1" domain="$2" remote="$3"
 	shift 3
 
 	read -r user < <("${provider}_user" "$domain")
 	read -r upstream < <(
 		git remote get-url upstream \
-			| repostrip '^.*[/:]([^/]+/[^/]+)$'
+			| repostrip '[/:]' '[^/]+/[^/]+'
 	)
 	read -r repo < <(
 		! get_arg --name "$@" || exit
 		git remote get-url upstream \
-			| repostrip '^.*/([^/]+)$'
+			| repostrip '/' '[^/]+'
 	)
 	read -r org < <(
 		! get_arg --org "$@" || exit
-		get_config "$domain" org
+		get_config "$domain/$user" org
 	)
 
 	if [[ -z "$user" ]]; then
@@ -346,26 +374,27 @@ function create_fork
 		return 1
 	fi
 
-	if ! repo_exists "${remote}${org:-$user}/$repo"; then
+	owner="${org:-$user}"
+	if ! repo_exists "$remote$owner/$repo"; then
 		message '\e[32m\e[1m > \e[0mForking \e[1m%s\e[0m...' "$upstream"
-		"${provider}_fork" "$domain" "${org:-$user}" "$repo" "$upstream" || return
-		message '\e[32m\e[1m + \e[0mForked \e[1m%s\e[0m' "${org:-$user}/$repo"
+		"${provider}_fork" "$domain" "$user" "$owner" "$repo" "$upstream" || return
+		message '\e[32m\e[1m + \e[0mForked \e[1m%s\e[0m' "$owner/$repo"
 	else
-		message '\e[32m\e[1m + \e[0mFork exists \e[1m%s\e[0m' "${org:-$user}/$repo"
+		message '\e[32m\e[1m + \e[0mFork exists \e[1m%s\e[0m' "$owner/$repo"
 	fi
 
 	case "$provider" in
 		gitlab) repo+='.git' ;;
 	esac
 
-	if repo_exists "${remote}${org:-$user}/$repo"; then
-		git remote add origin "${remote}${org:-$user}/$repo"
+	if repo_exists "$remote$owner/$repo"; then
+		git remote add origin "$remote$owner/$repo"
 		message '\e[32m\e[1m + \e[0mRemote origin added...'
 	fi
 
 	if ((${hook["$provider"]})); then
 		message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
-		"${provider}_post" "$domain" "${org:-$user}" "$repo"
+		"${provider}_post" "$domain" "$owner" "$repo"
 	fi
 }
 
@@ -380,7 +409,7 @@ function rollback_failure
 	trap '-' INT TERM QUIT EXIT
 }
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ $1 == "help" ]] || BOOLEAN=1 get_arg -h "$@" || BOOLEAN=1 get_arg --help "$@"; then
 	cat << 'EOF'
 Usage: git fork [OPTIONS]
 
@@ -390,7 +419,7 @@ OPTIONS
   --name <NAME>     Custom repository name for the fork (default: same as upstream)
   --org <ORG>       Fork under the given organization instead of your user account
 
-  -h, --help        Show this help message
+  -h, --help, help  Show this help message
 
 SUPPORTED PROVIDERS
   GitHub, GitLab, Codeberg
