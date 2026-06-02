@@ -43,10 +43,15 @@ function codeberg_fork
 }
 
 ## GitHub
+function github_api_call
+{
+	AUTHDOMAIN=github.com api_call api.github.com "$@" \
+		-H "X-GitHub-Api-Version: 2026-03-10"
+}
+
 function github_user
 {
-	api_call api.github.com 'user' '.login' \
-		-H "X-GitHub-Api-Version: 2026-03-10"
+	github_api_call 'user' '.login'
 }
 
 function github_fork
@@ -57,8 +62,7 @@ function github_fork
 		:name "$repo" \
 		:organization "$owner" \
 		:default_branch_only :true \
-		| api_call api.github.com "repos/$upstream/forks" . \
-			-H "X-GitHub-Api-Version: 2026-03-10" \
+		| github_api_call "repos/$upstream/forks" . \
 			-H 'Content-Type: application/json' \
 			-X POST --data @- \
 		| api_if_error
@@ -136,7 +140,7 @@ function message
 
 function repo_exists
 {
-	git ls-remote -q "$1" HEAD 2> /dev/null 1>&2
+	git ls-remote -q "$1" HEAD > /dev/null 2>&1
 }
 
 function get_config
@@ -178,7 +182,7 @@ function api_call
 	shift 3
 
 	IFS=: read -r user token < <(
-		read -r user < <(git config --get "credential.https://${endpoint%%/*}.username")
+		read -r user < <(git config --get "credential.https://${AUTHDOMAIN:-${endpoint%%/*}}.username")
 		creds "${endpoint%%/*}" "$user"
 	)
 
@@ -422,8 +426,12 @@ elif git remote | grep -xqw upstream; then
 
 	read -r provider domain remote < <(identify_remote upstream)
 	if ((${hook["$provider"]})); then
-		message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
-		"${provider}_post" "$domain" "${org:-$user}" "$repo"
+		read -r user < <("${provider}_user" "$domain")
+		if [[ $user ]]; then
+			read -r org < <(get_config "$domain/$user" org)
+			message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
+			"${provider}_post" "$domain" "${org:-$user}" "$repo"
+		fi
 	fi
 
 	fork_setup
