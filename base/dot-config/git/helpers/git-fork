@@ -438,6 +438,7 @@ Fork the upstream remote into your account (or org) and set up origin + tracking
 OPTIONS
   --name <NAME>     Custom repository name for the fork (default: same as upstream)
   --org <ORG>       Fork under the given organization instead of your user account
+  --authinfo        Show info about authenticated user
 
   -h, --help, help  Show this help message
 
@@ -457,7 +458,23 @@ EOF
 fi
 
 require git curl jq || exit 1
-if ! git remote | grep -xqw upstream; then
+
+if BOOLEAN=1 get_arg --authinfo "$@"; then
+	read -r provider domain remote < <(identify_remote origin)
+	if [[ $provider == unknown ]]; then
+		message '\e[31m\e[1m ! \e[0mUnknown remote:\n\e[31m...\e[0m \e[1m%s\e[0m' "$(git remote get-url upstream)"
+	else
+		read -r user < <("${provider}_user" "$domain")
+		if [[ $user ]]; then
+			read -r org < <(get_config "$domain/$user" org)
+			message '\e[32m\e[1m > \e[0mAuth info : \e[1m%s\e[0m on \e[1m%s\e[0m...' "$user" "$domain"
+			message '\e[32m\e[1m + \e[0mFork owner: \e[1m%s\e[0m' "${org:-$user}"
+		else
+			message '\e[31m\e[1m ! \e[0mFailed to authenticate with \e[1m%s\e[0m...' "$domain"
+			exit 1
+		fi
+	fi
+elif ! git remote | grep -xqw upstream; then
 	trap 'rollback_failure' INT TERM QUIT EXIT
 	git remote rename origin upstream
 
