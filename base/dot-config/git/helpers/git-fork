@@ -66,7 +66,27 @@ function github_fork
 		| github_api_call "repos/$upstream/forks" . \
 			-H 'Content-Type: application/json' \
 			-X POST --data @- \
-		| api_if_error
+		| api_if_error || return 1
+
+	github_wait_fork "$domain" "${owner:-$user}/$repo"
+}
+
+function github_wait_fork
+{
+	local domain="$1" repo="$2" start now
+	start="$(date +%s)"
+	while ! repo_exists "https://$domain/$repo"; do
+		now="$(date +%s)"
+
+		if (((now - start) <= 300)); then
+			sleep 3
+			continue
+		fi
+
+		message '\e[31m ! \e[0mFork did not finish in 5 minutes...'
+		message '\e[31m ! \e[0m  please contact GitHub Support...'
+		return 1
+	done
 }
 
 function github_post
