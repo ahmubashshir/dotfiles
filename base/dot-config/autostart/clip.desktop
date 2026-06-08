@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Hidden=false
+Terminal=false
+NoDisplay=false
+Type=Application
+Name=fileclip
+Categories=Utility;
+Icon=clipboard
+StartupNotify=false
+Exec=clip -r
+TryExec=nm-dhcp-dnsd
+Comment=Files in Clipboard manager
+GenericName=Send files to clipboard from cli
+Path=
