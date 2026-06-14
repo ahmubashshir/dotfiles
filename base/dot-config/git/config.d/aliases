@@ -32,15 +32,19 @@
 	rbs = rebase
 	rbsd= -c rebase.instructionFormat='%s%nexec GIT_COMMITTER_DATE=%x22%cD%x22 GIT_COMMITTER_NAME=%x22%cn%x22 GIT_COMMITTER_EMAIL=%x22%ce%x22  git commit --amend --date=%x22%cD%x22 --no-edit --allow-empty --allow-empty-message' rebase
 	mrg = merge
+	cpk = cherry-pick
 	rev = revert
 	crbs = rebase --continue
 	crev = revert --continue
 	cmrg = merge --continue
+	ccpk = cherry-pick --continue
 	amrg = merge --abort
 	arev = revert --abort
 	arbs = rebase --abort
+	acpk = cherry-pick --abort
 	srbs = rebase --skip
 	srev = revert --skip
+	scpk = cherry-pick --skip
 	log = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
 	br = branch
 	type = cat-file -t
