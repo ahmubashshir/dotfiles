@@ -70,7 +70,10 @@ function ›zsh›pwd›hist {
 			if [[ -f "$DIR/hist" && $DIR != $HOME ]]
 			then
 				local OLDHIST="$HISTFILE"
-				fc -p "$DIR/hist"
+				if [[ "${CONTAINER_ID}" ]]
+				then fc -p "$DIR/hist.${CONTAINER_ID/#%distrobox-[a-zA-Z0-9]*/distrobox-ephemeral}"; fc -R "$DIR/hist"
+				else fc -p "$DIR/hist"
+				fi
 				fc -R "$OLDHIST"
 			fi
 			fc -R
