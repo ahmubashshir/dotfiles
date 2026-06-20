@@ -17,7 +17,6 @@ if (( ! $+functions[›zplug›hook]));then
 	while read -r plug _;do
 		if (($+functions[$plug]));then
 			function-mv $plug ›zplug›hook›${${plug#zplug:}:s+:+›+}
-			unset -f $plug
 		fi
 	done < <(
 		functions -m 'zplug:(pre|post):*'
