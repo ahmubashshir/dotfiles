@@ -143,3 +143,11 @@ function zplug:post:gitstatus-async {
 function zplug:pre:autoswitch_virtualenv {
 	typeset -g AUTOSWITCH_VIRTUAL_ENV_DIR="${WORKON_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/virtualenvs}"
 }
+
+function zplug:post:auto-notify {
+	! [[ -n "$DISPLAY" || -n "$WAYLAND_DISPLAY" ]] || return
+	! notify-send -t 1 -e ping test > /dev/null 2>&1 || return
+
+	disable_auto_notify
+	echo "Disabled auto notify" >&2
+}
