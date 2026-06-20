@@ -96,7 +96,7 @@ function ›git›prompt›update›async {
 	}
 
 	# *42 if have stashes.
-	(( VCS_STATUS_STASHES )) && state+="${GITSTATUS[clean]}%B%{☰%G%}%b${VCS_STATUS_STASHES}%f"
+	(( VCS_STATUS_STASHES )) && state+="${GITSTATUS[clean]}%B%{☰%2G%}%b${VCS_STATUS_STASHES}%f"
 	((
 			VCS_STATUS_NUM_CONFLICTED
 		+	VCS_STATUS_NUM_STAGED
@@ -126,7 +126,7 @@ function ›git›prompt›update›async {
 function ›git›prompt›update {
 	[[ $1 != ›git›prompt›update›async ]] && return
 	if [[ "$GITSTATUS_PROMPT" != "$3" ]];then
-		local promptesc='%([BSUbfksu]|([FK]|){*})'
+		local promptesc='%([BSUbfksuG{}]|([FK]|){*})'
 		emulate -L zsh
 		GITSTATUS_PROMPT="$3"
 		GITSTATUS_PROMPT_LEN="${#${(S%%)GITSTATUS_PROMPT//$~promptesc/}}"
