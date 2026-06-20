@@ -4,8 +4,8 @@ venv=${1:-.venv}
 if [[ -d $venv && -f $venv/bin/activate ]];then
 	venvpath="$venv"
 elif [[ -f $venv ]];then
-	if [[ -f ~/.virtualenvs/$(<$venv)/bin/activate ]];then
-		venvpath="$HOME/.virtualenvs/$(<$venv)"
+	if [[ -f ${VIRTUAL_ENV_DIR:-$HOME/.virtualenvs}/$(<$venv)/bin/activate ]];then
+		venvpath="${VIRTUAL_ENV_DIR:-$HOME/.virtualenvs}/$(<$venv)"
 	elif [[ -f $(<$venv)/bin/activate ]];then
 		venvpath="$(<$venv)"
 	fi
