@@ -1,4 +1,3 @@
-/* Shrink sidebar until hovered, when using Tree Style Tab. */
 :root {
 	--thin-tab-width: 45px;
 	--wide-tab-width: 250px;
@@ -21,4 +20,6 @@
 			/* from https://searchfox.org/mozilla-central/rev/8d722de75886d6bffc116772a1db8854e34ee6a7/browser/themes/windows/browser-aero.css#59 */
 		);
 	--menubar-background-color: var(--toolbar-bgcolor);
+
+
 }

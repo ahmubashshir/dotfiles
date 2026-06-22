@@ -1,5 +1,6 @@
 /* Root */
 @import url('userChrome.d/root.css');
+@import url('userChrome.d/root-variables.css');
 
 @import url('userChrome.d/extension-sidebar.css');
 

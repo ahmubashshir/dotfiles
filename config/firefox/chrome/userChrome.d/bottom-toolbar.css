@@ -1,5 +1,5 @@
 :root {
-	--menubar-margin-top: calc(var(--urlbar-min-height) - var(--toolbar-start-end-padding) / 2);
+	--menubar-margin-top: var(--menubar-top-margin-override);
 
 	&[uidensity="compact"] {
 		--menubar-margin-top: var(--urlbar-min-height);
@@ -52,7 +52,7 @@
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-start-end-padding) + var(--space-xxsmall));
+		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-padding-override) + var(--space-xxsmall));
 
 		#sidebar-main {
 			margin-bottom: calc(0px - var(--space-xsmall));
