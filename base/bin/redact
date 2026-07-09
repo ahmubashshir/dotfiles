@@ -1,0 +1,122 @@
+#!/bin/bash
+MATCH_EMAIL='([[:blank:]])[[:alnum:]][[:alnum:][:blank:]]* <[[:alnum:]._%+-]+@[^[:space:]@.]+(\.[^[:space:]@.]+)*>'
+
+escapeERELiteral()
+{
+	sed -E 's/(\.|\^|\$|\*|\+|\?|\{|\}|\(|\)|\[|\]|\||\\|\/)/\\\1/g' # escape ERE metacharacters for literal match
+}
+
+buildGitUserMapping()
+{
+	local mail name uhash
+	while IFS=' ' read -r _ mail name; do
+		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
+		args+=(
+			-e "s/$(escapeERELiteral <<< "$name")/@Git.User.$uhash/g"
+			-e "s/$(escapeERELiteral <<< "$mail")/git@$uhash.user.email/g"
+		)
+	done < <(
+		git log --pretty='format:%an <%ae>' \
+			| sort \
+			| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
+			| uniq -c \
+			| sort -rn
+	)
+	name=$(git config --get user.name)
+	mail=$(git config --get user.email)
+	if [[ -n $name && -n $mail ]]; then
+		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
+		args+=(
+			-e "s/@Git.User.$uhash/@Git.Local.User/g"
+			-e "s/git@$uhash.user.email/git@local.user.email/g"
+		)
+	fi
+}
+
+buildGitRemoteMapping()
+{
+	local remote url owner repo
+	while read -r remote; do
+		url=$(git config --get "remote.$remote.url")
+		[[ $url ]] || continue
+		owner=$(sed -E 's/^.+[\/:]([^/]+)\/.+$/\1/' <<< "$url" | escapeERELiteral)
+		repo=$(sed -E -e 's/^.+[\/:][^/]+\/(.+)$/\1/' -e 's/\.git$//' <<< "$url" | escapeERELiteral)
+		args+=(
+			-e "s/$owner/@$remote/g"
+			-e "s/$repo/@repo/g"
+		)
+	done < <(git remote)
+}
+
+dumpEnvMap()
+{
+	env | grep -E '^(XDG_.+_|)HOME='
+
+	printf '%s=%s\n' \
+		hostname "$(hostname)" \
+		username "$(id -un)" \
+		UID "$(id -u)"
+}
+
+buildEnvVarMapping()
+{
+	local var val
+	while IFS='=' read -r var val; do
+		args+=(-e "s/([^[:alnum:]])?$(escapeERELiteral <<< "$val")/\\1@$var/g")
+	done < <(dumpEnvMap | sort -t= -rk2) # replace longest value first
+}
+
+printHelp()
+{
+	cat << EOF
+Usage: redact [option]... < input > output
+Scrub local environment information from input stream
+
+Options:
+  -e script, --expression script, --expression=script
+               add the sed script to the filters
+  --git
+               add git user/remote mapping to filters
+               from current repository, implies --email
+  --email
+               add a filter to scrub 'User <email>' patterns
+  -h, --help
+               show this help text
+EOF
+	exit 0
+}
+
+args=()
+while (($# > 0)); do
+	arg="$1"
+	shift
+	case "$arg" in
+		# sed arg
+		--expression=*) args+=(-e "${arg#*=}") ;;
+		-e | --expression)
+			args+=(-e "$1")
+			shift
+			;;
+		# rest
+		--git)
+			((!REDACT_GIT)) || continue
+			buildGitUserMapping
+			buildGitRemoteMapping
+			set -- --email "$@"
+			REDACT_GIT=1
+			;;
+		--email)
+			((!REDACT_EMAIL)) || continue
+			args+=(-e "s/$MATCH_EMAIL/\1User <user@email.tld>/g")
+			REDACT_EMAIL=1
+			;;
+		--help | -h) printHelp ;;
+		*)
+			echo "redact: unknown option: $arg" >&2
+			exit 2
+			;;
+	esac
+done
+
+buildEnvVarMapping
+exec sed -E "${args[@]}"
