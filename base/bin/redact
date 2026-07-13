@@ -1,122 +1,120 @@
 #!/bin/bash
-MATCH_EMAIL='([[:blank:]])[[:alnum:]][[:alnum:][:blank:]]* <[[:alnum:]._%+-]+@[^[:space:]@.]+(\.[^[:space:]@.]+)*>'
 
-escapeERELiteral()
+declare -a MODES=('git' 'mail' 'hash' 'uuid' 'env')
+# ARGSPEC: mode
+# ? -> takes optional arg
+# : -> takes mandatory arg
+# @ -> is bool flag
+# otherwise -> doesn't take args
+# shellcheck disable=SC2034
+declare -rA ARGSPEC=(
+	['hash']='?'
+	['git']='@'
+	['mail']='@'
+	['uuid']='@'
+)
+
+declare -Ai REDACT=()
+declare -a RULES=()
+
+# escape / \ & (safe sed regexp | replacement)
+quoteSed()
 {
-	sed -E 's/(\.|\^|\$|\*|\+|\?|\{|\}|\(|\)|\[|\]|\||\\|\/)/\\\1/g' # escape ERE metacharacters for literal match
+	sed         's/[/&\\]/\\&/g'
+}
+# escape ERE metacharacters for literal match
+ERE2Literal()
+{
+	# shellcheck disable=SC2001
+	# escape . * ^ + ? { } ( ) | $ \ [ ]
+	sed 's/[.*^+?{}()|$\]\|\[\|\]/\\&/g' <<< "${1-$(<&0)}"
 }
 
-buildGitUserMapping()
+loadModules()
 {
-	local mail name uhash
-	while IFS=' ' read -r _ mail name; do
-		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-		args+=(
-			-e "s/$(escapeERELiteral <<< "$name")/@Git.User.$uhash/g"
-			-e "s/$(escapeERELiteral <<< "$mail")/git@$uhash.user.email/g"
-		)
-	done < <(
-		git log --pretty='format:%an <%ae>' \
-			| sort \
-			| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
-			| uniq -c \
-			| sort -rn
-	)
-	name=$(git config --get user.name)
-	mail=$(git config --get user.email)
-	if [[ -n $name && -n $mail ]]; then
-		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-		args+=(
-			-e "s/@Git.User.$uhash/@Git.Local.User/g"
-			-e "s/git@$uhash.user.email/git@local.user.email/g"
-		)
-	fi
+	for mode in "${MODES[@]}"; do
+		[[ -f "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh" ]] || {
+			printf 'ERROR: Missing module: %s\n' "$mode" >&2
+			return 1
+		}
+
+		# shellcheck disable=SC1090
+		source "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh"
+	done
 }
 
-buildGitRemoteMapping()
+loadSedRules()
 {
-	local remote url owner repo
-	while read -r remote; do
-		url=$(git config --get "remote.$remote.url")
-		[[ $url ]] || continue
-		owner=$(sed -E 's/^.+[\/:]([^/]+)\/.+$/\1/' <<< "$url" | escapeERELiteral)
-		repo=$(sed -E -e 's/^.+[\/:][^/]+\/(.+)$/\1/' -e 's/\.git$//' <<< "$url" | escapeERELiteral)
-		args+=(
-			-e "s/$owner/@$remote/g"
-			-e "s/$repo/@repo/g"
-		)
-	done < <(git remote)
-}
+	for mode in "${MODES[@]}"; do
+		declare -F "addSedRules-$mode" > /dev/null || {
+			printf 'ERROR: Bad module: %s\n' "$mode" >&2
+			return 1
+		}
 
-dumpEnvMap()
-{
-	env | grep -E '^(XDG_.+_|)HOME='
-
-	printf '%s=%s\n' \
-		hostname "$(hostname)" \
-		username "$(id -un)" \
-		UID "$(id -u)"
-}
-
-buildEnvVarMapping()
-{
-	local var val
-	while IFS='=' read -r var val; do
-		args+=(-e "s/([^[:alnum:]])?$(escapeERELiteral <<< "$val")/\\1@$var/g")
-	done < <(dumpEnvMap | sort -t= -rk2) # replace longest value first
+		"addSedRules-${mode}"
+	done
 }
 
 printHelp()
 {
-	cat << EOF
-Usage: redact [option]... < input > output
+	cat >&2 << EOF
+Usage: redact [option]... @[ENV]... [--] [file]... < [file]... > output
 Scrub local environment information from input stream
 
 Options:
   -e script, --expression script, --expression=script
                add the sed script to the filters
-  --git
-               add git user/remote mapping to filters
-               from current repository, implies --email
-  --email
-               add a filter to scrub 'User <email>' patterns
-  -h, --help
+$(
+		for mode in "${MODES[@]}"; do
+			declare -F "helptext-$mode" > /dev/null || continue
+
+			"helptext-${mode}"
+		done
+	)  -h, --help
                show this help text
 EOF
 	exit 0
 }
 
-args=()
+loadModules || exit 1
+
+envs=()
 while (($# > 0)); do
 	arg="$1"
 	shift
 	case "$arg" in
+		--) break ;; # stop processing args
 		# sed arg
-		--expression=*) args+=(-e "${arg#*=}") ;;
+		@*) envs+=("${arg#@}") ;;
+		--expression=*) [[ -z "${arg#*=}" ]] || RULES+=("${arg#*=}") ;;
 		-e | --expression)
-			args+=(-e "$1")
+			[[ "$1" && "$1" != "--" ]] || continue
+			RULES+=("$1")
 			shift
 			;;
 		# rest
 		--git)
-			((!REDACT_GIT)) || continue
-			buildGitUserMapping
-			buildGitRemoteMapping
-			set -- --email "$@"
-			REDACT_GIT=1
+			((!REDACT['git'])) || continue
+			set -- --mail "$@"
+			REDACT['git']=1
 			;;
-		--email)
-			((!REDACT_EMAIL)) || continue
-			args+=(-e "s/$MATCH_EMAIL/\1User <user@email.tld>/g")
-			REDACT_EMAIL=1
+		--mail)
+			((!REDACT['mail'])) || continue
+			REDACT['mail']=1
 			;;
+		--uuid)
+			((!REDACT['uuid'])) || continue
+			REDACT['uuid']=1
+			;;
+		--hash) enable-hash all ;;
+		--hash=*) enable-hash "${arg#--hash=}" ;;
 		--help | -h) printHelp ;;
-		*)
-			echo "redact: unknown option: $arg" >&2
+		-*)
+			printf 'redact: unknown option: %s\n' "$arg" >&2
 			exit 2
 			;;
 	esac
 done
 
-buildEnvVarMapping
-exec sed -E "${args[@]}"
+loadSedRules || exit 1
+exec sed -uEf <(printf '%s\n' "${RULES[@]}") -- "$@"
