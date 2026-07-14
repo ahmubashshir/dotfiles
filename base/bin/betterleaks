@@ -1,0 +1,4 @@
+#!/bin/bash
+ARGS=(--log-level warn --no-banner)
+OWNER=betterleaks
+source "${0%/*}/lib/git-rel"
