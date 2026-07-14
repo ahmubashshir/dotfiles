@@ -34,11 +34,20 @@ addSedRules-git-remote()
 {
 	((REDACT['git'])) || return
 	local remote url owner repo
+
 	while read -r remote; do
-		url=$(git config --get "remote.$remote.url")
+		url="$(git remote get-url --no-push "$remote")"
 		[[ $url ]] || continue
-		repo=$(sed -E -e 's#^.+[:/]([^/]+)$#\1#' -e 's/\.git\/?$//' <<< "$url" | ERE2Literal | quoteSed)
-		owner=$(sed -E 's#^([^@:]+(@[^:]+:/?|://[^/]+/))(.+)/'"$repo"'$#\1#' <<< "$url" | ERE2Literal | quoteSed)
+
+		url="${url%".git"}"
+		case "$url" in
+			*://*) url="${url##*://}" ;;
+			*@*:*) url="${url##*@}" ;;
+		esac
+
+		repo=${url##*/}
+		owner="${url%"/$repo"}"
+		owner=${owner#*[:/]}
 		remote=$(quoteSed <<< "$remote")
 
 		[[ -z $repo ]] || RULES+=('/[\/:]'"$repo"'\b/s/([\/:])'"$repo"'\b/\1@repo/g')
