@@ -12,11 +12,11 @@ shift 4
 		|| echo $run
 )" == "true" ]]
 
-if [[ -f "${0%/*}/if.d/$stage/$subhook" ]]; then
-	source "${0%/*}/if.d/$stage/$subhook" "$@"
+if [[ -f "${0%/*}/$stage/$subhook.ifneeded" ]]; then
+	source "${0%/*}/$stage/$subhook.ifneeded" "$@"
 else
 	awk '/^# HOOK-CONDITION:/ {sub(/^# HOOK-CONDITION: /,"");print}' \
-		"${0%/*}/hooks.d/$stage/$subhook" | while IFS= read -r; do
+		"${0%/*}.d/$stage/$subhook" | while IFS= read -r; do
 		eval "$REPLY" &> /dev/null
 	done
 fi

@@ -23,9 +23,10 @@ fi
 readonly f
 
 stage="${0##*/}"
-export HOOKSUTIL="${0%/*}/hooks.d/utils"
+export HOOKSUTIL="${0%/*}.d/utils"
+export SHARED="${0%/*}.d/shared.d"
 checker="${0%/*}/if.hook"
-hookdir="${0%/*}/hooks.d/$stage"
+hookdir="${0%/*}.d/$stage"
 
 case "$stage" in
 	pre-push | pre-receive | post-receive | post-rewrite)
@@ -42,11 +43,11 @@ if [ -d "$hookdir" ]; then
 	for subhook in "$hookdir"/*; do
 		export id="$stage.${subhook##*/}"
 		[ -f "$subhook" -a -x "$subhook" ] || continue
-		if [ "${hook%.optional}" = "${hook}" ]; then
-			run="true" # hook does not end in ".optional"
-		else
-			run="false" # hook ends in ".optional"
-		fi
+		case "$hook" in
+			*.ifneeded) continue ;; # used by if.hook
+			*.optional) run=false ;; # needs to be enabled per-repo
+			*) run=true ;; # run everything else
+		esac
 		if "$checker" "${subhook##*/}" "$id" "$stage" "$run" "$@"; then
 			echo "${f[blue]}::${f[green]} Running '${f[blue]}$id${f[green]}'${f[reset]}"
 			if [ "$tempfile" ]; then
