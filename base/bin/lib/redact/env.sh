@@ -39,14 +39,25 @@ dumpEnvMap()
 
 addSedRules-env()
 {
-	local var val
+	local var val lterm rterm
 	while IFS='=' read -r var val; do
+		lterm='^[:alnum:]'
+		rterm='^[:alnum:]'
 		[[ -n $val ]] || continue # skip empty value
-		RULES+=('s/(^|[^[:alnum:]])'"$(
-			ERE2Literal "$val" | quoteSed
-		)"'([^[:alnum:]]|$)/\1@'"$(
+
+		# terminal classes for generated sed rule
+		case "${val:0:1}" in
+			(/) rterm=':/';; # abspath
+			([[:digit:]]) rterm='^[:digit:]'; lterm='^[:digit:]';; # numeric values
+			([[:alpha:]]) rterm='^[:alpha:]'; lterm='^[:alpha:]';; # alphabetic values
+		esac
+
+		RULES+=('s/(^|['"$lterm"'])'"${
+			ERE2Literal "$val" | quoteSed pattern
+		}"'(['"$rterm"']|$)/\1@'"${
 			quoteSed <<< "$var"
-		)"'\2/g')
+		}"'\2/g')
+
 	done < <(
 		# shellcheck disable=SC2154
 		dumpEnvMap "${envs[@]}" | sort -t: -nr | while IFS=: read -r _ line; do
