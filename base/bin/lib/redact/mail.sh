@@ -16,3 +16,11 @@ helptext-mail()
                add a filter to scrub 'User <email>' patterns
 EOF
 }
+
+ARGSPEC['mail']='@'
+enable-mail()
+{
+	((!REDACT['mail'])) || return
+
+	REDACT['mail']=1
+}

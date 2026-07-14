@@ -58,3 +58,12 @@ helptext-git()
                from current repository, implies --mail
 EOF
 }
+
+ARGSPEC['git']='@'
+enable-git()
+{
+	((!REDACT['git'])) || return
+
+	REDACT['git']=1
+	enable-mail
+}

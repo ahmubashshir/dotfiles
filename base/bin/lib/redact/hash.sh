@@ -1,6 +1,6 @@
 #!/bin/bash
-declare -ra  HASH=(sha512 sha384 sha256 sha224 sha1 md5)
-declare -rai HLEN=(128 96 64 56 40 32) # order follows HASH order
+declare -gra  HASH=(sha512 sha384 sha256 sha224 sha1 md5)
+declare -grai HLEN=(128 96 64 56 40 32) # order follows HASH order
 
 addSedRules-hash()
 {
@@ -8,18 +8,6 @@ addSedRules-hash()
 	for ((idx = 0; idx < ${#HASH[@]}; idx++)); do
 		((REDACT["hash:${HASH[idx]}"])) || continue
 		RULES+=('s/\b[[:xdigit:]]{'"${HLEN[idx]}"'}\b/@HASH:'"${HASH[idx]^^}"'/g')
-	done
-}
-
-enable-hash()
-{
-	local algo
-
-	for algo in "${HASH[@]}"; do
-		((!REDACT["hash:$algo"])) || continue
-		if [[ "$1" == "all" || "$algo" == "$1"* ]]; then
-			REDACT["hash:$algo"]=1
-		fi
 	done
 }
 
@@ -31,4 +19,25 @@ helptext-hash()
                specify multiple times to use multiple algo
                or use family name (sha/sha2)
 EOF
+}
+
+ARGSPEC['hash']='?'
+enable-hash()
+{
+	local algo
+	local -i match=0
+
+	for algo in "${HASH[@]}"; do
+		((!REDACT["hash:$algo"])) || continue
+		if [[ "${1:-all}" == "all" || "$algo" == "$1"* ]]; then
+			REDACT["hash:$algo"]=1
+			((match++))
+		fi
+	done
+
+	if [[ -n "$1" && "$match" -gt 0 ]] || [[ -z "$1" ]]; then
+		return 0
+	else
+		return 1
+	fi
 }

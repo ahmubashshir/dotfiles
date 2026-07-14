@@ -1,27 +1,56 @@
 #!/bin/bash
+# available rules contributors
+# sort order is priority : IMMEDIATES > GENERATORS
+declare -a GENERATORS=('git' 'mail' 'hash' 'uuid' 'env')
+declare -a IMMEDIATES=('sed')
 
-declare -a MODES=('git' 'mail' 'hash' 'uuid' 'env')
+# SHORT[shortopt]=mode maps short option to a mode
+# shellcheck disable=SC2034
+declare -A SHORT=()
+
 # ARGSPEC: mode
 # ? -> takes optional arg
 # : -> takes mandatory arg
 # @ -> is bool flag
 # otherwise -> doesn't take args
 # shellcheck disable=SC2034
-declare -rA ARGSPEC=(
-	['hash']='?'
-	['git']='@'
-	['mail']='@'
-	['uuid']='@'
+declare -A ARGSPEC=()
+
+# enabled redact modes
+# shellcheck disable=SC2034
+declare -Ai REDACT=()
+
+# sed rules contributed by modes
+declare -a RULES=()
+
+declare -rAi RET=(
+	['badsed']=1 # sed exit code
+	['badfile']=2 #   ^^^
+	['badio']=4 #   ^^^
+	['generic']=3 # our exit code
+	['badarg']=5 #   ^^^
+	['badflag']=6 #   ^^^
+	['module']=7 #   ^^^
 )
 
-declare -Ai REDACT=()
-declare -a RULES=()
+message()
+{
+	local format="$1"
+	shift
+	printf 'redact%s: '"$format"'\n' "${tag:+:$tag}" "$@" >&2
+}
 
 # escape / \ & (safe sed regexp | replacement)
 quoteSed()
 {
-	sed         's/[/&\\]/\\&/g'
+	case "$1" in
+		p | pattern)
+			sed 's/[/]/\\&/g'
+			;;
+		*) sed 's/[/&]/\\&/g' ;;
+	esac
 }
+
 # escape ERE metacharacters for literal match
 ERE2Literal()
 {
@@ -32,12 +61,15 @@ ERE2Literal()
 
 loadModules()
 {
-	for mode in "${MODES[@]}"; do
+	local tag
+	for mode in "${IMMEDIATES[@]}" "${GENERATORS[@]}"; do
 		[[ -f "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh" ]] || {
-			printf 'ERROR: Missing module: %s\n' "$mode" >&2
+			tag=error
+			message 'Missing module: %s' "$mode"
 			return 1
 		}
 
+		tag="$mode"
 		# shellcheck disable=SC1090
 		source "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh"
 	done
@@ -45,76 +77,139 @@ loadModules()
 
 loadSedRules()
 {
-	for mode in "${MODES[@]}"; do
+	for mode in "${GENERATORS[@]}"; do
 		declare -F "addSedRules-$mode" > /dev/null || {
-			printf 'ERROR: Bad module: %s\n' "$mode" >&2
+			tag=error
+			message 'Bad module: %s' "$mode"
 			return 1
 		}
 
+		tag="$mode"
 		"addSedRules-${mode}"
 	done
 }
 
 printHelp()
 {
-	cat >&2 << EOF
+	cat >&2 << 'EOF'
 Usage: redact [option]... @[ENV]... [--] [file]... < [file]... > output
 Scrub local environment information from input stream
 
 Options:
-  -e script, --expression script, --expression=script
-               add the sed script to the filters
-$(
-		for mode in "${MODES[@]}"; do
-			declare -F "helptext-$mode" > /dev/null || continue
+  -d, --dump
+               dump generated replacement rules
+EOF
 
-			"helptext-${mode}"
-		done
-	)  -h, --help
+	for mode in "${IMMEDIATES[@]}" "${GENERATORS[@]}"; do
+		declare -F "helptext-$mode" > /dev/null || continue
+
+		"helptext-$mode"
+	done
+
+	cat >&2 << 'EOF'
+  -h, --help
                show this help text
 EOF
 	exit 0
 }
 
-loadModules || exit 1
+# main segment
+loadModules || exit "${RET['module']}"
 
-envs=()
+args=()
 while (($# > 0)); do
 	arg="$1"
 	shift
 	case "$arg" in
 		--) break ;; # stop processing args
-		# sed arg
-		@*) envs+=("${arg#@}") ;;
-		--expression=*) [[ -z "${arg#*=}" ]] || RULES+=("${arg#*=}") ;;
-		-e | --expression)
-			[[ "$1" && "$1" != "--" ]] || continue
-			RULES+=("$1")
-			shift
+		# handled by script
+		@*) redactEnv "${arg#@}" || {
+			message 'Invalid ENV name "%s"' "${arg#@}"
+			exit "${RET['badarg']}"
+		} ;;
+		--help | -h) printHelp ;;
+		--dump | -d) MODE='dump' ;;
+
+		# offloaded flags
+		--[^-]*=*)
+			mode="${arg%%=*}"
+			mode="${mode#--}"
+
+			case "${ARGSPEC["$mode"]}" in
+				@)
+					message "%s doesn't accept arguments" "${arg%%=*}"
+					exit "${RET['badarg']}"
+					;;
+				: | '?')
+					if [[ -z "${arg#*=}" ]]; then
+						message '%s needs an argument' "${arg%%=*}"
+						exit "${RET['badarg']}"
+					elif "enable-$mode" "${arg#*=}"; then
+						continue
+					else
+						message 'invalid argument for %s: %s' "${arg%%=*}" "${arg#*=}"
+						exit "${RET['badarg']}"
+					fi
+					;;
+			esac
+
+			message 'unknown option: %s' "${arg%%=*}"
+			exit "${RET['badflag']}"
+			;;
+
+		--[^-]* | -[^-]*)
+			case "$arg" in
+				--*) mode="${arg#--}" ;;
+				-*)
+					mode="${SHORT["${arg#-}"]}"
+					if [[ -z $mode ]]; then
+						message 'unknown option: %s' "$arg"
+						exit "${RET['badflag']}"
+					fi
+					;;
+			esac
+
+			case "${ARGSPEC["$mode"]}" in
+				@)
+					"enable-$mode"
+					continue
+					;;
+				:)
+					if [[ "$1" = "--" || -z "$1" ]]; then
+						message '%s needs an argument' "$arg"
+						exit "${RET['badarg']}"
+					elif "enable-$mode" "$1"; then
+						shift
+					else
+						message 'invalid argument for %s: %s' "$arg" "$1"
+						exit "${RET['badarg']}"
+					fi
+					continue
+					;;
+				'?')
+					! "enable-$mode" "$1" || shift
+					continue
+					;;
+			esac
+
+			message 'unknown option: %s' "$arg"
+			exit "${RET['badflag']}"
 			;;
 		# rest
-		--git)
-			((!REDACT['git'])) || continue
-			set -- --mail "$@"
-			REDACT['git']=1
-			;;
-		--mail)
-			((!REDACT['mail'])) || continue
-			REDACT['mail']=1
-			;;
-		--uuid)
-			((!REDACT['uuid'])) || continue
-			REDACT['uuid']=1
-			;;
-		--hash) enable-hash all ;;
-		--hash=*) enable-hash "${arg#--hash=}" ;;
-		--help | -h) printHelp ;;
-		-*)
-			printf 'redact: unknown option: %s\n' "$arg" >&2
-			exit 2
-			;;
+		*) args+=("$arg") ;;
 	esac
 done
 
-loadSedRules || exit 1
-exec sed -uEf <(printf '%s\n' "${RULES[@]}") -- "$@"
+loadSedRules || exit "${RET['generic']}"
+
+if [[ "$MODE" == 'dump' ]]; then
+	{
+		printf '%%RULES {\n'
+		printf '\t%s\n' "${RULES[@]}"
+		printf '}\n\nsed -uEf %%RULES --'
+		((${#args[@]} == 0)) || printf ' %Q' "${args[@]}"
+		printf '\n'
+	} >&2
+else
+	exec sed -uEf <(printf '%s\n' "${RULES[@]}") -- "${args[@]}"
+fi

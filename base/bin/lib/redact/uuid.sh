@@ -18,3 +18,11 @@ helptext-uuid()
                add UUID patterns to filters
 EOF
 }
+
+ARGSPEC['uuid']='@'
+enable-uuid()
+{
+	((!REDACT['uuid'])) || return
+
+	REDACT['uuid']=1
+}

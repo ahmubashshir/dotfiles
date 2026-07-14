@@ -1,4 +1,5 @@
 #!/bin/bash
+declare -g envs=()
 
 printLenEnv()
 {
@@ -52,4 +53,14 @@ addSedRules-env()
 			printf '%s\n' "$line"
 		done
 	) # replace longest value first
+}
+
+redactEnv()
+{
+	if [[ "$1" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+		envs+=("$1")
+		return 0
+	fi
+
+	return 1
 }
