@@ -4,11 +4,16 @@ addSedRules-git-user()
 	((REDACT['git'])) || return
 
 	local mail name uhash
+	message 'Reading git logs'
 	while IFS=' ' read -r _ mail name; do
 		[[ -n $mail && -n $name ]] || continue
 		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-		RULES+=('s/\b'"$(ERE2Literal "$name" | quoteSed)"'\b/@Git.User.'"$uhash"'/g'
-		's/(^|[^[:alnum:]])'"$(ERE2Literal "$mail" | quoteSed)"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g')
+		RULES+=('s/\b'"$(
+			ERE2Literal "$name" | quoteSed pattern
+		)"'\b/@Git.User.'"$uhash"'/g'
+		's/(^|[^[:alnum:]])'"$(
+			ERE2Literal "$mail" | quoteSed pattern
+		)"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g')
 	done < <(
 		git log --pretty='format:%an <%ae>' \
 			| sort \
