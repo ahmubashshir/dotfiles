@@ -1,26 +1,34 @@
 #!/bin/bash
+dumpGitUIDMap()
+{
+	git log --pretty='format:%an <%ae>' \
+		| sort -u \
+		| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
+		| while read -r mail name; do
+			[[ -n $mail && -n $name ]] || continue
+
+			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
+			tuples=(
+				"${#mail}" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
+				"${#name}" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
+			)
+			printf '%d:%s:%s\n' "${tuples[@]}"
+		done
+}
+
 addSedRules-git-user()
 {
 	((REDACT['git'])) || return
 
-	local mail name uhash
+	local mail name uhash tag value
 	message 'Reading git logs'
-	while IFS=' ' read -r _ mail name; do
-		[[ -n $mail && -n $name ]] || continue
-		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-		RULES+=('s/\b'"$(
-			ERE2Literal "$name" | quoteSed pattern
-		)"'\b/@Git.User.'"$uhash"'/g'
-		's/(^|[^[:alnum:]])'"$(
-			ERE2Literal "$mail" | quoteSed pattern
-		)"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g')
-	done < <(
-		git log --pretty='format:%an <%ae>' \
-			| sort \
-			| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
-			| uniq -c \
-			| sort -rn
-	)
+	while IFS=':' read -r tag uhash value; do
+		case "$tag" in
+			n) RULES+=('s/\b'"$value"'\b/@Git.User.'"$uhash"'/g') ;;
+			m) RULES+=('s/(^|[^[:alnum:]])'"$value"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g') ;;
+		esac
+	done < <(dumpGitUIDMap | dSortStripLength)
+
 	name=$(git config --get user.name)
 	mail=$(git config --get user.email)
 	if [[ -n $name && -n $mail ]]; then
