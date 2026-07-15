@@ -60,9 +60,7 @@ addSedRules-env()
 
 	done < <(
 		# shellcheck disable=SC2154
-		dumpEnvMap "${envs[@]}" | sort -t: -nr | while IFS=: read -r _ line; do
-			printf '%s\n' "$line"
-		done
+		dumpEnvMap "${envs[@]}" | dSortStripLength
 	) # replace longest value first
 }
 

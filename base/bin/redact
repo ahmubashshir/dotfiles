@@ -59,6 +59,13 @@ ERE2Literal()
 	sed 's/[.*^+?{}()|$\]\|\[\|\]/\\&/g' <<< "${1-$(<&0)}"
 }
 
+dSortStripLength()
+{
+	sort -t: -nr | while IFS=: read -r _ line; do
+		printf '%s\n' "$line"
+	done
+}
+
 loadModules()
 {
 	local tag
