@@ -59,7 +59,7 @@ ERE2Literal()
 	sed 's/[.*^+?{}()|$\]\|\[\|\]/\\&/g' <<< "${1-$(<&0)}"
 }
 
-dSortStripLength()
+dSortStripPrio()
 {
 	sort -t: -nr | while IFS=: read -r _ line; do
 		printf '%s\n' "$line"

@@ -2,15 +2,16 @@
 dumpGitUIDMap()
 {
 	git log --pretty='format:%an <%ae>' \
-		| sort -u \
+		| sort \
 		| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
-		| while read -r mail name; do
-			[[ -n $mail && -n $name ]] || continue
+		| uniq -c \
+		| while read -r count mail name; do
+			[[ $count -gt 0 && -n $mail && -n $name ]] || continue
 
 			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
 			tuples=(
-				"${#mail}" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
-				"${#name}" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
+				"$((${#mail} + count))" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
+				"$((${#name} + count))" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
 			)
 			printf '%d:%s:%s\n' "${tuples[@]}"
 		done
@@ -27,7 +28,7 @@ addSedRules-git-user()
 			n) RULES+=('s/\b'"$value"'\b/@Git.User.'"$uhash"'/g') ;;
 			m) RULES+=('s/(^|[^[:alnum:]])'"$value"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g') ;;
 		esac
-	done < <(dumpGitUIDMap | dSortStripLength)
+	done < <(dumpGitUIDMap | dSortStripPrio)
 
 	name=$(git config --get user.name)
 	mail=$(git config --get user.email)

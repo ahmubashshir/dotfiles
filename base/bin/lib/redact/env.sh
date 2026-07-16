@@ -60,7 +60,7 @@ addSedRules-env()
 
 	done < <(
 		# shellcheck disable=SC2154
-		dumpEnvMap "${envs[@]}" | dSortStripLength
+		dumpEnvMap "${envs[@]}" | dSortStripPrio
 	) # replace longest value first
 }
 
