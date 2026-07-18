@@ -120,6 +120,24 @@ EOF
 	exit 0
 }
 
+ARGSPEC['dump']='@'
+SHORT['d']='dump'
+enable-dump()
+{
+	((!REDACT['dump-rules'])) || return
+
+	REDACT['dump-rules']=1
+}
+
+ARGSPEC['help']='@'
+SHORT['h']='help'
+enable-help()
+{
+	((!REDACT['show-help'])) || return
+
+	REDACT['show-help']=1
+}
+
 # main segment
 loadModules || exit "${RET['module']}"
 
@@ -134,8 +152,6 @@ while (($# > 0)); do
 			message 'Invalid ENV name "%s"' "${arg#@}"
 			exit "${RET['badarg']}"
 		} ;;
-		--help | -h) printHelp ;;
-		--dump | -d) MODE='dump' ;;
 
 		# offloaded flags
 		--[^-]*=*)
@@ -168,7 +184,10 @@ while (($# > 0)); do
 			case "$arg" in
 				--*) mode="${arg#--}" ;;
 				-*)
-					mode="${SHORT["${arg#-}"]}"
+					arg="${arg#-}"
+					[[ -z "${arg:1}" ]] || set -- "-${arg:1}" "$@"
+					arg="${arg:0:1}"
+					mode="${SHORT["$arg"]}"
 					if [[ -z $mode ]]; then
 						message 'unknown option: %s' "$arg"
 						exit "${RET['badflag']}"
@@ -207,9 +226,12 @@ while (($# > 0)); do
 	esac
 done
 
-loadSedRules || exit "${RET['generic']}"
+if ((REDACT['show-help'])); then
+	printHelp
+fi
 
-if [[ "$MODE" == 'dump' ]]; then
+loadSedRules || exit "${RET['generic']}"
+if ((REDACT['dump-rules'])); then
 	{
 		printf '%%RULES {\n'
 		printf '\t%s\n' "${RULES[@]}"
