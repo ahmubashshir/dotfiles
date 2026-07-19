@@ -10,8 +10,8 @@ dumpGitUIDMap()
 
 			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
 			tuples=(
-				"$((${#mail} + count))" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
-				"$((${#name} + count))" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
+				"$((20000 * ${#mail} + count))" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
+				"$((10000 * ${#name} + count))" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
 			)
 			printf '%d:%s:%s\n' "${tuples[@]}"
 		done
