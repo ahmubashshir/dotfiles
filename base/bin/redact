@@ -79,7 +79,7 @@ loadModules()
 		tag="$mode"
 		# shellcheck disable=SC1090
 		source "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh"
-	done
+	done <&- > >(:) # leave only stderr open
 }
 
 loadSedRules()
@@ -93,7 +93,7 @@ loadSedRules()
 
 		tag="$mode"
 		"addSedRules-${mode}"
-	done
+	done <&- > >(:) # leave only stderr open
 }
 
 printHelp()
@@ -111,7 +111,7 @@ EOF
 		declare -F "helptext-$mode" > /dev/null || continue
 
 		"helptext-$mode"
-	done
+	done <&- > >(:) # leave only stderr open
 
 	cat >&2 << 'EOF'
   -h, --help
@@ -224,7 +224,7 @@ while (($# > 0)); do
 		# rest
 		*) args+=("$arg") ;;
 	esac
-done
+done  <&- > >(:) # leave only stderr open
 
 if ((REDACT['show-help'])); then
 	printHelp
