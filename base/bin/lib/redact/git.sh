@@ -54,9 +54,9 @@ addSedRules-git-remote()
 			*@*:*) url="${url##*@}" ;;
 		esac
 
-		repo=${url##*/}
-		owner="${url%"/$repo"}"
-		owner=${owner#*[:/]}
+		repo="$(ERE2Literal "${url##*/}" | quoteSed pattern)"
+		owner="${url%"/${url##*/}"}"
+		owner="$(ERE2Literal "${owner#*[:/]}" | quoteSed pattern)"
 		remote=$(quoteSed <<< "$remote")
 
 		[[ -z $repo ]] || RULES+=('/[\/:]'"$repo"'\b/s/([\/:])'"$repo"'\b/\1@repo/g')
