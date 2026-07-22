@@ -1,5 +1,5 @@
-ARGSPEC['help']='@'
-SHORT['h']='help'
+argtype=boolean
+shortopts=(h)
 
 enable-help()
 {

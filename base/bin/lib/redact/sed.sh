@@ -1,4 +1,6 @@
 #!/bin/bash
+argtype=required
+shortopts=(e)
 
 helptext-sed()
 {
@@ -8,8 +10,6 @@ helptext-sed()
 EOF
 }
 
-SHORT['e']='sed'
-ARGSPEC['sed']=':'
 enable-sed()
 {
 	[[ $1 ]] || return 1

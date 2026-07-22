@@ -1,4 +1,18 @@
 #!/bin/bash
+argtype=boolean
+
+helptext-uuid()
+{
+	cat << EOF
+  --uuid
+               add UUID patterns to filters
+EOF
+}
+
+enable-uuid()
+{
+	set-enabled uuid || return
+}
 
 addSedRules-uuid()
 {
@@ -9,18 +23,4 @@ addSedRules-uuid()
 		# Standard UUID
 		's/\b[[:xdigit:]]{8}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{4}-[[:xdigit:]]{12}\b/@UUID/g'
 	)
-}
-
-helptext-uuid()
-{
-	cat << EOF
-  --uuid
-               add UUID patterns to filters
-EOF
-}
-
-ARGSPEC['uuid']='@'
-enable-uuid()
-{
-	set-enabled uuid || return
 }

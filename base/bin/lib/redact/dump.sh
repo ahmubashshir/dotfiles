@@ -1,5 +1,5 @@
-ARGSPEC['dump']='@'
-SHORT['d']='dump'
+argtype=boolean
+shortopts=(d)
 
 enable-dump()
 {

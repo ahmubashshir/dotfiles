@@ -1,15 +1,9 @@
 #!/bin/bash
-declare -gra  HASH=(sha512 sha384 sha256 sha224 sha1 md5)
-declare -grai HLEN=(128 96 64 56 40 32) # order follows HASH order
+argtype=optional
+exports=(HASH HLEN)
 
-addSedRules-hash()
-{
-	local -i idx
-	for ((idx = 0; idx < ${#HASH[@]}; idx++)); do
-		is-enabled "hash:${HASH[idx]}" || continue
-		RULES+=('s/\b[[:xdigit:]]{'"${HLEN[idx]}"'}\b/@HASH:'"${HASH[idx]^^}"'/g')
-	done
-}
+HASH=(sha512 sha384 sha256 sha224 sha1 md5)
+HLEN=(128 96 64 56 40 32) # order follows HASH order
 
 helptext-hash()
 {
@@ -21,7 +15,6 @@ helptext-hash()
 EOF
 }
 
-ARGSPEC['hash']='?'
 enable-hash()
 {
 	local algo
@@ -40,4 +33,13 @@ enable-hash()
 	else
 		return 1
 	fi
+}
+
+addSedRules-hash()
+{
+	local -i idx
+	for ((idx = 0; idx < ${#HASH[@]}; idx++)); do
+		is-enabled "hash:${HASH[idx]}" || continue
+		RULES+=('s/\b[[:xdigit:]]{'"${HLEN[idx]}"'}\b/@HASH:'"${HASH[idx]^^}"'/g')
+	done
 }

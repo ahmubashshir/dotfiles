@@ -1,20 +1,29 @@
 #!/bin/bash
-dumpGitUIDMap()
-{
-	git log --pretty='format:%an <%ae>' \
-		| sort \
-		| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
-		| uniq -c \
-		| while read -r count mail name; do
-			[[ $count -gt 0 && -n $mail && -n $name ]] || continue
+argtype=boolean
 
-			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-			tuples=(
-				"$((20000 * ${#mail} + count))" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
-				"$((10000 * ${#name} + count))" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
-			)
-			printf '%d:%s:%s\n' "${tuples[@]}"
-		done
+helptext-git()
+{
+	cat << EOF
+  --git
+               add git user/remote mapping to filters
+               from current repository, implies --mail
+EOF
+}
+
+enable-git()
+{
+	set-enabled git || return
+
+	enable-mail
+}
+
+addSedRules-git()
+{
+	is-enabled git || return
+	git rev-parse --git-dir > /dev/null 2>&1 || return
+
+	addSedRules-git-remote
+	addSedRules-git-user
 }
 
 addSedRules-git-user()
@@ -64,28 +73,20 @@ addSedRules-git-remote()
 	done < <(git remote)
 }
 
-addSedRules-git()
+dumpGitUIDMap()
 {
-	is-enabled git || return
-	git rev-parse --git-dir > /dev/null 2>&1 || return
+	git log --pretty='format:%an <%ae>' \
+		| sort \
+		| sed -nE 's/^(.+) <(.+)>$/\2 \1/p' \
+		| uniq -c \
+		| while read -r count mail name; do
+			[[ $count -gt 0 && -n $mail && -n $name ]] || continue
 
-	addSedRules-git-remote
-	addSedRules-git-user
-}
-
-helptext-git()
-{
-	cat << EOF
-  --git
-               add git user/remote mapping to filters
-               from current repository, implies --mail
-EOF
-}
-
-ARGSPEC['git']='@'
-enable-git()
-{
-	set-enabled git || return
-
-	enable-mail
+			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
+			tuples=(
+				"$((20000 * ${#mail} + count))" "m:$uhash" "$(ERE2Literal "$mail" | quoteSed pattern)"
+				"$((10000 * ${#name} + count))" "n:$uhash" "$(ERE2Literal "$name" | quoteSed pattern)"
+			)
+			printf '%d:%s:%s\n' "${tuples[@]}"
+		done
 }

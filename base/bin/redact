@@ -40,8 +40,14 @@ message()
 {
 	local format="$1"
 	shift
-	printf 'redact%s: '"$format"'\n' "${tag:+:$tag}" "$@"
+	printf 'redact%s: '"$format"'\n' "${TAG:+:$TAG}" "$@"
 } >&2
+
+error()
+{
+	local TAG="error${TAG:+:$TAG}"
+	message "$@"
+}
 
 # escape / \ & (safe sed regexp | replacement)
 quoteSed()
@@ -83,31 +89,58 @@ set-enabled()
 
 loadModules()
 {
-	local tag
+	local TAG
+	local argtype elem
+	local -a shortopts exports
 	for mode in "${IMMEDIATES[@]}" "${GENERATORS[@]}"; do
 		[[ -f "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh" ]] || {
-			tag=error
-			message 'Missing module: %s' "$mode"
+			error 'Missing module: %s' "$mode"
 			return 1
 		}
 
-		tag="$mode"
+		TAG="$mode"
+		argtype='hidden'
+		shortopts=()
+		exports=()
 		# shellcheck disable=SC1090
 		source "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh"
+		case "$argtype" in
+			\? | optional) ARGSPEC["$mode"]='?' ;;
+			: | required) ARGSPEC["$mode"]=':' ;;
+			@ | boolean) ARGSPEC["$mode"]='@' ;;
+			hidden) ;;
+			*)
+				error 'Invalid flag type: %s' "$argtype"
+				return 1
+				;;
+		esac
+		for elem in "${exports[@]}"; do
+			[[ "$elem" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || {
+				error 'Invalid global: %s' "$elem"
+				return 1
+			}
+
+			declare -g "$elem"
+		done
+
+		[[ -n "${ARGSPEC["$mode"]}" ]] || continue
+		for elem in "${shortopts[@]}"; do
+			SHORT["$elem"]="$mode"
+		done
+
 	done > >(:) # leave only stderr open
 } <&-
 
 loadSedRules()
 {
-	local tag
+	local TAG
 	for mode in "${GENERATORS[@]}"; do
 		declare -F "addSedRules-$mode" > /dev/null || {
-			tag=error
-			message 'Bad module: %s' "$mode"
+			error 'Bad module: %s' "$mode"
 			return 1
 		}
 
-		tag="$mode"
+		TAG="$mode"
 		"addSedRules-${mode}"
 	done > >(:) # leave only stderr open
 } <&-
@@ -123,7 +156,7 @@ while (($# > 0)); do
 		--) break ;; # stop processing args
 		# handled by script
 		@*) redactEnv "${arg#@}" || {
-			message 'Invalid ENV name "%s"' "${arg#@}"
+			error 'Invalid ENV name "%s"' "${arg#@}"
 			exit "${RET['badarg']}"
 		} ;;
 
@@ -134,23 +167,23 @@ while (($# > 0)); do
 
 			case "${ARGSPEC["$mode"]}" in
 				@)
-					message "%s doesn't accept arguments" "${arg%%=*}"
+					error "%s doesn't accept arguments" "${arg%%=*}"
 					exit "${RET['badarg']}"
 					;;
 				: | '?')
 					if [[ -z "${arg#*=}" ]]; then
-						message '%s needs an argument' "${arg%%=*}"
+						error '%s needs an argument' "${arg%%=*}"
 						exit "${RET['badarg']}"
 					elif "enable-$mode" "${arg#*=}"; then
 						continue
 					else
-						message 'invalid argument for %s: %s' "${arg%%=*}" "${arg#*=}"
+						error 'invalid argument for %s: %s' "${arg%%=*}" "${arg#*=}"
 						exit "${RET['badarg']}"
 					fi
 					;;
 			esac
 
-			message 'unknown option: %s' "${arg%%=*}"
+			error 'unknown option: %s' "${arg%%=*}"
 			exit "${RET['badflag']}"
 			;;
 
@@ -163,7 +196,7 @@ while (($# > 0)); do
 					arg="${arg:0:1}"
 					mode="${SHORT["$arg"]}"
 					if [[ -z $mode ]]; then
-						message 'unknown option: %s' "$arg"
+						error 'unknown option: %s' "$arg"
 						exit "${RET['badflag']}"
 					fi
 					;;
@@ -176,12 +209,12 @@ while (($# > 0)); do
 					;;
 				:)
 					if [[ "$1" = "--" || -z "$1" ]]; then
-						message '%s needs an argument' "$arg"
+						error '%s needs an argument' "$arg"
 						exit "${RET['badarg']}"
 					elif "enable-$mode" "$1"; then
 						shift
 					else
-						message 'invalid argument for %s: %s' "$arg" "$1"
+						error 'invalid argument for %s: %s' "$arg" "$1"
 						exit "${RET['badarg']}"
 					fi
 					continue
@@ -195,13 +228,13 @@ while (($# > 0)); do
 					;;
 			esac
 
-			message 'unknown option: %s' "$arg"
+			error 'unknown option: %s' "$arg"
 			exit "${RET['badflag']}"
 			;;
 		# rest
 		*) args+=("$arg") ;;
 	esac
-done  <&- > >(:) # leave only stderr open
+done <&- > >(:) # leave only stderr open
 
 if is-enabled show-help; then
 	printHelp
