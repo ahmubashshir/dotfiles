@@ -2,7 +2,7 @@
 
 addSedRules-uuid()
 {
-	((REDACT['uuid'])) || return
+	is-enabled uuid || return
 	RULES+=(
 		# RFC 4122 UUIDs
 		's/\b[[:xdigit:]]{8}-[[:xdigit:]]{4}-[1-5][[:xdigit:]]{3}-[89abAB][[:xdigit:]]{3}-[[:xdigit:]]{12}\b/@RFC4122UUID/g'
@@ -22,7 +22,5 @@ EOF
 ARGSPEC['uuid']='@'
 enable-uuid()
 {
-	((!REDACT['uuid'])) || return
-
-	REDACT['uuid']=1
+	set-enabled uuid || return
 }

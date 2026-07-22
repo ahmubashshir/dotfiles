@@ -136,18 +136,14 @@ ARGSPEC['dump']='@'
 SHORT['d']='dump'
 enable-dump()
 {
-	((!REDACT['dump-rules'])) || return
-
-	REDACT['dump-rules']=1
+	set-enabled dump-rules || return
 }
 
 ARGSPEC['help']='@'
 SHORT['h']='help'
 enable-help()
 {
-	((!REDACT['show-help'])) || return
-
-	REDACT['show-help']=1
+	set-enabled show-help || return
 }
 
 # main segment

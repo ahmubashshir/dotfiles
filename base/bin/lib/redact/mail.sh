@@ -2,7 +2,7 @@
 
 addSedRules-mail()
 {
-	((REDACT['mail'])) || return
+	is-enabled mail || return
 	local name='[[:alnum:]][[:alnum:][:blank:]]*'
 	local address='[[:alnum:]._%+-]+@[^[:space:]@.]+(\.[^[:space:]@.]+)*'
 
@@ -20,7 +20,5 @@ EOF
 ARGSPEC['mail']='@'
 enable-mail()
 {
-	((!REDACT['mail'])) || return
-
-	REDACT['mail']=1
+	set-enabled mail || return
 }

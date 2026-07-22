@@ -6,7 +6,7 @@ addSedRules-hash()
 {
 	local -i idx
 	for ((idx = 0; idx < ${#HASH[@]}; idx++)); do
-		((REDACT["hash:${HASH[idx]}"])) || continue
+		is-enabled "hash:${HASH[idx]}" || continue
 		RULES+=('s/\b[[:xdigit:]]{'"${HLEN[idx]}"'}\b/@HASH:'"${HASH[idx]^^}"'/g')
 	done
 }
@@ -14,7 +14,7 @@ addSedRules-hash()
 helptext-hash()
 {
 	cat << EOF
-  --hash=[all|md5|sha|sha1|sha224|sha256|sha384|sha512]
+  --hash [all|md5|sha|sha1|sha224|sha256|sha384|sha512]
                add HASH patterns to filters (default all)
                specify multiple times to use multiple algo
                or use family name (sha/sha2)
@@ -28,9 +28,9 @@ enable-hash()
 	local -i match=0
 
 	for algo in "${HASH[@]}"; do
-		((!REDACT["hash:$algo"])) || continue
+		! is-enabled "hash:$algo" || continue
 		if [[ "${1:-all}" == "all" || "$algo" == "$1"* ]]; then
-			REDACT["hash:$algo"]=1
+			set-enabled "hash:$algo"
 			((match++))
 		fi
 	done

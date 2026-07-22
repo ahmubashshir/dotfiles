@@ -19,7 +19,7 @@ dumpGitUIDMap()
 
 addSedRules-git-user()
 {
-	((REDACT['git'])) || return
+	is-enabled git || return
 
 	local mail name uhash tag value
 	message 'Reading git logs'
@@ -41,7 +41,7 @@ addSedRules-git-user()
 
 addSedRules-git-remote()
 {
-	((REDACT['git'])) || return
+	is-enabled git || return
 	local remote url owner repo
 
 	while read -r remote; do
@@ -66,7 +66,7 @@ addSedRules-git-remote()
 
 addSedRules-git()
 {
-	((REDACT['git'])) || return
+	is-enabled git || return
 	git rev-parse --git-dir > /dev/null 2>&1 || return
 
 	addSedRules-git-remote
@@ -85,8 +85,7 @@ EOF
 ARGSPEC['git']='@'
 enable-git()
 {
-	((!REDACT['git'])) || return
+	set-enabled git || return
 
-	REDACT['git']=1
 	enable-mail
 }
