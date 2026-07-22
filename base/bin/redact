@@ -1,8 +1,11 @@
 #!/bin/bash
+# IMMEDIATES are core extensions.
+# They may provide loader-facing helpers.
+declare -a IMMEDIATES=('help' 'dump' 'sed')
+
 # available rules contributors
-# sort order is priority : IMMEDIATES > GENERATORS
+# sort order is priority : GENERATORS
 declare -a GENERATORS=('git' 'mail' 'hash' 'uuid' 'env')
-declare -a IMMEDIATES=('sed')
 
 # SHORT[shortopt]=mode maps short option to a mode
 # shellcheck disable=SC2034
@@ -37,8 +40,8 @@ message()
 {
 	local format="$1"
 	shift
-	printf 'redact%s: '"$format"'\n' "${tag:+:$tag}" "$@" >&2
-}
+	printf 'redact%s: '"$format"'\n' "${tag:+:$tag}" "$@"
+} >&2
 
 # escape / \ & (safe sed regexp | replacement)
 quoteSed()
@@ -91,11 +94,12 @@ loadModules()
 		tag="$mode"
 		# shellcheck disable=SC1090
 		source "${BASH_SOURCE[0]%/*}/lib/redact/$mode.sh"
-	done <&- > >(:) # leave only stderr open
-}
+	done > >(:) # leave only stderr open
+} <&-
 
 loadSedRules()
 {
+	local tag
 	for mode in "${GENERATORS[@]}"; do
 		declare -F "addSedRules-$mode" > /dev/null || {
 			tag=error
@@ -105,46 +109,8 @@ loadSedRules()
 
 		tag="$mode"
 		"addSedRules-${mode}"
-	done <&- > >(:) # leave only stderr open
-}
-
-printHelp()
-{
-	cat >&2 << 'EOF'
-Usage: redact [option]... @[ENV]... [--] [file]... < [file]... > output
-Scrub local environment information from input stream
-
-Options:
-  -d, --dump
-               dump generated replacement rules
-EOF
-
-	for mode in "${IMMEDIATES[@]}" "${GENERATORS[@]}"; do
-		declare -F "helptext-$mode" > /dev/null || continue
-
-		"helptext-$mode"
-	done <&- > >(:) # leave only stderr open
-
-	cat >&2 << 'EOF'
-  -h, --help
-               show this help text
-EOF
-	exit 0
-}
-
-ARGSPEC['dump']='@'
-SHORT['d']='dump'
-enable-dump()
-{
-	set-enabled dump-rules || return
-}
-
-ARGSPEC['help']='@'
-SHORT['h']='help'
-enable-help()
-{
-	set-enabled show-help || return
-}
+	done > >(:) # leave only stderr open
+} <&-
 
 # main segment
 loadModules || exit "${RET['module']}"
@@ -237,19 +203,13 @@ while (($# > 0)); do
 	esac
 done  <&- > >(:) # leave only stderr open
 
-if ((REDACT['show-help'])); then
+if is-enabled show-help; then
 	printHelp
 fi
 
 loadSedRules || exit "${RET['generic']}"
-if ((REDACT['dump-rules'])); then
-	{
-		printf '%%RULES {\n'
-		printf '\t%s\n' "${RULES[@]}"
-		printf '}\n\nsed -uEf %%RULES --'
-		((${#args[@]} == 0)) || printf ' %Q' "${args[@]}"
-		printf '\n'
-	} >&2
+if is-enabled dump-rules; then
+	printRules
 else
 	exec sed -uEf <(printf '%s\n' "${RULES[@]}") -- "${args[@]}"
 fi
