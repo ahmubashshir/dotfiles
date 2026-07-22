@@ -66,6 +66,18 @@ dSortStripPrio()
 	done
 }
 
+is-enabled()
+{
+	((REDACT["$1"] == 1))
+}
+
+set-enabled()
+{
+	((REDACT["$1"] == 0)) || return
+
+	REDACT["$1"]=1
+}
+
 loadModules()
 {
 	local tag
@@ -213,7 +225,10 @@ while (($# > 0)); do
 					continue
 					;;
 				'?')
-					! "enable-$mode" "$1" || shift
+					case "$1" in
+						-*) "enable-$mode" ;;
+						*) ! "enable-$mode" "$1" || shift ;;
+					esac
 					continue
 					;;
 			esac
