@@ -1,6 +1,9 @@
 #!/bin/bash
 argtype=required
 shortopts=(e)
+exports=(USER_RULES)
+
+USER_RULES=()
 
 helptext-sed()
 {
@@ -14,7 +17,12 @@ enable-sed()
 {
 	[[ $1 ]] || return 1
 
-	RULES+=("$1")
+	USER_RULES+=("$1")
 
 	return 0
+}
+
+addSedRules-sed()
+{
+	RULES+=("${USER_RULES[@]}")
 }

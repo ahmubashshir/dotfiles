@@ -15,7 +15,7 @@ Scrub local environment information from input stream
 Options:
 EOF
 
-	for mode in "${IMMEDIATES[@]}" "${GENERATORS[@]}"; do
+	for mode in "${GENERATORS[@]}" "${CORE[@]}"; do
 		declare -F "helptext-$mode" > /dev/null || continue
 
 		"helptext-$mode"
