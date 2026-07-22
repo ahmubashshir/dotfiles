@@ -33,13 +33,13 @@ parseArgs()
 						elif "enable-$mode" "${arg#*=}"; then
 							continue
 						else
-							error 'invalid argument for %s: %s' "${arg%%=*}" "${arg#*=}"
+							error 'Invalid argument for %s: %s' "${arg%%=*}" "${arg#*=}"
 							exit "${RET['badarg']}"
 						fi
 						;;
 				esac
 
-				error 'unknown option: %s' "${arg%%=*}"
+				error 'Unknown option: %s' "${arg%%=*}"
 				exit "${RET['badflag']}"
 				;;
 
@@ -52,7 +52,7 @@ parseArgs()
 						arg="${arg:0:1}"
 						mode="${SHORT["$arg"]}"
 						if [[ -z $mode ]]; then
-							error 'unknown option: %s' "$arg"
+							error 'Unknown option: %s' "$arg"
 							exit "${RET['badflag']}"
 						fi
 						;;
@@ -84,7 +84,7 @@ parseArgs()
 						;;
 				esac
 
-				error 'unknown option: %s' "$arg"
+				error 'Unknown option: %s' "$arg"
 				exit "${RET['badflag']}"
 				;;
 			# rest

@@ -34,7 +34,7 @@ declare -rAi RET=(
 
 # CORE modules are built-in components of redact itself.
 # They provide initialization helpers, not redaction rules.
-declare -ra CORE=('argparse' 'help' 'dump')
+declare -ra CORE=('argparse' 'dump' 'help')
 
 message()
 {
@@ -118,6 +118,16 @@ sourceModule()
 	done
 
 	[[ -n "${ARGSPEC["$1"]}" ]] || return 0
+	declare -F "enable-$1" > /dev/null || {
+		error 'Declared flag without handler: %s' "$1"
+		return 1
+	}
+
+	declare -F "helptext-$1" > /dev/null || {
+		error 'Declared flag without helptext: %s' "$1"
+		return 1
+	}
+
 	# shellcheck disable=SC2034
 	for elem in "${shortopts[@]}"; do
 		SHORT["$elem"]="$1"
@@ -129,10 +139,19 @@ loadModules()
 	local mod
 	for mod in "${CORE[@]}"; do
 		sourceModule "$mod" || return 1
+		if declare -F "addSedRules-$mod" > /dev/null; then
+			error 'CORE module implements addSedRules: %s' "$mod"
+			return 1
+		fi
 	done > >(:) # leave only stderr open
 
 	for mod in "${GENERATORS[@]}"; do
 		sourceModule "$mod" || return 1
+
+		declare -F "addSedRules-$mod" > /dev/null || {
+			error "GENERATOR module didn't implement addSedRules: %s" "$mod"
+			return 1
+		}
 	done > >(:) # leave only stderr open
 } <&-
 

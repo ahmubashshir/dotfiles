@@ -6,6 +6,14 @@ enable-help()
 	set-enabled show-help || return
 }
 
+helptext-help()
+{
+	cat << 'EOF'
+  -h, --help
+               show this help text
+EOF
+}
+
 printHelp()
 {
 	cat << 'EOF'
@@ -20,10 +28,5 @@ EOF
 
 		"helptext-$mode"
 	done <&-
-
-	cat << 'EOF'
-  -h, --help
-               show this help text
-EOF
 	exit 0
 } >&2
