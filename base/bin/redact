@@ -1,4 +1,13 @@
 #!/bin/bash
+# Module interface:
+# - argtype declares CLI behavior: boolean(@), required(:), optional(?), hidden [default]
+# - shortopts declares aliases
+# - exports declares global variables
+# - enable-* handles options
+# - helptext-* documents options
+# - addSedRules-* contributes sed filters
+# modules must be added to GENERATORS or CORE to be usable
+
 # available rules contributors
 # sorted by priority
 declare -a GENERATORS=('sed' 'git' 'mail' 'hash' 'uuid' 'env')
@@ -34,6 +43,7 @@ declare -rAi RET=(
 
 # CORE modules are built-in components of redact itself.
 # They provide initialization helpers, not redaction rules.
+# help should be the last member of CORE
 declare -ra CORE=('argparse' 'dump' 'help')
 
 message()
