@@ -24,6 +24,11 @@ for arg in "$@"; do
 	esac
 done
 
+[[ -d "$BINDIR" ]] || mkdir -p "$BINDIR" || {
+	mv "$BINDIR" "$BINDIR.old"
+	mkdir -p "$BINDIR"
+}
+
 set -e
 make -srf /dev/stdin -- "CALLER=$CALLER" "INTRPTR=$0" "BINDIR=$BINDIR" "CLEAN=$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
 SRCDIR := $(HOME)/bin/srcs
