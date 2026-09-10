@@ -806,7 +806,7 @@ int main(int argc, char** argv)
 					reportDetail << std::fixed << std::setw(11) << std::setprecision(2) << itc->second.percent << "%"
 					             << " cpu " << ::setwdrel(unsigned(new_CPU->cores.size()))
 					             << std::left << itc->second.number << std::right
-					             << "@" << std::setprecision(3) << ::setwdrel(itc->second.ghz, 5) << itc->second.ghz << " GHz \n";
+					             << "@" << std::setw(6) << std::setprecision(3) << itc->second.ghz << " GHz \n";
 				}
 			}
 		}
@@ -814,13 +814,13 @@ int main(int argc, char** argv)
 
 	if (new_Memory) { // RAM report
 		if (new_CPU && (!posTemp || (posRam < posTemp)))
-			//reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
+			reportStd << " " << new_Memory->ram.available/1024 << "M" << (singleLine? " " : "\n");
 
-			reportDetail << ICON::MEM << "Memory " << new_Memory->ram.total/1024 << " MiB:\n"
-			             << ::setwdrel(new_Memory->ram.total/1024, 3)
-			             << new_Memory->ram.available/1024 << " MiB available \n"
-			             << ::setwdrel(new_Memory->ram.total/1024, 3)
-			             << (new_Memory->ram.cached+new_Memory->ram.buffers)/1024 << " MiB cache/buff \n";
+		reportDetail << ICON::MEM << "Memory " << new_Memory->ram.total/1024 << " MiB:\n"
+		             << ::setwdrel(new_Memory->ram.total/1024, 3)
+		             << new_Memory->ram.available/1024 << " MiB available \n"
+		             << ::setwdrel(new_Memory->ram.total/1024, 3)
+		             << (new_Memory->ram.cached+new_Memory->ram.buffers)/1024 << " MiB cache/buff \n";
 
 		if (new_Memory->ram.shared)
 			reportDetail << ::setwdrel(new_Memory->ram.total/1024, 3)
@@ -913,7 +913,7 @@ int main(int argc, char** argv)
 	if (!sReportDetail.empty() && (sReportDetail.back() == '\n')) sReportDetail.erase(sReportDetail.end()-1);
 
 	std::cout << "<txt>" LINEBREAK << sReportStd << LINEBREAK "</txt>";
-	std::cout << "<tool><span size=\"95%\" face=\"monospace\" weight=\"bold\">"
+	std::cout << "<tool><span size=\"98%\" face=\"monospace\" weight=\"bold\">"
 	          LINEBREAK << sReportDetail
 	          << LINEBREAK "</span></tool>" LINEBREAK;
 	return 0;
