@@ -1,2 +1,5 @@
 [fork "github.com/ahmubashshir"]
 	org = ahm-forks
+
+[fork "invent.kde.org"]
+	provider = gitlab
