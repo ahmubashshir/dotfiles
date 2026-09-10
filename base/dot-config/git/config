@@ -6,6 +6,7 @@
 	path = config.d/misc
 	path = config.d/smtp
 	path = config.d/url
+	path = config.d/forks
 
 # user global configs
 [user]
@@ -14,6 +15,3 @@
 	signingKey = ahmubashshir@gmail.com
 [sendemail]
 	smtpuser = ahmubashshir@gmail.com
-
-[fork "github.com"]
-	org = ahm-forks
