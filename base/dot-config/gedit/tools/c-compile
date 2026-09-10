@@ -5,7 +5,7 @@
 # Shortcut=<Shift>F1
 # Applicability=titled
 # Save-files=document
-# Languages=arduino,c,cpp,java
+# Languages=arduino,asm-att,asm-intel,c,cpp,gas x86-64,java,rust
 # Name=Compile...
 
 get_avr()
@@ -14,6 +14,28 @@ get_avr()
 	key="${1%%=*}"
 	val="${1#*=}"
 	case "$key" in
+		ELF | elf) declare -gi keep_elf=1 ;;
+		CLK | clk)
+			case "$val" in
+				*[kMG] | *[kMG]Hz)
+					key="${val%[kMG]*}"
+					case "${val#"$key"}" in
+						k | kHz) i=1000 ;;
+						M | MHz) i=1000000 ;;
+						G | GHz) i=1000000000 ;;
+					esac
+					case "$key" in
+						[0-9]*.[0-9]*) declare -gi AVR_CLOCK=$(("${key%.*}" * i + "${key#*.}" * (i / 1000))) ;;
+						[0-9]*) declare -gi AVR_CLOCK=$((key * i)) ;;
+						*) __error "avr: Invalid Clock Speed: $val" ;;
+					esac
+					;;
+				[0-9]*Hz) declare -gi AVR_CLOCK="${val%Hz}" ;;
+				[0-9]*) declare -gi AVR_CLOCK="$val" ;;
+				*) __error "avr: Invalid Clock Speed: $val" ;;
+			esac
+			;;
+		OPTIMIZE | opt) declare -g AVR_OPTIMIZE="$val" ;;
 		MCU | mcu)
 			declare -g MCU="${val,,}"
 			args+=("-mmcu=$MCU")
@@ -47,6 +69,18 @@ get_avr()
 	fi
 }
 
+run()
+{
+	local exec
+	if [[ $1 == exec ]]; then
+		shift
+		exec=exec
+	fi
+
+	echo "+ $*" >&2
+	$exec "$@"
+}
+
 for_triplet()
 {
 	local cmd="$1" exec=''
@@ -62,15 +96,12 @@ for_triplet()
 	fi
 
 	if [[ "$TARCH$TSYSTEM$TABI" ]] && hash -- "$TARCH-$TSYSTEM-$TABI-$cmd" 2> /dev/null; then
-		echo "+ $TARCH-$TSYSTEM-$TABI-$cmd $*" >&2
-		$exec "$TARCH-$TSYSTEM-$TABI-$cmd" "$@"
+		run $exec "$TARCH-$TSYSTEM-$TABI-$cmd" "$@"
 	elif [[ "$LIBC" && ":$cmd:" =~ :(gcc|clang): ]] && hash -- "$LIBC-$cmd" 2> /dev/null; then
-		echo "+ $LIBC-$cmd $*" >&2
-		$exec "$LIBC-$cmd" "$@"
+		run $exec "$LIBC-$cmd" "$@"
 	else
 		[[ "$TARCH$TSYSTEM$TABI" ]] && echo "'$TARCH-$TSYSTEM-$TABI-$cmd' not found" >&2 && echo "Using '$cmd'" >&2
-		echo "+ $cmd $*" >&2
-		$exec "$cmd" "$@"
+		run $exec "$cmd" "$@"
 	fi
 }
 
@@ -167,15 +198,19 @@ HELPERS=(
 	'    auto: Select first connected board'
 	'avr[avr-gcc]: AVR Specific arguments'
 	'    (required) mcu=<microcontroller>'
+	'    (optional) clk=<Clock Speed>[KMG](Hz)   (default: platform default)'
+	'    (optional) opt=<0|1|2|3|fast|g|s>   (default: 2)'
 	'    (optional) fmt=<bin|srec|hex>   (default: hex)'
 	'    (optional) section=<eeprom|lock|fuse|sig> (default: empty)'
+	'    (optional) elf (keep intermediate elf)'
 	'pkg[pkg-config] PKG-CONFIG cflags and ldflags'
 	'triplet: Specify system triplet'
-	'output : Specify output extension'
+	'output : Specify output extension (o implies -c, S/asm implies -S, pp.c implies -E)'
 	'strip  : Strip program after compilation [pass arguments to strip with this]'
 	'libc:  specify compiler for libc (known value: empty, musl)'
 	'local: include local header files'
 )
+
 FILTER=compile
 ## start args
 source "${0%/*}/.lib/args"
@@ -187,9 +222,15 @@ case "$TYPE/${NAME##*.}" in
 esac
 
 ONAME="${NAME}${TARCH:+.${HFTARCH:-$TARCH}}.${OUTPUT:-elf}"
+case "${OUTPUT:-elf}" in
+	o | obj) args=(-c "${args[@]}") ;;
+	S | asm) args=(-S "${args[@]}") ;;
+	pp.c) args=(-E "${args[@]}") ;;
+esac
 case "$TYPE" in
 	x-csrc) for_triplet exec gcc "${files[@]}" -o "${ONAME}" "${args[@]}" ;;
 	x-c++src) for_triplet exec g++ "${files[@]}" -o "${ONAME}" "${args[@]}" ;;
+	rust) exec rustc "${files[@]}" -o "${ONAME}" "${args[@]}" ;;
 	x-java)
 		cd "$DIR" || exit 1
 		exec javac "${args[@]}" "$NAME"
@@ -208,23 +249,38 @@ case "$TYPE" in
 			false
 		fi
 
-		avr-gcc -Wall -Os "${files[@]}" -o "$NAME.$MCU.out" "${args[@]}"
-		avr-size -C "--mcu=$MCU" "$NAME.$MCU.out"
+		((AVR_CLOCK == 0)) || args=("-DF_CPU=${AVR_CLOCK}UL" "${args[@]}")
+
+		run avr-gcc "${files[@]}" -o "$NAME.$MCU.${OUTPUT:-elf}" "-O${AVR_OPTIMIZE:-2}" "${args[@]}"
+		case "${OUTPUT:-elf}" in
+			elf) ;;
+			*) exit "$?" ;;
+		esac
+
+		avr-size -C "--mcu=$MCU" "$NAME.$MCU.elf"
 		(
 			[[ "$FMT" ]] || FMT=ihex
-			avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature \
-				-O "$FMT" "$NAME.$MCU.out" "$NAME.$MCU.${AVR_OUT["$FMT"]}"
-			avr_objcopy()
+			avr_firmware()
 			{
-				avr-objcopy --no-change-warnings -j ".$1" --change-section-lma ".$1=0" \
-					-O "$FMT" "$NAME.$MCU.out" "$NAME.$MCU.${2:-$1}.${AVR_OUT["$FMT"]}"
+				local file="$1" fmt="$2"
+				avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature \
+					-O "$fmt" "$file.elf" "$file.${AVR_OUT["$fmt"]}"
 			}
-			((!EEPROM)) || avr_objcopy eeprom
-			((!FUSE)) || avr_objcopy fuse
-			((!SIGNATURE && !SIG)) || avr_objcopy signature sig
-			((!LOCK)) || avr_objcopy lock
+
+			avr_config()
+			{
+				local section="${1%:*}" file="$2" fmt="$3"
+				avr-objcopy --no-change-warnings -j ".$section" --change-section-lma ".$section=0" \
+					-O "$fmt" "$file.elf" "$file.${section##*:}.${AVR_OUT["$FMT"]}"
+			}
+
+			run avr_firmware "$NAME.$MCU" "$FMT"
+			((!EEPROM)) || run avr_config eeprom "$NAME.$MCU" "$FMT"
+			((!FUSE)) || run avr_config fuse "$NAME.$MCU" "$FMT"
+			((!SIGNATURE && !SIG)) || run avr_config signature:sig "$NAME.$MCU" "$FMT"
+			((!LOCK)) || run avr_config lock "$NAME.$MCU" "$FMT"
 		)
-		rm -f "$NAME.$MCU.out"
+		((keep_elf)) || rm -f "$NAME.$MCU.elf"
 		;;
 	*)
 		echo "Unsupported: text/${TYPE}" >&2
