@@ -22,7 +22,7 @@ else
 fi
 readonly f
 
-stage="${0##*/}"
+export stage="${0##*/}"
 export HOOKSUTIL="${0%/*}.d/utils"
 export SHARED="${0%/*}.d/shared.d"
 checker="${0%/*}/if.hook"
