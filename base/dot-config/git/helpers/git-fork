@@ -17,7 +17,7 @@ function identify_remote
 		github.com) provider=github ;;
 		codeberg.org) provider=codeberg ;;
 		gitlab.* | *.gitlab.*) provider=gitlab ;;
-		*) provider=unknown ;;
+		*) provider=$(get_config "$host" provider --default unknown) ;;
 	esac
 
 	printf '%s %s %s\n' "$provider" "$host" "$remote"
@@ -168,7 +168,9 @@ function repo_exists
 
 function get_config
 {
-	git config --get "fork.$1.$2"
+	local section="$1" key="$2"
+	shift                            2
+	git config get "$@" "fork.$section.$key"
 }
 
 function repostrip
