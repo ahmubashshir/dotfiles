@@ -10,9 +10,9 @@ function find-bin
 			printf '\tInstall and/or ensure `%s` is in your $PATH.\n' "$1"
 		fi
 		shift
-	done >&2
+	done
 	((missing == 0)) || exit 1
-}
+} >&2
 
 function patch-stow
 {
@@ -35,7 +35,7 @@ function patch-stow
 		echo "INFO: Reverting stow dotfiles patch..."
 		rm -rf .git/stow
 	fi
-}
+} >&2
 
 function unpatch-stow
 {
@@ -68,7 +68,7 @@ function stow-system
 find-bin stow sed patch sha512sum
 
 STOW_DIR="$(dirname "$(realpath "$0")")"
-STOW_IGNORE="^(face\.png|.info)|\.swp"
+STOW_IGNORE="^(face\.png|.info)|\.swp|hist"
 
 if [ "$#" -eq 0 ]; then
 	# shellcheck disable=SC2164
@@ -99,28 +99,38 @@ elif [ "$1" = "firefox" ]; then
 	elif [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/mozilla" ]]; then
 		FFROOT="${XDG_CONFIG_HOME:-$HOME/.config}/mozilla/firefox"
 	else
-		echo   "No firefox profile available!" >&2
-		exit                                             2
+		echo "No firefox profile available!" >&2
+		exit                                           2
 	fi
 
 	if [[ ! -f $FFROOT/profiles.ini ]]; then
 		echo "No firefox profile available!"
 		exit 2
 	fi >&2
-	while IFS="=" read -r name path; do
-		profiles+=(["$name"]="$path")
-	done < <(
+	while IFS=$'\t' read -r name path; do
+		[[ -d $FFROOT/$path ]] || continue
+
+		profiles["$name"]="$path"
+	done < <({
 		awk -F= '/\[Profile[0-9]+\]/,/^$/ {
 			if($0 ~ /\[Profile[0-9]+\]/) i += 1
 			if($1 == "Name") name[i]=$2
 			if($1 == "Path") path[i]=$2
 		} END {
-			for(k = 1; k <= i; k++) print name[k]"="path[k]
-		}' "$FFROOT/profiles.ini" | sort
-	)
+			for(k = 1; k <= i; k++)
+				printf "%s\t%s\n", name[k], path[k]
+		}' "$FFROOT/profiles.ini"
+
+		if ! command -pv sqlite3 > /dev/null 2>&1; then
+			printf 'WARN: sqlite3: command not found.\n   skipping profile groups\n'
+		fi
+		for grp in "$FFROOT/Profile Groups/"*.sqlite; do
+			sqlite3 -list -separator $'\t' -readonly "$grp" "select name, path from Profiles;"
+		done
+	} | LC_ALL=C sort -t$'\t' -k1,1f -k1,1 | awk -F'\t' '!k[$2]++')
 	if (($# == 0)); then
 		echo "Profiles:"
-		printf '\t%s\n' "${!profiles[@]}"
+		printf '\t%s\n' "${!profiles[@]}" | LC_ALL=C sort -k1,1f -k1,1
 	else
 		for each in "$@"; do
 			declare -a args=()
