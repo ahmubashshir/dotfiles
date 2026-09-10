@@ -1,4 +1,5 @@
 :root {
+	--urlbar-height-compat: var(--urlbar-height, var(--urlbar-min-height, 1.4em));
 	--toolbar-padding-override: var(--toolbar-start-end-padding, var(--toolbar-padding-inline, 8px));
-	--menubar-top-margin-override: calc(var(--urlbar-min-height) - var(--toolbar-padding-override) / 2);
+	--menubar-top-margin-override: calc(var(--urlbar-height-compat) - var(--toolbar-padding-override) / 2);
 }

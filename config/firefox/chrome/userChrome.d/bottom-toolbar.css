@@ -2,7 +2,7 @@
 	--menubar-margin-top: var(--menubar-top-margin-override);
 
 	&[uidensity="compact"] {
-		--menubar-margin-top: var(--urlbar-min-height);
+		--menubar-margin-top: var(--urlbar-height-compat);
 	}
 
 	&:not([chromehidden~="location"]):not([chromehidden~="toolbar"]) #customization-footer {
@@ -52,7 +52,7 @@
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-min-height) + var(--toolbar-padding-override) + var(--space-xxsmall));
+		padding-bottom: calc(var(--urlbar-height-compat) + var(--toolbar-padding-override) + var(--space-xxsmall));
 
 		#sidebar-main {
 			margin-bottom: calc(0px - var(--space-xsmall));
@@ -189,7 +189,7 @@ box.panel-viewstack:not(> #unified-extensions-view) {
 #notifications-toolbar {
 	max-width: calc(100vw - var(--button-size-icon) - var(--toolbarbutton-inner-padding));
 	position: absolute;
-	top: calc(-1 * var(--tab-height-with-margin-padding) - var(--space-medium));
+	bottom: calc(var(--tab-height-with-margin-padding) - var(--space-medium));
 	background: transparent !important;
 	transform: translateX(-50%);
 	left: 50% !important;
