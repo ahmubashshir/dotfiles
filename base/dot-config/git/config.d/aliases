@@ -12,6 +12,8 @@
 	last = log -1 HEAD
 	visual = !gitk
 	st = status
+	pull-notes = "!f() { git fetch \"${1:-origin}\" 'refs/notes/*:refs/notes/*'; }; f"
+	push-notes = "!f() { git push \"${1:-origin}\" 'refs/notes/*:refs/notes/*'; }; f"
 	uncommit = reset --soft HEAD^
 	progress = diff --stat
 	amend = commit --amend
@@ -25,6 +27,7 @@
 	cb = switch
 	ch = switch
 	co = checkout
+	stashs = stash --staged
 	root = rev-parse --show-toplevel
 	run = "!exec "
 	lsmod = !git submodule status|awk '{print $2}'
