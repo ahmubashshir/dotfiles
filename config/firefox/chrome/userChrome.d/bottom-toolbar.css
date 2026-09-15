@@ -21,7 +21,8 @@
 	}
 }
 
-#main-window[chromehidden=""] {
+#main-window[chromehidden=""],
+#main-window:not(:is([chromehidden], [popup-window], [taskbartab])) {
 
 	/* ff < 119.0 */
 	&:has(#navigator-toolbox-background) {

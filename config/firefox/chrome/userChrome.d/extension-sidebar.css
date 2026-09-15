@@ -31,6 +31,10 @@
 	}
 }
 
+#sidebarMenu-popup {
+	padding-bottom: var(--space-xxsmall);
+}
+
 #sidebar-box {
 	--collapsed-width: var(--thin-tab-width);
 	--expanded-width: var(--wide-tab-width);
