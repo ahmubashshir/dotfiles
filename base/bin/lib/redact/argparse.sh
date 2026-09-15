@@ -9,7 +9,9 @@ parseArgs()
 		arg="$1"
 		shift
 		case "$arg" in
-			--) break ;; # stop processing args
+			--) args+=("$@") # pass the rest of the args to sed
+				break # stop processing args
+			;;
 			# handled by script
 			@*) redactEnv "${arg#@}" || {
 				error 'Invalid ENV name "%s"' "${arg#@}"
