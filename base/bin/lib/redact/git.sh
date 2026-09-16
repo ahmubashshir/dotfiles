@@ -1,10 +1,10 @@
 #!/bin/bash
-argtype=boolean
+argtype=optional
 
 helptext-git()
 {
 	cat << EOF
-  --git
+  --git [config|all]
                add git user/remote mapping to filters
                from current repository, implies --mail
 EOF
@@ -13,6 +13,11 @@ EOF
 enable-git()
 {
 	set-enabled git || return
+
+	case "${1:-all}" in
+		all) set-enabled git:log ;;
+		config) ;;
+	esac
 
 	enable-mail
 }
@@ -31,20 +36,30 @@ addSedRules-git-user()
 	is-enabled git || return
 
 	local mail name uhash tag value
-	message 'Reading git logs'
-	while IFS=':' read -r tag uhash value; do
-		case "$tag" in
-			n) RULES+=('s/\b'"$value"'\b/@Git.User.'"$uhash"'/g') ;;
-			m) RULES+=('s/(^|[^[:alnum:]])'"$value"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g') ;;
-		esac
-	done < <(dumpGitUIDMap | dSortStripPrio)
+	if is-enabled git:log; then
+		message 'Reading git logs'
+		while IFS=':' read -r tag uhash value; do
+			case "$tag" in
+				n) RULES+=('s/\b'"$value"'\b/@Git.User.'"$uhash"'/g') ;;
+				m) RULES+=('s/(^|[^[:alnum:]])'"$value"'([^[:alnum:]]|$)/\1git@'"$uhash"'.user.email\2/g') ;;
+			esac
+		done < <(dumpGitUIDMap | dSortStripPrio)
+	fi
 
 	name=$(git config --get user.name)
 	mail=$(git config --get user.email)
 	if [[ -n $name && -n $mail ]]; then
-		uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
-		RULES+=('s/@Git\.User\.'"$uhash"'/@Git.Local.User/g'
-			's/\bgit@'"$uhash"'\.user\.email\b/git@local.user.email/g')
+		if is-enabled git:log; then
+			uhash=$(sha256sum <<< "$name <$mail>" | cut -c1-8)
+			name="@Git.User.$uhash"
+			mail="git@$uhash.user.email"
+		else
+			name=$(ERE2Literal "$name" | quoteSed pattern)
+			mail=$(ERE2Literal "$mail" | quoteSed pattern)
+		fi
+
+		RULES+=('s/'"$name"'/@Git.Local.User/g'
+			's/\b'"$mail"'\b/git@local.user.email/g')
 	fi
 }
 
