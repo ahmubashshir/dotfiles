@@ -2,4 +2,9 @@
 	--urlbar-height-compat: var(--urlbar-height, var(--urlbar-min-height, 1.4em));
 	--toolbar-padding-override: var(--toolbar-start-end-padding, var(--toolbar-padding-inline, 8px));
 	--menubar-top-margin-override: calc(var(--urlbar-height-compat) - var(--toolbar-padding-override) / 2);
+	---urlbar-position-bottom: calc(var(--space-xxsmall) / 2);
+
+	@media -moz-pref("browser.nova.enabled") {
+		---urlbar-position-bottom: calc(var(--space-xsmall) + var(--space-xxsmall));
+	}
 }
