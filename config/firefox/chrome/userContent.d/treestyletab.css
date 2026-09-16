@@ -10,8 +10,7 @@ regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 
 	/* https://github.com/piroor/treestyletab/issues/2780 */
 	:root {
-		--tab-surface-regular: var(--theme-colors-tab,
-				var(--theme-colors-frame_inactive)) !important;
+		--tab-surface-regular: var(--theme-colors-tab, var(--theme-colors-frame_inactive, -moz-dialog)) !important;
 		--tab-surface-active: var(--theme-colors-tab_selected,
 				var(--theme-colors-toolbar,
 					var(--browser-bg-for-header-image,
@@ -20,17 +19,12 @@ regexp("moz-extension:\\/\\/[^/]+\\/sidebar\\/sidebar.html($|\\?.+)") {
 				var(--theme-colors-toolbar,
 					var(--browser-bg-for-header-image,
 						var(--tab-like-surface)))) !important;
-		--tab-border: var(--theme-colors-tab_background_separator,
-				var(--theme-colors-tab_line,
-					var(--theme-colors-tab_background_text-30,
-						hsl(240, 9%, 32%)))) !important;
-		--tab-text-regular: var(--theme-colors-tab_background_text,
-				hsl(240, 9%, 98%)) !important;
+		--tab-border: var(--theme-colors-tab_background_separator, var(--theme-colors-tab_line, var(--theme-colors-tab_background_text-30, var(--in-content-border-color-mixed)))) !important;
+		--tab-text-regular: var(--theme-colors-tab_background_text, var(--text-color)) !important;
 		--tab-text-active: var(--theme-colors-tab_text,
 				var(--theme-colors-toolbar_text,
 					-moz-DialogText)) !important;
-		--tabbar-bg: var(--theme-colors-frame,
-				hsl(235, 33%, 19%)) !important;
+		--tabbar-bg: var(--theme-colors-frame, var(--in-content-page-background)) !important;
 	}
 }
 
@@ -262,7 +256,7 @@ tab-item-substance {
 
 		&::after {
 			fill: var(--bg-color) !important;
-			;
+			background: var(--tab-text-regular) !important;
 		}
 	}
 
