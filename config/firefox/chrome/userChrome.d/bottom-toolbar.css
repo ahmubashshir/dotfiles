@@ -102,9 +102,9 @@ panel[position^="bottomcenter"] {
 
 		& .urlbar-input-container,
 		& #urlbar-input-container {
-			display: inline-flex;
-			position: absolute !important;
-			bottom: calc(var(--space-xxsmall) / 2) !important;
+			position: fixed !important;
+			bottom: var(---urlbar-position-bottom) !important;
+			height: fit-content !important;
 		}
 
 		&[searchmode] #urlbar-search-mode-indicator {
