@@ -6,7 +6,22 @@ window.csd.maximized windowcontrols.end {
 	margin-right: calc(3 * -36px);
 }
 
-window.csd.maximized headerbar > box.vertical > label.title:not(:only-child),
-window.csd.maximized headerbar > box.vertical > label.subtitle {
+window.csd.maximized .floating windowcontrols.start {
+	margin-left: 0px;
+}
+
+window.csd.maximized .floating windowcontrols.end {
+	margin-right: 0px;
+}
+
+window.csd.maximized windowhandle label.title,
+window.csd.maximized windowhandle label.subtitle {
 	opacity: 0;
+}
+
+window.csd.maximized .sidebar-pane windowhandle label.title,
+window.csd.maximized .sidebar-pane windowhandle label.subtitle,
+window.csd.maximized .floating windowhandle label.title,
+window.csd.maximized .floating windowhandle label.subtitle {
+	opacity: 1;
 }
