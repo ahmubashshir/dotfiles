@@ -1,0 +1,27 @@
+#!/usr/bin/sed -Ef
+# Source - https://superuser.com/a/380778
+# Posted by olibre, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-09-27, License - CC BY-SA 4.0
+
+:start
+# 1. Complete control strings (OSC, DCS, APC, PM, SOS)
+s/\x1B[PX^_\x5D][^\x1B]*\x1B\\//g
+
+# 2. Complete CSI sequences and Fe/Fs escapes
+#    CSI: ESC [ ... final byte  (any final byte)
+#    Fe/Fs: ESC intermediates final byte (excludes [ P X ^ _ ] as final to avoid
+#          prematurely ending other sequence types)
+s/\x1B(\[[0-9:;<=>?]*[ -/]*[mGKFB\x40-\x7E]|[ -/]*[\x40-\x4F\x51-\x57\x59-\x5A\x5C\x60-\x7E])//g
+
+# Multi-line join: if an incomplete sequence ends the pattern space
+/\x1B([PX^_\x5D].*|\[[0-9:;<=>?]*[m -/]*|[m -/]*)$/ {
+	$! { N; s/\n//; b start; }
+}
+
+# Best-effort removal of malformed fragments (not on the last line)
+$! {
+	s/\x1B(\[[0-9:;<=>?]*[ -/]*|[ -/]+)//g
+}
+
+P
+D
