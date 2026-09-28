@@ -11,6 +11,21 @@ EOF
 	exit 120
 fi
 
+readtype()
+{
+	local prefix next IFS="$IFS"
+
+	while IFS="$IFS=" read -r prefix next; do
+		case "$prefix" in
+			TYPE)
+				declare -g type="${next#*[$IFS]}"
+				break
+				;;
+			*) continue ;;
+		esac
+	done < "$1"
+}
+
 args=()
 CLEAN='no'
 CALLER="$1"
@@ -29,8 +44,17 @@ done
 	mkdir -p "$BINDIR"
 }
 
-set -e
-make -srf /dev/stdin -- "CALLER=$CALLER" "INTRPTR=$0" "BINDIR=$BINDIR" "CLEAN=$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
+src="$HOME/bin/srcs/${CALLER##*/}"
+readtype "$CALLER"
+if [[
+	"$CALLER" -nt "$BINDIR/${CALLER##*/}" ||
+	"$0" -nt "$BINDIR/${CALLER##*/}" ||
+	# this follows make's target resolution...
+	"$src.${type:-c}" -nt "$BINDIR/${CALLER##*/}" ||
+	-f "$src.cpp" && "$src.cpp" -nt "$BINDIR/${CALLER##*/}" ]]
+then
+	set -e
+	make -srf /dev/stdin -- "CALLER=$CALLER" "INTRPTR=$0" "BINDIR=$BINDIR" "CLEAN=$CLEAN" 3>&2 2> /dev/null >&1 << 'EOF'
 SRCDIR := $(HOME)/bin/srcs
 NAME   := $(basename $(notdir $(CALLER)))
 <<<<   := $(shell mkdir -p $(BINDIR))
@@ -62,6 +86,7 @@ clean-yes:
 
 .PHONY: clean-no
 EOF
-set +e
+	set +e
+fi
 
 exec -a "${CALLER##*/}" "$BINDIR/${CALLER##*/}" "${args[@]}"
