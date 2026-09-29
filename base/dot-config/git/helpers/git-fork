@@ -481,7 +481,7 @@ Fork the upstream remote into your account (or org) and set up origin + tracking
 OPTIONS
   --name <NAME>     Custom repository name for the fork (default: same as upstream)
   --org <ORG>       Fork under the given organization instead of your user account
-  --authinfo        Show info about authenticated user
+  --info            Show info about authenticated user and current repo
 
   -h, --help, help  Show this help message
 
@@ -502,7 +502,7 @@ fi
 
 require git curl jq || exit 1
 
-if BOOLEAN=1 get_arg --authinfo "$@"; then
+if BOOLEAN=1 get_arg --info "$@"; then
 	read -r provider domain remote < <(identify_remote origin)
 	if [[ $provider == unknown ]]; then
 		message '\e[31m\e[1m ! \e[0mUnknown remote:\n\e[31m...\e[0m \e[1m%s\e[0m' "$(git remote get-url upstream)"
@@ -523,7 +523,7 @@ if BOOLEAN=1 get_arg --authinfo "$@"; then
 			fi
 
 		else
-			message '\e[31m\e[1m ! \e[0mFailed to authenticate with \e[1m%s\e[0m...' "$domain"
+			message '\e[31m\e[1m ! \e[0mFailed to authenticate on \e[1m%s\e[0m...' "$domain"
 			exit 1
 		fi
 	fi
