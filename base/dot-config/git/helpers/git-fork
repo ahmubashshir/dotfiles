@@ -13,12 +13,15 @@ function identify_remote
 	[[ -n "$url" ]] || return 1
 	IFS=' ' read -r host remote < <(parse_git_remote "$url")
 
-	case "$host" in
-		github.com) provider=github ;;
-		codeberg.org) provider=codeberg ;;
-		gitlab.* | *.gitlab.*) provider=gitlab ;;
-		*) provider=$(get_config "$host" provider --default unknown) ;;
-	esac
+	provider=$(get_config "$host" provider --default '')
+	if [[ -z $provider ]]; then
+		case "$host" in
+			codeberg.org) provider=codeberg ;;
+			github.com) provider=github ;;
+			gitlab.* | *.gitlab.*) provider=gitlab ;;
+			*) provider=unknown ;;
+		esac
+	fi
 
 	printf '%s %s %s\n' "$provider" "$host" "$remote"
 }
