@@ -131,9 +131,7 @@ function gitlab.fork
 function gitlab.wait_import
 {
 	local domain="$1" repo="$2" status
-	while read -r status < <(
-		gitlab.api_call "$domain" "projects/$(asuri "$repo")/import" .import_status
-	); do
+	while api_read status gitlab.api_call "$domain" "projects/$(asuri "$repo")/import" .import_status; do
 		case "$status" in
 			'' | none | finished) break ;;
 			scheduled | started) sleep 3 ;;
@@ -213,6 +211,14 @@ function asuri
 function api_if_error
 {
 	jq -r $'if select(.message) then ("\e[31m ! \e[0m\(.message)\n" |halt_error(1)) else halt end'
+}
+
+function api_read
+{
+	read -r "$1" < <(
+		shift
+		"$@"
+	)
 }
 
 function api_call
