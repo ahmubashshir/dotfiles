@@ -318,7 +318,8 @@ function remote_config
 	tval="$3"
 	while read -r key val; do
 		case "$key:$val" in
-			remote.*.$tkey:$tval) return ;;
+			remote.$remote.$tkey:$tval) return ;;
+			remote.*.$tkey:$tval) git config --unset "$key" --value="$val" --fixed-value ;;
 		esac
 	done < <(git config --get-regexp 'remote\..*\.'"$tkey")
 
