@@ -202,8 +202,8 @@ function get_config
 
 function repostrip
 {
-	local split="$1" capture="$2" filter
-	printf -v filter '1s#^.*%s(%s)(\\.git)?$#\\1#gp' "$split" "$capture"
+	local strip="$1" filter
+	printf -v filter '1{s#\\.git$##;s#^[a-z]+://##;s#^[^/]+%s(.+)$#\\1#gp}' "$strip"
 	sed -nE "$filter"
 }
 
@@ -419,12 +419,12 @@ function create_fork
 	read -r user < <("$provider.user" "$domain")
 	read -r upstream < <(
 		git remote get-url upstream \
-			| repostrip '[/:]' '[^/]+/[^/]+'
+			| repostrip '[/:]/?'
 	)
 	read -r repo < <(
 		! get_arg --name "$@" || exit
 		git remote get-url upstream \
-			| repostrip '/' '[^/]+'
+			| repostrip '.+/'
 	)
 	read -r org < <(
 		! get_arg --org "$@" || exit
@@ -509,8 +509,18 @@ if BOOLEAN=1 get_arg --authinfo "$@"; then
 		read -r user < <("$provider.user" "$domain")
 		if [[ $user ]]; then
 			read -r org < <(get_config "$domain/$user" org)
-			message '\e[32m\e[1m > \e[0mAuth info : \e[1m%s\e[0m on \e[1m%s\e[0m...' "$user" "$domain"
-			message '\e[32m\e[1m + \e[0mFork owner: \e[1m%s\e[0m' "${org:-$user}"
+			message '\e[32m\e[1m > \e[0mUser: \e[1m%s\e[0m on \e[1m%s\e[0m...' "$user" "$domain"
+			message '\e[32m\e[1m + \e[0mRepo: \e[1m%s\e[0m' "$(
+				git remote get-url origin \
+					| repostrip '[:/]/?'
+			)"
+			if git remote | grep -xqw upstream; then
+				message '\e[32m\e[1m + \e[0mUpstream: \e[1m%s\e[0m' "$(
+					git remote get-url upstream \
+						| repostrip '[:/]/?'
+				)"
+			fi
+
 		else
 			message '\e[31m\e[1m ! \e[0mFailed to authenticate with \e[1m%s\e[0m...' "$domain"
 			exit 1
@@ -537,6 +547,7 @@ elif git remote | grep -xqw upstream; then
 		read -r user < <("$provider.user" "$domain")
 		if [[ $user ]]; then
 			read -r org < <(get_config "$domain/$user" org)
+			read -r repo < <(git remote get-url origin | repostrip '.+/')
 			message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
 			"$provider.post" "$domain" "${org:-$user}" "$repo"
 		fi
