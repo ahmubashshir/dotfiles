@@ -13,7 +13,7 @@ function identify_remote
 	if [[ -z $provider ]]; then
 		case "$host" in
 			codeberg.org) provider=codeberg ;;
-			github.com) provider=github ;;
+			github.com | github.*) provider=github ;;
 			gitlab.* | *.gitlab.*) provider=gitlab ;;
 			*) provider=unknown ;;
 		esac
@@ -49,13 +49,30 @@ function codeberg.fork
 ## GitHub
 function github.api_call
 {
-	AUTHDOMAIN=github.com api_call api.github.com "$@" \
-		-H "X-GitHub-Api-Version: 2026-03-10"
+	local domain="$1" apibase defversion
+	shift
+
+	case "$domain" in
+		github.com)
+			apibase=api.github.com
+			defversion=2026-03-10
+			;;
+		*)
+			apibase="$domain/api/v3"
+			defversion=2022-11-28
+			;;
+	esac
+
+	AUTHDOMAIN="$domain" api_call "$apibase" "$@" \
+		-H "X-GitHub-Api-Version: $(
+			get_config "$domain" apiVersion --default "$defversion"
+		)"
 }
 
 function github.user
 {
-	github.api_call user .login
+	local domain="$1"
+	github.api_call "$domain" user .login
 }
 
 function github.fork
@@ -67,7 +84,7 @@ function github.fork
 		:name "$repo" \
 		:organization "$owner" \
 		:default_branch_only :true \
-		| github.api_call "repos/$upstream/forks" . \
+		| github.api_call "$domain" "repos/$upstream/forks" . \
 			-H 'Content-Type: application/json' \
 			-X POST --data @- \
 		| api_if_error || return 1
