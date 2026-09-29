@@ -1,5 +1,6 @@
 #!/bin/bash
-set -o pipefail
+exec 3> /dev/null
+set -o pipefail -Cfupr
 #### Remotes Implementation Section ###
 function identify_remote
 {
@@ -82,7 +83,7 @@ function github.fork
 
 	json \
 		:name "$repo" \
-		:organization "$owner" \
+		:organization "${owner-}" \
 		:default_branch_only :true \
 		| github.api_call "$domain" "repos/$upstream/forks" . \
 			-H 'Content-Type: application/json' \
@@ -169,7 +170,7 @@ function require
 	local missing=()
 
 	for cmd in "$@"; do
-		command -v "$cmd" > /dev/null 2>&1 || missing+=("$cmd")
+		command -v "$cmd" >&3 2>&1 || missing+=("$cmd")
 	done
 
 	if ((${#missing[@]})); then
@@ -190,7 +191,7 @@ function message
 
 function repo_exists
 {
-	git ls-remote -q "$1" HEAD > /dev/null 2>&1
+	git ls-remote -q "$1" HEAD >&3 2>&1
 }
 
 function get_config
@@ -250,16 +251,16 @@ function api_call
 
 	[[ "$token" ]] || return 1
 
-	case "$AUTH" in
+	case "${AUTH-bearer}" in
 		basic)
 			[[ -z "$user" ]] \
 				|| set -- --expand-user '{{user}}:{{token}}' "$@"
 			;;
-		bearer | '')
+		bearer)
 			set -- --expand-oauth2-bearer '{{token}}' "$@"
 			;;
 	esac
-	[[ -z "$AUTH" ]] || unset AUTH
+	[[ "${AUTH-unset}" == "unset" ]] || unset AUTH
 
 	set -- --variable '%user' --variable '%token' "$@"
 
@@ -294,9 +295,9 @@ parse_git_remote()
 	case "$url" in
 		*://*)
 			remote="${proto}://"
-			[[ -z "$user" ]] || remote+="$user@"
+			[[ -z "${user-}" ]] || remote+="$user@"
 			remote+="$host"
-			[[ -z "$port" ]] || remote+=":$port"
+			[[ -z "${port-}" ]] || remote+=":$port"
 			remote+='/'
 			;;
 		*@*:*)
@@ -340,7 +341,7 @@ function get_arg
 		arg="$1"
 		shift
 		if [[ $arg == "$match" ]]; then
-			if [[ $1 == "" ]]; then
+			if [[ -z ${1-} ]]; then
 				return $((BOOLEAN != 1))
 			else
 				echo "$1"
@@ -471,7 +472,7 @@ function rollback_failure
 	trap '-' INT TERM QUIT EXIT
 }
 
-if [[ $1 == "help" ]] || BOOLEAN=1 get_arg -h "$@" || BOOLEAN=1 get_arg --help "$@"; then
+if [[ ${1-} == "help" ]] || BOOLEAN=1 get_arg -h "$@" || BOOLEAN=1 get_arg --help "$@"; then
 	cat << 'EOF'
 Usage: git fork [OPTIONS]
 
