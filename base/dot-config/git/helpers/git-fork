@@ -485,6 +485,33 @@ function _lib.rollback
 }
 
 if [[ ${1-} == "help" ]] || BOOLEAN=1 _lib.argv -h "$@" || BOOLEAN=1 _lib.argv --help "$@"; then
+	mapfile -t supported < <(
+		declare -A providers
+		declare -a supported
+
+		while IFS=. read -r ns op; do
+			[[ "$op" == fork || "$op" == user ]] || continue
+			[[ "$ns" == _lib ]] && continue
+
+			providers["$ns"]+=":$op"
+		done < <(compgen -A function)
+		for provider in "${!providers[@]}"; do
+			ops=":${providers["$provider"]}:"
+			[[ "$ops" == *:fork:* && "$ops" == *:user:* ]] || continue
+			supported+=("$provider")
+		done
+		declare line
+		for ((i = 0, max = ${#supported[@]}; i < max; i++)); do
+			((i % 4 == 0)) || line+=", "
+			line+="${supported[i]}"
+
+			((i % 4 < 3 && i + 1 < max)) || {
+				echo "$line"
+				line=""
+			}
+		done
+	)
+
 	cat << 'EOF'
 Usage: git fork [OPTIONS]
 
@@ -497,8 +524,11 @@ OPTIONS
 
   -h, --help, help  Show this help message
 
-SUPPORTED PROVIDERS
-  GitHub, GitLab, Codeberg
+SUPPORTED GIT FORGES
+EOF
+	printf '  %s\n' "${supported[@]}"
+
+	cat << 'EOF'
 
 AUTHENTICATION
   Uses `git credential` (respects whatever helper you have configured:
@@ -510,7 +540,7 @@ EXAMPLES
   $ git fork --name my-cool-fork
 EOF
 	exit 0
-fi
+fi >&2
 
 _lib.require git curl jq || exit 1
 
