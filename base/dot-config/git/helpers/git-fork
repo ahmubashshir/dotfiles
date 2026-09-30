@@ -394,9 +394,9 @@ _lib.parse_remote()
 	echo "$host $remote"
 }
 
-function _lib.post_needed
+function _lib.implements
 {
-	[[ $(type -t "$1.post") == "function" ]]
+	[[ $(type -t "$1.$2") == "function" ]]
 }
 
 function _lib.fork.configure
@@ -457,7 +457,7 @@ function _lib.fork
 		message '\e[32m\e[1m + \e[0mRemote origin added...'
 	fi
 
-	if _lib.post_needed "$provider"; then
+	if _lib.implements "$provider" post; then
 		message '\e[32m\e[1m + \e[0mApplying post-fork configurations...'
 		"$provider.post" "$domain" "$owner" "$repo"
 	fi
@@ -546,7 +546,7 @@ elif git remote | grep -xqw upstream; then
 	message '\e[33m\e[1m > \e[0mUpstream configured...'
 
 	read -r provider domain remote < <(identify_remote upstream)
-	if _lib.post_needed "$provider"; then
+	if _lib.implements "$provider" post; then
 		read -r user < <("$provider.user" "$domain")
 		if [[ $user ]]; then
 			read -r org < <(fork.config "$domain/$user" org)
