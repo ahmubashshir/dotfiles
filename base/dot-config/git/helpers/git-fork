@@ -146,6 +146,16 @@ function gitlab.fork
 	gitlab.wait_import "$domain" "$owner/$repo"
 }
 
+function gitlab.reponame
+{
+	local repo="$1"
+
+	case "$repo" in
+		*.git) echo "$repo" ;;
+		*) echo "$repo.git" ;;
+	esac
+}
+
 function gitlab.wait_import
 {
 	local domain="$1" repo="$2" status
@@ -448,9 +458,9 @@ function _lib.fork
 		message '\e[32m\e[1m + \e[0mFork exists \e[1m%s\e[0m' "$owner/$repo"
 	fi
 
-	case "$provider" in
-		gitlab) repo+='.git' ;;
-	esac
+	if _lib.implements "$provider" reponame; then
+		getline repo "$provider.reponame" "$repo"
+	fi
 
 	if exists "$remote$owner/$repo"; then
 		git remote add origin "$remote$owner/$repo"
