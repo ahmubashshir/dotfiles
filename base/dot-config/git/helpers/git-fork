@@ -518,11 +518,16 @@ Usage: git fork [OPTIONS]
 Fork the upstream remote into your account (or org) and set up origin + tracking.
 
 OPTIONS
-  --name <NAME>     Custom repository name for the fork (default: same as upstream)
-  --org <ORG>       Fork under the given organization instead of your user account
-  --info            Show info about authenticated user and current repo
-
-  -h, --help, help  Show this help message
+  --name <NAME>
+         Custom repository name for the fork
+         (default: same as upstream)
+  --org <ORG>
+         Fork under the given organization/namespace
+         instead of your user account
+  --info
+         Show info about authenticated user and current repo
+  -h, --help, help
+         Show this help message
 
 SUPPORTED GIT FORGES
 EOF
