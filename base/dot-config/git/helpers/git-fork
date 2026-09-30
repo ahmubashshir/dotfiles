@@ -576,7 +576,11 @@ if BOOLEAN=1 _lib.argv --info "$@"; then
 	fi
 elif ! git remote | grep -xqw upstream; then
 	trap '_lib.rollback' INT TERM QUIT EXIT
-	git remote rename origin upstream
+	if ! git remote rename origin upstream 2>&3; then
+		trap - INT TERM QUIT EXIT
+		message '\e[31m\e[1m ! \e[0mNo origin configured...'
+		exit
+	fi
 
 	read -r provider domain remote < <(identify_remote upstream)
 	if [[ $provider == unknown ]]; then
