@@ -84,9 +84,12 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 		field=(
 			['github']='.name'
 		)
-		test -n "${field["$FORGE"]}" \
-			&& test -n "$1" \
-			&& filter+="|select(${field["$FORGE"]}|test(\"(?i)$1\"))"
+		[[ -n "${field["$FORGE"]}" && -n "$1" ]] || return
+		if (($2)); then
+			filter+="|select(${field["$FORGE"]}|test(\"(?i)$1\") | not)"
+		else
+			filter+="|select(${field["$FORGE"]}|test(\"(?i)$1\"))"
+		fi
 	}
 
 	arch=${ARCH:-$(uname -m)}
@@ -103,10 +106,10 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 			;;
 	esac
 
-	filter "$arch"
-	filter "$os"
-	filter "$abi"
-	filter "$FILTER"
+	filter "$arch" 0
+	filter "$os" 0
+	filter "$abi" 0
+	filter "$FILTER" "$INVERT"
 	data="$(printf '%s' "$relinfo" | jq "$filter")"
 	if ! [[ "$data" ]]; then
 		echo "$NAME: No releases available for \"${MACHINE//-/\/}\""
@@ -126,6 +129,9 @@ if jq . -e > /dev/null 2>&1 <<< "$relinfo"; then
 				printf '%s' "$data" \
 					| jq 'select(.name|test("(?i).'"${ARCHIVE:-tar}"'"))'
 			)
+		fi
+		if ((DETAILED)); then
+			>&2 jq <<< "$data"
 		fi
 		if curl --disable --fail -L -# "$(
 			printf '%s' "$data" \

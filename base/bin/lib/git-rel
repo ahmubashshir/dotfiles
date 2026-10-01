@@ -3,12 +3,14 @@ NAME=${NAME:-${0##*/}}
 REPO=${REPO:-${NAME:-${0##*/}}}
 EXTRACT=${EXTRACT:-1}
 FILTER=${FILTER:-.}
+INVERT=${INVERT:-0}
 VERCHK=${VERCHK:---version}
 AUTO_UPDATE=${AUTO_UPDATE:-1}
 MACHINE="$(getmachine)"
 BINDIR="${XDG_CACHE_HOME:-$HOME/.cache}/bin/$MACHINE"
 ORIGDIR="${BASH_SOURCE[0]%/lib/git-rel}"
 FORGE="${FORGE:-github}"
+DETAILED=${DETAILED:-0}
 if [[ ${ORIGDIR:0:1} == '.' ]]; then
 	ORIGDIR=$(realpath "$ORIGDIR")
 fi
