@@ -11,8 +11,9 @@
 get_avr()
 {
 	local key val i
-	key="${1%%=*}"
-	val="${1#*=}"
+	key="${1%%[=:]*}"
+	val="${1#*[=:]}"
+
 	case "$key" in
 		ELF | elf) declare -gi keep_elf=1 ;;
 		CLK | clk)
@@ -59,6 +60,9 @@ get_avr()
 				__hint "Valid Sections: eeprom lock fuse signature/sig"
 			fi
 			;;
+		*)
+			__error "avr: Unknown key '$key'"
+			;;
 	esac
 	if ((${#AVR_OUT[@]} == 0)); then
 		declare -rgA AVR_OUT=(
@@ -74,7 +78,7 @@ run()
 	local exec
 	if [[ $1 == exec ]]; then
 		shift
-		exec=exec
+		exec="exec"
 	fi
 
 	echo "+ $*" >&2
@@ -88,7 +92,7 @@ for_triplet()
 	if [[ $cmd == exec ]]; then
 		cmd="$1"
 		shift
-		exec=exec
+		exec="exec"
 	fi
 	if ((STRIP_OUTPUT)) && [[ $exec == exec ]]; then
 		exec=''
@@ -258,6 +262,7 @@ case "$TYPE" in
 		esac
 
 		avr-size -C "--mcu=$MCU" "$NAME.$MCU.elf"
+		# shellcheck disable=SC2329
 		(
 			[[ "$FMT" ]] || FMT=ihex
 			avr_firmware()
@@ -275,10 +280,10 @@ case "$TYPE" in
 			}
 
 			run avr_firmware "$NAME.$MCU" "$FMT"
-			((!EEPROM)) || run avr_config eeprom "$NAME.$MCU" "$FMT"
-			((!FUSE)) || run avr_config fuse "$NAME.$MCU" "$FMT"
-			((!SIGNATURE && !SIG)) || run avr_config signature:sig "$NAME.$MCU" "$FMT"
-			((!LOCK)) || run avr_config lock "$NAME.$MCU" "$FMT"
+			((! EEPROM)) || run avr_config eeprom "$NAME.$MCU" "$FMT"
+			((! FUSE)) || run avr_config fuse "$NAME.$MCU" "$FMT"
+			((! SIGNATURE && ! SIG)) || run avr_config signature:sig "$NAME.$MCU" "$FMT"
+			((! LOCK)) || run avr_config lock "$NAME.$MCU" "$FMT"
 		)
 		((keep_elf)) || rm -f "$NAME.$MCU.elf"
 		;;
