@@ -1,5 +1,7 @@
 #!/bin/bash
-OWNER=MichaelMure
+OWNER=git-bug
 EXTRACT=0
 VERCHK=version
+FILTER='\\.'
+INVERT=1
 source "${0%/*}/lib/git-rel"
