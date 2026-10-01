@@ -484,65 +484,76 @@ function _lib.rollback
 	trap '-' INT TERM QUIT EXIT
 }
 
-if [[ ${1-} == "help" ]] || BOOLEAN=1 _lib.argv -h "$@" || BOOLEAN=1 _lib.argv --help "$@"; then
-	mapfile -t supported < <(
-		declare -A providers
-		declare -a supported
+function _lib.providers
+{
+	local -A providers
+	local -a supported
+	local ns op provider i
 
-		while IFS=. read -r ns op; do
-			[[ "$op" == fork || "$op" == user ]] || continue
-			[[ "$ns" == _lib ]] && continue
+	while IFS=. read -r ns op; do
+		[[ "$op" == fork || "$op" == user ]] || continue
+		[[ "$ns" == _lib ]] && continue
 
-			providers["$ns"]+=":$op"
-		done < <(compgen -A function)
-		for provider in "${!providers[@]}"; do
-			ops=":${providers["$provider"]}:"
-			[[ "$ops" == *:fork:* && "$ops" == *:user:* ]] || continue
-			supported+=("$provider")
-		done
-		declare line
-		for ((i = 0, max = ${#supported[@]}; i < max; i++)); do
-			((i % 4 == 0)) || line+=", "
-			line+="${supported[i]}"
+		providers["$ns"]+=":$op"
+	done < <(compgen -A function)
+	for provider in "${!providers[@]}"; do
+		op=":${providers["$provider"]}:"
+		[[ "$op" == *:fork:* && "$op" == *:user:* ]] || continue
 
-			((i % 4 < 3 && i + 1 < max)) || {
-				echo "$line"
-				line=""
-			}
-		done
-	)
+		case "$provider" in
+			github) provider='GitHub' ;;
+			gitlab) provider='GitLab' ;;
+		esac
+		echo "${provider^}"
+	done
+}
 
-	cat << 'EOF'
-Usage: git fork [OPTIONS]
-
-Fork the upstream remote into your account (or org) and set up origin + tracking.
-
-OPTIONS
-  --name <NAME>
-         Custom repository name for the fork
-         (default: same as upstream)
-  --org <ORG>
-         Fork under the given organization/namespace
-         instead of your user account
-  --info
-         Show info about authenticated user and current repo
-  -h, --help, help
-         Show this help message
-
-SUPPORTED GIT FORGES
+if BOOLEAN=1 _lib.argv -v "$@" || BOOLEAN=1 _lib.argv --version "$@"; then
+	mapfile -t supported < <(_lib.providers)
+	cat << EOF
+${0##*/} v1.${#supported[@]}
 EOF
-	printf '  %s\n' "${supported[@]}"
+	exit
+elif BOOLEAN=1 _lib.argv -h "$@" || BOOLEAN=1 _lib.argv --help "$@"; then
+	mapfile -t supported < <(_lib.providers)
+	cat << EOF
+Usage: ${0##*/} [OPTIONS]
 
-	cat << 'EOF'
+Fork the upstream repository and configure the remotes
+and tracking branch.
 
-AUTHENTICATION
-  Uses `git credential` (respects whatever helper you have configured:
-  store, cache, manager, osxkeychain, etc.).
+Options:
+  --name <NAME>       Custom repository name for the fork
+                      (default: same as upstream)
+  --org <ORG>         Fork under the given organization/namespace
+                      instead of your user account
+  --info              Show authenticated user and repository info
+  -h, --help          Display this help message and exit
+  -v, --version       Display version information and exit
 
-EXAMPLES
-  $ git fork
-  $ git fork --org myteam
-  $ git fork --name my-cool-fork
+Supported forges:
+$(for ((i = 0, max = ${#supported[@]}; i < max; i++)); do
+		((i % 4 == 0)) || line+=", "
+		line+="${supported[i]}"
+
+		((i % 4 < 3 && i + 1 < max)) || {
+			printf '  %s\n' "$line"
+			line=""
+		}
+	done)
+
+Authentication:
+  Uses Git's configured credential helper.
+
+Examples:
+  # Fork upstream into your account
+   git fork
+
+  # Fork into an organization
+   git fork --org myteam
+
+  # Fork with a different repository name
+   git fork --name my-cool-fork
 EOF
 	exit 0
 fi >&2
