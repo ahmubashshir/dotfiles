@@ -11,7 +11,7 @@
 
 URL="$1"
 shift
-
+! [[ -p ~/pipe:urls ]] || (echo ":: $URL" > ~/pipe:urls)
 declare -A urlre=(
 	['youtube']='^https?://(www\.)?youtu(\.be/|be\.com/(watch\?(.+&)?v=|playlist\?list=|live/|shorts/))[a-zA-Z0-9_-]+($|&.*$|\?.*$)'
 	['ytvidtypes']='/(live|shorts)/'
@@ -24,26 +24,33 @@ declare -A urlre=(
 	['epic']='store\.epicgames\.com/'
 	['pesbuk']='://([[:alnum:].-]+\.|)(facebook|fb)\.com($|/)'
 	['goolag-forms']='^https?://forms.gle/'
-	['github']='^https?://(github\.com|[^/]+\.github\.io|codereview\.qt-project\.org|git(lab|)\.[^/]+)\b'
+	['github']='^https?://(github\.com|invent\.kde\.org|zed\.dev/native_app_.+|[^/]+\.github\.io|codereview\.qt-project\.org|git(lab|)\.[^/]+|codeberg\.org|addons\.mozilla\.org/(developers|abuse)/)\b'
+	['linkedin']='^https?://([^/]+\.)?linkedin\.com($|/)'
 )
+notify()
+{
+	local -a args
+	args=(
+		--transient
+		--app-name "HTTP(S) URL Handler"
+		--icon internet-web-browser
+		--hint string:desktop-entry:http-open
+		--category "x-local.urlhandler.$1"
+	)
+
+	shift
+	notify-send "${args[@]}" "$@"
+}
 
 abort()
 {
-	notify-send -e -u critical \
-		-a "HTTP(S) URL Handler" \
-		-i internet-web-browser \
-		"HTTP(S) URL Handler" \
-		"Error: $1"
+	notify error "HTTP(S) URL Handler" "Error: $1" --urgency critical
 	exit 1
 }
 
 warn()
 {
-	notify-send -e -u normal \
-		-a "HTTP(S) URL Handler" \
-		-i internet-web-browser \
-		"HTTP(S) URL Handler" \
-		"Warning: $1"
+	notify warning "HTTP(S) URL Handler" "Warning: $1" --urgency normal
 	return 1
 }
 
@@ -164,14 +171,15 @@ handlers/zoom()
 	[[ "$meeting" ]] && exec zoom "$meeting"
 }
 
-handlers/github()
+handlers/ffpwa()
 {
-	# https://github.com/michaellass/archlinux-java-run/issues
+	ERROR=abort match/bin firefoxpwa
+
 	local app
 	read -r app < <(
 		tr -s ':' ' ' <<< "${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/share}" \
 			| xargs printf '%s/applications\n' \
-			| xargs grep -slxrF Name=GitHub \
+			| xargs grep -slxrF "Name=$1" \
 			| head -n1 \
 			| rev | cut -d/ -f1 | rev
 	)
@@ -180,6 +188,16 @@ handlers/github()
 		*) return ;;
 	esac
 	exec firefoxpwa site launch --url "$URL" "${app#FFPWA-}"
+}
+
+handlers/github()
+{
+	handlers/ffpwa GitHub
+}
+
+handlers/linkedin()
+{
+	handlers/ffpwa LinkedIn
 }
 
 DENTRY()
@@ -315,12 +333,14 @@ QBCALL()
 }
 
 [[ -x /usr/bin/qutebrowser ]] || abort "Qutebrowser is missing, please install it."
+[[ -x /usr/bin/firefox ]] || abort "Firefox is missing, please install it."
 
 ! [[ ${URL:0:9} == x-url2app ]] || URL="${URL:12}"
 
 [[ -z "$URL" ]] \
 	|| match/url awstrack \
 	|| match/url github \
+	|| match/url linkedin \
 	|| match/url pesbuk \
 	|| match/url youtube \
 	|| match/url redd.it \
@@ -331,4 +351,25 @@ QBCALL()
 	|| match/url hoyoverse \
 	|| match/url epic
 
-QBCALL "$@" "$URL"
+ask()
+{
+	local -a args
+	args=(
+		--urgency normal
+		--expire-time 3600000
+		--hint boolean:action-icons:true
+		--hint string:sound-name:link-pressed
+		--action firefox=Firefox
+		--action qutebrowser=Qutebrowser
+		--action window-close=Close
+	)
+
+	notify query "${args[@]}" "Open Link?" "<a href=\"$1\">$1</a>"
+}
+
+TARGET="$(ask "$URL")"
+case "$TARGET" in
+	*-close) exit 0 ;;
+	qutebrowser) QBCALL "$@" "$URL" ;;
+	firefox | '') firefox --private-window "$URL" ;;
+esac
