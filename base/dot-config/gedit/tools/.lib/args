@@ -62,6 +62,8 @@ while read -r type flag arg; do
 
 	if [[ $type = \# && $(type -t "get_$flag") = function ]]; then
 		"get_$flag" "$arg"
+	elif [[ $type = \# ]]; then
+		__error "Unknown config: $flag"
 	else
 		if [[ $flag =~ ^- ]]; then
 			args+=("$flag")
