@@ -20,14 +20,14 @@ BEGIN {
         c1 = substr ($0, i+1, 1)
         c2 = substr ($0, i+2, 1)
         if ( hextab [c1] == "" || hextab [c2] == "" ) {
-          print "WARNING: invalid hex encoding: %" c1 c2 | "cat >&2"
+          print "WARNING: invalid hex encoding: %" c1 c2 > "/dev/stderr"
         } else {
           code = 0 + hextab [c1] * 16 + hextab [c2] + 0
           c = sprintf ("%c", code)
           i = i + 2
         }
       } else {
-        print "WARNING: invalid % encoding: " substr ($0, i, len - i)
+        print "WARNING: invalid % encoding: " substr ($0, i, len - i) > "/dev/stderr"
       }
     } else if ( c == "+" ) {
       c = " "
