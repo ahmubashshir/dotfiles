@@ -10,6 +10,7 @@ public class Contents : Gdk.ContentProvider
 {
 		private string copy = "";
 		private string uris = "";
+		private string paths= "";
 		private ContentFormats fmts;
 
 		public Contents()
@@ -19,6 +20,7 @@ public class Contents : Gdk.ContentProvider
 			var cfb = new Gdk.ContentFormatsBuilder();
 			cfb.add_mime_type("text/uri-list");
 			cfb.add_mime_type("x-special/gnome-copied-files");
+			cfb.add_mime_type("text/plain;charset=utf-8");
 			fmts = cfb.to_formats();
 		}
 
@@ -26,17 +28,22 @@ public class Contents : Gdk.ContentProvider
 		{
 			var ub = new StringBuilder();
 			var cb = new StringBuilder("copy");
+			var pb = new StringBuilder();
 
 			foreach (var f in files) {
-				ub.append(f.get_uri());
-				ub.append("\r\n");
+				string  u = f.get_uri();
+				string? p = f.get_path();
 
-				cb.append_c('\n');
-				cb.append(f.get_uri());
+				ub.append_printf("%s\r\n", u);
+				cb.append_printf("\n%s", u);
+
+				if (p != null)
+					pb.append_printf("%s%s", pb.len == 0 ? "" : "\n", p);
 			}
 
-			uris = ub.str;
-			copy = cb.str;
+			uris  = ub.str;
+			copy  = cb.str;
+			paths = pb.str;
 
 			content_changed.emit();
 		}
@@ -46,12 +53,27 @@ public class Contents : Gdk.ContentProvider
 			return fmts.@ref();
 		}
 
+		private string get_buffer(string type)
+		{
+			switch(type) {
+			case "text/uri-list":
+				return uris;
+			case "x-special/gnome-copied-files":
+				return copy;
+			case "text/plain;charset=utf-8":
+				return paths;
+			default:
+				warn_if_reached();
+				return "";
+			}
+		}
+
 		public override async bool
 		write_mime_type_async(string type, OutputStream @out, int prio, Cancellable? stopper) throws Error {
 			if (! fmts.contain_mime_type(type))
 			throw new IOError.NOT_SUPPORTED(@"Unsupported mime type: $type");
 
-			string payload = ((type == "text/uri-list")?uris:copy).dup();
+			string payload = get_buffer(type).dup();
 
 			yield @out.write_all_async(payload.data, prio, stopper, null);
 			return true;
