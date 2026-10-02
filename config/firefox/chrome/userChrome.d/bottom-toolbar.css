@@ -45,7 +45,6 @@
 		& #navigator-toolbox {
 			position: fixed !important;
 			bottom: 0;
-			display: block;
 			z-index: calc(var(--browser-area-z-index-tabbox) + 1) !important;
 			width: 100% !important;
 			margin-top: var(--space-xsmall);
@@ -53,7 +52,7 @@
 	}
 
 	&:not([inDOMFullscreen="true"]) #browser {
-		padding-bottom: calc(var(--urlbar-height-compat) + var(--toolbar-padding-override) + var(--space-xxsmall));
+		margin-bottom: calc(var(--urlbar-height-compat) + var(--toolbar-padding-override) + var(--space-xxsmall));
 
 		#sidebar-main {
 			margin-bottom: calc(0px - var(--space-xsmall));
@@ -71,7 +70,11 @@ panel[position^="bottomcenter"] {
 }
 
 #urlbar {
-	bottom: calc(var(--space-small) - var(--space-xxsmall)) !important;
+
+	/* ff <= 156*/
+	&[breakout] {
+		bottom: calc(var(--space-small) - var(--space-xxsmall)) !important;
+	}
 
 	&:is(:not([focused]), [suppress-focus-border]) {
 		& > .urlbar-input-container {
@@ -79,13 +82,55 @@ panel[position^="bottomcenter"] {
 		}
 	}
 
-	&[open][breakout-extend] {
+	&[open]:is([breakout-extend], [popover-open]) {
 		top: auto !important;
 		bottom: 0 !important;
 		flex-direction: column-reverse;
 
+		/* ff > 156 */
+		&[popover-open] {
+			.urlbarView {
+				position-area: block-start center !important;
+			}
+
+			.urlbarView-body-inner {
+				border-top: none !important;
+				border-bottom: 1px solid var(--urlbarview-separator-color);
+			}
+
+			.urlbar-background {
+				inset-block: calc(-1 * (var(--urlbar-background-overhang-open) + var(--urlbar-input-growth-open-block))) !important;
+				inset-block-start: calc(-1 * var(--urlbar-joint-background-overlap)) !important;
+				clip-path: inset(calc(var(--urlbar-joint-background-overlap) - var(--urlbar-input-growth-open-block)) calc(-1 * var(--urlbar-joint-background-shadow-margin)) calc(-1 * var(--urlbar-joint-background-shadow-margin))) !important;
+				border-radius: var(--urlbar-background-border-radius) !important;
+			}
+
+			.urlbarView-background {
+				inset-block: calc(-1 * var(--urlbarView-joint-background-outset-block)) calc(-1 * var(--urlbarView-margin-block) - var(--urlbar-joint-background-overlap)) !important;
+				clip-path: inset(calc(-1 * var(--urlbar-joint-background-shadow-margin)) calc(-1 * var(--urlbar-joint-background-shadow-margin)) var(--urlbar-joint-background-overlap));
+				border-radius: var(--urlbar-border-radius) !important;
+			}
+		}
+
+		/* ff <= 156 */
+		&[breakout-extend] {
+			.urlbarView {
+				margin-bottom: calc(var(--urlbar-height-compat) + var(--toolbar-padding-override)) !important;
+			}
+
+			.urlbarView-body-inner {
+				border-bottom: 1px solid var(--urlbarview-separator-color);
+				border-top: none !important;
+			}
+
+			.urlbar-input-container,
+			#urlbar-input-container {
+				position: fixed !important;
+			}
+
+		}
+
 		.urlbarView {
-			top: -42px !important;
 			display: flex !important;
 			flex-direction: column-reverse;
 
@@ -93,16 +138,10 @@ panel[position^="bottomcenter"] {
 				bottom: -42px !important;
 				position: relative;
 			}
-
-			& .urlbarView-body-inner {
-				margin-top: 42px;
-				border-bottom: none !important;
-			}
 		}
 
 		& .urlbar-input-container,
 		& #urlbar-input-container {
-			position: fixed !important;
 			bottom: var(---urlbar-position-bottom) !important;
 			height: fit-content !important;
 		}
