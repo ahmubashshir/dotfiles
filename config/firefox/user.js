@@ -21,7 +21,9 @@ ui@json
       "customizableui-special-spring2",
       "downloads-button",
       "unified-extensions-button",
-      "fxa-toolbar-menu-button"
+      "reset-pbm-toolbar-button",
+      "fxa-toolbar-menu-button",
+      "ipprotection-button"
     ],
     "toolbar-menubar": [
       "menubar-items"
@@ -33,6 +35,7 @@ ui@json
   },
   "seen": [
     "_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action",
+    "treestyletab_piro_sakura_ne_jp-browser-action",
     "ublock0_raymondhill_net-browser-action",
     "sponsorblocker_ajay_app-browser-action",
     "private-bookmarks_rharel-browser-action",
@@ -52,7 +55,7 @@ ui@json
 json@ui
 */
 
-user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"fxa-toolbar-menu-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\",\"dearrow_ajay_app-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
+user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"sidebar-button\",\"firefox-view-button\",\"back-button\",\"stop-reload-button\",\"forward-button\",\"customizableui-special-spring1\",\"urlbar-container\",\"new-tab-button\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"reset-pbm-toolbar-button\",\"fxa-toolbar-menu-button\",\"ipprotection-button\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"alltabs-button\",\"tabbrowser-tabs\"]},\"seen\":[\"_73a6fe31-595d-460b-a920-fcc0f8843232_-browser-action\",\"treestyletab_piro_sakura_ne_jp-browser-action\",\"ublock0_raymondhill_net-browser-action\",\"sponsorblocker_ajay_app-browser-action\",\"private-bookmarks_rharel-browser-action\",\"dearrow_ajay_app-browser-action\",\"jid1-mnnxcxisbpnsxq_jetpack-browser-action\"],\"dirtyAreaCache\":[\"unified-extensions-area\",\"nav-bar\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\"],\"currentVersion\":99999999,\"newElementCount\":0}");
 
 // toolbar / layout
 user_pref("browser.toolbars.bookmarks.visibility", "never"); // "always" | "never" | "newtab"
@@ -262,6 +265,8 @@ user_pref("network.captive-portal-service.enabled", false);
 user_pref("browser.link.open_newwindow", 3); // 1=replace-current, 2=new-window, 3=new-tab
 user_pref("browser.link.open_newwindow.restriction", 0); // 0=force, 1=ignore, 2=allow-override
 
+// Built-in VPN
+user_pref("browser.ipProtection.enabled", true);
 
 // ==============================
 // MEDIA

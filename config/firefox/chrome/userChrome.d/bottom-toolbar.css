@@ -107,7 +107,7 @@ panel[position^="bottomcenter"] {
 
 			.urlbarView-background {
 				inset-block: calc(-1 * var(--urlbarView-joint-background-outset-block)) calc(-1 * var(--urlbarView-margin-block) - var(--urlbar-joint-background-overlap)) !important;
-				clip-path: inset(calc(-1 * var(--urlbar-joint-background-shadow-margin)) calc(-1 * var(--urlbar-joint-background-shadow-margin)) var(--urlbar-joint-background-overlap));
+				clip-path: inset(calc(-1 * var(--urlbar-joint-background-shadow-margin)) calc(-1 * var(--urlbar-joint-background-shadow-margin)) var(--urlbar-joint-background-overlap)) !important;
 				border-radius: var(--urlbar-border-radius) !important;
 			}
 		}
