@@ -60,6 +60,7 @@ user_pref("browser.uiCustomization.state", "{\"placements\":{\"nav-bar\":[\"side
 // toolbar / layout
 user_pref("browser.toolbars.bookmarks.visibility", "never"); // "always" | "never" | "newtab"
 user_pref("browser.compactmode.show", true);
+user_pref("browser.nova.enabled", false);
 user_pref("browser.uidensity", 1); // 0=normal, 1=compact, 2=touch
 
 // sidebar & profiles
