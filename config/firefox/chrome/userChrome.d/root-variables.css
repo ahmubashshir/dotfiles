@@ -3,6 +3,8 @@
 	--toolbar-padding-override: var(--toolbar-start-end-padding, var(--toolbar-padding-inline, 8px));
 	--menubar-top-margin-override: calc(var(--urlbar-height-compat) - var(--toolbar-padding-override) / 2);
 	---urlbar-position-bottom: calc(var(--space-xxsmall) / 2);
+	--urlbarview-compat-joint-background-outset-block: var(--urlbarview-joint-background-outset-block, var(--urlbarView-joint-background-outset-block));
+	--urlbarview-compat-margin-block: var(--urlbarview-margin-block, var(--urlbarView-margin-block));
 
 	@media -moz-pref("browser.nova.enabled") {
 		---urlbar-position-bottom: calc(var(--space-xsmall) + var(--space-xxsmall));
