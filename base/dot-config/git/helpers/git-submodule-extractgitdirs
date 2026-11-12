@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Revert `git submodule absorbgitdirs`.
+# Source: https://stackoverflow.com/a/51763718
+# Notes:
+# - Nested submodules must be moved first, so if you are specifying submodules manually, make sure the dependencies are correct
+# - Assuming latest version of Git and GNU coreutils has been installed in the $PATH
+
+die()
+{
+	msg "ERROR: $1" "${@:2}"
+	exit 1
+} >&2
+
+msg()
+{
+	local fmt="$1"
+	shift
+	# shellcheck disable=SC2059
+	printf "$fmt\n" "$@"
+} >&2
+usage()
+{
+	cat << 'EOF'
+Usage:
+  git submodule-extractgitdirs [OPTIONS] [SUBMODULE...]
+
+Revert `git submodule absorbgitdirs` by moving submodule Git directories
+back into their respective working trees.
+
+Options:
+  -h    Show this help message and exit.
+
+Arguments:
+  SUBMODULE     Submodule paths to extract.
+                If omitted, all recursive submodules are extracted,
+                with nested submodules processed first.
+
+Examples:
+  # Extract all recursive submodules
+  git submodule-extractgitdirs
+
+  # Extract a specific submodule
+  git submodule-extractgitdirs path/to/submodule
+
+  # Extract multiple submodules (nested first)
+  git submodule-extractgitdirs path/to/child path/to/parent
+
+Notes:
+  - Nested submodules must be processed before their parents.
+
+EOF
+	exit 0
+} >&2
+
+while getopts ':h' opt; do
+	case "$opt" in
+		h) usage ;;
+		\?) die "Invalid option: -%s (try --help)" "$OPTARG" ;;
+	esac
+done
+shift "$((OPTIND - 1))"
+! [[ $1 == --help ]] || usage
+
+case "$(git rev-parse --is-inside-work-tree)" in
+	false) die "Not inside a git worktree" ;;
+esac
+
+IFS= read -r rootworktree < <(
+	git rev-parse --show-toplevel --show-superproject-working-tree
+)
+readonly rootworktree
+
+set -e
+cd "$rootworktree" > /dev/null 2>&1 || die "Failed to CD to '$rootworktree'"
+
+if [[ 0 -lt $# ]]; then
+	printf "%s\n" "$@"
+else
+	# invert the results so nested submodules always comes first
+	git submodule status --recursive | cut -d' ' -f3 | tac
+fi | while read -r path; do
+	[[ -f $path/.git ]] || continue
+	IFs= read -r gitdir < <(
+		git -C "${path}" rev-parse --absolute-git-dir
+	)
+
+	[[ -d $gitdir ]] || die "Source tree not found for '%s'" "$path"
+
+	rm -f -- "${path}/.git"
+	mv --no-target-directory --backup=none -- "${gitdir}" "${path}/.git"
+	git --work-tree="${path}" --git-dir="${path}/.git" config --local --path --unset core.worktree
+	msg "Migrating git directory of '%s' from\n'%s' to\n'%s'" "$path" "$gitdir" "$PWD/$path/.git"
+done
