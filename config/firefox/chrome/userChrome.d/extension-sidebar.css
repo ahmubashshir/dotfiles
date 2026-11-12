@@ -17,7 +17,7 @@
 		visibility: collapse !important;
 	}
 
-	&:has(#sidebar-box:not( :is([hidden]:not([hidden="false"]),
+	&:has(#sidebar-box:not(:is([hidden]:not([hidden="false"]),
 				[positionend],
 				[sidebar-positionend]))) {
 		& :is(#toolbar-menubar, #notifications-toolbar) {
@@ -32,7 +32,23 @@
 }
 
 #sidebarMenu-popup {
-	padding-bottom: var(--space-xxsmall);
+	padding-bottom: var(--space-medium);
+	width: calc(var(--wide-tab-width) - var(--space-medium)) !important;
+
+	& > menuitem {
+		min-width: unset !important;
+	}
+}
+
+#sidebar-switcher-megalist,
+#sidebar-menu-close,
+#sidebar-reverse-position,
+#sidebarswitcher_menu_firemonkey_eros_man-sidebar-action,
+#sidebar-reverse-position + menuseparator,
+menuseparator:has(+ #sidebar-reverse-position) {
+	/* Hide unused menu items */
+	display: none !important;
+	visibility: collapse !important;
 }
 
 #sidebar-box {
@@ -62,6 +78,7 @@
 	&:not([hidden="true"]) {
 		min-width: var(--collapsed-width) !important;
 		max-width: var(--collapsed-width) !important;
+		padding: unset !important;
 
 		/* Hide splitter, when using Tree Style Tab. */
 		& + #sidebar-splitter {
@@ -71,7 +88,7 @@
 		/* Sidebar min and max width removal */
 		& #sidebar {
 			max-width: none !important;
-			min-width: calc(var(--collapsed-width) - 1px) !important;
+			min-width: fit-content !important;
 			background-color: var(--toolbar-field-background-color) !important;
 		}
 
@@ -85,12 +102,18 @@
 
 		#sidebar-header:not([hidden="true"]) {
 			overflow-x: clip;
-			background-color: var(--toolbar-bgcolor);
+			background-color: var(--toolbar-bgcolor, var(--toolbar-background-color));
 			border-bottom: unset !important;
 			border-top: 1px solid var(--sidebar-border-color);
+			position: relative;
+
+			#sidebar-switcher-target {
+				margin: unset !important;
+				padding: 4px !important;
+				padding-inline-end: calc(100% - var(--space-xlarge)) !important;
+			}
 
 			#sidebar-title {
-				right: var(--space-small);
 				position: absolute;
 				transition-timing-function: ease-in;
 				transition-property: opacity, visibility;
@@ -100,7 +123,7 @@
 			#sidebar-box:not(:is([positionend],
 					[sidebar-positionend])) & {
 				#sidebar-title {
-					right: var(--space-xxsmall);
+					right: var(--space-small);
 				}
 			}
 
@@ -110,7 +133,7 @@
 
 				#sidebar-title {
 					direction: initial;
-					left: var(--space-xxsmall);
+					left: var(--space-small);
 				}
 			}
 		}
@@ -120,7 +143,7 @@
 		#sidebar-switcher-arrow,
 		#sidebar-close {
 			visibility: collapse;
-			opacity: 0.0;
+			opacity: 0.0 !important;
 		}
 
 		&:is(:hover,
@@ -167,8 +190,6 @@
 
 @supports not -moz-bool-pref("sidebar.revamp") {
 	#browser[chromehidden=""] {
-		& {}
-
 		#sidebar-box[hidden="true"] {
 			#browser:has(&) #tabbrowser-tabbox {
 				--sidebar-placeholder-width: calc(var(--thin-tab-width) + var(--space-xxsmall) - 1pt) solid var(--background-color-canvas);
