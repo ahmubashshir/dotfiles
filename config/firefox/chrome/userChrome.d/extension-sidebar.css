@@ -17,16 +17,25 @@
 		visibility: collapse !important;
 	}
 
-	&:has(#sidebar-box:not(:is([hidden]:not([hidden="false"]),
-				[positionend],
-				[sidebar-positionend]))) {
+	&:has(#sidebar-box:is([hidden="false"],
+			:not([hidden]))) {
 		& :is(#toolbar-menubar, #notifications-toolbar) {
 			max-width: calc(100vw - var(--thin-tab-width) - var(--space-xxsmall));
 		}
 
-		#toolbar-menubar:is([autohide="false"],
-			:not([autohide])) {
-			margin-left: calc(var(--thin-tab-width) + var(--space-xxsmall));
+		&:has(#sidebar-box:not(:is([positionend], [sidebar-positionend]))) {
+			#toolbar-menubar {
+				&:is([autohide="false"], :not([autohide])) {
+					--menubar-margin-left: calc(var(--thin-tab-width) + var(--space-xxsmall));
+				}
+
+				&[autohide]:not([autohide="false"]) {
+					--menubar-margin-left: calc(var(--button-size-icon) + var(--space-large));
+				}
+
+				margin-left: var(--menubar-margin-left);
+
+			}
 		}
 	}
 }
